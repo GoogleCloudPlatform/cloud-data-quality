@@ -1,0 +1,16 @@
+**__pycache__
+.idea
+.vscode
+**.json
+**.patch
+dbt/log
+dbt/logs
+dbt/modules
+dbt/target
+dbt/models/rule_binding_views/*
+.user.yml
+profiles.yml
+bazel-*
+bin
+Pipfile*
+*.lock

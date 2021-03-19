@@ -1,0 +1,55 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: 'data_quality'
+version: '0.1.0'
+
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'default'
+
+source-paths: ["dbt/models"]
+macro-paths: ["dbt/macros"]
+data-paths: ["dbt/data"]
+test-paths: ["dbt/test"]
+analysis-paths: ["dbt/analysis"]
+snapshot-paths: ["dbt/snapshot"]
+docs-paths: ["dbt/docs"]
+asset-paths: ["dbt/asset"]
+log-path: "dbt/log"
+modules-path: "dbt/modules"
+
+target-path: "dbt/target"  # directory which will store compiled SQL files
+clean-targets:         # directories to be removed by `dbt clean`
+    - "dbt/target"
+    - "dbt/modules"
+    - "dbt/log"
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/docs/configuring-models
+models:
+  data_quality:
+      data_quality_engine:
+          materialized: table
+      rule_binding_views:
+          materialized: view
+
+seeds:
+  data_quality:
+    contact_details:
+      +enable: true
+
+vars:
+  target_rule_bindings_id: ""

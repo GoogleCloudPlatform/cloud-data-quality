@@ -1,0 +1,25 @@
+default:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project:  "{{ env_var('DBT_GCP_PROJECT') }}"
+      dataset: "{{ env_var('DBT_GCP_DATASET') }}"
+      threads: 1
+      timeout_seconds: 90
+      location: "{{ env_var('DBT_BIGQUERY_REGION', 'EU') }}"
+      priority: interactive
+      retries: 1
+
+    test:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('DBT_GCP_PROJECT') }}"
+      dataset: "{{ env_var('DBT_GCP_DATASET') }}"
+      threads: 1
+      timeout_seconds: 300
+      location: "{{ env_var('DBT_BIGQUERY_REGION', 'EU') }}"
+      priority: interactive
+      retries:  1
+      keyfile:  "{{ env_var('DBT_GOOGLE_BIGQUERY_KEYFILE', 'service_account.json') }}"
