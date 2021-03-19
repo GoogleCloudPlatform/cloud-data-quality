@@ -1,0 +1,76 @@
+{
+  "column_configs": {
+    "description": "contact detail",
+    "name": "value",
+    "data_type": "STRING"
+  },
+  "column_id": "VALUE",
+  "entity_configs": {
+    "columns": {
+      "KEY": {
+        "description": "contact detail type",
+        "name": "key",
+        "data_type": "STRING"
+      },
+      "TS": {
+        "description": "updated timestamp",
+        "name": "ts",
+        "data_type": "DATETIME"
+      },
+      "VALUE": {
+        "description": "contact detail",
+        "name": "value",
+        "data_type": "STRING"
+      }
+    },
+    "database_name": "dq_test",
+    "environment_override": {
+      "TEST": {
+        "environment": "test",
+        "override": {
+          "database_name": "does_not_exists",
+          "instance_name": "does_not_exists"
+        }
+      }
+    },
+    "instance_name": "kthxbayes-sandbox",
+    "source_database": "BIGQUERY",
+    "table_name": "contact_details"
+  },
+  "entity_id": "TEST_TABLE",
+  "incremental_time_filter_column": null,
+  "row_filter_configs": {
+    "filter_sql_expr": "contact_type = 'email'"
+  },
+  "row_filter_id": "DATA_TYPE_EMAIL",
+  "metadata": {
+    "brand": "one"
+  },
+  "rule_binding_id": "T2_DQ_1_EMAIL",
+  "rule_configs_dict": {
+    "CUSTOM_SQL_LENGTH_LE_30": {
+      "params": {
+        "custom_sql_expr": "LENGTH( $column ) <= 30"
+      },
+      "rule_sql_expr": "LENGTH( value ) <= 30",
+      "rule_type": "CUSTOM_SQL_EXPR"
+    },
+    "NOT_NULL_SIMPLE": {
+      "params": {},
+      "rule_sql_expr": "value IS NOT NULL",
+      "rule_type": "NOT_NULL"
+    },
+    "REGEX_VALID_EMAIL": {
+      "params": {
+        "pattern": "^[^@]+[@]{1}[^@]+$"
+      },
+      "rule_sql_expr": "REGEXP_CONTAINS( CAST( value  AS STRING), '^[^@]+[@]{1}[^@]+$' )",
+      "rule_type": "REGEX"
+    }
+  },
+  "rule_ids": [
+    "NOT_NULL_SIMPLE",
+    "REGEX_VALID_EMAIL",
+    "CUSTOM_SQL_LENGTH_LE_30"
+  ]
+}
