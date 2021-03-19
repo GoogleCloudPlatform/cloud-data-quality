@@ -1,7 +1,7 @@
 # Cloud Data Quality Engine
 
 [![alpha](https://badgen.net/badge/status/alpha/d8624d)](https://badgen.net/badge/status/alpha/d8624d)
-[![build-test status](https://github.com/thinhha/clouddq/actions/workflows/build-test.yml/badge.svg)](https://github.com/thinhha/clouddq/actions/workflows/build-test.yml)
+[![build-test status](https://github.com/GoogleCloudPlatform/cloud-data-quality/actions/workflows/build-test.yml/badge.svg)](https://github.com/GoogleCloudPlatform/cloud-data-quality/actions/workflows/build-test.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 ## Introductions
