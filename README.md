@@ -18,6 +18,7 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    incremental_time_filter_column_id: TS
     rule_ids:
       - NOT_NULL_SIMPLE
       - REGEX_VALID_EMAIL
@@ -34,9 +35,17 @@ rule_bindings:
           column_names: "value"
       - NOT_NULL_SIMPLE
     metadata:
-      brand: one
+      brand: two
 ```
-**Rules**: Defines reusable sets of validation logic for validating data.
+Each `rule_binding` must define the fields `entity_id`, `column_id`, `row_filter_id`, and `rule_ids`. If `incremental_time_filter_column_id` is defined, `CloudDQ` will only validate rows with a timestamp higher than the last run timestamp on each run, otherwise it will validate all rows matching the `row_filter_id` on each run.
+
+Under the `metadata` config, you may add key-value pairs that will be added as a JSON on each DQ summary row output. The JSON allows custom aggregations and drilldowns over the summary data.
+
+On each run, CloudDQ converts each `rule_binding` into a SQL script, create a corresponding [view](https://cloud.google.com/bigquery/docs/views) in BigQuery, and aggregate the validation results into a table called `dq_summary` at the location defined in the project's `profiles.yml'`configurations.
+
+You can then use any dashboarding solution such as Data Studio or Looker to visualize the DQ summary table for monitoring and alerting purposes.
+
+**Rules**: Defines reusable sets of validation logic for data quality.
 ```yaml
 rules:
   NOT_NULL_SIMPLE:
@@ -66,7 +75,11 @@ rules:
         group by $column_names
         having count(*) > 1
 ```
-We will add more default rule types over time. For the time being, you can create arbitrarily complex SQL rules with `CUSTOM_SQL_EXPR` and `CUSTOM_SQL_STATEMENT`. Only `CUSTOM_SQL_STATEMENT` supports parametrization.
+We will add more default rule types over time. For the time being, most data quality rule can be defined with SQL using either `CUSTOM_SQL_EXPR` or `CUSTOM_SQL_STATEMENT`. `CUSTOM_SQL_EXPR` will flag any row that `custom_sql_expr` evaluated to False as a failure. `CUSTOM_SQL_STATEMENT` will flag any value returned by the whole statement as failures. 
+
+`CloudDQ` will substitute the string `$column` with the YAML config value provided in `column_id`. `CUSTOM_SQL_STATEMENT` additionally supports custom parameterized variables in `custom_sql_arguments` that can be defined separately in each `rule_binding`.
+
+The table `data` contains rows returned once all `row_filters` and incremental validation logic have been applied. We recommend simply selecting from `data` in `CUSTOM_SQL_STATEMENT` instead of trying to apply your own templating logic to define the target table for validation.
 
 **Filters**: Defines how each rule binding can be filtered
 ```yaml
@@ -118,27 +131,27 @@ entities:
 
 The project uses [dbt](https://www.getdbt.com/) to execute SQL queries against BigQuery.
 
-To set up DBT, you must configure connection profiles to a BigQuery project on GCP using a `profiles.yml` file.
+To set up `dbt`, you must configure connection profiles to a BigQuery project on GCP using a `profiles.yml` file.
 
-You can read about dbt's profiles.yml configurations for BigQuery [here](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile/).
+You can read about `profiles.yml` configuration options for BigQuery [here](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile/).
 
 You can start by copying the template at:
 ```bash
 cp profiles.yml.template profiles.yml
 ```
 
-The `project` and `dataset` configurations in `profile.yml` is where the DQ summary output table will be created.
+The `project` and `dataset` configurations in `profile.yml` is where the summary output table `dq_summary` will be created.
 
 To create the test dataset used in the code's test-suites and in the following examples, run (after installing `dbt` in a Python virtualenv with `make install`):
 ```
 dbt seed
 ```
 
-### Building the project using `Bazel`
+### Building the project using `bazel`
 
-This project uses Bazel to build an executable python binary including its interpreter and all dependencies, including dbt.
+This project uses Bazel to build an executable python binary including its interpreter and all dependencies, including `dbt`.
 
-It depends on `go get` to install a local [bazelisk](https://github.com/bazelbuild/bazelisk) binary to build Bazel.
+It depends on `go get` to install a local [bazelisk](https://github.com/bazelbuild/bazelisk) binary to build `bazel`.
 
 A `Makefile` is provided to simplify build and development steps.
 
@@ -151,14 +164,16 @@ make build
 and run it (this will show the help text):
 
 ```
-python bazel-bin/clouddq/clouddq_patched.zip
+python bazel-bin/clouddq/clouddq_patched.zip --help
 ```
 
-The Python zip have been tested with Python versions `>=2.7.17` and `>=3.8.6`. The `make build` command have been tested to work on `debian`, `ubuntu`, and `mac-os`. There is no `windows` support yet.
+The Python zip have been tested with Python versions `>=2.7.17` and `>=3.8.6`. As the zip contains a bundled python interpreter as well as all of `clouddq`'s dependencies, there is no need to ensure the python interpreter used to execute the zip has its dependencies installed.
+
+The `make build` command have been tested to work on `debian`, `ubuntu`, and `mac-os`. There is no `windows` support yet.
 
 The Python zip includes the top-level `macros` directory, which will be hard-coded in the executable and cannot be changed at runtime.
 
-The CLI expects the paths for `dbt_profiles_dir`, `dbt_path`, `environment_target`, and `configs_path` to be provided at runtime. These directories can be customized to meet your needs.
+The CLI expects the paths for `dbt_profiles_dir`, `dbt_path`, and `environment_target` to be provided at runtime. These directories can be customized to meet your needs. For example, you can customize the values returned in the `dq_summary` table, or write rows that failed a particular `rule_binding` into a different table for remediation. By default, `clouddq` does not write data from the original tables into any other table to avoid accidentally leaking PII.
 
 ### Usage
 
@@ -190,14 +205,14 @@ To run the CLI without building the zip file:
 ```
 bin/bazelisk run //clouddq:clouddq -- \
   T2_DQ_1_EMAIL \
-  $(pwd)/configs/rule_bindings/team-2-rule-bindings.yml \
+  $(pwd)/configs \
   --metadata='{"test":"test"}' \
   --dbt_profiles_dir="$(pwd)" \
   --dbt_path="$(pwd)/dbt" \
   --environment_target=dev
 ```
 
-As `bazel run` execute the code in a sandbox, non-absolute paths will be relative to the sandbox path not the current path. Ensure you are passing absolute paths to the command line arguments such as `dbt_profiles_dir`, `dbt_path`, `configs_path`, etc... Additionally, you may want to run `source scripts/common.sh && confirm_gcloud_login` to check that your `gcloud` credentials are set up correctly.
+As `bazel run` execute the code in a sandbox, non-absolute paths will be relative to the sandbox path not the current path. Ensure you are passing absolute paths to the command line arguments such as `dbt_profiles_dir`, `dbt_path`, etc... Additionally, you may want to run `source scripts/common.sh && confirm_gcloud_login` to check that your `gcloud` credentials are set up correctly.
 
 We do not provide a `make run` command because `make` is not designed to allow input arguments to the CLI.
 
@@ -221,21 +236,21 @@ See more options at:
 make help
 ```
 
-Note that you may want to update the bazel cache in `.bazelrc` to a GCS bucket you have access to.
+Note that you may want to update the [bazel cache](https://docs.bazel.build/versions/master/remote-caching.html#google-cloud-storage) in `.bazelrc` to a GCS bucket you have access to.
 ```
 build --remote_cache=https://storage.googleapis.com/<your_gcs_bucket_name>
 ```
 
 ### Development without Bazel
 
-To install `clouddq` in a local python virtualenv using [poetry](https://python-poetry.org):
+To install `clouddq` in a local python virtualenv using [poetry](https://python-poetry.org) and [pyenv](https://github.com/pyenv/pyenv):
 ```
 make install
 ```
 
 Running `make install` will automatically enter a new virtualenv using `poetry shell` before installing `clouddq` in the virtualenv. If Python version `3.8.6` is not found, the script will promt you on whether you want to install it using `pyenv`.
 
-To enter the virtualenv by spawning a new shell at "$SHELL", run:
+To enter the virtualenv by spawning a new shell at `$SHELL`, run:
 ```
 poetry shell
 ```
