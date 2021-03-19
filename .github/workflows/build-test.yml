@@ -75,6 +75,3 @@ jobs:
       run: make build
       shell: bash
 
-    - name: test make install
-      run: make install
-      shell: bash
