@@ -265,14 +265,14 @@ To unset the local `pyenv` interpreter, run:
 pyenv local --unset
 ```
 
-### Troubleshooting
+## Troubleshooting
 
-#### 1. Python cannot find `libffi` on Debian/Ubuntu 
+### 1. Python cannot find `libffi` on Debian/Ubuntu 
 If you're seeing the error:
 ```
 ImportError: No module named '_ctypes'
 ```
-Try following the instructions (to reinstall libffi)[https://stackoverflow.com/a/48045929]. Then clear the bazel cache and retry.
+Try following the instructions [to reinstall libffi](https://stackoverflow.com/a/48045929). Then clear the bazel cache and retry.
 
 ## License
 
