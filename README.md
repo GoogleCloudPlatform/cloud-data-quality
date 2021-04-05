@@ -265,6 +265,15 @@ To unset the local `pyenv` interpreter, run:
 pyenv local --unset
 ```
 
+### Troubleshooting
+
+#### 1. Python cannot find `libffi` on Debian/Ubuntu 
+If you're seeing the error:
+```
+ImportError: No module named '_ctypes'
+```
+Try following the instructions (to reinstall libffi)[https://stackoverflow.com/a/48045929]. Then clear the bazel cache and retry.
+
 ## License
 
 CloudDQ is licensed under the Apache License version 2.0. This is not an official Google product.
