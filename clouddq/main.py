@@ -132,11 +132,13 @@ def main(
     configs_path = Path(rule_binding_config_path)
     dbt_path = Path(dbt_path)
     metadata = json.loads(metadata)
-    dq_summary_table_name = lib.get_dq_summary_table_name(dbt_profiles_dir)
-    dbt_rule_binding_views_path = dbt_path / "models" / "rule_binding_views"
+    dq_summary_table_name = lib.get_bigquery_dq_summary_table_name(
+        dbt_profiles_dir, environment_target
+    )
     logging.info(
         f"Using BigQuery table for summary results: `{dq_summary_table_name}`. "
     )
+    dbt_rule_binding_views_path = dbt_path / "models" / "rule_binding_views"
     logging.info(f"Loading rule bindings from: {configs_path.absolute()} ")
     all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
     target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
