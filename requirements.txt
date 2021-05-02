@@ -1,5 +1,5 @@
 click==7.1.2
-jinja2==2.11.3
+jinja2==2.11.2
 pyyaml==5.4.1
 dbt-bigquery==0.18.1
 agate==1.6.1
