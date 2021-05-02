@@ -14,3 +14,4 @@ bazel-*
 bin
 Pipfile*
 *.lock
+env/
