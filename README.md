@@ -160,7 +160,9 @@ dbt seed
 
 ### Installing
 
-Ensure you have Python version >3.8.6 installed. We suggest using [pyenv](https://github.com/pyenv/pyenv).
+Ensure you have installed:
+* Python version >3.8.6. We suggest using pyenv: https://github.com/pyenv/pyenv
+* gcloud SDK (for interacting with GCP): https://cloud.google.com/sdk/docs/install
 
 #### Installing from source
 
@@ -187,7 +189,7 @@ python clouddq --help
 
 ### Usage
 
-Example command to execute two rule binding `T2_DQ_1_EMAIL` and `T3_DQ_1_EMAIL_DUPLICATE` from a path `config` containing the complete YAML configurations:
+Example command to execute two rule bindings `T2_DQ_1_EMAIL` and `T3_DQ_1_EMAIL_DUPLICATE` from a path `config` containing the complete YAML configurations:
 ```
 python clouddq \
     T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE \
@@ -218,14 +220,16 @@ The content of these directories can be customized to meet your needs. For examp
 
 By default, `clouddq` does not write data from the original tables into any other table to avoid accidentally leaking PII.
 
+`clouddq` CLI expects to find a local top-level `macros` directory, even if you cannot pass it in during runtime. This is why we recommend either installing `clouddq` by cloning the entire repository or by [building a self-contained Python executable with Bazel](#build-a-self-contained-python-executable-with-bazel).
+
 ### Development
 
 #### Dependencies
 
-* golang (for building [bazelisk](https://github.com/bazelbuild/bazelisk)): https://golang.org/doc/install
-* gcloud SDK (for interacting with GCP): https://cloud.google.com/sdk/docs/install
-* Python 3: https://wiki.python.org/moin/BeginnersGuide/Download
 * make: https://www.gnu.org/software/make/manual/make.html
+* golang (for building [bazelisk](https://github.com/bazelbuild/bazelisk)): https://golang.org/doc/install
+* Python 3: https://wiki.python.org/moin/BeginnersGuide/Download
+* gcloud SDK (for interacting with GCP): https://cloud.google.com/sdk/docs/install
 
 The development commands provided in the `Makefile` have been tested to work on `debian` and `ubuntu`. They have not been tested on `mac-os`. There is currently no planned support for `windows`.
 
