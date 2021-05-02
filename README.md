@@ -6,7 +6,7 @@
 
 ## Introductions
 
-`CloudDQ` is a cloud-native, declarative, and scalable Data Quality validation framework.
+`CloudDQ` is a cloud-native, declarative, and scalable Data Quality validation framework for Google BigQuery.
 
 Data Quality validation tests can be defined using a flexible and reusable YAML configurations language. For each rule binding definition in the YAML configs, `CloudDQ` creates a corresponding SQL view in your Data Warehouse. It then executes the view and collects the data quality validation outputs into a summary table for reporting and visualization.
 
@@ -141,7 +141,7 @@ The project uses [dbt](https://www.getdbt.com/) to execute SQL queries against B
 
 To set up `dbt`, you must configure connection profiles to a BigQuery project on GCP using a `profiles.yml` file, specifying the GCP `project` ID, BigQuery `dataset`, BigQuery job `location`, and authentication `method`.
 
-We recommend authenticating using `oauth` ([details](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#oauth-via-gcloud)), either 1) with your [application-default](https://google.aip.dev/auth/4110) credentials via `gcloud auth application-default login` ([details](([details](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#oauth-via-gcloud)))) for Development, or 2) with `impersonate_service_account` ([details](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#service-account-impersonation)) for Test/Production.
+We recommend authenticating using `oauth` ([details](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#oauth-via-gcloud)), either 1) with your [application-default](https://google.aip.dev/auth/4110) credentials via `gcloud auth application-default login` ([details]((https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#oauth-via-gcloud))) for Development, or 2) with `impersonate_service_account` ([details](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#service-account-impersonation)) for Test/Production.
 
 More information about dbt's `profiles.yml` configuration options for BigQuery can be found at https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile/.
 
@@ -214,7 +214,7 @@ The CLI expects the paths for `dbt_profiles_dir`, `dbt_path`, and `environment_t
 The content of these directories can be customized to meet your needs. For example, you can:
 1) customize the values returned in the `dq_summary` table by modifying `dbt/models/data_quality_engine/dq_summary.sql`,
 2) calculate different summary scores in `dbt/models/data_quality_engine/main.sql`, or
-3) create a new SQL model to write rows that failed a particular `rule_binding` from `dbt/models/rule_binding_views/` into a different table for remediation.
+3) create a new SQL model to write rows that failed a particular `rule_binding` from `dbt/models/rule_binding_views/` into a different table for reporting and remediation.
 
 By default, `clouddq` does not write data from the original tables into any other table to avoid accidentally leaking PII.
 
@@ -223,12 +223,30 @@ By default, `clouddq` does not write data from the original tables into any othe
 #### Dependencies
 
 * golang (for building [bazelisk](https://github.com/bazelbuild/bazelisk)): https://golang.org/doc/install
-* gcloud SDK (for authenticating to GCP): https://cloud.google.com/sdk/docs/install
-* Python 3
+* gcloud SDK (for interacting with GCP): https://cloud.google.com/sdk/docs/install
+* Python 3: https://wiki.python.org/moin/BeginnersGuide/Download
+* make: https://www.gnu.org/software/make/manual/make.html
+
+The development commands provided in the `Makefile` have been tested to work on `debian` and `ubuntu`. They have not been tested on `mac-os`. There is currently no planned support for `windows`.
+
+See `make` options at:
+```
+make help
+```
+
+Note that you may want to update the [bazel cache](https://docs.bazel.build/versions/master/remote-caching.html#google-cloud-storage) in `.bazelrc` to a GCS bucket you have access to.
+```
+build --remote_cache=https://storage.googleapis.com/<your_gcs_bucket_name>
+```
 
 #### Run CLI with Bazel
 
-To run the CLI with Bazel:
+First install Bazelisk into a local path:
+```
+make bin/bazelisk
+```
+
+Then use `bazelisk run` to execute the main CLI:
 ```
 bin/bazelisk run //clouddq:clouddq -- \
   T2_DQ_1_EMAIL \
@@ -239,7 +257,11 @@ bin/bazelisk run //clouddq:clouddq -- \
   --environment_target=dev
 ```
 
-As `bazel run` execute the code in a sandbox, non-absolute paths will be relative to the sandbox path not the current path. Ensure you are passing absolute paths to the command line arguments such as `dbt_profiles_dir`, `dbt_path`, etc... Additionally, you may want to run `source scripts/common.sh && confirm_gcloud_login` to check that your `gcloud` credentials are set up correctly.
+As `bazel run` execute the code in a sandbox, non-absolute paths will be relative to the sandbox path not the current path. Ensure you are passing absolute paths to the command line arguments such as `dbt_profiles_dir`, `dbt_path`, etc...
+
+Additionally, you may want to run `source scripts/common.sh && confirm_gcloud_login` to check that your `gcloud` credentials are set up correctly.
+
+#### Run tests and linting
 
 To run unit tests:
 ```
@@ -256,23 +278,11 @@ To apply linting:
 make lint
 ```
 
-See more options at:
-```
-make help
-```
-
-Note that you may want to update the [bazel cache](https://docs.bazel.build/versions/master/remote-caching.html#google-cloud-storage) in `.bazelrc` to a GCS bucket you have access to.
-```
-build --remote_cache=https://storage.googleapis.com/<your_gcs_bucket_name>
-```
-
 ### Deployment
 
-#### Build self-contained executable with Bazel
+#### Build a self-contained Python executable with Bazel
 
-You can use Bazel to build an executable python binary including its interpreter and all dependencies, including `dbt`.
-
-It depends on `go get` to install a local [bazelisk](https://github.com/bazelbuild/bazelisk) binary to build `bazel`.
+You can use Bazel to build an executable python binary including its interpreter and all dependencies such as `dbt`.
 
 To build and executable Python zip file:
 
@@ -286,13 +296,11 @@ and run it (this will show the help text):
 python bazel-bin/clouddq/clouddq_patched.zip --help
 ```
 
-As Bazel will fetch the Python interpreter as well as all of the dependcies, this step will take a few minutes to complete. Once completed for the first time, the artifacts will be cached and subsequent builds will be much faster.
+As Bazel will fetch the Python interpreter as well as all of its dependencies, this step will take a few minutes to complete. Once completed for the first time, the artifacts will be cached and subsequent builds will be much faster.
 
 The Python zip have been tested with Python versions `>=2.7.17` and `>=3.8.6`. As the zip contains a bundled python interpreter as well as all of `clouddq`'s dependencies, there is no need to ensure the python interpreter used to execute the zip has its dependencies installed.
 
-The executable Python zip is not cross-platform compatible. You will need to build the exectuable separately for each of your target platforms.
-
-The `make build` command have been tested to work on `debian` and `ubuntu`. There is no `windows` support yet.
+The executable Python zip is not cross-platform compatible. You will need to build the executable separately for each of your target platforms.
 
 The Python zip includes the top-level `macros` directory, which will be hard-coded in the executable and cannot be changed at runtime.
 
