@@ -30,7 +30,7 @@ addlicense: bin/addlicense ## run addlicense check
 
 .PHONY: clean
 clean: bin/bazelisk ## clean build artifacts
-	bin/bazelisk clean --async
+	bin/bazelisk clean --async --expunge
 
 .PHONY: buildzip
 buildzip: bin/bazelisk  ## build zip executable and apply patch to fix init issue
