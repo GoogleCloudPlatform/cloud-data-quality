@@ -24,27 +24,38 @@ set -o pipefail
 # "---------------------------------------------------------"
 
 # Confirm gcloud is installed and available as a command.
-if [ ! -x "$(command -v gcloud)" ]; then
-  echo "gcloud command is not available. Please install gcloud before continuing"
-  echo "Please visit: https://cloud.google.com/sdk/install"
-  exit 1
-fi
+function check_gcloud() {
+  if [ ! -x "$(command -v gcloud)" ]; then
+    echo "gcloud command is not available. Please install gcloud before continuing"
+    echo "Please visit: https://cloud.google.com/sdk/install"
+    exit 1
+  fi
+}
 
 # Confirm golang is installed and available as a command.
-if [ ! -x "$(command -v go version)" ]; then
-  echo "golang is not available. It is used to install bazelisk and bazel for your platform."
-  echo "Please install golang before continuing: https://golang.org/doc/install"
-  exit 1
-fi
+function check_go() {
+  if [ ! -x "$(command -v go version)" ]; then
+    echo "golang is not available. It is used to install bazelisk and bazel for your platform."
+    echo "Please install golang before continuing: https://golang.org/doc/install"
+    exit 1
+  fi
+}
 
 # Confirm python is installed and available as a command.
 # Bazel builds the python binary including the interpreter from scratch
 # so it doesn't matter which version of Python 3 is installed.
-if [ ! -x "$(command -v python3 --version)" ]; then
-  echo "python3 command is not available. It is used to run the Python zip binary."
-  echo "Please install python3 before continuing: https://docs.python.org/3/installing/index.html"
-  exit 1
-fi
+function check_python3() {
+  if [ ! -x "$(command -v python3 --version)" ]; then
+    echo "python3 command is not available. It is used to run the Python zip binary."
+    echo "Please install python3 before continuing: https://docs.python.org/3/installing/index.html"
+    exit 1
+  fi
+}
+
+function err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@" >&2
+  return 1
+}
 
 ###########################################################
 #                    gcloud utilities                     #
@@ -78,6 +89,7 @@ function handle_no_token_error() {
 
 # Get account used for application client library
 function get_application_client_account() {
+  check_python3
   if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
     echo "Authenticating to GCP using GOOGLE_APPLICATION_CREDENTIALS at path $GOOGLE_APPLICATION_CREDENTIALS."
     export GOOGLE_SDK_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS"
@@ -107,6 +119,7 @@ function get_application_client_account() {
 # Confirm the user is already logged into gcloud, if they aren't
 # attempt to login.
 function confirm_gcloud_login() {
+  check_gcloud
   echo "Checking gcloud login state..."
   echo
   GOOGLE_CLOUD_PROJECT=$(gcloud config list --format="value(core.project)")

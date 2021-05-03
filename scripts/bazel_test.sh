@@ -21,9 +21,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "$ROOT/scripts/common.sh"
 
-confirm_gcloud_login
-
 function bazel_test() {
+  confirm_gcloud_login || err "Failed to retrieve gcloud application-default credentials."
   GOOGLE_SDK_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS}"
   GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}"
   set -x

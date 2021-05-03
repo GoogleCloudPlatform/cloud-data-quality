@@ -17,5 +17,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=/dev/null
+source "$ROOT/scripts/common.sh"
+
+check_go
+
 GO111MODULE=off go get github.com/google/addlicense
 GO111MODULE=off go build -o bin/addlicense github.com/google/addlicense
