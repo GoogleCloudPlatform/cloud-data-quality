@@ -100,22 +100,26 @@ filegroup(
 # Fetch official Python rules for Bazel
 http_archive(
     name = "rules_python",
-    sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz",
+    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
+        "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
+    ],
 )
 
-load("@rules_python//python:repositories.bzl", "py_repositories")
-
-py_repositories()
-
-# Third party libraries
-load("@rules_python//python:pip.bzl", "pip_install")
-
-pip_install(
-    name = "py_deps",
-    python_interpreter_target = "@python_interpreter//:python_bin",
-    requirements = "//:requirements.txt",
+load("@rules_python//python:pip.bzl", "pip_parse")
+# Create a central repo that knows about the dependencies needed from
+# requirements_lock.txt.
+pip_parse(
+   name = "py_deps",
+   python_interpreter_target = "@python_interpreter//:python_bin",
+   requirements_lock = "//third_party:requirements_lock.txt",
 )
+
+# Load the starlark macro which will define your dependencies.
+load("@py_deps//:requirements.bzl", "install_deps")
+# Call it to define repos for your requirements.
+install_deps()
 
 # The Python toolchain must be registered ALWAYS at the end of the file
 register_toolchains("//:py_3_toolchain")
