@@ -12,14 +12,14 @@ export GCP_PROJECT_ID=<replace_with_your_gcp_project_id>
 gcloud config set project ${GCP_PROJECT_ID}
 ```
 
+If you encounter the issue `No service account scopes specified` with the above command, run  `gcloud auth login` to obtain new credentials and try again.
+
 Ensure the project has BigQuery API enabled:
 ```
 gcloud services enable bigquery.googleapis.com
 ```
 
-If you encounter the issue `No service account scopes specified` with the above command, run  `gcloud auth login` to obtain new credentials and try again.
-
-Then create the [`profiles.yml`](#setting-up-`dbt`) config to connect to BigQuery:
+Then create the `profiles.yml` ([details here](../README.md#setting-up-`dbt`)) config to connect to BigQuery:
 ```bash
 cp profiles.yml.template profiles.yml
 sed -i s/\<your_gcp_project_id\>/${GCP_PROJECT_ID}/g profiles.yml
@@ -50,7 +50,7 @@ sed -i s/\<your_gcp_project_id\>/${GCP_PROJECT_ID}/g configs/entities/test-data.
 sed -i s/dq_test/${DBT_GCP_DATASET}/g configs/entities/test-data.yml
 ```
 
-Install `CloudDQ` in a virtualenv using the instructions in [Installing from source](#installing-from-source). Then test whether you can run the CLI by running:
+Install `CloudDQ` in a virtualenv using the instructions in [Installing from source](../README.md#installing-from-source). Then test whether you can run the CLI by running:
 ```
 python3 clouddq --help
 ```
