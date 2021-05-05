@@ -16,10 +16,10 @@ WITH
 high_watermark_filter AS (
     SELECT
         IFNULL(MAX(execution_ts), TIMESTAMP("1970-01-01 00:00:00")) as high_watermark
-    FROM `kthxbayes-sandbox.dq_test.dq_summary`
-    WHERE table_id = 'kthxbayes-sandbox.dq_test.dq_summary'
-      AND column_id = 'execution_ts'
-      AND rule_binding_id = 'DQ_SUMMARY_1_VALUE_NOT_NULL'
+    FROM `<your_gcp_project_id>.dq_test.dq_summary`
+    WHERE table_id = '<your_gcp_project_id>.dq_test.contact_details'
+      AND column_id = 'value'
+      AND rule_binding_id = 'T1_DQ_1_VALUE_NOT_NULL'
       AND progress_watermark IS TRUE
 ),
 
@@ -28,10 +28,10 @@ data AS (
       *,
       COUNT(1) OVER () as num_rows_validated,
     FROM
-      `kthxbayes-sandbox.dq_test.dq_summary` d
+      `<your_gcp_project_id>.dq_test.contact_details` d
       ,high_watermark_filter
     WHERE
-      CAST(d.execution_ts AS TIMESTAMP)
+      CAST(d.ts AS TIMESTAMP)
           > high_watermark_filter.high_watermark
     AND
       True
@@ -40,15 +40,15 @@ validation_results AS (
 
 SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
-    'DQ_SUMMARY_1_VALUE_NOT_NULL' AS rule_binding_id,
+    'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
     'NOT_NULL_SIMPLE' AS rule_id,
-    'kthxbayes-sandbox.dq_test.dq_summary' AS table_id,
-    'execution_ts' AS column_id,
-    execution_ts AS column_value,
+    '<your_gcp_project_id>.dq_test.contact_details' AS table_id,
+    'value' AS column_id,
+    value AS column_value,
     num_rows_validated AS num_rows_validated,
     CASE
 
-      WHEN execution_ts IS NOT NULL THEN TRUE
+      WHEN value IS NOT NULL THEN TRUE
 
     ELSE
       FALSE

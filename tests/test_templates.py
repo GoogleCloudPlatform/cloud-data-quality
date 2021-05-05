@@ -41,7 +41,7 @@ def replace_expected_sql_table(
     database_name = entities_collection.get(entity_id).get("database_name")
     instance_name = entities_collection.get(entity_id).get("instance_name")
     output = sql_string.replace(
-        "kthxbayes-sandbox.dq_test", f"{instance_name}.{database_name}"
+        "<your_gcp_project_id>.dq_test", f"{instance_name}.{database_name}"
     )
     return output
 
@@ -112,27 +112,11 @@ class TestJinjaTemplates:
             assert dict(dq_filter.dict_values()) == dict(value)
 
     @pytest.fixture
-    def test_dq_summary_rule_bindings_collection(self):
+    def test_rule_bindings_collection_team_1(self):
         """ """
         return lib.load_rule_bindings_config(
-            Path("configs/rule_bindings/dq-summary-table-rule-bindings.yml")
+            Path("configs/rule_bindings/team-1-rule-bindings.yml")
         )
-
-    def test_resolve_time_filter_column(self, test_dq_summary_rule_bindings_collection):
-        """ """
-        pprint(test_dq_summary_rule_bindings_collection)
-        first_rule_binding_config = (
-            test_dq_summary_rule_bindings_collection.values().__iter__().__next__()
-        )
-        entities_configs = lib.load_entities_config(configs_path=Path("configs"))
-        rule_binding = DqRuleBinding.from_dict(
-            rule_binding_id="dq_summary",
-            kwargs=first_rule_binding_config,
-        )
-        entity = rule_binding.resolve_table_entity_config(entities_configs)
-        entity.resolve_column_config(rule_binding.incremental_time_filter_column_id)
-        with pytest.raises(ValueError):
-            entity.resolve_column_config("invalid_column")
 
     @pytest.fixture
     def test_rule_bindings_collection_team_2(self):
@@ -148,12 +132,21 @@ class TestJinjaTemplates:
             Path("configs/rule_bindings/team-3-rule-bindings.yml")
         )
 
-    @pytest.fixture
-    def test_rule_bindings_collection_dq_summary(self):
+    def test_resolve_time_filter_column(self, test_rule_bindings_collection_team_1):
         """ """
-        return lib.load_rule_bindings_config(
-            Path("configs/rule_bindings/dq-summary-table-rule-bindings.yml")
+        pprint(test_rule_bindings_collection_team_1)
+        first_rule_binding_config = (
+            test_rule_bindings_collection_team_1.values().__iter__().__next__()
         )
+        entities_configs = lib.load_entities_config(configs_path=Path("configs"))
+        rule_binding = DqRuleBinding.from_dict(
+            rule_binding_id="dq_summary",
+            kwargs=first_rule_binding_config,
+        )
+        entity = rule_binding.resolve_table_entity_config(entities_configs)
+        entity.resolve_column_config(rule_binding.incremental_time_filter_column_id)
+        with pytest.raises(ValueError):
+            entity.resolve_column_config("invalid_column")
 
     def test_rule_bindings_class(self, test_rule_bindings_collection_team_2):
         """
@@ -250,7 +243,7 @@ class TestJinjaTemplates:
             configs_path=Path("configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="kthxbayes-sandbox.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -296,7 +289,7 @@ class TestJinjaTemplates:
             configs_path=Path("configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="kthxbayes-sandbox.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -304,7 +297,7 @@ class TestJinjaTemplates:
             debug=True,
         )
         expected = expected.replace(
-            "kthxbayes-sandbox.dq_test", "does_not_exists.does_not_exists"
+            "<your_gcp_project_id>.dq_test", "<your_gcp_project_id_2>.<your_bigquery_dataset_id>"
         )
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
@@ -313,7 +306,7 @@ class TestJinjaTemplates:
 
     def test_render_run_dq_main_sql_high_watermark(
         self,
-        test_rule_bindings_collection_dq_summary,
+        test_rule_bindings_collection_team_1,
         test_entities_collection,
         test_rules_collection,
         test_row_filters_collection,
@@ -321,7 +314,7 @@ class TestJinjaTemplates:
         """
 
         Args:
-          test_rule_bindings_collection_dq_summary:
+          test_rule_bindings_collection_team_1:
           test_entities_collection:
           test_rules_collection:
           test_row_filters_collection:
@@ -334,7 +327,7 @@ class TestJinjaTemplates:
         ) as f:
             expected = f.read()
         rule_binding_id, rule_binding_configs = (
-            test_rule_bindings_collection_dq_summary.items()
+            test_rule_bindings_collection_team_1.items()
             .__iter__()
             .__next__()  # use first rule binding
         )
@@ -342,7 +335,7 @@ class TestJinjaTemplates:
             configs_path=Path("configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="kthxbayes-sandbox.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -390,7 +383,7 @@ class TestJinjaTemplates:
             configs_path=Path("configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="kthxbayes-sandbox.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -421,7 +414,7 @@ class TestJinjaTemplates:
         configs = lib.prepare_configs_from_rule_binding_id(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="kthxbayes-sandbox.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
             environment=env,
             metadata=metadata,
             configs_path=Path("configs"),
