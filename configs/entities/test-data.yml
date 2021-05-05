@@ -17,13 +17,13 @@ entities:
     source_database: BIGQUERY
     table_name: contact_details
     database_name: dq_test
-    instance_name: kthxbayes-sandbox
+    instance_name: <your_project_id>
     environment_override:
       TEST:
         environment: test
         override:
-          database_name: does_not_exists
-          instance_name: does_not_exists
+          database_name: <your_project_id>
+          instance_name: <your_project_id>
     columns:
       KEY:
         name: key
@@ -40,58 +40,3 @@ entities:
         data_type: DATETIME
         description: |-
           updated timestamp
-
-  DQ_SUMMARY:
-    source_database: BIGQUERY
-    table_name: dq_summary
-    database_name: dq_test
-    instance_name: kthxbayes-sandbox
-    columns:
-      EXECUTION_TS:
-        name: execution_ts
-        data_type: TIMESTAMP
-      RULE_BINDING_ID:
-        name: rule_binding_id
-        data_type: STRING
-      RULE_ID:
-        name: rule_id
-        data_type: STRING
-      TABLE_ID:
-        name: table_id
-        data_type: STRING
-      COLUMN_ID:
-        name: column_id
-        data_type: STRING
-      ROWS_VALIDATED:
-        name: num_rows_validated
-        data_type: INT64
-      SUCCESS_COUNT:
-        name: success_count
-        data_type: INT64
-      SUCCESS_PERCENTAGE:
-        name: success_percentage
-        data_type: FLOAT64
-      FAILED_COUNT:
-        name: failed_count
-        data_type: INT64
-      FAILED_PERCENTAGE:
-        name: failed_percentage
-        data_type: FLOAT64
-      NULL_COUNT:
-        name: null_count
-        data_type: INT64
-      NULL_PERCENTAGE:
-        name: null_percentage
-        data_type: FLOAT64
-      METADATA_JSON_STRING:
-        name: metadata_json_string
-        data_type: STRING
-      CONFIGS_HASHSUM:
-        name: configs_hashsum
-        data_type: STRING
-      DQ_RUN_ID:
-        name: dq_run_id
-        data_type: STRING
-      PROGRESS_WATERMARK:
-        name: progress_watermark
-        data_type: BOOL

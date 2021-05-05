@@ -52,4 +52,4 @@ seeds:
       +enable: true
 
 vars:
-  target_rule_bindings_id: ""
+  target_rule_binding_ids: ""
