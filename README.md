@@ -134,7 +134,7 @@ entities:
 
 An example entity configurations is provided at `configs/entities/test-data.yml`. This table `contact_details` can created using `dbt seed --profiles-dir=.`.
 
-If you are testing CloudDQ with the provided configs, ensure you update the `<your_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) you are using in the `profiles.yml`.
+If you are testing CloudDQ with the provided configs, ensure you update the `<your_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) you are using in the `profiles.yml` file.
 
 You can get the project ID of your project by running:
 
@@ -164,6 +164,11 @@ Note that if you change the `profile` name in `profiles.yml.template` from `defa
 
 The Data Quality validation results from each run will be collected into a table called `dq_summary` located at the `project` and `dataset` location in the `profile.yml` configs.
 
+To create the test dataset used in the code's test-suites and in the following examples, run (after installing `dbt` in a Python virtualenv):
+```
+dbt seed --profiles-dir=.
+```
+
 ### Installing
 
 Ensure you have installed:
@@ -191,11 +196,6 @@ python3 -m pip install .
 You can then call the CLI by running:
 ```
 python3 clouddq --help
-```
-
-To create the test dataset used in the code's test-suites and in the following examples, run (after installing `dbt` in a Python virtualenv):
-```
-dbt seed --profiles-dir=.
 ```
 
 ### Usage

@@ -4,8 +4,8 @@ default:
     dev:
       type: bigquery
       method: oauth
-      project:  "{{ env_var('DBT_GCP_PROJECT') }}"
-      dataset: "{{ env_var('DBT_GCP_DATASET') }}"
+      project:  "{{ env_var('DBT_GCP_PROJECT', '<your_gcp_project_id>') }}"
+      dataset: "{{ env_var('DBT_GCP_DATASET', 'clouddq') }}"
       threads: 1
       timeout_seconds: 90
       location: "{{ env_var('DBT_BIGQUERY_REGION', 'EU') }}"
