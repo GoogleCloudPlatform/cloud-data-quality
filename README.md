@@ -132,7 +132,7 @@ entities:
           updated timestamp
 ```
 
-An example entity configurations is provided at `configs/entities/test-data.yml`. This table `contact_details` can created using `dbt seed --profiles-dir=.`.
+An example entity configurations is provided at `configs/entities/test-data.yml`. The BigQuery table `contact_details` that is referred in this config can created using `dbt seed --profiles-dir=.` [details](#setting-up-`dbt`).
 
 If you are testing CloudDQ with the provided configs, ensure you update the `<your_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) you are using in the `profiles.yml` file.
 
@@ -148,12 +148,11 @@ gcloud config get-value project
 
 The project uses [dbt](https://www.getdbt.com/) to execute SQL queries against BigQuery.
 
-To set up `dbt`, you must configure connection profiles to a BigQuery project on GCP using a `profiles.yml` file, specifying the GCP `project` ID, BigQuery `dataset`, BigQuery job `location`, and authentication `method`.
+To set up `dbt`, you must configure connection profiles to a BigQuery project on GCP using a `profiles.yml` file, specifying the GCP `project` ID, BigQuery `dataset`, BigQuery job `location`, and authentication `method`. Within this same config file, you can define different target environment for `dev`, `test`, `prod`, etc... to be passed into CloudDQ's `environment_target` argument.
 
 We recommend authenticating using `oauth` ([details](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#oauth-via-gcloud)), either 1) with your [application-default](https://google.aip.dev/auth/4110) credentials via `gcloud auth application-default login` ([details]((https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#oauth-via-gcloud))) for Development, or 2) with `impersonate_service_account` ([details](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#service-account-impersonation)) for Test/Production.
 
 More information about dbt's `profiles.yml` configuration options for BigQuery can be found at https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile/.
-
 
 You can start by copying the template at:
 ```bash
@@ -200,9 +199,15 @@ python3 clouddq --help
 
 ### Usage
 
-Example command to execute two rule bindings `T2_DQ_1_EMAIL` and `T3_DQ_1_EMAIL_DUPLICATE` from a path `config` containing the complete YAML configurations:
+#### Testing the CLI with the default configurations
+
+For a detailed, step-by-step walk through on how to test CloudDQ using the default configurations in this project, see [docs/getting-started-with-default-configs.md](docs/getting-started-with-default-configs.md).
+
+#### Example CLI commands
+
+Below is an example command to execute two rule bindings `T2_DQ_1_EMAIL` and `T3_DQ_1_EMAIL_DUPLICATE` from a path `configs` containing the complete YAML configurations:
 ```
-python clouddq \
+python3 clouddq \
     T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE \
     configs \
     --metadata='{"test":"test"}' \
@@ -211,9 +216,9 @@ python clouddq \
     --environment_target=dev
 ```
 
-Example command to execute all rule bindings in a path `config` containing the complete YAML configurations:
+To execute all rule bindings in a path containing the complete YAML configurations called `configs`, use `ALL` as the `RULE_BINDING_IDS`:
 ```
-python clouddq \
+python3 clouddq \
     ALL \
     configs \
     --metadata='{"test":"test"}' \
