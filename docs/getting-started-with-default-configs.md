@@ -29,7 +29,7 @@ gcloud services enable bigquery.googleapis.com
 
 ### Creating connection profiles to BigQuery
 
-Then create the `profiles.yml` ([details here](../README.md#setting-up-`dbt`)) config to connect to BigQuery:
+Create the `profiles.yml` ([details here](../README.md#setting-up-`dbt`)) config to connect to BigQuery:
 ```bash
 cp profiles.yml.template profiles.yml
 sed -i s/\<your_gcp_project_id\>/${GCP_PROJECT_ID}/g profiles.yml
@@ -81,6 +81,8 @@ Once completed you can use the CLI by passing the zip executable into any Python
 python bazel-bin/clouddq/clouddq_patched.zip --help
 ```
 
+More details about this step can be found at the main [README.md](../README.md#build-a-self-contained-python-executable-with-bazel)
+
 ### Create test data
 
 Create the corresponding test table `contact_details` mentioned in the entities config `configs/entities/test-data.yml` by running:
@@ -90,7 +92,7 @@ dbt seed --profiles-dir=.
 
 ### Run the CLI
 
-Then run the following command to execute the rule_bindings `T2_DQ_1_EMAIL` in `configs/rule_bindings/team-1-rule-bindings.yml`:
+Run the following command to execute the rule_bindings `T2_DQ_1_EMAIL` in `configs/rule_bindings/team-1-rule-bindings.yml`:
 ```
 python3 clouddq \
     T2_DQ_1_EMAIL \
