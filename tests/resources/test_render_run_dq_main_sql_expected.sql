@@ -18,7 +18,7 @@ data AS (
       *,
       COUNT(1) OVER () as num_rows_validated,
     FROM
-      `kthxbayes-sandbox.dq_test.contact_details` d
+      `<your_gcp_project_id>.dq_test.contact_details` d
     WHERE
       contact_type = 'email'
 ),
@@ -28,7 +28,7 @@ SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     'T2_DQ_1_EMAIL' AS rule_binding_id,
     'NOT_NULL_SIMPLE' AS rule_id,
-    'kthxbayes-sandbox.dq_test.contact_details' AS table_id,
+    '<your_gcp_project_id>.dq_test.contact_details' AS table_id,
     'value' AS column_id,
     value AS column_value,
     num_rows_validated AS num_rows_validated,
@@ -48,7 +48,7 @@ SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     'T2_DQ_1_EMAIL' AS rule_binding_id,
     'REGEX_VALID_EMAIL' AS rule_id,
-    'kthxbayes-sandbox.dq_test.contact_details' AS table_id,
+    '<your_gcp_project_id>.dq_test.contact_details' AS table_id,
     'value' AS column_id,
     value AS column_value,
     num_rows_validated AS num_rows_validated,
@@ -69,7 +69,7 @@ SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     'T2_DQ_1_EMAIL' AS rule_binding_id,
     'CUSTOM_SQL_LENGTH_LE_30' AS rule_id,
-    'kthxbayes-sandbox.dq_test.contact_details' AS table_id,
+    '<your_gcp_project_id>.dq_test.contact_details' AS table_id,
     'value' AS column_id,
     value AS column_value,
     num_rows_validated AS num_rows_validated,

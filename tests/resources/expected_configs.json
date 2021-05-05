@@ -28,12 +28,12 @@
       "TEST": {
         "environment": "test",
         "override": {
-          "database_name": "does_not_exists",
-          "instance_name": "does_not_exists"
+          "database_name": "<your_bigquery_dataset_id>",
+          "instance_name": "<your_gcp_project_id_2>"
         }
       }
     },
-    "instance_name": "kthxbayes-sandbox",
+    "instance_name": "<your_gcp_project_id>",
     "source_database": "BIGQUERY",
     "table_name": "contact_details"
   },
