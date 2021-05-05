@@ -164,11 +164,6 @@ Note that if you change the `profile` name in `profiles.yml.template` from `defa
 
 The Data Quality validation results from each run will be collected into a table called `dq_summary` located at the `project` and `dataset` location in the `profile.yml` configs.
 
-To create the test dataset used in the code's test-suites and in the following examples, run (after installing `dbt` in a Python virtualenv):
-```
-dbt seed --profiles-dir=.
-```
-
 ### Installing
 
 Ensure you have installed:
@@ -196,6 +191,11 @@ python3 -m pip install .
 You can then call the CLI by running:
 ```
 python3 clouddq --help
+```
+
+To create the test dataset used in the code's test-suites and in the following examples, run (after installing `dbt` in a Python virtualenv):
+```
+dbt seed --profiles-dir=.
 ```
 
 ### Usage
