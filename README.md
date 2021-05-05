@@ -134,7 +134,7 @@ entities:
 
 An example entity configurations the table `contact_details` created using `dbt seed` is provided at `configs/entities/test-data.yml`.
 
-If you are testing CloudDQ with the provided configs, ensure you update the `<your_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) you are using in the `profiles.yml`.
+If you are testing CloudDQ with the provided configs, ensure you update the `<your_project_id>` field with the same [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) you are using in the `profiles.yml` file.
 
 You can get the project ID of your project by running:
 
