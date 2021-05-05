@@ -132,7 +132,7 @@ entities:
           updated timestamp
 ```
 
-An example entity configurations the table `contact_details` created using `dbt seed` is provided at `configs/entities/test-data.yml`.
+An example entity configurations is provided at `configs/entities/test-data.yml`. This table `contact_details` can created using `dbt seed --profiles-dir=.`.
 
 If you are testing CloudDQ with the provided configs, ensure you update the `<your_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) you are using in the `profiles.yml`.
 
