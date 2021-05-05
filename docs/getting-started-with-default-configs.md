@@ -1,5 +1,7 @@
 This section of the docs walks through step-by-step on how to test CloudDQ using the default configurations.
 
+Note the following assumes you have already met the project dependencies outlined in the main [README.md](../README.md#installing)
+
 First clone the project:
 ```
 git clone https://github.com/GoogleCloudPlatform/cloud-data-quality.git
