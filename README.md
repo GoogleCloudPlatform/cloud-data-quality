@@ -168,6 +168,16 @@ To create the test dataset used in the code's test-suites and in the following e
 dbt seed --profiles-dir=.
 ```
 
+Alternatively, you can use `bq load` instead of `dbt seed`:
+```bash
+export DBT_BIGQUERY_REGION=EU # ensure this is the same as the 'location' config in your `profiles.yml` file.
+export DBT_GCP_DATASET=clouddq # ensure this is the same as the 'dataset' config in your `profiles.yml` file.
+bq mk --location=${DBT_BIGQUERY_REGION} ${DBT_GCP_DATASET}
+bq load --source_format=CSV --autodetect ${DBT_GCP_DATASET}.contact_details dbt/data/contact_details.csv
+```
+
+Ensure you have sufficient IAM privileges to create BigQuery datasets and tables in your project.
+
 ### Installing
 
 Ensure you have installed:
@@ -333,13 +343,13 @@ If running `make build` fails due to missing c/c++ packages (e.g. `_ctypes` or `
 
 If you haven't done so, install Xcode Command Line Tools (`xcode-select --install`) and Homebrew. Then:
 
-```
+```bash
 # optional, but recommended:
 brew install openssl readline sqlite3 xz zlib
 ```
 #### Ubuntu/Debian/Mint:
 
-```
+```bash
 sudo apt-get update; sudo apt-get install --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
 ```
 
