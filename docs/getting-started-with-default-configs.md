@@ -92,7 +92,7 @@ dbt seed --profiles-dir=.
 
 ### Run the CLI
 
-Run the following command to execute the rule_bindings `T2_DQ_1_EMAIL` in `configs/rule_bindings/team-1-rule-bindings.yml`:
+Run the following command to execute the rule_bindings `T2_DQ_1_EMAIL` in `configs/rule_bindings/team-2-rule-bindings.yml`:
 ```
 python3 clouddq \
     T2_DQ_1_EMAIL \
@@ -103,7 +103,15 @@ python3 clouddq \
     --environment_target=dev
 ```
 
-`CloudDQ` will automatically convert the YAML configs in `T2_DQ_1_EMAIL` into a SQL file located at `dbt/models/rule_binding_views/T2_DQ_1_EMAIL.sql`. `CloudDQ` will then create a BigQuery view using this SQL file, create a BigQuery job in `GCP_PROJECT_ID` to execute the SQL in this view, aggregate the validation outcomes using the logic in `dbt/models/data_quality_engine/main.sql`, and finally writing the Data Quality validation results into a table called `dq_summary`. This table will be automatically created by `CloudDQ` at the locations `GCP_PROJECT_ID`, `DBT_GCP_DATASET`, and `DBT_BIGQUERY_REGION` specified in `profiles.yml`.
+By running this CLI command, `CloudDQ` will:
+1) convert the YAML configs in `T2_DQ_1_EMAIL` into a SQL file located at `dbt/models/rule_binding_views/T2_DQ_1_EMAIL.sql`
+2) validate that the SQL is valid using BigQuery dry-run feature
+2) create a BigQuery view using this SQL file in the BigQuery dataset specified in `profiles.yml`
+3) create a BigQuery job to execute the SQL in this view. The BigQuery job will be created in the GCP project specified in `profiles.yml`
+4) aggregate the validation outcomes using the logic in `dbt/models/data_quality_engine/main.sql`
+5) write the Data Quality validation results into a table called `dq_summary`.
+
+The `dq_summary` table will be automatically created by `CloudDQ` at the GCP Project, BigQuery Dataset, and BigQuery Region specified in `profiles.yml`.
 
 ### Check the results
 
