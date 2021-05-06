@@ -104,12 +104,12 @@ python3 clouddq \
 ```
 
 By running this CLI command, `CloudDQ` will:
-1) convert the YAML configs in `T2_DQ_1_EMAIL` into a SQL file located at `dbt/models/rule_binding_views/T2_DQ_1_EMAIL.sql`
-2) validate that the SQL is valid using BigQuery dry-run feature
-2) create a BigQuery view using this SQL file in the BigQuery dataset specified in `profiles.yml`
-3) create a BigQuery job to execute the SQL in this view. The BigQuery job will be created in the GCP project specified in `profiles.yml`
-4) aggregate the validation outcomes using the logic in `dbt/models/data_quality_engine/main.sql`
-5) write the Data Quality validation results into a table called `dq_summary`.
+1. convert the YAML configs in `T2_DQ_1_EMAIL` into a SQL file located at `dbt/models/rule_binding_views/T2_DQ_1_EMAIL.sql`
+2. validate that the SQL is valid using BigQuery dry-run feature
+3. create a BigQuery view using this SQL file in the BigQuery dataset specified in `profiles.yml`
+4. create a BigQuery job to execute the SQL in this view. The BigQuery job will be created in the GCP project specified in `profiles.yml`
+5. aggregate the validation outcomes using the logic in `dbt/models/data_quality_engine/main.sql`
+6. write the Data Quality validation results into a table called `dq_summary`.
 
 The `dq_summary` table will be automatically created by `CloudDQ` at the GCP Project, BigQuery Dataset, and BigQuery Region specified in `profiles.yml`.
 
