@@ -90,6 +90,14 @@ Create the corresponding test table `contact_details` mentioned in the entities 
 dbt seed --profiles-dir=.
 ```
 
+Alternatively, you can use `bq load` instead of `dbt seed`:
+```bash
+bq mk --location=${DBT_BIGQUERY_REGION} ${DBT_GCP_DATASET}
+bq load --source_format=CSV --autodetect ${DBT_GCP_DATASET}.contact_details dbt/data/contact_details.csv
+```
+
+Ensure you have sufficient IAM privileges to create BigQuery datasets and tables in your project.
+
 ### Run the CLI
 
 Run the following command to execute the rule_bindings `T2_DQ_1_EMAIL` in `configs/rule_bindings/team-2-rule-bindings.yml`:
@@ -117,7 +125,7 @@ The `dq_summary` table will be automatically created by `CloudDQ` at the GCP Pro
 
 To see the result DQ validation outcomes in the BigQuery table `dq_summary`, run:
 ```bash
-echo "select * from \`${GCP_PROJECT_ID}\`.${DBT_GCP_DATASET}.dq_summary" | bq query --location=${DBT_BIQUERY_REGION} --nouse_legacy_sql --format=json
+echo "select * from \`${GCP_PROJECT_ID}\`.${DBT_GCP_DATASET}.dq_summary" | bq query --location=${DBT_BIGQUERY_REGION} --nouse_legacy_sql --format=json
 ```
 
 ### Improvements / Feedbacks
