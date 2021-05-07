@@ -23,6 +23,8 @@ PyYAML = "^5.3.1"
 dbt-bigquery = "^0.18.1"
 # dbt's 3rd level dependency broken, so locking said dependency "agate" to working version 1.6.1
 agate = "1.6.1"
+
+[tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
 pytest-cov = "^2.10.1"
 black = "^20.8b1"
@@ -68,7 +70,7 @@ docstring_convention = 'google'
 max_line_length = 88
 max_complexity = 10
 show_source = true
-extended_default_ignore=[]  # add this
+extended_default_ignore=[]
 
 [tool.flakehell.plugins]
 pyflakes = ["+*"]

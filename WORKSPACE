@@ -76,7 +76,19 @@ http_archive(
 )
 
 load("@rules_python//python:pip.bzl", "pip_parse")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# Create a central repo that knows about the dependencies needed from
+# requirements_lock.txt.
+pip_parse(
+    name = "py_deps",
+    requirements_lock = "//third_party:requirements_lock.txt",
+)
+
+# Load the starlark macro which will define your dependencies.
+load("@py_deps//:requirements.bzl", "install_deps")
+
+# Call it to define repos for your requirements.
+install_deps()
 
 http_archive(
     name = "dpu_rules_pyenv",
@@ -91,16 +103,3 @@ pyenv_install(
     py2 = "2.7.16",
     py3 = "3.8.6",
 )
-
-# Create a central repo that knows about the dependencies needed from
-# requirements_lock.txt.
-pip_parse(
-    name = "py_deps",
-    requirements_lock = "//third_party:requirements_lock.txt",
-)
-
-# Load the starlark macro which will define your dependencies.
-load("@py_deps//:requirements.bzl", "install_deps")
-
-# Call it to define repos for your requirements.
-install_deps()
