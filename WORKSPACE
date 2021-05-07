@@ -76,7 +76,6 @@ http_archive(
 )
 
 load("@rules_python//python:pip.bzl", "pip_parse")
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
@@ -105,4 +104,3 @@ load("@py_deps//:requirements.bzl", "install_deps")
 
 # Call it to define repos for your requirements.
 install_deps()
-

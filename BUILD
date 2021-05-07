@@ -38,4 +38,3 @@ filegroup(
     srcs = glob(["macros/*.sql"]),
     visibility = ["//visibility:public"],
 )
-
