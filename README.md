@@ -312,7 +312,7 @@ make lint
 
 #### Build a self-contained Python executable with Bazel
 
-You can use Bazel to build an executable python binary including its interpreter and all dependencies such as `dbt`.
+You can use Bazel to build a self-contained executable Python zip file that includes a Python interpreter as well as all of the project dependencies such as `dbt`.
 
 To build and executable Python zip file:
 
@@ -320,7 +320,14 @@ To build and executable Python zip file:
 make build
 ```
 
-and run it (this will show the help text):
+The build step depends on `sandboxfs` in order to ensure the build artifact has
+as little dependencies on the host environment as possible. Ensure `sandboxfs`
+is installed by following the instructions at: https://github.com/bazelbuild/sandboxfs/blob/master/INSTALL.md
+
+You can read more about Bazel sandboxing here: https://docs.bazel.build/versions/master/sandboxing.html
+
+
+You can then run the resulting zip artifact by passing it into any Python interpreter (this will show the help text):
 
 ```
 python bazel-bin/clouddq/clouddq_patched.zip --help
@@ -336,8 +343,8 @@ The Python zip includes the top-level `macros` directory, which will be hard-cod
 
 ## Troubleshooting
 
-### 1. Cannot find c/c++ dependencies on system
-If running `make build` fails due to missing c/c++ packages (e.g. `_ctypes` or `libssl`), try the below steps to install the python c/c++ dependencies, then clear the bazel cache and retry.
+### 1. Cannot find shared library dependencies on system
+If running `make build` fails due to missing shared library dependencies (e.g. `_ctypes` or `libssl`), try the below steps to install them, then clear the bazel cache with `make build` and retry.
 
 #### Mac OS X:
 
@@ -352,6 +359,16 @@ brew install openssl readline sqlite3 xz zlib
 ```bash
 sudo apt-get update; sudo apt-get install --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
 ```
+
+### 2. Wrong `glibc` version
+If you encounter the following error when running the executable Python zip on a different machine to your build machine:
+machine:
+```
+/lib/x86_64-linux-gnu/libm.so.6: version `GL
+IBC_2.xx' not found
+```
+This suggests that the `glibc` version on your build machine is incompatible
+with the version on your target machine. Resolve this by rebuilding the zip on machine with identical `glibc` version (usually the same OS version) as on your target machine, or vice versa.
 
 ## License
 

@@ -65,38 +65,6 @@ http_archive(
     url = "https://github.com/bazelbuild/buildtools/archive/master.zip",
 )
 
-# Set up Python
-_configure_python_based_on_os = """
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    ./configure --prefix=$(pwd)/bazel_install --with-openssl=$(brew --prefix openssl)
-else
-    ./configure --prefix=$(pwd)/bazel_install
-fi
-"""
-
-# Fetch Python and build it from scratch
-http_archive(
-    name = "python_interpreter",
-    build_file_content = """
-exports_files(["python_bin"])
-filegroup(
-    name = "files",
-    srcs = glob(["bazel_install/**"], exclude = ["**/* *"]),
-    visibility = ["//visibility:public"],
-)
-""",
-    patch_cmds = [
-        "mkdir $(pwd)/bazel_install",
-        _configure_python_based_on_os,
-        "make",
-        "make install",
-        "ln -s bazel_install/bin/python3 python_bin",
-    ],
-    sha256 = "a9e0b79d27aa056eb9cce8d63a427b5f9bab1465dee3f942dcfdb25a82f4ab8a",
-    strip_prefix = "Python-3.8.6",
-    urls = ["https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tar.xz"],
-)
-
 # Fetch official Python rules for Bazel
 http_archive(
     name = "rules_python",
@@ -109,11 +77,26 @@ http_archive(
 
 load("@rules_python//python:pip.bzl", "pip_parse")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "dpu_rules_pyenv",
+    sha256 = "d057168a757efa74e6345edd4776a1c0f38134c2d48eea4f3ef4783e1ea2cb0f",
+    strip_prefix = "rules_pyenv-0.1.4",
+    urls = ["https://github.com/digital-plumbers-union/rules_pyenv/archive/v0.1.4.tar.gz"],
+)
+
+load("@dpu_rules_pyenv//pyenv:defs.bzl", "pyenv_install")
+
+pyenv_install(
+    py2 = "2.7.16",
+    py3 = "3.8.6",
+)
+
 # Create a central repo that knows about the dependencies needed from
 # requirements_lock.txt.
 pip_parse(
     name = "py_deps",
-    python_interpreter_target = "@python_interpreter//:python_bin",
     requirements_lock = "//third_party:requirements_lock.txt",
 )
 
@@ -123,5 +106,3 @@ load("@py_deps//:requirements.bzl", "install_deps")
 # Call it to define repos for your requirements.
 install_deps()
 
-# The Python toolchain must be registered ALWAYS at the end of the file
-register_toolchains("//:py_3_toolchain")
