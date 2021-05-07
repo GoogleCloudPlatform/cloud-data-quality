@@ -320,12 +320,9 @@ To build and executable Python zip file:
 make build
 ```
 
-The build step depends on `sandboxfs` in order to ensure the build artifact has
-as little dependencies on the host environment as possible. Ensure `sandboxfs`
-is installed by following the instructions at: https://github.com/bazelbuild/sandboxfs/blob/master/INSTALL.md
+The build step depends on `sandboxfs` in order to ensure the build artifact has as little dependencies on the host environment as possible. Ensure `sandboxfs` is installed by following the instructions at: https://github.com/bazelbuild/sandboxfs/blob/master/INSTALL.md
 
 You can read more about Bazel sandboxing here: https://docs.bazel.build/versions/master/sandboxing.html
-
 
 You can then run the resulting zip artifact by passing it into any Python interpreter (this will show the help text):
 
@@ -364,11 +361,9 @@ sudo apt-get update; sudo apt-get install --no-install-recommends make build-ess
 If you encounter the following error when running the executable Python zip on a different machine to your build machine:
 machine:
 ```
-/lib/x86_64-linux-gnu/libm.so.6: version `GL
-IBC_2.xx' not found
+/lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.xx' not found
 ```
-This suggests that the `glibc` version on your build machine is incompatible
-with the version on your target machine. Resolve this by rebuilding the zip on machine with identical `glibc` version (usually the same OS version) as on your target machine, or vice versa.
+This suggests that the `glibc` version on your build machine is incompatible with the version on your target machine. Resolve this by rebuilding the zip on machine with identical `glibc` version (usually the same OS version) as on your target machine, or vice versa.
 
 ## License
 
