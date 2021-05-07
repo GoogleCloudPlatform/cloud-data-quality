@@ -63,10 +63,6 @@ jobs:
         path: "/home/runner/.cache/bazel"
         key: bazel
 
-    - name: python version
-      run: python --verion
-      shell: bash
-
     - name: lint check
       run: make check
       shell: bash
