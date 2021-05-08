@@ -81,6 +81,8 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 # requirements_lock.txt.
 pip_parse(
     name = "py_deps",
+    extra_pip_args = ["-v"],
+    quiet = False,
     requirements_lock = "//third_party:requirements_lock.txt",
 )
 
