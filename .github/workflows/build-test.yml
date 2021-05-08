@@ -63,6 +63,10 @@ jobs:
         path: "/home/runner/.cache/bazel"
         key: bazel
 
+    - name: Use GCS Bazel Cache
+      run: echo "common --remote_cache=https://storage.googleapis.com/kthxbayes-bazel-cache" >> .bazelrc
+      shell: bash
+
     - name: lint check
       run: make check
       shell: bash
@@ -74,4 +78,3 @@ jobs:
     - name: build
       run: make build
       shell: bash
-
