@@ -65,9 +65,9 @@ jobs:
 
     - name: install sandboxfs
       run: |
-        apt install libfuse-dev pkg-config -y
+        sudo apt-get install libfuse-dev pkg-config -y
         curl -LO https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
-        tar xzv -C /usr/local -f sandboxfs-0.2.0-20200420-linux-x86_64.tgz
+        sudo tar xzv -C /usr/local -f sandboxfs-0.2.0-20200420-linux-x86_64.tgz
       shell: bash
 
     - name: Cache bazel
