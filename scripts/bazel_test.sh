@@ -34,10 +34,12 @@ function bazel_test() {
   fi
   if [[ -z "${GOOGLE_SDK_CREDENTIALS:-}" ]]; then
     err "Environment variable GOOGLE_SDK_CREDENTIALS not found."
-    if [[ -f ~/.config/gcloud/application_default_credentials.json ]]; then
+    if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+       local GOOGLE_SDK_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"
+    elif [[ -f ~/.config/gcloud/application_default_credentials.json ]]; then
        local GOOGLE_SDK_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
     else
-      err "Unable to find gcloud application-default credentials at location '~/.config/gcloud/application_default_credentials.json'."
+      err "Unable to find gcloud application-default credentials."
       exit 1
     fi
     err "Temporarily setting GOOGLE_SDK_CREDENTIALS to: ${GOOGLE_SDK_CREDENTIALS}"
