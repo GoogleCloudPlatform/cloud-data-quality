@@ -1,0 +1,10 @@
+test --test_timeout=600
+test --test_output=errors
+test --test_summary=detailed
+test --test_verbose_timeout_warnings
+
+build --action_env=LC_ALL=C.UTF-8
+build --action_env=LANG=C.UTF-8
+
+build --verbose_failures
+

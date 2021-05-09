@@ -57,6 +57,19 @@ jobs:
       with:
         go-version: 1.16
 
+    - name: Use GCS Bazel Cache
+      run: |
+        echo "common --remote_cache=https://storage.googleapis.com/kthxbayes-bazel-cache" >> .bazelrc
+        echo "common --google_default_credentials" >> .bazelrc
+      shell: bash
+
+    - name: install sandboxfs
+      run: |
+        sudo apt-get install libfuse-dev pkg-config -y
+        curl -LO https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
+        sudo tar xzv -C /usr/local -f sandboxfs-0.2.0-20200420-linux-x86_64.tgz
+      shell: bash
+
     - name: Cache bazel
       uses: actions/cache@v2
       with:
@@ -74,4 +87,3 @@ jobs:
     - name: build
       run: make build
       shell: bash
-

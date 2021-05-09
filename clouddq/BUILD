@@ -14,6 +14,7 @@
 
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirements")
 
 DEPS = [
     ":classes",
@@ -49,4 +50,8 @@ py_library(
     deps = [
         requirement("jinja2"),
     ],
+)
+
+compile_pip_requirements(
+    name = "requirements",
 )

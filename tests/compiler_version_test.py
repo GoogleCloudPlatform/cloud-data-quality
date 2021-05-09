@@ -19,12 +19,6 @@ import sys
 
 class TestPythonVersion:
     def test_version(self):
-        assert (
-            os.path.abspath(
-                os.path.join(os.getcwd(), "..", "python_interpreter", "python_bin")
-            )
-            in sys.executable
-        )
         assert platform.python_version() == "3.8.6"
 
 
