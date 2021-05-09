@@ -15,6 +15,7 @@
 load("lint.bzl", "lint")
 load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirements")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -36,7 +37,6 @@ py_binary(
     main = "pyupgrade_python.py",
     deps = [
         requirement("pyupgrade"),
-        requirement("tokenize-rt"),
     ],
 )
 
@@ -57,12 +57,6 @@ py_binary(
     main = "black_python.py",
     deps = [
         requirement("black"),
-        requirement("regex"),
-        requirement("appdirs"),
-        requirement("click"),
-        requirement("toml"),
-        requirement("typed_ast"),
-        requirement("pathspec"),
     ],
 )
 
@@ -117,4 +111,8 @@ genrule(
     tools = [
         ":flake8_py",
     ],
+)
+
+compile_pip_requirements(
+    name = "requirements",
 )

@@ -65,38 +65,31 @@ http_archive(
     url = "https://github.com/bazelbuild/buildtools/archive/master.zip",
 )
 
-# Fetch official Python rules for Bazel
-http_archive(
-    name = "rules_python",
-    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
-        "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
-    ],
-)
-
-load("@rules_python//python:pip.bzl", "pip_parse")
-
-# Create a central repo that knows about the dependencies needed from
-# requirements_lock.txt.
-pip_parse(
-    name = "py_deps",
-    extra_pip_args = ["-v"],
-    quiet = False,
-    requirements_lock = "//third_party:requirements_lock.txt",
-)
-
-# Load the starlark macro which will define your dependencies.
-load("@py_deps//:requirements.bzl", "install_deps")
-
-# Call it to define repos for your requirements.
-install_deps()
-
 http_archive(
     name = "dpu_rules_pyenv",
     sha256 = "d057168a757efa74e6345edd4776a1c0f38134c2d48eea4f3ef4783e1ea2cb0f",
     strip_prefix = "rules_pyenv-0.1.4",
     urls = ["https://github.com/digital-plumbers-union/rules_pyenv/archive/v0.1.4.tar.gz"],
+)
+
+rules_python_version = "ef4d735216a3782b7c33543d82b891fe3a86e3f3"
+
+http_archive(
+    name = "rules_python",
+    sha256 = "031619e49763c8c393ea57f1964a41abcbe76ac4ea92e4c646ddcc45df8bed97",
+    strip_prefix = "rules_python-{}".format(rules_python_version),
+    url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
+)
+
+load("@rules_python//python:pip.bzl", "pip_install")
+
+# Create a central repo that knows about the dependencies needed from
+# requirements_lock.txt.
+pip_install(
+    name = "py_deps",
+    python_interpreter_target = "@pyenv//:py3/python",
+    quiet = False,
+    requirements = "//:requirements.txt",
 )
 
 load("@dpu_rules_pyenv//pyenv:defs.bzl", "pyenv_install")
