@@ -256,6 +256,7 @@ By default, `clouddq` does not write data from the original tables into any othe
 * golang (for building [bazelisk](https://github.com/bazelbuild/bazelisk)): https://golang.org/doc/install
 * Python 3: https://wiki.python.org/moin/BeginnersGuide/Download
 * gcloud SDK (for interacting with GCP): https://cloud.google.com/sdk/docs/install
+* sandboxfs: https://github.com/bazelbuild/sandboxfs/blob/master/INSTALL.md
 
 The development commands provided in the `Makefile` have been tested to work on `debian` and `ubuntu`. They have not been tested on `mac-os`. There is currently no planned support for `windows`.
 
