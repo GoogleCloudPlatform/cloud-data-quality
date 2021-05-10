@@ -14,4 +14,5 @@ bazel-*
 bin
 Pipfile*
 *.lock
+.bazelrc
 env/
