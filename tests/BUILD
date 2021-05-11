@@ -40,6 +40,7 @@ DATA = [
     ":resources",
     "//:configs",
     "//:dbt",
+    "//:dbt_project",
     "//:macros",
 ]
 

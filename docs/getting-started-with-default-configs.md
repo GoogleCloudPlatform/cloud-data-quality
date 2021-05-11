@@ -107,7 +107,7 @@ python3 clouddq \
     configs \
     --metadata='{"test":"test"}' \
     --dbt_profiles_dir=. \
-    --dbt_path=dbt \
+    --dbt_path=. \
     --environment_target=dev
 ```
 

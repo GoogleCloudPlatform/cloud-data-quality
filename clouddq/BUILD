@@ -23,9 +23,16 @@ DEPS = [
     requirement("dbt-bigquery"),
 ]
 
+DATA = [
+    "//:dbt",
+    "//:dbt_project",
+    "//:macros",
+]
+
 py_binary(
     name = "clouddq",
     srcs = ["main.py"],
+    data = DATA,
     main = "main.py",
     python_version = "PY3",
     visibility = ["//tests:__subpackages__"],

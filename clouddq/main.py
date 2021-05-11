@@ -14,8 +14,8 @@
 
 """todo: add main docstring."""
 import json
-import logging
 from pathlib import Path
+from pprint import pprint
 import typing
 
 import click
@@ -56,6 +56,7 @@ def not_null_or_empty(
     help="Path to dbt model directory where a new view will be created "
     "containing the sql execution statement for each rule binding.",
     type=click.Path(exists=True),
+    default=None,
 )
 @click.option(
     "--environment_target",
@@ -79,13 +80,25 @@ def not_null_or_empty(
     default=False,
 )
 @click.option(
+    "--debug",
+    help="If True, print additional diagnostic infoormation.",
+    is_flag=True,
+    default=False,
+)
+@click.option(
+    "--print_sql_queries",
+    help="If True, print generated SQL queries.",
+    is_flag=True,
+    default=False,
+)
+@click.option(
     "--progress_watermark",
     help="Whether to set 'progress_watermark' column value "
     "to True/False in dq_summary. Defaults to True.",
     type=bool,
     default=True,
 )
-def main(
+def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
     dbt_path: str,
@@ -95,6 +108,7 @@ def main(
     dry_run: bool,
     progress_watermark: bool,
     debug: bool = False,
+    print_sql_queries: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -116,7 +130,7 @@ def main(
       configs/rule_bindings/team-2-rule-bindings.yml \\\n
       --metadata='{"test":"test"}' \\\n
       --dbt_profiles_dir=. \\\n
-      --dbt_path=dbt \\\n
+      --dbt_path=. \\\n
       --environment_target=dev
 
     > python bazel-bin/clouddq/clouddq_patched.zip \\\n
@@ -124,22 +138,81 @@ def main(
       configs/ \\\n
       --metadata='{"test":"test"}' \\\n
       --dbt_profiles_dir=. \\\n
-      --dbt_path=dbt \\\n
+      --dbt_path=. \\\n
       --environment_target=dev
 
     """
+    if debug:
+        click.secho(f"Current working directory: {Path().cwd()}", fg="yellow")
     dbt_profiles_dir = Path(dbt_profiles_dir)
+    if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
+        raise ValueError(
+            f"Cannot find connection `profiles.yml` configurations at "
+            f"`dbt_profiles_dir` path: {dbt_profiles_dir}"
+        )
+    if not dbt_path:
+        dbt_path = Path().cwd().joinpath("dbt").absolute()
+        if debug:
+            click.secho(
+                f"No argument 'dbt_path' provided. Defaulting to use "
+                f"'dbt' directory in current working directory at: {dbt_path}",
+                fg="magenta",
+            )
+    else:
+        dbt_path = Path(dbt_path).absolute()
+        if dbt_path.name != "dbt":
+            dbt_path = dbt_path / "dbt"
+    if debug:
+        click.secho(f"Using 'dbt_path': {dbt_path}", fg="yellow")
+    dbt_main_path = dbt_path / "models" / "data_quality_engine"
+    dbt_main_path.mkdir(parents=True, exist_ok=True)
+    if not dbt_main_path.joinpath("main.sql").is_file():
+        dbt_main_path.joinpath("main.sql").write_text(
+            utils.get_project_root_path()
+            .joinpath("dbt", "models", "data_quality_engine", "main.sql")
+            .read_text()
+        )
+    if not dbt_main_path.joinpath("dq_summary.sql").is_file():
+        dbt_main_path.joinpath("dq_summary.sql").write_text(
+            utils.get_project_root_path()
+            .joinpath("dbt", "models", "data_quality_engine", "dq_summary.sql")
+            .read_text()
+        )
+    dbt_project_path = dbt_path.parent.absolute().joinpath("dbt_project.yml")
+    if not dbt_project_path.is_file():
+        if debug:
+            click.secho(
+                f"Cannot find `dbt_project.yml` configurations in current path: "
+                f"{dbt_project_path}",
+                fg="magenta",
+            )
+            click.secho(
+                f"Writing templated 'dbt_project.yml' to: {dbt_project_path} ",
+                fg="magenta",
+            )
+        dbt_project_path.write_text(
+            utils.get_project_root_path().joinpath("dbt_project.yml").read_text()
+        )
+    click.secho(f"Using 'dbt_project_path': {dbt_project_path}", fg="yellow")
+    dbt_rule_binding_views_path = dbt_path / "models" / "rule_binding_views"
+    dbt_rule_binding_views_path.mkdir(parents=True, exist_ok=True)
+    click.secho(
+        f"Writing generated sql to {dbt_rule_binding_views_path.absolute()}/",
+        fg="yellow",
+    )
     configs_path = Path(rule_binding_config_path)
-    dbt_path = Path(dbt_path)
+    if debug:
+        click.secho(
+            f"Loading rule bindings from: {configs_path.absolute()} ", fg="yellow"
+        )
     metadata = json.loads(metadata)
     dq_summary_table_name = lib.get_bigquery_dq_summary_table_name(
         dbt_profiles_dir, environment_target
     )
-    logging.info(
-        f"Using BigQuery table for summary results: `{dq_summary_table_name}`. "
+    click.secho(
+        f"Writing summary results to BigQuery table: `{dq_summary_table_name}`. ",
+        fg="yellow",
     )
-    dbt_rule_binding_views_path = dbt_path / "models" / "rule_binding_views"
-    logging.info(f"Loading rule bindings from: {configs_path.absolute()} ")
     all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
     target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
     if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
@@ -158,9 +231,13 @@ def main(
             f"Target Rule Binding Id: {rule_binding_id} not found "
             f"in config path {configs_path.absolute()}.",
         )
-        logging.info(
-            f"*** Creating sql string from configs for rule binding: {rule_binding_id}"
-        )
+        if debug:
+            click.secho(
+                f"Creating sql string from configs for rule binding: {rule_binding_id}",
+                fg="cyan",
+            )
+            click.secho("Rule binding config json:", fg="cyan")
+            pprint(rule_binding_configs)
         sql_string = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
@@ -171,14 +248,16 @@ def main(
             configs_path=configs_path,
             environment=environment_target,
             metadata=metadata,
-            debug=debug,
+            debug=print_sql_queries,
             progress_watermark=progress_watermark,
         )
         validate_sql_string(sql_string)
-        logging.info(
-            f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
-            f"{rule_binding_id}.sql"
-        )
+        if debug:
+            click.secho(
+                f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
+                f"{rule_binding_id}.sql",
+                fg="cyan",
+            )
         lib.write_sql_string_as_dbt_model(
             rule_binding_id=rule_binding_id,
             sql_string=sql_string,
@@ -189,12 +268,16 @@ def main(
         if view.stem not in target_rule_binding_ids:
             view.unlink()
     configs = {"target_rule_binding_ids": target_rule_binding_ids}
-    utils.run_dbt(
-        dbt_profile_dir=dbt_profiles_dir,
-        configs=configs,
-        environment=environment_target,
-        dry_run=dry_run,
-    )
+    try:
+        utils.run_dbt(
+            dbt_profile_dir=dbt_profiles_dir,
+            configs=configs,
+            environment=environment_target,
+            debug=debug,
+            dry_run=dry_run,
+        )
+    except Exception as e:
+        click.secho("Encountered error: " + str(e), fg="red")
 
 
 if __name__ == "__main__":
