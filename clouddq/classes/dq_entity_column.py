@@ -143,6 +143,7 @@ class DatabaseColumnType(str, Enum):
     NVARCHAR = "NVARCHAR"
     TEXT = "TEXT"
     INT = "INT"
+    INTEGER = "INTEGER"
     INT64 = "INT64"
     SMALLINT = "SMALLINT"
     BIGINT = "BIGINT"
@@ -176,6 +177,7 @@ BIGQUERY_COLUMN_TYPES_MAPPING: dict = {
     DatabaseColumnType.NVARCHAR: "STRING",
     DatabaseColumnType.TEXT: "STRING",
     DatabaseColumnType.INT: "INT64",
+    DatabaseColumnType.INTEGER: "INT64",
     DatabaseColumnType.INT64: "INT64",
     DatabaseColumnType.SMALLINT: "INT64",
     DatabaseColumnType.BIGINT: "INT64",
