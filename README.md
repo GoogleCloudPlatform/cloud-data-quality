@@ -339,6 +339,11 @@ The executable Python zip is not cross-platform compatible. You will need to bui
 
 The Python zip includes the top-level `macros` directory, which will be hard-coded in the executable and cannot be changed at runtime.
 
+#### Deploy Python Zip as a Dataproc Job
+
+For a detailed, step-by-step walk through on how to deploy a CloudDQ job using [Dataproc](https://cloud.google.com/dataproc/docs/concepts/overview), see [docs/submit-clouddq-as-dataproc-job.md](docs/submit-clouddq-as-dataproc-job.md).
+
+
 ## Troubleshooting
 
 ### 1. Cannot find shared library dependencies on system
