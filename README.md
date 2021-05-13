@@ -170,10 +170,10 @@ dbt seed --profiles-dir=.
 
 Alternatively, you can use `bq load` instead of `dbt seed`:
 ```bash
-export DBT_BIGQUERY_REGION=EU # ensure this is the same as the 'location' config in your `profiles.yml` file.
-export DBT_GCP_DATASET=clouddq # ensure this is the same as the 'dataset' config in your `profiles.yml` file.
-bq mk --location=${DBT_BIGQUERY_REGION} ${DBT_GCP_DATASET}
-bq load --source_format=CSV --autodetect ${DBT_GCP_DATASET}.contact_details dbt/data/contact_details.csv
+export CLOUDDQ_BIGQUERY_REGION=EU # ensure this is the same as the 'location' config in your `profiles.yml` file.
+export CLOUDDQ_BIGQUERY_DATASET=clouddq # ensure this is the same as the 'dataset' config in your `profiles.yml` file.
+bq mk --location=${CLOUDDQ_BIGQUERY_REGION} ${CLOUDDQ_BIGQUERY_DATASET}
+bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details dbt/data/contact_details.csv
 ```
 
 Ensure you have sufficient IAM privileges to create BigQuery datasets and tables in your project.

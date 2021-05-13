@@ -4,22 +4,22 @@ default:
     dev:
       type: bigquery
       method: oauth
-      project:  "{{ env_var('DBT_GCP_PROJECT', '<your_gcp_project_id>') }}"
-      dataset: "{{ env_var('DBT_GCP_DATASET', 'clouddq') }}"
+      project:  "{{ env_var('PROJECT_ID', '<your_gcp_project_id>') }}"
+      dataset: "{{ env_var('CLOUDDQ_BIGQUERY_DATASET', 'clouddq') }}"
       threads: 1
       timeout_seconds: 90
-      location: "{{ env_var('DBT_BIGQUERY_REGION', 'EU') }}"
+      location: "{{ env_var('CLOUDDQ_BIGQUERY_REGION', 'EU') }}"
       priority: interactive
       retries: 1
 
     test:
       type: bigquery
       method: service-account
-      project: "{{ env_var('DBT_GCP_PROJECT') }}"
-      dataset: "{{ env_var('DBT_GCP_DATASET') }}"
+      project: "{{ env_var('PROJECT_ID'), '<your_gcp_project_id>') }}"
+      dataset: "{{ env_var('CLOUDDQ_BIGQUERY_DATASET', 'clouddq') }}"
       threads: 1
       timeout_seconds: 300
-      location: "{{ env_var('DBT_BIGQUERY_REGION', 'EU') }}"
+      location: "{{ env_var('CLOUDDQ_BIGQUERY_REGION', 'EU') }}"
       priority: interactive
       retries:  1
-      keyfile:  "{{ env_var('DBT_GOOGLE_BIGQUERY_KEYFILE', 'service_account.json') }}"
+      keyfile:  "{{ env_var('CLOUDDQ_GOOGLE_BIGQUERY_KEYFILE', 'service_account.json') }}"
