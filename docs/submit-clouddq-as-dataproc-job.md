@@ -31,7 +31,7 @@ export CLOUDDQ_BIGQUERY_REGION=EU  # optional: replace with a different BigQuery
 
 Note that we will use the [Compute Engine default service account](https://cloud.google.com/compute/docs/access/service-accounts#default_service_account) `[project-number]-compute@developer.gserviceaccount.com` for the Dataproc VM in this example. 
 
-To use a custom service account, follow the instructrions at: https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/service-accounts#creating_a_cluster_with_a_user-managed_vm_service_account. Ensure the custom service account has at minimum IAM permissions 1) `roles/storage.objectAdmin` over the GCS Bucket `` that will be used to stage the CloudDQ configs and executables and 2) `roles/bigquery.dataEditor` over the GCP BigQuery Dataset in the environment variable `CLOUDDQ_BIGQUERY_DATASET` that will be managed by CloudDQ
+To use a custom service account, follow the instructions [here](https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/service-accounts#creating_a_cluster_with_a_user-managed_vm_service_account). Ensure the custom service account has at minimum IAM permissions 1) `roles/storage.objectAdmin` over the GCS Bucket `$GCS_BUCKET_NAME` that will be used to stage the CloudDQ configs and executables and 2) `roles/bigquery.dataEditor` over the GCP BigQuery Dataset in the environment variable `CLOUDDQ_BIGQUERY_DATASET` that will be managed by CloudDQ
 
 Now we will set the default project ID used by `gcloud`:
 ```
@@ -47,7 +47,7 @@ gcloud services enable dataproc.googleapis.com
 gcloud services enable storage.googleapis.com
 ```
 
-## 2. Create Dataproc Cluster
+### 2. Create Dataproc Cluster
 
 We will now create a single-node Dataproc cluster to run the job. Feel free to ignore this step if you already have a Dataproc cluster created at `$DATAPROC_CLUSTER_NAME` for the CloudDQ job.
 
