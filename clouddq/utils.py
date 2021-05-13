@@ -14,8 +14,8 @@
 
 """todo: add utils docstring."""
 import hashlib
+from inspect import getsourcefile
 import json
-import logging
 import os
 from pathlib import Path
 import re
@@ -25,6 +25,14 @@ from dbt.main import main as dbt
 
 
 ENV_VAR_PATTERN = re.compile(r".*env_var\((.+?)\).*", re.IGNORECASE)
+
+
+def get_source_file_path():
+    return Path(getsourcefile(lambda: 0)).resolve()
+
+
+def get_project_root_path():
+    return get_source_file_path().parent.parent.absolute()
 
 
 def run_dbt(
@@ -47,10 +55,7 @@ def run_dbt(
 
     """
     command = []
-    if debug:
-        command.extend(["debug"])
-    else:
-        command.extend(["run"])
+    command.extend(["run"])
     command += [
         "--profiles-dir",
         str(dbt_profile_dir),
@@ -59,7 +64,15 @@ def run_dbt(
         "--target",
         environment,
     ]
-    logging.warning(f"Executing command:\n {command}")
+    if debug:
+        debug_commands = command.copy()
+        debug_commands[0] = "debug"
+        try:
+            print(f"\nExecuting dbt command:\n {debug_commands}")
+            dbt(debug_commands)
+        except SystemExit:
+            pass
+        print(f"\nExecuting dbt command:\n {command}")
     if not dry_run:
         dbt(command)
 

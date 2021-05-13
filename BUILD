@@ -20,7 +20,13 @@ filegroup(
 
 filegroup(
     name = "dbt",
-    srcs = glob(["dbt/**/*.sql"]),
+    srcs = glob(["dbt/models/data_quality_engine/**/*.sql"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "dbt_project",
+    srcs = glob(["dbt_project.yml"]),
     visibility = ["//visibility:public"],
 )
 

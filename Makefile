@@ -34,7 +34,7 @@ clean: bin/bazelisk ## clean build artifacts
 
 .PHONY: buildzip
 buildzip: bin/bazelisk  ## build zip executable and apply patch to fix init issue (NOTE: this fails if sandboxfs cannot be found in $PATH)
-	bin/bazelisk build //clouddq:clouddq --output_groups=python_zip_file --experimental_use_sandboxfs --sandbox_debug --sandbox_fake_username --sandbox_fake_hostname
+	bin/bazelisk build //clouddq:clouddq --output_groups=python_zip_file --experimental_use_sandboxfs --sandbox_fake_username --sandbox_fake_hostname
 	@source scripts/fix_bazel_zip.sh
 
 # If the first argument is "run", "test, "check", or "lint"...

@@ -170,10 +170,10 @@ dbt seed --profiles-dir=.
 
 Alternatively, you can use `bq load` instead of `dbt seed`:
 ```bash
-export DBT_BIGQUERY_REGION=EU # ensure this is the same as the 'location' config in your `profiles.yml` file.
-export DBT_GCP_DATASET=clouddq # ensure this is the same as the 'dataset' config in your `profiles.yml` file.
-bq mk --location=${DBT_BIGQUERY_REGION} ${DBT_GCP_DATASET}
-bq load --source_format=CSV --autodetect ${DBT_GCP_DATASET}.contact_details dbt/data/contact_details.csv
+export CLOUDDQ_BIGQUERY_REGION=EU # ensure this is the same as the 'location' config in your `profiles.yml` file.
+export CLOUDDQ_BIGQUERY_DATASET=clouddq # ensure this is the same as the 'dataset' config in your `profiles.yml` file.
+bq mk --location=${CLOUDDQ_BIGQUERY_REGION} ${CLOUDDQ_BIGQUERY_DATASET}
+bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details dbt/data/contact_details.csv
 ```
 
 Ensure you have sufficient IAM privileges to create BigQuery datasets and tables in your project.
@@ -222,7 +222,7 @@ python3 clouddq \
     configs \
     --metadata='{"test":"test"}' \
     --dbt_profiles_dir=. \
-    --dbt_path=dbt \
+    --dbt_path=. \
     --environment_target=dev
 ```
 
@@ -233,7 +233,7 @@ python3 clouddq \
     configs \
     --metadata='{"test":"test"}' \
     --dbt_profiles_dir=. \
-    --dbt_path=dbt \
+    --dbt_path=. \
     --environment_target=dev
 ```
 
@@ -338,6 +338,11 @@ The Python zip have been tested with Python versions `>=2.7.17` and `>=3.8.6`. A
 The executable Python zip is not cross-platform compatible. You will need to build the executable separately for each of your target platforms.
 
 The Python zip includes the top-level `macros` directory, which will be hard-coded in the executable and cannot be changed at runtime.
+
+#### Deploy Python Zip as a Dataproc Job
+
+For a detailed, step-by-step walk through on how to deploy a CloudDQ job using [Dataproc](https://cloud.google.com/dataproc/docs/concepts/overview), see [docs/submit-clouddq-as-dataproc-job.md](docs/submit-clouddq-as-dataproc-job.md).
+
 
 ## Troubleshooting
 

@@ -31,6 +31,7 @@ from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import extract_dbt_env_var
+from clouddq.utils import get_project_root_path
 from clouddq.utils import sha256_digest
 
 
@@ -46,7 +47,7 @@ def get_bigquery_dq_summary_table_name(
 ) -> str:
     # Get bigquery project and dataset for dq_summary table names
     # todo: refactor to allow cross-platform support
-    dbt_profiles_key = load_yaml(dbt_profile_dir / "dbt_project.yml", "profile")
+    dbt_profiles_key = load_yaml(get_project_root_path() / "dbt_project.yml", "profile")
     dbt_profiles_config = load_yaml(dbt_profile_dir / "profiles.yml", dbt_profiles_key)
     dbt_profile = dbt_profiles_config["outputs"][environment_target]
     dbt_project = dbt_profile["project"]
@@ -105,7 +106,7 @@ class DebugChainableUndefined(ChainableUndefined, DebugUndefined):
 
 def load_template(template: str) -> Template:
     env = Environment(
-        loader=FileSystemLoader(Path("macros")),
+        loader=FileSystemLoader(get_project_root_path() / "macros"),
         autoescape=select_autoescape(),
         undefined=DebugChainableUndefined,
     )
