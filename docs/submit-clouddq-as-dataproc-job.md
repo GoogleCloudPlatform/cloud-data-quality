@@ -20,8 +20,8 @@ We then set your GCP config variables and resource names to be used in the follo
 
 ```bash
 export PROJECT_ID=<your_project_id>  # GCP project ID where the Dataproc cluster and BigQuery dataset will be deployed
-export REGION=<your_project_id>  # name of the GCP region where the Dataproc cluster is deployed
-export ZONE=<your_project_id>  # name of the specific zone inside $REGION where the Dataproc cluster is deployed
+export REGION=<preferred_gcp_region>  # name of the GCP region where the Dataproc cluster is deployed
+export ZONE=<preferred_gcp_zone>  # name of the specific zone inside $REGION where the Dataproc cluster is deployed
 export DATAPROC_CLUSTER_NAME=<cluster_name>  # name of the Dataproc cluster that will be used for deployment
 export GCS_BUCKET_NAME=<gcs_bucket_name>  # we will stage the executables and configs in this GCS bucket for deployment
 export VPC_NETWORK=default  # optional: replace with a custom VPC to deploy your Dataproc cluster.
@@ -31,7 +31,7 @@ export CLOUDDQ_BIGQUERY_REGION=EU  # optional: replace with a different BigQuery
 
 Note that we will use the [Compute Engine default service account](https://cloud.google.com/compute/docs/access/service-accounts#default_service_account) `[project-number]-compute@developer.gserviceaccount.com` for the Dataproc VM in this example. 
 
-To use a custom service account, follow the instructions [here](https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/service-accounts#creating_a_cluster_with_a_user-managed_vm_service_account). Ensure the custom service account has at minimum IAM permissions 1) `roles/storage.objectAdmin` over the GCS Bucket `$GCS_BUCKET_NAME` that will be used to stage the CloudDQ configs and executables and 2) `roles/bigquery.dataEditor` over the GCP BigQuery Dataset in the environment variable `CLOUDDQ_BIGQUERY_DATASET` that will be managed by CloudDQ
+To use a custom service account, follow the instructions [here](https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/service-accounts#creating_a_cluster_with_a_user-managed_vm_service_account). Ensure the custom service account has at minimum IAM permissions 1) `roles/storage.objectAdmin` over the GCS Bucket `$GCS_BUCKET_NAME` that will be used to stage the CloudDQ configs and executables and 2) `roles/bigquery.dataEditor` over the GCP BigQuery Dataset in the environment variable `CLOUDDQ_BIGQUERY_DATASET` that will be managed by CloudDQ.
 
 Now we will set the default project ID used by `gcloud`:
 ```
@@ -137,7 +137,7 @@ The first argument to the script is the CLI argument `RULE_BINDING_IDS`. For exa
 bash scripts/dataproc/submit-dataproc-job.sh T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE dev
 ```
 
-The first argument to the script is the environment target specified in the `profiles.yml` config file. For example, you can run the same set of Rule Bindings but in a different environment target called `prod` by running:
+The second argument to the script is the environment target specified in the `profiles.yml` config file. For example, you can run the same set of Rule Bindings but in a different environment target called `prod` by running:
 ```bash
 bash scripts/dataproc/submit-dataproc-job.sh ALL prod
 ```
