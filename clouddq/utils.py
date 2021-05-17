@@ -19,6 +19,7 @@ import json
 import os
 from pathlib import Path
 import re
+import string
 import typing
 
 from dbt.main import main as dbt
@@ -109,6 +110,10 @@ def get_from_dict_and_assert(
             f"Error: {error_msg}"
         )
     return value
+
+
+def get_format_string_arguments(format_string: str) -> typing.List[str]:
+    return [t[1] for t in string.Formatter().parse(format_string) if t[1] is not None]
 
 
 def strip_margin(text: str) -> str:

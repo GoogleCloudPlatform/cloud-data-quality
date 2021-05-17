@@ -16,10 +16,68 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import sys
 
 from clouddq.classes.dq_entity_column import DqEntityColumn
 from clouddq.utils import assert_not_none_or_empty
+from clouddq.utils import get_format_string_arguments
 from clouddq.utils import get_from_dict_and_assert
+
+
+ENTITY_CUSTOM_CONFIG_MAPPING = {
+    "BIGQUERY": {
+        "table_name": "{table_name}",
+        "database_name": "{dataset_name}",
+        "instance_name": "{project_name}",
+    },
+}
+
+
+def get_custom_entity_configs(
+    entity_id: str, configs_map: dict, source_database: str, config_key: str
+) -> str:
+    entity_configs = ENTITY_CUSTOM_CONFIG_MAPPING.get(source_database)
+    if not entity_configs:
+        raise NotImplementedError(
+            f"Entity Config ID '{entity_id}' has unsupported source_database "
+            f"'{source_database}'."
+        )
+    entity_config_template = entity_configs.get(config_key)
+    if not entity_config_template:
+        raise NotImplementedError(
+            f"Entity Config ID '{entity_id}' with source_database "
+            f"'{source_database}' has unsupported config value '{config_key}'."
+        )
+    entity_config_template_arguments = get_format_string_arguments(
+        entity_config_template
+    )
+    entity_config_arguments = dict()
+    for argument in entity_config_template_arguments:
+        argument_value = configs_map.get(argument)
+        if argument_value:
+            entity_config_arguments[argument] = argument_value
+    try:
+        config_value = entity_config_template.format(**entity_config_arguments)
+    except KeyError:
+        if config_key in configs_map:
+            print(
+                f"Entity Config ID '{entity_id}' with source_database "
+                f"'{source_database}' is using deprecated "
+                f"config value '{config_key}'.\n"
+                f"This will be removed in version 1.0.\n"
+                f"Migrate to use the config values "
+                f"'{entity_config_template_arguments}' instead.",
+                file=sys.stderr,
+            )
+            config_value = configs_map.get(config_key)
+        else:
+            raise ValueError(
+                f"Entity Config ID '{entity_id}' with source_database "
+                f"'{source_database}' has incomplete config values.\n"
+                f"Configs required: '{entity_config_template_arguments}'.\n"
+                f"Configs supplied: '{configs_map}'."
+            )
+    return config_value
 
 
 @dataclass
@@ -68,14 +126,23 @@ class DqEntity:
         source_database = get_from_dict_and_assert(
             config_id=entity_id, kwargs=kwargs, key="source_database"
         )
-        table_name = get_from_dict_and_assert(
-            config_id=entity_id, kwargs=kwargs, key="table_name"
+        table_name = get_custom_entity_configs(
+            entity_id=entity_id,
+            configs_map=kwargs,
+            source_database=source_database,
+            config_key="table_name",
         )
-        database_name = get_from_dict_and_assert(
-            config_id=entity_id, kwargs=kwargs, key="database_name"
+        database_name = get_custom_entity_configs(
+            entity_id=entity_id,
+            configs_map=kwargs,
+            source_database=source_database,
+            config_key="database_name",
         )
-        instance_name = get_from_dict_and_assert(
-            config_id=entity_id, kwargs=kwargs, key="instance_name"
+        instance_name = get_custom_entity_configs(
+            entity_id=entity_id,
+            configs_map=kwargs,
+            source_database=source_database,
+            config_key="instance_name",
         )
         columns_dict = get_from_dict_and_assert(
             config_id=entity_id, kwargs=kwargs, key="columns"
