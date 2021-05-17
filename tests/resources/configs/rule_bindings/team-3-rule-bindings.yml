@@ -13,9 +13,13 @@
 # limitations under the License.
 
 rule_bindings:
-  T1_DQ_1_VALUE_NOT_NULL:
+  T3_DQ_1_EMAIL_DUPLICATE:
     entity_id: TEST_TABLE
     column_id: VALUE
-    row_filter_id: NONE
+    row_filter_id: DATA_TYPE_EMAIL
     rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: "contact_type,value"
       - NOT_NULL_SIMPLE
+    metadata:
+      brand: one

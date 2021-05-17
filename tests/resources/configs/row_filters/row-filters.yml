@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rule_bindings:
-  T1_DQ_1_VALUE_NOT_NULL:
-    entity_id: TEST_TABLE
-    column_id: VALUE
-    row_filter_id: NONE
-    rule_ids:
-      - NOT_NULL_SIMPLE
+row_filters:
+  NONE:
+    filter_sql_expr: |-
+      True
+
+  DATA_TYPE_EMAIL:
+    filter_sql_expr: |-
+      contact_type = 'email'

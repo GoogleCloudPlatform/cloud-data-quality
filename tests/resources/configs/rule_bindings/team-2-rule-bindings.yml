@@ -13,9 +13,13 @@
 # limitations under the License.
 
 rule_bindings:
-  T1_DQ_1_VALUE_NOT_NULL:
+  T2_DQ_1_EMAIL:
     entity_id: TEST_TABLE
     column_id: VALUE
-    row_filter_id: NONE
+    row_filter_id: DATA_TYPE_EMAIL
     rule_ids:
       - NOT_NULL_SIMPLE
+      - REGEX_VALID_EMAIL
+      - CUSTOM_SQL_LENGTH_LE_30
+    metadata:
+      brand: one

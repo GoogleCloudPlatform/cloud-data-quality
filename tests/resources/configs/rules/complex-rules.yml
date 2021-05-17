@@ -12,10 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rule_bindings:
-  T1_DQ_1_VALUE_NOT_NULL:
-    entity_id: TEST_TABLE
-    column_id: VALUE
-    row_filter_id: NONE
-    rule_ids:
-      - NOT_NULL_SIMPLE
+rules:
+
+  NO_DUPLICATES_IN_COLUMN_GROUPS:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_arguments:
+        - column_names
+      custom_sql_statement: |-
+        select
+          $column_names
+        from data
+        group by $column_names
+        having count(*) > 1

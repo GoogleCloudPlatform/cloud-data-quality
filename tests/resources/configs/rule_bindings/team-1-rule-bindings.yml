@@ -17,5 +17,6 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
+    incremental_time_filter_column_id: TS
     rule_ids:
       - NOT_NULL_SIMPLE
