@@ -33,7 +33,7 @@ class TestDbtBigQuery:
 
     @pytest.fixture
     def test_rule_binding_path(self):
-        return Path("configs/rule_bindings/team-2-rule-bindings.yml")
+        return Path("tests/resources/configs/rule_bindings/team-2-rule-bindings.yml")
 
     def test_all_configs_files_present(self):
         """ """
@@ -121,8 +121,8 @@ class TestDbtBigQuery:
     @pytest.mark.parametrize(
         "rule_binding_config_path",
         [
-            "configs/rule_bindings/team-2-rule-bindings.yml",
-            "configs/rule_bindings",
+            "tests/resources/configs/rule_bindings/team-2-rule-bindings.yml",
+            "tests/resources/configs/rule_bindings",
         ],
     )
     def test_load_all_rule_bindings_and_run_dbt(self, rule_binding_config_path):
