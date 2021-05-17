@@ -28,7 +28,7 @@ entities:
       ROW_ID:
         name: row_id
         data_type: STRING
-        decriptions: |-
+        description: |-
           unique identifying id
       CONTACT_TYPE:
         name: contact_type

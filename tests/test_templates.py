@@ -71,7 +71,7 @@ class TestJinjaTemplates:
     @pytest.fixture
     def test_rules_collection(self):
         """ """
-        return lib.load_rules_config(configs_path=Path("configs"))
+        return lib.load_rules_config(configs_path=Path("tests/resources/configs"))
 
     def test_rules_class(self, test_rules_collection):
         """
@@ -95,7 +95,7 @@ class TestJinjaTemplates:
     @pytest.fixture
     def test_row_filters_collection(self):
         """ """
-        return lib.load_row_filters_config(configs_path=Path("configs"))
+        return lib.load_row_filters_config(configs_path=Path("tests/resources/configs"))
 
     def test_filters_class(self, test_row_filters_collection):
         """
@@ -201,7 +201,7 @@ class TestJinjaTemplates:
     @pytest.fixture
     def test_all_rule_bindings_collections(self):
         """ """
-        return lib.load_rule_bindings_config(configs_path=Path("configs"))
+        return lib.load_rule_bindings_config(configs_path=Path("tests/resources/configs"))
 
     def test_load_rule_bindings_valid(self, test_all_rule_bindings_collections):
         """
@@ -240,7 +240,7 @@ class TestJinjaTemplates:
             .__next__()  # use first rule binding
         )
         output = lib.create_rule_binding_view_model(
-            configs_path=Path("configs"),
+            configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
@@ -286,7 +286,7 @@ class TestJinjaTemplates:
             .__next__()  # use first rule binding
         )
         output = lib.create_rule_binding_view_model(
-            configs_path=Path("configs"),
+            configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
@@ -332,7 +332,7 @@ class TestJinjaTemplates:
             .__next__()  # use first rule binding
         )
         output = lib.create_rule_binding_view_model(
-            configs_path=Path("configs"),
+            configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
@@ -380,7 +380,7 @@ class TestJinjaTemplates:
             .__next__()  # use first rule binding
         )
         output = lib.create_rule_binding_view_model(
-            configs_path=Path("configs"),
+            configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
@@ -417,7 +417,7 @@ class TestJinjaTemplates:
             dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
             environment=env,
             metadata=metadata,
-            configs_path=Path("configs"),
+            configs_path=Path("tests/resources/configs"),
         )
         pprint(json.dumps(configs["configs"]))
         with open("tests/resources/expected_configs.json") as f:
@@ -433,11 +433,11 @@ class TestJinjaTemplates:
             entities_collection,
             row_filters_collection,
             rules_collection,
-        ) = lib.load_configs_if_not_defined(configs_path=Path("configs"))
+        ) = lib.load_configs_if_not_defined(configs_path=Path("tests/resources/configs"))
         assert len(entities_collection) > 0
         assert len(row_filters_collection) > 0
         assert len(rules_collection) > 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__]))
+    raise SystemExit(pytest.main([__file__, '-vv']))

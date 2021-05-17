@@ -24,6 +24,18 @@ py_test(
     ],
 )
 
+filegroup(
+    name = "resources",
+    srcs = glob(["resources/*"]),
+    visibility = ["//tests:__subpackages__"],
+)
+
+filegroup(
+    name = "test_configs",
+    srcs = glob(["resources/configs/**/*"]),
+    visibility = ["//tests:__subpackages__"],
+)
+
 DEPS = [
     "//clouddq:classes",
     "//clouddq:clouddq_lib",
@@ -38,7 +50,7 @@ SRCS = glob([
 
 DATA = [
     ":resources",
-    "//:configs",
+    ":test_configs",
     "//:dbt",
     "//:dbt_project",
     "//:macros",
@@ -58,12 +70,6 @@ py_test(
     data = DATA,
     legacy_create_init = 0,
     deps = DEPS,
-)
-
-filegroup(
-    name = "resources",
-    srcs = glob(["resources/*"]),
-    visibility = ["//visibility:public"],
 )
 
 py_test(
