@@ -7,9 +7,14 @@
   "column_id": "VALUE",
   "entity_configs": {
     "columns": {
-      "KEY": {
+      "ROW_ID": {
+        "description": "unique identifying id",
+        "name": "row_id",
+        "data_type": "STRING"
+      },
+      "CONTACT_TYPE": {
         "description": "contact detail type",
-        "name": "key",
+        "name": "contact_type",
         "data_type": "STRING"
       },
       "TS": {

@@ -52,7 +52,7 @@ class TestJinjaTemplates:
     @pytest.fixture
     def test_entities_collection(self):
         """ """
-        return lib.load_entities_config(configs_path=Path("configs"))
+        return lib.load_entities_config(configs_path=Path("tests/resources/configs"))
 
     def test_dq_entities_class(self, test_entities_collection):
         """
@@ -115,21 +115,21 @@ class TestJinjaTemplates:
     def test_rule_bindings_collection_team_1(self):
         """ """
         return lib.load_rule_bindings_config(
-            Path("configs/rule_bindings/team-1-rule-bindings.yml")
+            Path("tests/resources/configs/rule_bindings/team-1-rule-bindings.yml")
         )
 
     @pytest.fixture
     def test_rule_bindings_collection_team_2(self):
         """ """
         return lib.load_rule_bindings_config(
-            Path("configs/rule_bindings/team-2-rule-bindings.yml")
+            Path("tests/resources/configs/rule_bindings/team-2-rule-bindings.yml")
         )
 
     @pytest.fixture
     def test_rule_bindings_collection_team_3(self):
         """ """
         return lib.load_rule_bindings_config(
-            Path("configs/rule_bindings/team-3-rule-bindings.yml")
+            Path("tests/resources/configs/rule_bindings/team-3-rule-bindings.yml")
         )
 
     def test_resolve_time_filter_column(self, test_rule_bindings_collection_team_1):
@@ -138,7 +138,7 @@ class TestJinjaTemplates:
         first_rule_binding_config = (
             test_rule_bindings_collection_team_1.values().__iter__().__next__()
         )
-        entities_configs = lib.load_entities_config(configs_path=Path("configs"))
+        entities_configs = lib.load_entities_config(configs_path=Path("tests/resources/configs"))
         rule_binding = DqRuleBinding.from_dict(
             rule_binding_id="dq_summary",
             kwargs=first_rule_binding_config,
