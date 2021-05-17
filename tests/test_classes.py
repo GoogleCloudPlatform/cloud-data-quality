@@ -14,6 +14,8 @@
 
 import pytest
 
+from clouddq.classes.dq_entity import get_custom_entity_configs
+
 from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
@@ -38,16 +40,116 @@ class TestClasses:
                 },
             )
 
-    def test_dq_entity_parse_failure(self):
+    def test_dq_entity_missing_columns_failure(self):
         """ """
         dq_entity_dict_not_valid = {
-            "source_database": "valid",
+            "source_database": "BIGQUERY",
             "table_name": "valid",
             "database_name": "valid",
             "instance_name": "valid",
         }
         with pytest.raises(ValueError):
             DqEntity.from_dict(entity_id="valid", kwargs=dq_entity_dict_not_valid)
+
+    def test_dq_entity_invalid_source_database(self):
+        """ """
+        dq_entity_dict_not_valid = {
+            "source_database": "invalid",
+            "table_name": "valid",
+            "database_name": "valid",
+            "instance_name": "valid",
+            "columns": {
+                "TEST_COLUMN": {
+                    "description": "test column description",
+                    "name": "test_column",
+                    "data_type": "STRING"
+                }},
+        }
+        with pytest.raises(NotImplementedError):
+            DqEntity.from_dict(entity_id="valid", kwargs=dq_entity_dict_not_valid)
+
+    @pytest.mark.parametrize(
+        "configs_map,source_database,expected",
+        [
+            pytest.param(
+                {"table_name": "table", "dataset_name": "dataset", "project_name": "project"}, 
+                "BIGQUERY",
+                "dataset",
+                id="bigquery_native"
+            ),
+            pytest.param(
+                {"table_name": "table", "database_name": "dataset", "project_name": "project"}, 
+                "BIGQUERY",
+                "dataset",
+                id="bigquery_backwards_compatible"
+            ),
+        ],
+    )
+    def test_get_custom_entity_configs_database_name(self, configs_map, source_database, expected):
+        output = get_custom_entity_configs('test', configs_map, source_database, "database_name")
+        assert output == expected
+
+    def test_dq_entity_parse_bigquery_configs(self):
+        """ """
+        bq_entity_input_dict = {
+            "source_database": "BIGQUERY",
+            "table_name": "table_name",
+            "dataset_name": "dataset_name",
+            "project_name": "project_name",
+            "columns": {
+                "TEST_COLUMN": {
+                    "description": "test column description",
+                    "name": "test_column",
+                    "data_type": "STRING"
+                }},
+        }
+        bq_entity_configs = DqEntity.from_dict(entity_id="test_bq_entity", kwargs=bq_entity_input_dict)
+        bq_entity_configs_expected = {
+            "test_bq_entity": {
+                "source_database": "BIGQUERY",
+                "table_name": "table_name",
+                "database_name": "dataset_name",
+                "instance_name": "project_name",
+                "columns": {
+                    "TEST_COLUMN": {
+                        "description": "test column description",
+                        "name": "test_column",
+                        "data_type": "STRING"
+                    }},
+            }
+        }
+        assert bq_entity_configs.to_dict() == bq_entity_configs_expected
+
+    def test_dq_entity_parse_bigquery_configs_backwards_compatible(self):
+        """ """
+        bq_entity_input_dict = {
+            "source_database": "BIGQUERY",
+            "table_name": "table_name",
+            "database_name": "dataset_name",
+            "instance_name": "project_name",
+            "columns": {
+                "TEST_COLUMN": {
+                    "description": "test column description",
+                    "name": "test_column",
+                    "data_type": "STRING"
+                }},
+        }
+        bq_entity_configs = DqEntity.from_dict(entity_id="test_bq_entity", kwargs=bq_entity_input_dict)
+        bq_entity_configs_expected = {
+            "test_bq_entity": {
+                "source_database": "BIGQUERY",
+                "table_name": "table_name",
+                "database_name": "dataset_name",
+                "instance_name": "project_name",
+                "columns": {
+                    "TEST_COLUMN": {
+                        "description": "test column description",
+                        "name": "test_column",
+                        "data_type": "STRING"
+                    }},
+            }
+        }
+        assert bq_entity_configs.to_dict() == bq_entity_configs_expected
 
     def test_dq_filter_parse_failure(self):
         """ """
@@ -132,4 +234,4 @@ class TestClasses:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__]))
+    raise SystemExit(pytest.main([__file__, '-vv']))
