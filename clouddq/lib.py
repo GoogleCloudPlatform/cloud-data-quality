@@ -139,11 +139,10 @@ def create_rule_binding_view_model(
         metadata=metadata,
         progress_watermark=progress_watermark,
     )
-    if debug:
-        pprint(configs)
     sql_string = template.render(configs)
     if debug:
-        print(sql_string)
+        configs.update({"generated_sql_string": sql_string})
+        pprint(configs)
     return sql_string
 
 
