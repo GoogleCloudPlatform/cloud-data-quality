@@ -239,7 +239,11 @@ python3 clouddq \
 
 The CLI expects the paths for `dbt_profiles_dir`, `dbt_path`, and `environment_target` to be provided at runtime.
 
-The content of these directories can be customized to meet your needs. For example, you can:
+`dbt_profiles_dir` is the path to the `profiles.yml` config file containing the connection profile to BigQuery. You can additionally specify the `dbt` profile you want to use by passing the profile name to the input variable `environment_target`. You can find more details about configuring `dbt`'s `profiles.yml` file at [Setting up `dbt`](./README.md#setting-up-dbt).
+
+The input variable `dbt_path` is where `CloudDQ` will stage the SQL views for each rule-bindings before creating them and aggregating the validation output into the `dq_summary` table. If a directory named `dbt` is not present at the path provided in the input argument, `CloudDQ` will create one using the default configurations as is provided in this git repository.
+
+The content of `dbt_profiles_dir` and `dbt_path` can be customized to meet your needs. For example, you can:
 1) customize the values returned in the `dq_summary` table by modifying `dbt/models/data_quality_engine/dq_summary.sql`,
 2) calculate different summary scores in `dbt/models/data_quality_engine/main.sql`, or
 3) create a new SQL model to write rows that failed a particular `rule_binding` from `dbt/models/rule_binding_views/` into a different table for reporting and remediation.
@@ -339,6 +343,8 @@ The executable Python zip is not cross-platform compatible. You will need to bui
 
 The Python zip includes the top-level `macros` directory, which will be hard-coded in the executable and cannot be changed at runtime.
 
+
+
 #### Deploy Python Zip as a Dataproc Job
 
 For a detailed, step-by-step walk through on how to deploy a CloudDQ job using [Dataproc](https://cloud.google.com/dataproc/docs/concepts/overview), see [docs/submit-clouddq-as-dataproc-job.md](docs/submit-clouddq-as-dataproc-job.md).
@@ -347,7 +353,7 @@ For a detailed, step-by-step walk through on how to deploy a CloudDQ job using [
 ## Troubleshooting
 
 ### 1. Cannot find shared library dependencies on system
-If running `make build` fails due to missing shared library dependencies (e.g. `_ctypes` or `libssl`), try the below steps to install them, then clear the bazel cache with `make build` and retry.
+If running `make build` fails due to missing shared library dependencies (e.g. `_ctypes` or `libssl`), try the below steps to install them, then clear the bazel cache with `make clean` and retry.
 
 #### Mac OS X:
 
@@ -364,12 +370,12 @@ sudo apt-get update; sudo apt-get install --no-install-recommends make build-ess
 ```
 
 ### 2. Wrong `glibc` version
-If you encounter the following error when running the executable Python zip on a different machine to your build machine:
+If you encounter the following error when running the executable Python zip on a different machine to the one you used to build your zip artifact:
 machine:
 ```
 /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.xx' not found
 ```
-This suggests that the `glibc` version on your build machine is incompatible with the version on your target machine. Resolve this by rebuilding the zip on machine with identical `glibc` version (usually the same OS version) as on your target machine, or vice versa.
+This suggests that the `glibc` version on your target machine is incompatible with the version on your build machine. Resolve this by rebuilding the zip on machine with identical `glibc` version (usually this means the same OS version) as on your target machine, or vice versa.
 
 ## License
 
