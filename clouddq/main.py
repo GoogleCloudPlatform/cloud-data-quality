@@ -81,13 +81,13 @@ def not_null_or_empty(
 )
 @click.option(
     "--debug",
-    help="If True, print additional diagnostic infoormation.",
+    help="If True, print additional diagnostic information.",
     is_flag=True,
     default=False,
 )
 @click.option(
     "--print_sql_queries",
-    help="If True, print generated SQL queries.",
+    help="If True, print generated SQL queries to stdout.",
     is_flag=True,
     default=False,
 )
