@@ -155,8 +155,43 @@ class DqEntity:
                 entity_source_database=source_database,
             )
             columns[column_id] = column
-        # todo: validate environment override
-        environment_override: dict = kwargs.get("environment_override", dict())
+        # validate environment override
+        environment_override = dict()
+        for key, value in kwargs.get("environment_override", dict()).items():
+            target_env = get_from_dict_and_assert(
+                config_id=entity_id,
+                kwargs=value,
+                key="environment",
+                assertion=lambda v: v.lower() == key.lower(),
+                error_msg=f"Environment target key {key} must match value.",
+            )
+            override_configs = value["override"]
+            instance_name_override = get_custom_entity_configs(
+                entity_id=entity_id,
+                configs_map=override_configs,
+                source_database=source_database,
+                config_key="instance_name",
+            )
+            database_name_override = get_custom_entity_configs(
+                entity_id=entity_id,
+                configs_map=override_configs,
+                source_database=source_database,
+                config_key="database_name",
+            )
+            try:
+                table_name_override = get_custom_entity_configs(
+                    entity_id=entity_id,
+                    configs_map=override_configs,
+                    source_database=source_database,
+                    config_key="table_name",
+                )
+            except ValueError:
+                table_name_override = table_name
+            environment_override[target_env] = {
+                "instance_name": instance_name_override,
+                "database_name": database_name_override,
+                "table_name": table_name_override,
+            }
         return DqEntity(
             entity_id=str(entity_id),
             source_database=source_database,
