@@ -30,12 +30,10 @@
     },
     "database_name": "dq_test",
     "environment_override": {
-      "TEST": {
-        "environment": "test",
-        "override": {
-          "database_name": "<your_bigquery_dataset_id>",
-          "instance_name": "<your_gcp_project_id_2>"
-        }
+      "test": {
+        "database_name": "<your_bigquery_dataset_id>",
+        "instance_name": "<your_gcp_project_id_2>",
+        "table_name": "contact_details"
       }
     },
     "instance_name": "<your_gcp_project_id>",

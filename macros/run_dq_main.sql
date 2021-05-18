@@ -23,18 +23,19 @@
 {% set table_name = configs.get('entity_configs').get('table_name') -%}
 {% set incremental_time_filter_column_id = configs.get('incremental_time_filter_column_id') %}
 {% if environment and configs.get('entity_configs').get('environment_override') -%}
-    {% set env_override = configs.get('entity_configs').get('environment_override') %}
-    {% if env_override.get(environment|upper) and env_override.get(environment|upper).get('override') %}
-        {% set override_values = env_override.get(environment|upper).get('override') %}
-        {% if override_values -%}
-            {% if override_values.get('database_name') -%}
-                {% set database_name = override_values.get('database_name') -%}
-            {% endif -%}
-            {% if override_values.get('instance_name') -%}
-                {% set instance_name = override_values.get('instance_name') -%}
-            {% endif -%}
-        {% endif %}
-    {% endif %}
+  {% set env_override = configs.get('entity_configs').get('environment_override') %}
+  {% if env_override.get(environment|lower) %}
+    {% set override_values = env_override.get(environment|lower) %}
+    {% if override_values.get('table_name') -%}
+        {% set table_name = override_values.get('table_name') -%}
+    {% endif -%}
+    {% if override_values.get('database_name') -%}
+        {% set database_name = override_values.get('database_name') -%}
+    {% endif -%}
+    {% if override_values.get('instance_name') -%}
+        {% set instance_name = override_values.get('instance_name') -%}
+    {% endif -%}
+  {% endif %}
 {% endif -%}
 {% set fully_qualified_table_name = "%s.%s.%s" % (instance_name, database_name, table_name) -%}
 {% set _dummy = metadata.update(configs.get('metadata', '')) -%}
