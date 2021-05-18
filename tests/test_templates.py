@@ -34,18 +34,6 @@ RE_CONFIGS_HASHSUM = r"'[\w\d]+' AS configs_hashsum,"
 CONFIGS_HASHSUM_REP = "'' AS configs_hashsum,"
 
 
-def replace_expected_sql_table(
-    sql_string, entities_collection, rule_binding_configs
-) -> str:
-    entity_id = rule_binding_configs.get("entity_id")
-    database_name = entities_collection.get(entity_id).get("database_name")
-    instance_name = entities_collection.get(entity_id).get("instance_name")
-    output = sql_string.replace(
-        "<your_gcp_project_id>.dq_test", f"{instance_name}.{database_name}"
-    )
-    return output
-
-
 class TestJinjaTemplates:
     """ """
 
@@ -53,20 +41,6 @@ class TestJinjaTemplates:
     def test_entities_collection(self):
         """ """
         return lib.load_entities_config(configs_path=Path("tests/resources/configs"))
-
-    def test_dq_entities_class(self, test_entities_collection):
-        """
-
-        Args:
-          test_entities_collection:
-
-        Returns:
-
-        """
-        for key, value in test_entities_collection.items():
-            entity = DqEntity.from_dict(entity_id=key, kwargs=value)
-            assert key in entity.to_dict()
-            assert dict(entity.dict_values()) == dict(value)
 
     @pytest.fixture
     def test_rules_collection(self):
@@ -250,11 +224,6 @@ class TestJinjaTemplates:
             environment="DEV",
             debug=True,
         )
-        expected = replace_expected_sql_table(
-            sql_string=expected,
-            entities_collection=test_entities_collection,
-            rule_binding_configs=rule_binding_configs,
-        )
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
@@ -342,11 +311,6 @@ class TestJinjaTemplates:
             environment="DEV",
             debug=True,
         )
-        expected = replace_expected_sql_table(
-            sql_string=expected,
-            entities_collection=test_entities_collection,
-            rule_binding_configs=rule_binding_configs,
-        )
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
@@ -389,11 +353,6 @@ class TestJinjaTemplates:
             row_filters_collection=test_row_filters_collection,
             environment="DEV",
             debug=True,
-        )
-        expected = replace_expected_sql_table(
-            sql_string=expected,
-            entities_collection=test_entities_collection,
-            rule_binding_configs=rule_binding_configs,
         )
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
