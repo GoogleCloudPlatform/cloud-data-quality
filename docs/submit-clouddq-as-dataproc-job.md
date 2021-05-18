@@ -35,7 +35,7 @@ To use a custom service account, follow the instructions [here](https://cloud.go
 
 Now we will set the default project ID used by `gcloud`:
 ```
-gcloud config set project ${GCP_PROJECT_ID}
+gcloud config set project ${PROJECT_ID}
 ```
 
 If you encounter the issue `No service account scopes specified` with the above command, run  `gcloud auth login` to obtain new credentials and try again.
@@ -75,7 +75,7 @@ Note that this step may take a few minutes to complete, hence why we're doing th
 Create the `profiles.yml` ([details here](../README.md#setting-up-`dbt`)) config to connect to BigQuery:
 ```bash
 cp profiles.yml.template profiles.yml
-sed -i s/\<your_gcp_project_id\>/${GCP_PROJECT_ID}/g profiles.yml
+sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g profiles.yml
 sed -i s/clouddq/${CLOUDDQ_BIGQUERY_DATASET}/g profiles.yml
 sed -i s/EU/${CLOUDDQ_BIGQUERY_REGION}/g profiles.yml
 ```
@@ -86,7 +86,7 @@ Ensure you are using connection `method: oauth` in the `profiles.yml` and take n
 
 Edit the `entities` config to use your [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) and custom `CLOUDDQ_BIGQUERY_DATASET`:
 ```bash
-sed -i s/\<your_gcp_project_id\>/${GCP_PROJECT_ID}/g configs/entities/test-data.yml
+sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g configs/entities/test-data.yml
 sed -i s/dq_test/${CLOUDDQ_BIGQUERY_DATASET}/g configs/entities/test-data.yml
 ```
 
@@ -146,8 +146,12 @@ bash scripts/dataproc/submit-dataproc-job.sh ALL prod
 
 To see the result DQ validation outcomes in the BigQuery table `dq_summary`, run:
 ```bash
-echo "select * from \`${GCP_PROJECT_ID}\`.${CLOUDDQ_BIGQUERY_DATASET}.dq_summary" | bq query --location=${CLOUDDQ_BIGQUERY_REGION} --nouse_legacy_sql --format=json
+echo "select * from \`${PROJECT_ID}\`.${CLOUDDQ_BIGQUERY_DATASET}.dq_summary" | bq query --location=${CLOUDDQ_BIGQUERY_REGION} --nouse_legacy_sql --format=json
 ```
+
+### 9. Clean up
+
+To avoid incurring unnecessary costs, ensure you delete all resources created in this guide.
 
 ## Improvements / Feedbacks
 
