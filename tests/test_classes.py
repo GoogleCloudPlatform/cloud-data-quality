@@ -21,11 +21,7 @@ from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 
-from clouddq.classes.rule_type import REGEX_SQL
 from clouddq.classes.rule_type import RuleType
-
-
-COLUMN_NAME = "column_name"
 
 
 class TestClasses:
@@ -207,9 +203,15 @@ class TestClasses:
 
     def test_rule_type_custom_to_sql(self):
         """ """
-        params = {"custom_sql_expr": f"length({COLUMN_NAME}) < 20"}
-        sql = RuleType.CUSTOM_SQL_EXPR.to_sql(params).substitute(column=COLUMN_NAME)
+        params = {"custom_sql_expr": "length(column_name) < 20"}
+        sql = RuleType.CUSTOM_SQL_EXPR.to_sql(params).substitute(column="column_name")
         assert sql == params["custom_sql_expr"]
+
+    def test_rule_type_not_null(self):
+        """ """
+        expected = "column_name IS NOT NULL"
+        sql = RuleType.NOT_NULL.to_sql(params={}).substitute(column="column_name")
+        assert sql == expected
 
     @pytest.mark.parametrize(
         "params",
@@ -228,10 +230,9 @@ class TestClasses:
     def test_rule_type_regex_to_sql(self):
         """ """
         params = {"pattern": "^[^@]+[@]{1}[^@]+$"}
-        sql = RuleType.REGEX.to_sql(params).substitute(column=COLUMN_NAME)
-        expected = REGEX_SQL.substitute(column=COLUMN_NAME, pattern=params["pattern"])
+        sql = RuleType.REGEX.to_sql(params).substitute(column="column_name")
+        expected = "REGEXP_CONTAINS( CAST( column_name  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
         assert sql == expected
-
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv']))

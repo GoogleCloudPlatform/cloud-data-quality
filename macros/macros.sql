@@ -22,7 +22,7 @@
     {{ column_name }} AS column_value,
     num_rows_validated AS num_rows_validated,
     CASE
-{% if rule_id == "NOT_NULL_SIMPLE" %}
+{% if rule_configs.get("rule_type") == "NOT_NULL" %}
       WHEN {{ rule_configs.get("rule_sql_expr") }} THEN TRUE
 {% else %}
       WHEN {{ column_name }} IS NULL THEN NULL
