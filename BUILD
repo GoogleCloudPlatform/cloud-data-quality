@@ -25,6 +25,18 @@ filegroup(
 )
 
 filegroup(
+    name = "macros",
+    srcs = glob(["dbt/macros/*.sql"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "legacy_macros_path",
+    srcs = glob(["macros/*.sql"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "dbt_project",
     srcs = glob(["dbt_project.yml"]),
     visibility = ["//visibility:public"],
@@ -36,11 +48,5 @@ filegroup(
         "configs/**/*.yaml",
         "configs/**/*.yml",
     ]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "macros",
-    srcs = glob(["macros/*.sql"]),
     visibility = ["//visibility:public"],
 )

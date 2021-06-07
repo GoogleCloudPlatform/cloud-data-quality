@@ -51,9 +51,9 @@ SRCS = glob([
 DATA = [
     ":resources",
     ":test_configs",
-    "//:dbt",
-    "//:dbt_project",
-    "//:macros",
+    "//clouddq:dbt_template",
+    "//clouddq:dbt_project_template",
+    "//clouddq:macros_template",
 ]
 
 py_test(

@@ -13,11 +13,12 @@
 # limitations under the License.
 
 """todo: add utils docstring."""
+import contextlib
 import hashlib
-from inspect import getsourcefile
 import json
 import os
 from pathlib import Path
+import pkgutil
 import re
 import string
 import typing
@@ -28,15 +29,24 @@ from dbt.main import main as dbt
 ENV_VAR_PATTERN = re.compile(r".*env_var\((.+?)\).*", re.IGNORECASE)
 
 
-def get_source_file_path():
-    return Path(getsourcefile(lambda: 0)).resolve()
+def get_template_file(file_path: str) -> str:
+    data = pkgutil.get_data("clouddq", os.path.join("templates", file_path))
+    return data.decode("utf-8")
 
 
-def get_project_root_path():
-    return get_source_file_path().parent.parent.absolute()
+@contextlib.contextmanager
+def working_directory(path):
+    """Changes working directory and returns to previous on exit."""
+    prev_cwd = Path.cwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(prev_cwd)
 
 
 def run_dbt(
+    dbt_path: Path,
     dbt_profile_dir: Path,
     configs: typing.Dict,
     environment: str,
@@ -46,6 +56,7 @@ def run_dbt(
     """
 
     Args:
+      dbt_path: Path: Path of dbt project described in `dbt_project.yml`
       dbt_profile_dir: str:
       configs: typing.Dict:
       environment: str:
@@ -75,7 +86,8 @@ def run_dbt(
             pass
         print(f"\nExecuting dbt command:\n {command}")
     if not dry_run:
-        dbt(command)
+        with working_directory(dbt_path):
+            dbt(command)
 
 
 def assert_not_none_or_empty(value: typing.Any, error_msg: str) -> None:

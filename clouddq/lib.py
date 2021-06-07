@@ -15,14 +15,17 @@
 """todo: add lib docstring."""
 import itertools
 import json
+import os
 from pathlib import Path
 from pprint import pprint
 import typing
 
 from jinja2 import ChainableUndefined  # type: ignore
+from jinja2 import ChoiceLoader
 from jinja2 import DebugUndefined
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
+from jinja2 import PackageLoader
 from jinja2 import Template
 from jinja2 import select_autoescape
 import yaml
@@ -31,23 +34,28 @@ from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import extract_dbt_env_var
-from clouddq.utils import get_project_root_path
 from clouddq.utils import sha256_digest
 
 
 def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
     with file_path.open() as f:
         yaml_configs = yaml.safe_load(f)
-    output = yaml_configs.get(key, dict())
-    return output
+    if not yaml_configs:
+        return dict()
+    return yaml_configs.get(key, dict())
 
 
 def get_bigquery_dq_summary_table_name(
-    dbt_profile_dir: Path, environment_target: str
+    dbt_profile_dir: Path, environment_target: str, dbt_project_path: Path
 ) -> str:
     # Get bigquery project and dataset for dq_summary table names
     # todo: refactor to allow cross-platform support
-    dbt_profiles_key = load_yaml(get_project_root_path() / "dbt_project.yml", "profile")
+    if not dbt_project_path.is_file() and dbt_project_path.name == "dbt_project.yml":
+        raise ValueError(
+            "Not able to find 'dbt_project.yml' config file at "
+            "input path {dbt_project_path}."
+        )
+    dbt_profiles_key = load_yaml(dbt_project_path, "profile")
     dbt_profiles_config = load_yaml(dbt_profile_dir / "profiles.yml", dbt_profiles_key)
     dbt_profile = dbt_profiles_config["outputs"][environment_target]
     dbt_project = dbt_profile["project"]
@@ -70,6 +78,8 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
     all_configs = {}
     for file in yaml_files:
         config = load_yaml(file, configs_type.value)
+        if not config:
+            continue
         intersection = config.keys() & all_configs.keys()
         if intersection:
             raise ValueError(
@@ -105,12 +115,32 @@ class DebugChainableUndefined(ChainableUndefined, DebugUndefined):
 
 
 def load_template(template: str) -> Template:
-    env = Environment(
-        loader=FileSystemLoader(get_project_root_path() / "macros"),
-        autoescape=select_autoescape(),
-        undefined=DebugChainableUndefined,
-    )
-    return env.get_template(template)
+    try:
+        environment = load_template.environment
+    except AttributeError:
+        load_template.environment = environment = Environment(
+            loader=ChoiceLoader(
+                [
+                    # first look in top-level "macros" directory (legacy path)
+                    FileSystemLoader(
+                        Path(__file__).parent.parent.joinpath("macros").absolute()
+                    ),
+                    # then look inside "dbt/macros" (new default path)
+                    FileSystemLoader(
+                        Path(__file__)
+                        .parent.parent.joinpath("dbt", "macros")
+                        .absolute()
+                    ),
+                    # else use the package provided template
+                    PackageLoader(
+                        "clouddq", os.path.join("templates", "dbt", "macros")
+                    ),
+                ]
+            ),
+            autoescape=select_autoescape(),
+            undefined=DebugChainableUndefined,
+        )
+    return environment.get_template(template)
 
 
 def create_rule_binding_view_model(

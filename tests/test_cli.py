@@ -27,6 +27,13 @@ class TestCli:
         result = runner.invoke(main)
         assert result.exit_code != 1
 
+    def test_main_help_text(self, runner):
+        result = runner.invoke(main, ["--help"])
+        assert result.exit_code == 0
+
+    def test_main_dry_run(self, runner):
+        result = runner.invoke(main, ["ALL", "configs", "--dry_run"])
+        assert result.exit_code != 1
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__]))

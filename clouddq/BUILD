@@ -23,10 +23,32 @@ DEPS = [
     requirement("dbt-bigquery"),
 ]
 
+filegroup(
+    name = "dbt_template",
+    srcs = glob(["templates/dbt/models/data_quality_engine/**/*.sql"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "macros_template",
+    srcs = glob(["templates/dbt/macros/*.sql"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "dbt_project_template",
+    srcs = glob(["templates/dbt_project.yml"]),
+    visibility = ["//visibility:public"],
+)
+
 DATA = [
     "//:dbt",
     "//:dbt_project",
     "//:macros",
+    "//:legacy_macros_path",
+    "//:dbt_template",
+    "//:dbt_project_template",
+    "//:macros_template",
 ]
 
 py_binary(
