@@ -50,12 +50,11 @@ jobs:
       - name: Get gcloud CLI info
         run: gcloud info
 
-      - name: install python system library dependencies
-        run: |
-          sudo apt-get install gcc libpq-dev -y
-          sudo apt-get install python-dev  python-pip -y
-          sudo apt-get install python3-dev python3-pip python3-venv python3-wheel -y
-        shell: bash
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
 
       - name: test pip install
         run: bash scripts/smoke_test_pip_install.sh
