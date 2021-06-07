@@ -35,6 +35,10 @@ source /tmp/clouddq_test_env/bin/activate
 # install clouddq wheel into temporary env
 python3 -m pip install .
 
+# create bq connection profile
+mkdir test_dbt_profiles_dir
+cp dbt/profiles.yml.template test_dbt_profiles_dir/profiles.yml
+
 # smoke test clouddq commands
 python3 clouddq --help
-python3 clouddq ALL configs --dry_run
+python3 clouddq ALL configs --dbt_profiles_dir=test_dbt_profiles_dir --dry_run
