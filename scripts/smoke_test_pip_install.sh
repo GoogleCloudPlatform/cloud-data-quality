@@ -23,9 +23,11 @@ set -x
 which python3
 python3 --version
 python3 -m pip --version
+python3 -c "import setuptools; print(setuptools.__version__)"
 
 # make sure wheel is installed
-python3 -m pip install wheel
+python3 -m pip install wheel --upgrade --force
+python3 -m pip  install setuptools --upgrade --force
 
 # create temporary virtualenv
 python3 -m venv /tmp/clouddq_test_env
