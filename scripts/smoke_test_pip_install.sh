@@ -25,8 +25,10 @@ python3 --version
 python3 -m pip --version
 
 # make sure wheel is installed
+pip uninstall wheel
+python3 -m pip uninstall wheel 
 python3 -m pip install wheel --upgrade --force
-python3 -m pip  install setuptools --upgrade --force
+python3 -m pip install setuptools --upgrade --force
 python3 -c "import setuptools; print(setuptools.__version__)"
 
 # create temporary virtualenv
