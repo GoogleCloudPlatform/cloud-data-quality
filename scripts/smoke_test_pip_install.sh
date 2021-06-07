@@ -19,6 +19,11 @@ set -o pipefail
 
 set -x
 
+# get diagnostic info
+which python3
+python3 --version
+python3 -m pip --version
+
 # create temporary virtualenv
 python3 -m venv /tmp/clouddq_test_env
 source /tmp/clouddq_test_env/bin/activate
