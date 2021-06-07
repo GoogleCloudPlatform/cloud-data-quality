@@ -5,7 +5,7 @@
 * CLI now uses default package templates instead of assuming the templates exist in a system path. This makes it easier to deploy the CLI as a single executable across environments.
 
 ## New Features / Improvements
-* CLI now no longer requires explicitly passing in `--dbt_path` and `--dbt_profiles_dir` arguments
+* CLI now no longer requires explicitly passing in `--dbt_path` and `--dbt_profiles_dir` arguments. If not present, the CLI will copy a templated `dbt` directory path to the current working directory.
 * CLI now defaults to using `dev` dbt profile name for `--environment_target`.
 
 ## Fixes
@@ -13,8 +13,8 @@
 
 ## Breaking Changes
 * The top-level `macros` directory is moved into the `dbt` directory.
+* the file `dbt_project.yml` is now moved into the `dbt` directory.
 * `utils.run_dbt()` now expects the first argument `dbt_path` to be provided to the top-level `dbt` directory.
-* the file `dbt_project.yml` is now moved into the `dbt` directory
 
 ## Deprecations
 
