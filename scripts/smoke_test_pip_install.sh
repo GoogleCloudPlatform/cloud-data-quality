@@ -26,9 +26,11 @@ python3 -m pip --version
 
 # make sure wheel is installed
 pip install wheel --upgrade --force
-python3 -m pip install wheel --upgrade --force
-python3 -m pip install setuptools --upgrade --force
+pip install setuptools --upgrade --force
 python3 -c "import setuptools; print(setuptools.__version__)"
+
+# install poetry
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 
 # create temporary virtualenv
 python3 -m venv /tmp/clouddq_test_env
