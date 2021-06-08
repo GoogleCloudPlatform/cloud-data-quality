@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """todo: add utils docstring."""
+import contextlib
 import hashlib
 from inspect import getsourcefile
 import json
@@ -29,14 +30,33 @@ ENV_VAR_PATTERN = re.compile(r".*env_var\((.+?)\).*", re.IGNORECASE)
 
 
 def get_source_file_path():
-    return Path(getsourcefile(lambda: 0)).resolve()
+    return Path(getsourcefile(lambda: 0)).resolve().parent
 
 
-def get_project_root_path():
-    return get_source_file_path().parent.parent.absolute()
+def get_template_file(file_path: Path) -> str:
+    template_path = get_source_file_path().joinpath("templates", file_path)
+    if not template_path.is_file():
+        raise FileNotFoundError(
+            f"No clouddq template found for file_path {file_path}"
+            f" in path {template_path.absolute()}"
+        )
+    data = template_path.read_text()
+    return data
+
+
+@contextlib.contextmanager
+def working_directory(path):
+    """Changes working directory and returns to previous on exit."""
+    prev_cwd = Path.cwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(prev_cwd)
 
 
 def run_dbt(
+    dbt_path: Path,
     dbt_profile_dir: Path,
     configs: typing.Dict,
     environment: str,
@@ -46,6 +66,7 @@ def run_dbt(
     """
 
     Args:
+      dbt_path: Path: Path of dbt project described in `dbt_project.yml`
       dbt_profile_dir: str:
       configs: typing.Dict:
       environment: str:
@@ -65,17 +86,19 @@ def run_dbt(
         "--target",
         environment,
     ]
-    if debug:
-        debug_commands = command.copy()
-        debug_commands[0] = "debug"
-        try:
-            print(f"\nExecuting dbt command:\n {debug_commands}")
-            dbt(debug_commands)
-        except SystemExit:
-            pass
-        print(f"\nExecuting dbt command:\n {command}")
-    if not dry_run:
-        dbt(command)
+    with working_directory(dbt_path):
+        if debug:
+            print(f"Using dbt working directory: {os.getcwd()}")
+            debug_commands = command.copy()
+            debug_commands[0] = "debug"
+            try:
+                print(f"\nExecuting dbt command:\n {debug_commands}")
+                dbt(debug_commands)
+            except SystemExit:
+                pass
+            print(f"\nExecuting dbt command:\n {command}")
+        if not dry_run:
+            dbt(command)
 
 
 def assert_not_none_or_empty(value: typing.Any, error_msg: str) -> None:

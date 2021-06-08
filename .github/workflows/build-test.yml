@@ -19,13 +19,12 @@ on:
     branches:
       - main
     paths-ignore:
-      - '**.md'
+      - "**.md"
   pull_request:
     paths-ignore:
-      - '**.md'
+      - "**.md"
 
 jobs:
-
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -36,54 +35,68 @@ jobs:
         os: [ubuntu-18.04]
 
     steps:
+      - uses: actions/checkout@v2
 
-    - uses: actions/checkout@v2
+      - name: check addlicense
+        run: make addlicense
 
-    - name: check addlicense
-      run: make addlicense
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
 
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@master
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
+      - name: Get gcloud CLI info
+        run: gcloud info
 
-    - name: Get gcloud CLI info
-      run: gcloud info
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.16
+      - name: test pip install
+        run: |
+          export PROJECT_ID="${GCLOUD_PROJECT}"
+          export CLOUDDQ_BIGQUERY_DATASET="dq_test"
+          export CLOUDDQ_BIGQUERY_REGION="europe-west2"
+          sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g configs/entities/test-data.yml
+          make test-pip-install
+        shell: bash
 
-    - name: Use GCS Bazel Cache
-      run: |
-        echo "common --remote_cache=https://storage.googleapis.com/kthxbayes-bazel-cache" >> .bazelrc
-        echo "common --google_default_credentials" >> .bazelrc
-      shell: bash
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
 
-    - name: install sandboxfs
-      run: |
-        sudo apt-get install libfuse-dev pkg-config -y
-        curl -LO https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
-        sudo tar xzv -C /usr/local -f sandboxfs-0.2.0-20200420-linux-x86_64.tgz
-      shell: bash
+      - name: Use GCS Bazel Cache
+        run: |
+          echo "common --remote_cache=https://storage.googleapis.com/kthxbayes-bazel-cache" >> .bazelrc
+          echo "common --google_default_credentials" >> .bazelrc
+        shell: bash
 
-    - name: Cache bazel
-      uses: actions/cache@v2
-      with:
-        path: "/home/runner/.cache/bazel"
-        key: bazel
+      - name: install sandboxfs
+        run: |
+          sudo apt-get install libfuse-dev pkg-config -y
+          curl -LO https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
+          sudo tar xzv -C /usr/local -f sandboxfs-0.2.0-20200420-linux-x86_64.tgz
+        shell: bash
 
-    - name: lint check
-      run: make check
-      shell: bash
+      - name: Cache bazel
+        uses: actions/cache@v2
+        with:
+          path: "/home/runner/.cache/bazel"
+          key: bazel
 
-    - name: tests
-      run: make test
-      shell: bash
+      - name: lint check
+        run: make check
+        shell: bash
 
-    - name: build
-      run: make build
-      shell: bash
+      - name: tests
+        run: make test
+        shell: bash
+
+      - name: build
+        run: make build
+        shell: bash

@@ -12,29 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-filegroup(
-    name = "pyproject_toml",
-    srcs = ["pyproject.toml"],
-    visibility = ["//tools/lint:__pkg__"],
-)
-
-filegroup(
-    name = "dbt",
-    srcs = glob(["dbt/models/data_quality_engine/**/*.sql"]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "dbt_project",
-    srcs = glob(["dbt/dbt_project.yml"]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "configs",
-    srcs = glob([
-        "configs/**/*.yaml",
-        "configs/**/*.yml",
-    ]),
-    visibility = ["//visibility:public"],
-)
+default:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('PROJECT_ID', '<your_gcp_project_id>') }}"
+      dataset: "{{ env_var('CLOUDDQ_BIGQUERY_DATASET', 'clouddq') }}"
+      threads: 1
+      timeout_seconds: 90
+      location: "{{ env_var('CLOUDDQ_BIGQUERY_REGION', 'EU') }}"
+      priority: interactive
+      retries: 1

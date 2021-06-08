@@ -204,7 +204,7 @@ python3 -m pip install .
 
 You can then call the CLI by running:
 ```
-python3 clouddq --help
+python3 -m clouddq --help
 ```
 
 ### Usage
