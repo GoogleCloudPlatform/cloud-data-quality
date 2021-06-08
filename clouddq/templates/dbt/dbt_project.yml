@@ -20,22 +20,22 @@ config-version: 2
 # This setting configures which "profile" dbt uses for this project.
 profile: "default"
 
-source-paths: ["dbt/models"]
-macro-paths: ["dbt/macros"]
-data-paths: ["dbt/data"]
-test-paths: ["dbt/test"]
-analysis-paths: ["dbt/analysis"]
-snapshot-paths: ["dbt/snapshot"]
-docs-paths: ["dbt/docs"]
-asset-paths: ["dbt/asset"]
-log-path: "dbt/log"
-modules-path: "dbt/modules"
+source-paths: ["models"]
+macro-paths: ["macros"]
+data-paths: ["data"]
+test-paths: ["test"]
+analysis-paths: ["analysis"]
+snapshot-paths: ["snapshot"]
+docs-paths: ["docs"]
+asset-paths: ["asset"]
+log-path: "log"
+modules-path: "modules"
 
-target-path: "dbt/target" # directory which will store compiled SQL files
+target-path: "target" # directory which will store compiled SQL files
 clean-targets: # directories to be removed by `dbt clean`
-  - "dbt/target"
-  - "dbt/modules"
-  - "dbt/log"
+  - "target"
+  - "modules"
+  - "log"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models

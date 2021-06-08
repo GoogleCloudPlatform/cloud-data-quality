@@ -62,7 +62,7 @@ jobs:
           export CLOUDDQ_BIGQUERY_DATASET="dq_test"
           export CLOUDDQ_BIGQUERY_REGION="europe-west2"
           sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g configs/entities/test-data.yml
-          bash scripts/smoke_test_pip_install.sh
+          make test-pip-install
         shell: bash
 
       - name: Set up Go

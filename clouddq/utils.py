@@ -15,10 +15,10 @@
 """todo: add utils docstring."""
 import contextlib
 import hashlib
+from inspect import getsourcefile
 import json
 import os
 from pathlib import Path
-import pkgutil
 import re
 import string
 import typing
@@ -29,9 +29,19 @@ from dbt.main import main as dbt
 ENV_VAR_PATTERN = re.compile(r".*env_var\((.+?)\).*", re.IGNORECASE)
 
 
-def get_template_file(file_path: str) -> str:
-    data = pkgutil.get_data("clouddq", os.path.join("templates", file_path))
-    return data.decode("utf-8")
+def get_source_file_path():
+    return Path(getsourcefile(lambda: 0)).resolve().parent
+
+
+def get_template_file(file_path: Path) -> str:
+    template_path = get_source_file_path().joinpath("templates", file_path)
+    if not template_path.is_file():
+        raise FileNotFoundError(
+            f"No clouddq template found for file_path {file_path}"
+            f" in path {template_path.absolute()}"
+        )
+    data = template_path.read_text()
+    return data
 
 
 @contextlib.contextmanager
@@ -76,17 +86,18 @@ def run_dbt(
         "--target",
         environment,
     ]
-    if debug:
-        debug_commands = command.copy()
-        debug_commands[0] = "debug"
-        try:
-            print(f"\nExecuting dbt command:\n {debug_commands}")
-            dbt(debug_commands)
-        except SystemExit:
-            pass
-        print(f"\nExecuting dbt command:\n {command}")
-    if not dry_run:
-        with working_directory(dbt_path):
+    with working_directory(dbt_path):
+        if debug:
+            print(f"Using dbt working directory: {os.getcwd()}")
+            debug_commands = command.copy()
+            debug_commands[0] = "debug"
+            try:
+                print(f"\nExecuting dbt command:\n {debug_commands}")
+                dbt(debug_commands)
+            except SystemExit:
+                pass
+            print(f"\nExecuting dbt command:\n {command}")
+        if not dry_run:
             dbt(command)
 
 

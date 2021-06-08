@@ -48,15 +48,18 @@ def not_null_or_empty(
 @click.option(
     "--dbt_profiles_dir",
     help="Path to dbt profiles.yml. "
+    "This is a required argument for configuring dbt connection profiles."
     "Defaults to environment variable DBT_PROFILES_DIR if set.",
     type=click.Path(exists=True),
-    default=None,
     envvar="DBT_PROFILES_DIR",
+    callback=not_null_or_empty,
 )
 @click.option(
     "--dbt_path",
     help="Path to dbt model directory where a new view will be created "
-    "containing the sql execution statement for each rule binding.",
+    "containing the sql execution statement for each rule binding."
+    "If not specified, clouddq will created a new directory in "
+    "the current working directory for the dbt generated sql files.",
     type=click.Path(exists=True),
     default=None,
 )
@@ -64,7 +67,7 @@ def not_null_or_empty(
     "--environment_target",
     help="Execution environment target as defined in dbt profile, "
     "e.g. dev, test, prod.  "
-    "Defaults to environment variable ENV if set.",
+    "Defaults 'dev' or the environment variable ENV if set.",
     envvar="ENV",
     default="dev",
     callback=not_null_or_empty,
@@ -95,6 +98,12 @@ def not_null_or_empty(
     default=False,
 )
 @click.option(
+    "--skip_sql_validation",
+    help="If True, skip validation step of generated SQL using BigQuery dry-run.",
+    is_flag=True,
+    default=False,
+)
+@click.option(
     "--progress_watermark",
     help="Whether to set 'progress_watermark' column value "
     "to True/False in dq_summary. Defaults to True.",
@@ -112,6 +121,7 @@ def main(  # noqa: C901
     progress_watermark: bool,
     debug: bool = False,
     print_sql_queries: bool = False,
+    skip_sql_validation: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -131,19 +141,28 @@ def main(  # noqa: C901
     > python clouddq \\\n
       T2_DQ_1_EMAIL \\\n
       configs/rule_bindings/team-2-rule-bindings.yml \\\n
+      --dbt_profiles_dir=. \\\n
       --metadata='{"test":"test"}' \\\n
 
     > python bazel-bin/clouddq/clouddq_patched.zip \\\n
       ALL \\\n
       configs/ \\\n
       --metadata='{"test":"test"}' \\\n
-      --dbt_profiles_dir=dbt \\\n
+      --dbt_profiles_dir=. \\\n
       --dbt_path=dbt \\\n
       --environment_target=dev
 
     """
     if debug:
         click.secho(f"Current working directory: {Path().cwd()}", fg="yellow")
+    dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
+    if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
+        raise ValueError(
+            f"Cannot find connection `profiles.yml` configurations at "
+            f"`dbt_profiles_dir` path: {dbt_profiles_dir}"
+        )
+    if debug:
+        click.secho(f"Using 'dbt_profiles_dir': {dbt_profiles_dir}", fg="yellow")
     if not dbt_path:
         dbt_path = Path().cwd().joinpath("dbt").absolute()
         if debug:
@@ -156,16 +175,14 @@ def main(  # noqa: C901
         dbt_path = Path(dbt_path).absolute()
         if dbt_path.name != "dbt":
             dbt_path = dbt_path / "dbt"
+    if not dbt_path.is_dir():
+        if debug:
+            click.secho(
+                f"Creating a new dbt directory at 'dbt_path': {dbt_path}", fg="magenta"
+            )
+        dbt_path.mkdir(parents=True, exist_ok=True)
     if debug:
         click.secho(f"Using 'dbt_path': {dbt_path}", fg="yellow")
-    if not dbt_profiles_dir:
-        dbt_profiles_dir = dbt_path
-    dbt_profiles_dir = Path(dbt_profiles_dir)
-    if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
-        raise ValueError(
-            f"Cannot find connection `profiles.yml` configurations at "
-            f"`dbt_profiles_dir` path: {dbt_profiles_dir}"
-        )
     dbt_project_path = dbt_path.absolute().joinpath("dbt_project.yml")
     if not dbt_project_path.is_file():
         if debug:
@@ -178,17 +195,21 @@ def main(  # noqa: C901
                 f"Writing templated 'dbt_project.yml' to: {dbt_project_path} ",
                 fg="magenta",
             )
-        dbt_project_path.write_text(get_template_file("dbt_project.yml"))
+        dbt_project_path.write_text(get_template_file(Path("dbt", "dbt_project.yml")))
     click.secho(f"Using 'dbt_project_path': {dbt_project_path}", fg="yellow")
     dbt_main_path = dbt_path / "models" / "data_quality_engine"
     dbt_main_path.mkdir(parents=True, exist_ok=True)
     if not dbt_main_path.joinpath("main.sql").is_file():
         dbt_main_path.joinpath("main.sql").write_text(
-            get_template_file("dbt/models/data_quality_engine/main.sql")
+            get_template_file(
+                Path("dbt").joinpath("models", "data_quality_engine", "main.sql")
+            )
         )
     if not dbt_main_path.joinpath("dq_summary.sql").is_file():
         dbt_main_path.joinpath("dq_summary.sql").write_text(
-            get_template_file("dbt/models/data_quality_engine/dq_summary.sql")
+            get_template_file(
+                Path("dbt").joinpath("models", "data_quality_engine", "dq_summary.sql")
+            )
         )
     dbt_rule_binding_views_path = dbt_path / "models" / "rule_binding_views"
     dbt_rule_binding_views_path.mkdir(parents=True, exist_ok=True)
@@ -247,7 +268,8 @@ def main(  # noqa: C901
             debug=print_sql_queries,
             progress_watermark=progress_watermark,
         )
-        validate_sql_string(sql_string)
+        if not skip_sql_validation:
+            validate_sql_string(sql_string)
         if debug:
             click.secho(
                 f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"

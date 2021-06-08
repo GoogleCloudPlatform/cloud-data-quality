@@ -1,4 +1,4 @@
-# [1.0.0] - Unreleased (planned 2021-JUL-01)
+# [0.2.0] - Unreleased
 
 ## Highlights
 * simplifying arguments requirements in CLI
@@ -9,7 +9,7 @@
 * CLI now defaults to using `dev` dbt profile name for `--environment_target`.
 
 ## Fixes
-* [#34](https://github.com/GoogleCloudPlatform/cloud-data-quality/issues/34): now loading module templates using `pkgutil` instead of assuming system paths. 
+* [#34](https://github.com/GoogleCloudPlatform/cloud-data-quality/issues/34) - how loading in templates from bundled package locations.
 
 ## Breaking Changes
 * The top-level `macros` directory is moved into the `dbt` directory.
@@ -21,7 +21,7 @@
 ## Known Issues
 * incremental validation assumes the table `dq_summary` already exists.
 
-# [0.1.0] - Current Rolling Version)
+# [0.1.0] - Current Rolling Version
 
 ## Highlights
 

@@ -15,17 +15,14 @@
 """todo: add lib docstring."""
 import itertools
 import json
-import os
 from pathlib import Path
 from pprint import pprint
 import typing
 
 from jinja2 import ChainableUndefined  # type: ignore
-from jinja2 import ChoiceLoader
 from jinja2 import DebugUndefined
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
-from jinja2 import PackageLoader
 from jinja2 import Template
 from jinja2 import select_autoescape
 import yaml
@@ -34,6 +31,7 @@ from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import extract_dbt_env_var
+from clouddq.utils import get_source_file_path
 from clouddq.utils import sha256_digest
 
 
@@ -49,7 +47,6 @@ def get_bigquery_dq_summary_table_name(
     dbt_profile_dir: Path, environment_target: str, dbt_project_path: Path
 ) -> str:
     # Get bigquery project and dataset for dq_summary table names
-    # todo: refactor to allow cross-platform support
     if not dbt_project_path.is_file() and dbt_project_path.name == "dbt_project.yml":
         raise ValueError(
             "Not able to find 'dbt_project.yml' config file at "
@@ -119,23 +116,8 @@ def load_template(template: str) -> Template:
         environment = load_template.environment
     except AttributeError:
         load_template.environment = environment = Environment(
-            loader=ChoiceLoader(
-                [
-                    # first look in top-level "macros" directory (legacy path)
-                    FileSystemLoader(
-                        Path(__file__).parent.parent.joinpath("macros").absolute()
-                    ),
-                    # then look inside "dbt/macros" (new default path)
-                    FileSystemLoader(
-                        Path(__file__)
-                        .parent.parent.joinpath("dbt", "macros")
-                        .absolute()
-                    ),
-                    # else use the package provided template
-                    PackageLoader(
-                        "clouddq", os.path.join("templates", "dbt", "macros")
-                    ),
-                ]
+            loader=FileSystemLoader(
+                get_source_file_path().joinpath("templates", "dbt", "macros").absolute()
             ),
             autoescape=select_autoescape(),
             undefined=DebugChainableUndefined,

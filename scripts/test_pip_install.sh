@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
+# set -o errexit
+# set -o nounset
+# set -o pipefail
 
 set -x
 
@@ -24,10 +24,6 @@ which python3
 python3 --version
 python3 -m pip --version
 
-# make sure wheel is installed
-pip3 install --upgrade pip wheel setuptools
-python3 -c "import setuptools; print(setuptools.__version__)"
-
 # create temporary virtualenv
 python3 -m venv /tmp/clouddq_test_env
 source /tmp/clouddq_test_env/bin/activate
@@ -35,10 +31,19 @@ source /tmp/clouddq_test_env/bin/activate
 # install clouddq wheel into temporary env
 python3 -m pip install .
 
-# create bq connection profile
-mkdir test_dbt_profiles_dir
-cp dbt/profiles.yml.template test_dbt_profiles_dir/profiles.yml
+# set project id
+export PROJECT_ID=$(gcloud config get-value project)
 
 # smoke test clouddq commands
 python3 clouddq --help
-python3 clouddq ALL configs --dbt_profiles_dir=test_dbt_profiles_dir --dry_run
+python3 clouddq ALL configs --dbt_profiles_dir=tests/resources/test_dbt_profiles_dir --debug --dry_run --skip_sql_validation
+python3 clouddq ALL configs --dbt_profiles_dir=tests/resources/test_dbt_profiles_dir --debug --dbt_path=dbt --dry_run --skip_sql_validation
+
+# test clouddq in isolated directory with minimal file dependencies
+TEST_DIR=/tmp/clouddq-test-pip
+rm -rf "$TEST_DIR"
+mkdir "$TEST_DIR"
+cp -r configs "$TEST_DIR"
+cp tests/resources/test_dbt_profiles_dir/profiles.yml "$TEST_DIR"
+cd "$TEST_DIR"
+python3 -m clouddq ALL configs --dbt_profiles_dir="$TEST_DIR" --debug --dry_run --skip_sql_validation

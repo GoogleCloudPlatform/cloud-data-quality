@@ -31,7 +31,7 @@ filegroup(
 
 filegroup(
     name = "dbt_project_template",
-    srcs = glob(["templates/dbt_project.yml"]),
+    srcs = glob(["templates/dbt/dbt_project.yml"]),
     visibility = ["//visibility:public"],
 )
 
@@ -44,8 +44,6 @@ filegroup(
 DATA = [
     "//:dbt",
     "//:dbt_project",
-    "//:macros",
-    "//:legacy_macros_path",
     ":dbt_template",
     ":dbt_project_template",
     ":macros_template",
@@ -67,7 +65,7 @@ py_binary(
 py_library(
     name = "clouddq_lib",
     srcs = glob(["*.py"]),
-    data = ["//:macros"],
+    data = [":macros_template"],
     visibility = ["//tests:__subpackages__"],
     deps = DEPS,
 )

@@ -49,6 +49,13 @@ endif
 test: bin/bazelisk  ## run tests, use 'make test <test_name>' to run a single test
 	@source scripts/bazel_test.sh $(RUN_ARGS)
 
+.PHONY: test-pip-install
+test-pip-install:  ## run tests on pip-install-path
+	@source scripts/test_pip_install.sh
+
+.PHONY: test-all
+test-all: test-pip-install test  ## run all tests
+
 .PHONY: check
 check: bin/bazelisk ## check code with black, buildifier, pyupgrade, and flake8
 	bin/bazelisk run //tools/lint:check $(RUN_ARGS)
