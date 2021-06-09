@@ -36,6 +36,12 @@ filegroup(
     visibility = ["//tests:__subpackages__"],
 )
 
+filegroup(
+    name = "test_dbt_profiles_dir",
+    srcs = glob(["resources/test_dbt_profiles_dir/profiles.yml"]),
+    visibility = ["//tests:__subpackages__"],
+)
+
 DEPS = [
     "//clouddq:classes",
     "//clouddq:clouddq_lib",
@@ -50,10 +56,13 @@ SRCS = glob([
 
 DATA = [
     ":resources",
-    ":test_configs",
     "//:dbt",
     "//:dbt_project",
-    "//:macros",
+    ":test_configs",
+    ":test_dbt_profiles_dir",
+    "//clouddq:dbt_template",
+    "//clouddq:dbt_project_template",
+    "//clouddq:macros_template",
 ]
 
 py_test(

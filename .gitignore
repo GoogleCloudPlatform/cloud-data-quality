@@ -10,6 +10,8 @@ dbt/target
 dbt/models/rule_binding_views/*
 .user.yml
 profiles.yml
+dbt/.user.yml
+dbt/profiles.yml
 bazel-*
 bin
 Pipfile*

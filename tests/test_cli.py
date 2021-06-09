@@ -23,10 +23,40 @@ class TestCli:
     def runner(self):
         return click.testing.CliRunner()
 
-    def test_main_succeeds(self, runner):
+    def test_cli_no_args_fail(self, runner):
         result = runner.invoke(main)
-        assert result.exit_code != 1
+        print(result.output)
+        assert result.exit_code == 2
 
+    def test_cli_help_text(self, runner):
+        result = runner.invoke(main, ["--help"])
+        print(result.output)
+        assert result.exit_code == 0
+
+    def test_cli_missing_dbt_profiles_dir_fail(self, runner):
+        args = [
+            "ALL", 
+            "tests/resources/configs", 
+            "--dry_run", 
+            "--debug",
+            "--skip_sql_validation"
+            ]
+        result = runner.invoke(main, args)
+        print(result.output)
+        assert result.exit_code == 2
+
+    def test_cli_dry_run(self, runner):
+        args = [
+            "ALL", 
+            "tests/resources/configs", 
+            "--dbt_profiles_dir=tests/resources/test_dbt_profiles_dir", 
+            "--dry_run", 
+            "--debug",
+            "--skip_sql_validation"
+            ]
+        result = runner.invoke(main, args)
+        print(result.output)
+        assert result.exit_code == 0
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__]))

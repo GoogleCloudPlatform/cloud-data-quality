@@ -12,15 +12,18 @@ homepage = "https://github.com/GoogleCloudPlatform/cloud-data-quality"
 
 keywords = ['bigquery', 'data quality']
 
+include = ["clouddq/templates/**"]
+
 [tool.poetry.scripts]
 clouddq = "clouddq.main:main"
 
 [tool.poetry.dependencies]
 python = "^3.8.6,<3.9.0"
 click = "^7.1.2"
+# Waiting for dbt to upgrade their jinja2 dependency to remove vulnerability in 2.11.2
 Jinja2 = "^2.11.2"
 PyYAML = "^5.3.1"
-dbt-bigquery = "^0.18.1"
+dbt-bigquery = "^0.19.1"
 # dbt's 3rd level dependency broken, so locking said dependency "agate" to working version 1.6.1
 agate = "1.6.1"
 
