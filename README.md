@@ -222,7 +222,7 @@ python3 clouddq \
     configs \
     --metadata='{"test":"test"}' \
     --dbt_profiles_dir=dbt \
-    --dbt_path=. \
+    --dbt_path=dbt \
     --environment_target=dev
 ```
 
@@ -233,7 +233,7 @@ python3 clouddq \
     configs \
     --metadata='{"test":"test"}' \
     --dbt_profiles_dir=dbt \
-    --dbt_path=. \
+    --dbt_path=dbt \
     --environment_target=dev
 ```
 
