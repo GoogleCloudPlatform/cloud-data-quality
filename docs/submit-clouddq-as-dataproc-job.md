@@ -74,10 +74,10 @@ Note that this step may take a few minutes to complete, hence why we're doing th
 
 Create the `profiles.yml` ([details here](../README.md#setting-up-`dbt`)) config to connect to BigQuery:
 ```bash
-cp profiles.yml.template profiles.yml
-sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g profiles.yml
-sed -i s/clouddq/${CLOUDDQ_BIGQUERY_DATASET}/g profiles.yml
-sed -i s/EU/${CLOUDDQ_BIGQUERY_REGION}/g profiles.yml
+cp dbt/profiles.yml.template dbt/profiles.yml
+sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g dbt/profiles.yml
+sed -i s/clouddq/${CLOUDDQ_BIGQUERY_DATASET}/g dbt/profiles.yml
+sed -i s/EU/${CLOUDDQ_BIGQUERY_REGION}/g dbt/profiles.yml
 ```
 
 Ensure you are using connection `method: oauth` in the `profiles.yml` and take note of the profiles name (the default profile we will use is `dev`). This means that the job will authenticate to GCP using the Dataproc VM service account (which will be the [Compute Engine default service account](https://cloud.google.com/compute/docs/access/service-accounts#default_service_account) if you have not created the Dataproc cluster with a custom service account).
