@@ -68,7 +68,6 @@ class TestClasses:
         "configs_map,source_database,expected",
         [
             pytest.param(
-<<<<<<< HEAD
                 {"table_name": "table", "lake_name": "lake", "zone_name": "zone", "project_name": "project"}, 
                 "DATAPLEX",
                 "lake_zone",
@@ -81,8 +80,6 @@ class TestClasses:
                 id="dataplex_backwards_compatible"
             ),
             pytest.param(
-=======
->>>>>>> main
                 {"table_name": "table", "dataset_name": "dataset", "project_name": "project"}, 
                 "BIGQUERY",
                 "dataset",
@@ -162,7 +159,6 @@ class TestClasses:
         }
         assert bq_entity_configs.to_dict() == bq_entity_configs_expected
 
-<<<<<<< HEAD
     def test_dq_entity_parse_dataplex_configs(self):
         """ """
         dataplex_entity_input_dict = {
@@ -195,8 +191,6 @@ class TestClasses:
         }
         assert dataplex_entity_configs.to_dict() == dataplex_entity_configs_expected
 
-=======
->>>>>>> main
     def test_dq_filter_parse_failure(self):
         """ """
         with pytest.raises(ValueError):
