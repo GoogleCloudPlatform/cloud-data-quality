@@ -33,13 +33,8 @@ gcloud services enable bigquery.googleapis.com
 
 Create the `profiles.yml` ([details here](../README.md#setting-up-`dbt`)) config to connect to BigQuery:
 ```bash
-<<<<<<< HEAD
-cp profiles.yml.template profiles.yml
-sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g profiles.yml
-=======
 cp dbt/profiles.yml.template dbt/profiles.yml
-sed -i s/\<your_gcp_project_id\>/${GCP_PROJECT_ID}/g dbt/profiles.yml
->>>>>>> main
+sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g dbt/profiles.yml
 ```
 
 You can set the environment variable `CLOUDDQ_BIGQUERY_DATASET` to customize the BigQuery dataset name that will contain the BigQuery views corresponding to each rule_binding as well as the `dq_summary` validation outcome table:
