@@ -18,8 +18,8 @@ Ensure you have created a [GCP project ID](https://cloud.google.com/resource-man
 
 We then set the project ID as an enviroment variable and as the main project used by `gcloud`:
 ```bash
-export GCP_PROJECT_ID=<replace_with_your_gcp_project_id>
-gcloud config set project ${GCP_PROJECT_ID}
+export PROJECT_ID=<replace_with_your_gcp_project_id>
+gcloud config set project ${PROJECT_ID}
 ```
 
 If you encounter the issue `No service account scopes specified` with the above command, run  `gcloud auth login` to obtain new credentials and try again.
@@ -34,7 +34,7 @@ gcloud services enable bigquery.googleapis.com
 Create the `profiles.yml` ([details here](../README.md#setting-up-`dbt`)) config to connect to BigQuery:
 ```bash
 cp dbt/profiles.yml.template dbt/profiles.yml
-sed -i s/\<your_gcp_project_id\>/${GCP_PROJECT_ID}/g dbt/profiles.yml
+sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g dbt/profiles.yml
 ```
 
 You can set the environment variable `CLOUDDQ_BIGQUERY_DATASET` to customize the BigQuery dataset name that will contain the BigQuery views corresponding to each rule_binding as well as the `dq_summary` validation outcome table:
@@ -60,7 +60,7 @@ If you are explicitly providing a service-acount json key to `profiles.yml` for 
 
 Edit the `entities` config to use your [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) and custom `CLOUDDQ_BIGQUERY_DATASET`:
 ```bash
-sed -i s/\<your_gcp_project_id\>/${GCP_PROJECT_ID}/g configs/entities/test-data.yml
+sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g configs/entities/test-data.yml
 sed -i s/dq_test/${CLOUDDQ_BIGQUERY_DATASET}/g configs/entities/test-data.yml
 ```
 
@@ -127,7 +127,7 @@ The `dq_summary` table will be automatically created by `CloudDQ` at the GCP Pro
 
 To see the result DQ validation outcomes in the BigQuery table `dq_summary`, run:
 ```bash
-echo "select * from \`${GCP_PROJECT_ID}\`.${CLOUDDQ_BIGQUERY_DATASET}.dq_summary" | bq query --location=${CLOUDDQ_BIGQUERY_REGION} --nouse_legacy_sql --format=json
+echo "select * from \`${PROJECT_ID}\`.${CLOUDDQ_BIGQUERY_DATASET}.dq_summary" | bq query --location=${CLOUDDQ_BIGQUERY_REGION} --nouse_legacy_sql --format=json
 ```
 
 ## Improvements / Feedbacks
