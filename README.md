@@ -156,7 +156,7 @@ More information about dbt's `profiles.yml` configuration options for BigQuery c
 
 You can start by copying the template at:
 ```bash
-cp profiles.yml.template profiles.yml
+cp dbt/profiles.yml.template dbt/profiles.yml
 ```
 
 Note that if you change the `profile` name in `profiles.yml.template` from `default` to something else, you will need to make the corresponding change to the config `profile` in `dbt_project.yml`.
@@ -221,8 +221,8 @@ python3 clouddq \
     T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE \
     configs \
     --metadata='{"test":"test"}' \
-    --dbt_profiles_dir=. \
-    --dbt_path=. \
+    --dbt_profiles_dir=dbt \
+    --dbt_path=dbt \
     --environment_target=dev
 ```
 
@@ -232,8 +232,8 @@ python3 clouddq \
     ALL \
     configs \
     --metadata='{"test":"test"}' \
-    --dbt_profiles_dir=. \
-    --dbt_path=. \
+    --dbt_profiles_dir=dbt \
+    --dbt_path=dbt \
     --environment_target=dev
 ```
 

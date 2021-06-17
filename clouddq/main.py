@@ -141,14 +141,14 @@ def main(  # noqa: C901
     > python clouddq \\\n
       T2_DQ_1_EMAIL \\\n
       configs/rule_bindings/team-2-rule-bindings.yml \\\n
-      --dbt_profiles_dir=. \\\n
+      --dbt_profiles_dir=dbt \\\n
       --metadata='{"test":"test"}' \\\n
 
     > python bazel-bin/clouddq/clouddq_patched.zip \\\n
       ALL \\\n
       configs/ \\\n
       --metadata='{"test":"test"}' \\\n
-      --dbt_profiles_dir=. \\\n
+      --dbt_profiles_dir=dbt \\\n
       --dbt_path=dbt \\\n
       --environment_target=dev
 
