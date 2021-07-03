@@ -213,6 +213,12 @@ class TestClasses:
         sql = RuleType.NOT_NULL.to_sql(params={}).substitute(column="column_name")
         assert sql == expected
 
+    def test_rule_type_not_blank(self):
+        """ """
+        expected = "column_name != ''"
+        sql = RuleType.NOT_BLANK.to_sql(params={}).substitute(column="column_name")
+        assert sql == expected
+
     @pytest.mark.parametrize(
         "params",
         [

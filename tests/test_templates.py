@@ -106,6 +106,13 @@ class TestJinjaTemplates:
             Path("tests/resources/configs/rule_bindings/team-3-rule-bindings.yml")
         )
 
+    @pytest.fixture
+    def test_rule_bindings_collection_team_4(self):
+        """ """
+        return lib.load_rule_bindings_config(
+            Path("tests/resources/configs/rule_bindings/team-4-rule-bindings.yml")
+        )
+
     def test_resolve_time_filter_column(self, test_rule_bindings_collection_team_1):
         """ """
         pprint(test_rule_bindings_collection_team_1)

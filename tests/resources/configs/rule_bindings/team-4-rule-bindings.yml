@@ -12,21 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rules:
-  NOT_NULL_SIMPLE:
-    rule_type: NOT_NULL
-
-  REGEX_VALID_EMAIL:
-    rule_type: REGEX
-    params:
-      pattern: |-
-        ^[^@]+[@]{1}[^@]+$
-
-  CUSTOM_SQL_LENGTH_LE_30:
-    rule_type: CUSTOM_SQL_EXPR
-    params:
-      custom_sql_expr: |-
-        LENGTH( $column ) <= 30
-
-  NOT_BLANK:
-    rule_type: NOT_BLANK
+rule_bindings:
+  T4_DQ_4_VALUE_NOT_BLANK:
+    entity_id: TEST_TABLE
+    column_id: ROW_ID
+    row_filter_id: NONE
+    rule_ids:
+      - NOT_BLANK
