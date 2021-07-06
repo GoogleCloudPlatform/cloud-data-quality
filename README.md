@@ -106,14 +106,14 @@ entities:
   TEST_TABLE:
     source_database: BIGQUERY
     table_name: contact_details
-    database_name: dq_test
-    instance_name: <your_project_id>
+    dataset_name:  <your_bigquery_dataset_id>
+    project_name: <your_project_id>
     environment_override:
       TEST:
         environment: test
         override:
-          database_name: <your_project_id>
-          instance_name: <your_project_id>
+          dataset_name: <your_bigquery_dataset_id>
+          project_name: <your_project_id>
     columns:
       KEY:
         name: key

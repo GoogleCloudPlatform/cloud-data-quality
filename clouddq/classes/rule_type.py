@@ -26,7 +26,7 @@ from clouddq.utils import assert_not_none_or_empty
 FORBIDDEN_SQL = re.compile(r"[;\-#|\\/]")
 NOT_NULL_SQL = Template("$column IS NOT NULL")
 REGEX_SQL = Template("REGEXP_CONTAINS( CAST( $column  AS STRING), '$pattern' )")
-NOT_BLANK_SQL = Template("$column != ''")
+NOT_BLANK_SQL = Template("TRIM($column) != ''")
 
 
 def check_for_invalid_sql(rule_type: RuleType, sql_string: str) -> None:

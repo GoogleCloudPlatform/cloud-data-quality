@@ -21,5 +21,6 @@ rule_bindings:
       - NOT_NULL_SIMPLE
       - REGEX_VALID_EMAIL
       - CUSTOM_SQL_LENGTH_LE_30
+      - NOT_BLANK
     metadata:
       brand: one
