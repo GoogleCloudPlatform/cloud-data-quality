@@ -106,14 +106,14 @@ entities:
   TEST_TABLE:
     source_database: BIGQUERY
     table_name: contact_details
-    dataset_name:  <your_bigquery_dataset_id>
-    project_name: <your_project_id>
+    database_name: dq_test
+    instance_name: <your_project_id>
     environment_override:
       TEST:
         environment: test
         override:
-          dataset_name: <your_bigquery_dataset_id>
-          project_name: <your_project_id>
+          database_name: <your_project_id>
+          instance_name: <your_project_id>
     columns:
       KEY:
         name: key
@@ -376,6 +376,21 @@ machine:
 /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.xx' not found
 ```
 This suggests that the `glibc` version on your target machine is incompatible with the version on your build machine. Resolve this by rebuilding the zip on machine with identical `glibc` version (usually this means the same OS version) as on your target machine, or vice versa.
+
+### 3. Failed to initiatize sandboxfs: Failed to get sandboxfs version from sandboxfs
+
+This means you have not completed installing `sandboxfs` before running `make build`.
+
+To install `sandboxfs`, follow the instructions at https://github.com/bazelbuild/sandboxfs/blob/master/INSTALL.md
+
+As a complete example, see below commands you can run to install `sandboxfs` on a linux system:
+```
+sudo apt install libfuse2
+curl -Lo /tmp/sandboxfs-0.2.0.tgz https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
+sudo tar xzv -C /usr/local -f /tmp/sandboxfs-0.2.0.tgz
+rm /tmp/sandboxfs-0.2.0.tgz
+sandboxfs
+```
 
 ## License
 
