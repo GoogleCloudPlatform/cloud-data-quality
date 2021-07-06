@@ -381,7 +381,7 @@ This suggests that the `glibc` version on your target machine is incompatible wi
 
 This means you have not completed installing `sandboxfs` before running `make build`.
 
-To install `sandboxfs`, follow the instructions at: 
+To install `sandboxfs`, follow the instructions at https://github.com/bazelbuild/sandboxfs/blob/master/INSTALL.md
 
 As a complete example, see below commands you can run to install `sandboxfs` on a linux system:
 ```
