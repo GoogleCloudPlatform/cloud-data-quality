@@ -19,6 +19,7 @@ Ensure you have created a [GCP project ID](https://cloud.google.com/resource-man
 We then set your GCP config variables and resource names to be used in the following steps:
 
 ```bash
+export CLOUDDQ_RELEASE_VERSION=0.2.0  # CloudDQ Release Tag version to use for retrieving the relevant artifact
 export PROJECT_ID=<your_project_id>  # GCP project ID where the Dataproc cluster and BigQuery dataset will be deployed
 export REGION=<preferred_gcp_region>  # name of the GCP region where the Dataproc cluster is deployed
 export ZONE=<preferred_gcp_zone>  # name of the specific zone inside $REGION where the Dataproc cluster is deployed
@@ -92,20 +93,17 @@ sed -i s/dq_test/${CLOUDDQ_BIGQUERY_DATASET}/g configs/entities/test-data.yml
 
 ### 5. Build Self-contained `CloudDQ` Python executable
 
-We will now build a self-contained executable Python zip by running:
+You can download a pre-built zip artifact for `CloudDQ` by running:
 ```
-make build
-```
-
-This will take about 5 minutes to build the first time as `bazel` is fetching the Python interpreter as well as all of the project dependencies to be included in the Python zip executable.
-
-Once completed you can try smoke-testing the the CLI by passing the zip executable into a Python interpreter:
-```
-python3 bazel-bin/clouddq/clouddq_patched.zip --help
+wget -O clouddq_executable_v0.2.0.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v0.2.0/clouddq_executable_v0.2.0_linux-amd64.zip
 ```
 
-More details about this step can be found at the main [README.md](../README.md#build-a-self-contained-python-executable-with-bazel)
+Currently, we only provide the self-contained executable zip artifact for running on debian/ubuntu linux systems. The artifact will not work on MacOS/Windows.
 
+Once completed you can use the CLI by passing the zip executable into any Python interpreter:
+```
+python3 clouddq_executable_v0.2.0.zip --help
+```
 ### 6. Create test data
 
 Create the corresponding test table `contact_details` mentioned in the entities config `configs/entities/test-data.yml` by running:
@@ -126,7 +124,7 @@ bash scripts/dataproc/submit-dataproc-job.sh ALL dev
 
 This script will:
 1. create a zip file containing the `config` directory and stage it in the GCS bucket at `$GCS_BUCKET_NAME` to be retrieved by Dataproc
-2. stage the executable zip located at `bazel-bin/clouddq/clouddq_patched.zip` in the GCS bucket at `$GCS_BUCKET_NAME` to be retrieved by Dataproc
+2. stage the executable with the [Github Release](https://github.com/GoogleCloudPlatform/cloud-data-quality/releases) version specified in the environment variable `$CLOUDDQ_RELEASE_VERSION` in the GCS bucket at `$GCS_BUCKET_NAME` to be retrieved by Dataproc
 3. submit a PySpark job to the Dataproc cluster we created earlier using the Driver programme located at `scripts/dataproc/clouddq_pyspark_driver.py` 
 4. the PySpark job will run the ClouDQ CLI using the `profiles.yml` and YAML config we created
 
