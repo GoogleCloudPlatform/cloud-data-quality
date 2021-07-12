@@ -69,11 +69,17 @@
       },
       "rule_sql_expr": "REGEXP_CONTAINS( CAST( value  AS STRING), '^[^@]+[@]{1}[^@]+$' )",
       "rule_type": "REGEX"
+    },
+    "NOT_BLANK": {
+      "rule_type": "NOT_BLANK",
+      "params": {},
+      "rule_sql_expr": "TRIM(value) != ''"
     }
   },
   "rule_ids": [
     "NOT_NULL_SIMPLE",
     "REGEX_VALID_EMAIL",
-    "CUSTOM_SQL_LENGTH_LE_30"
+    "CUSTOM_SQL_LENGTH_LE_30",
+    "NOT_BLANK"
   ]
 }

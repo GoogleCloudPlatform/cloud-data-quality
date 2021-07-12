@@ -26,6 +26,7 @@ from clouddq.utils import assert_not_none_or_empty
 FORBIDDEN_SQL = re.compile(r"[;\-#|\\/]")
 NOT_NULL_SQL = Template("$column IS NOT NULL")
 REGEX_SQL = Template("REGEXP_CONTAINS( CAST( $column  AS STRING), '$pattern' )")
+NOT_BLANK_SQL = Template("TRIM($column) != ''")
 
 
 def check_for_invalid_sql(rule_type: RuleType, sql_string: str) -> None:
@@ -110,6 +111,7 @@ class RuleType(str, Enum):
     CUSTOM_SQL_EXPR = "CUSTOM_SQL_EXPR"
     NOT_NULL = "NOT_NULL"
     REGEX = "REGEX"
+    NOT_BLANK = "NOT_BLANK"
 
     def to_sql(self: RuleType, params: dict | None) -> Template:
         if self == RuleType.CUSTOM_SQL_EXPR:
@@ -120,5 +122,7 @@ class RuleType(str, Enum):
             return NOT_NULL_SQL
         elif self == RuleType.REGEX:
             return to_sql_regex(params)
+        elif self == RuleType.NOT_BLANK:
+            return NOT_BLANK_SQL
         else:
             raise NotImplementedError(f"Rule Type: {self} not implemented.")

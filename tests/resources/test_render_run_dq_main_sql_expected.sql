@@ -84,6 +84,26 @@ SELECT
     NULL AS complex_rule_validation_errors_count,
   FROM
     data
+    UNION ALL
+  SELECT
+    CURRENT_TIMESTAMP() AS execution_ts,
+    'T2_DQ_1_EMAIL' AS rule_binding_id,
+    'NOT_BLANK' AS rule_id,
+    '<your_gcp_project_id>.dq_test.contact_details' AS table_id,
+    'value' AS column_id,
+    value AS column_value,
+    num_rows_validated AS num_rows_validated,
+    CASE
+
+      WHEN value IS NULL THEN NULL
+      WHEN TRIM(value) != '' THEN TRUE
+
+    ELSE
+    FALSE
+    END AS simple_rule_row_is_valid,
+    NULL AS complex_rule_validation_errors_count,
+    FROM
+    data
 ),
 all_validation_results AS (
   SELECT
