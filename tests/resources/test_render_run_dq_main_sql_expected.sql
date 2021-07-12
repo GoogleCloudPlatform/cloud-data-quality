@@ -94,8 +94,10 @@ SELECT
     value AS column_value,
     num_rows_validated AS num_rows_validated,
     CASE
-    WHEN value IS NULL THEN NULL
-    WHEN TRIM(value) != '' THEN TRUE
+
+      WHEN value IS NULL THEN NULL
+      WHEN TRIM(value) != '' THEN TRUE
+
     ELSE
     FALSE
     END AS simple_rule_row_is_valid,
