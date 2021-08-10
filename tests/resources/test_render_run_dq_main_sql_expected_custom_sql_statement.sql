@@ -30,16 +30,21 @@ SELECT
     'NO_DUPLICATES_IN_COLUMN_GROUPS' AS rule_id,
     '<your_gcp_project_id>.dq_test.contact_details' AS table_id,
     'value' AS column_id,
-    value AS column_value,
+    NULL AS column_value,
     (select distinct num_rows_validated from data) as num_rows_validated,
     FALSE AS simple_rule_row_is_valid,
-    COUNT(1) OVER () as complex_rule_validation_errors_count,
+    COUNT(*) as complex_rule_validation_errors_count,
   FROM (
-select
-  contact_type,value
-from data
-group by contact_type,value
-having count(*) > 1
+    select a.*, duplicates.*
+    from data a
+    inner join (
+      select
+        contact_type,value
+      from data
+      group by contact_type,value
+      having count(*) > 1
+    ) duplicates
+    using (contact_type,value)
 ) custom_sql_statement_validation_errors
 
     UNION ALL

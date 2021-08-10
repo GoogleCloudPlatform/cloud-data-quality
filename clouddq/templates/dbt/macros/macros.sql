@@ -43,11 +43,11 @@
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
-    {{ column_name }} AS column_value,
+    NULL AS column_value,
     (select distinct num_rows_validated from data) as num_rows_validated,
     FALSE AS simple_rule_row_is_valid,
-    COUNT(1) OVER () as complex_rule_validation_errors_count,
+    COUNT(*) as complex_rule_validation_errors_count,
   FROM (
-{{ rule_configs.get("rule_sql_expr") }}
-) custom_sql_statement_validation_errors
+    {{ rule_configs.get("rule_sql_expr") }}
+  ) custom_sql_statement_validation_errors
 {% endmacro -%}
