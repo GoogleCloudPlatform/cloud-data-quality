@@ -1,4 +1,19 @@
-# [0.2.0] - Unreleased
+# [0.2.1] - Released
+
+## New Features / Improvements
+* [#45](https://github.com/GoogleCloudPlatform/cloud-data-quality/pull/45) add NOT_BLANK rule
+
+## Fixes
+* [#46](https://github.com/GoogleCloudPlatform/cloud-data-quality/pull/46) make duplicate rule return 0 rows and full count.
+
+## Breaking Changes
+
+## Deprecations
+
+## Known Issues
+* incremental validation assumes the table `dq_summary` already exists.
+
+# [0.2.0] - Released
 
 ## Highlights
 * simplifying arguments requirements in CLI
