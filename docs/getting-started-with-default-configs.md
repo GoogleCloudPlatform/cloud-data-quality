@@ -73,14 +73,14 @@ python3 clouddq --help
 
 Alternatively, you can download a pre-built zip artifact for `CloudDQ` by running:
 ```
-wget -O clouddq_executable_v0.2.0.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v0.2.0/clouddq_executable_v0.2.0_linux-amd64.zip
+wget -O clouddq_executable_v0.2.1.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v0.2.1/clouddq_executable_v0.2.1_linux-amd64.zip
 ```
 
 Currently, we only provide the self-contained executable zip artifact for running on debian/ubuntu linux systems. The artifact will not work on MacOS/Windows.
 
 Once completed you can use the CLI by passing the zip executable into any Python interpreter:
 ```
-python3 clouddq_executable_v0.2.0.zip --help
+python3 clouddq_executable_v0.2.1.zip --help
 ```
 
 ### 5. Create test data
@@ -109,7 +109,7 @@ python3 clouddq \
 Or if you are using the pre-built zip file (only works on linux systems such as Debian/Ubuntu):
 
 ```
-python3 clouddq_executable_v0.2.0.zip \
+python3 clouddq_executable_v0.2.1.zip \
     T2_DQ_1_EMAIL \
     configs \
     --metadata='{"test":"test"}' \
