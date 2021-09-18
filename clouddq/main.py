@@ -23,7 +23,6 @@ import click
 from clouddq import lib
 from clouddq import utils
 from clouddq.bigquery_utils import validate_sql_string
-from clouddq.utils import get_template_file
 
 
 def not_null_or_empty(
@@ -45,14 +44,72 @@ def not_null_or_empty(
     "rule_binding_config_path",
     type=click.Path(exists=True),
 )
+# @click.option(
+#     "--target_bigquery_summary_table",
+#     help="",
+# )
+@click.option(
+    "--bigquery_oauth_connection_configs",
+    help="Connection profile for authenticating to BigQuery using credentials "
+    "automatically discovered via Application Default Credentials (ADC). "
+    "More on ADC: https://google.aip.dev/auth/4110. "
+    "Takes as input a 3-value tuple of: "
+    " - GCP Project ID: used for execution BigQuery Jobs "
+    " - BigQuery Region: GCP region used for running BigQuery Jobs and for storing "
+    " any intemediate DQ summary results "
+    " - BigQuery Dataset ID: used for storing rule_binding views and intermediate DQ summary results "
+    "Example usage: "
+    "`--bigquery_oauth_connection_configs $PROJECT_ID $BIGQUERY_DATASET $BIGQUERY_REGION`"
+    "Only one BigQuery connection config with argument format "
+    "--bigquery_{*}_connection_configs can be configured per run. "
+    "This argument will be ignored if --dbt_profiles_dir is set.",
+    type=(str, str, str)
+)
+@click.option(
+    "--bigquery_sa_keys_connection_configs",
+    help="Connection profile for authenticating to BigQuery using "
+    "a local service account JSON key. "
+    "Takes as input a 4-value tuple of: "
+    " - GCP Project ID: used for execution BigQuery Jobs "
+    " - BigQuery Region: GCP region used for running BigQuery Jobs and for storing "
+    " any intemediate DQ summary results "
+    " - BigQuery Dataset ID: used for storing rule_binding views and intermediate DQ summary results "
+    " - Service Account Key Path: file system path to the GCP service account JSON key" 
+    "Example usage: "
+    "`--bigquery_sa_keys_connection_configs $PROJECT_ID $BIGQUERY_DATASET $BIGQUERY_REGION /path/to/bigquery/keyfile.json`"
+    "Only one BigQuery connection config with argument format "
+    "--bigquery_{*}_connection_configs can be configured per run. "
+    "This argument will be ignored if --dbt_profiles_dir is set.",
+    type=(str, str, str, str)
+)
+@click.option(
+    "--bigquery_sa_impersonation_connection_configs",
+    help="Connection profile for authenticating to BigQuery using "
+    "service account impersonation via a local ADC credentials. "
+    "Ensure the local ADC credentials has permission to impersonate "
+    "the service account such as `roles/iam.serviceAccountTokenCreator`."
+    "Takes as input a 4-value tuple of: "
+    " - GCP Project ID: used for execution BigQuery Jobs "
+    " - BigQuery Region: GCP region used for running BigQuery Jobs and for storing "
+    " any intemediate DQ summary results "
+    " - BigQuery Dataset ID: used for storing rule_binding views and intermediate DQ summary results "
+    " - Service Account Key Path: name of the service account you have actAs permission to impersonate" 
+    "Example usage: "
+    "`--bigquery_sa_keys_connection_configs $PROJECT_ID $BIGQUERY_DATASET $BIGQUERY_REGION /path/to/bigquery/keyfile.json`"
+    "Only one BigQuery connection config with argument format "
+    "--bigquery_{*}_connection_configs can be configured per run. "
+    "This argument will be ignored if --dbt_profiles_dir is set.",
+    type=(str, str, str, str)
+)
 @click.option(
     "--dbt_profiles_dir",
     help="Path to dbt profiles.yml. "
-    "This is a required argument for configuring dbt connection profiles."
-    "Defaults to environment variable DBT_PROFILES_DIR if set.",
+    "This is a required argument for configuring dbt connection profiles "
+    "if another argument --{*}_connection_configs was not provided."
+    "Defaults to environment variable DBT_PROFILES_DIR if set. "
+    "If set, you can also specify the profile target with --environment_target.",
     type=click.Path(exists=True),
     envvar="DBT_PROFILES_DIR",
-    callback=not_null_or_empty,
 )
 @click.option(
     "--dbt_path",
@@ -67,10 +124,10 @@ def not_null_or_empty(
     "--environment_target",
     help="Execution environment target as defined in dbt profile, "
     "e.g. dev, test, prod.  "
-    "Defaults 'dev' or the environment variable ENV if set.",
+    "Defaults 'dev' or the environment variable ENV if set. "
+    "Only relevant if --dbt_profiles_dir is set. ",
     envvar="ENV",
     default="dev",
-    callback=not_null_or_empty,
 )
 @click.option(
     "--metadata",
@@ -116,6 +173,9 @@ def main(  # noqa: C901
     dbt_path: str,
     dbt_profiles_dir: str,
     environment_target: str,
+    bigquery_oauth_connection_configs: str,
+    bigquery_sa_keys_connection_configs: str,
+    bigquery_sa_impersonation_connection_configs: str,
     metadata: str,
     dry_run: bool,
     progress_watermark: bool,
@@ -153,76 +213,20 @@ def main(  # noqa: C901
       --environment_target=dev
 
     """
-    if debug:
-        click.secho(f"Current working directory: {Path().cwd()}", fg="yellow")
-    dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
-    if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
-        raise ValueError(
-            f"Cannot find connection `profiles.yml` configurations at "
-            f"`dbt_profiles_dir` path: {dbt_profiles_dir}"
-        )
-    if debug:
-        click.secho(f"Using 'dbt_profiles_dir': {dbt_profiles_dir}", fg="yellow")
-    if not dbt_path:
-        dbt_path = Path().cwd().joinpath("dbt").absolute()
-        if debug:
-            click.secho(
-                f"No argument 'dbt_path' provided. Defaulting to use "
-                f"'dbt' directory in current working directory at: {dbt_path}",
-                fg="magenta",
-            )
-    else:
-        dbt_path = Path(dbt_path).absolute()
-        if dbt_path.name != "dbt":
-            dbt_path = dbt_path / "dbt"
-    if not dbt_path.is_dir():
-        if debug:
-            click.secho(
-                f"Creating a new dbt directory at 'dbt_path': {dbt_path}", fg="magenta"
-            )
-        dbt_path.mkdir(parents=True, exist_ok=True)
-    if debug:
-        click.secho(f"Using 'dbt_path': {dbt_path}", fg="yellow")
-    dbt_project_path = dbt_path.absolute().joinpath("dbt_project.yml")
-    if not dbt_project_path.is_file():
-        if debug:
-            click.secho(
-                f"Cannot find `dbt_project.yml` configurations in current path: "
-                f"{dbt_project_path}",
-                fg="magenta",
-            )
-            click.secho(
-                f"Writing templated 'dbt_project.yml' to: {dbt_project_path} ",
-                fg="magenta",
-            )
-        dbt_project_path.write_text(get_template_file(Path("dbt", "dbt_project.yml")))
-    click.secho(f"Using 'dbt_project_path': {dbt_project_path}", fg="yellow")
-    dbt_main_path = dbt_path / "models" / "data_quality_engine"
-    dbt_main_path.mkdir(parents=True, exist_ok=True)
-    if not dbt_main_path.joinpath("main.sql").is_file():
-        dbt_main_path.joinpath("main.sql").write_text(
-            get_template_file(
-                Path("dbt").joinpath("models", "data_quality_engine", "main.sql")
-            )
-        )
-    if not dbt_main_path.joinpath("dq_summary.sql").is_file():
-        dbt_main_path.joinpath("dq_summary.sql").write_text(
-            get_template_file(
-                Path("dbt").joinpath("models", "data_quality_engine", "dq_summary.sql")
-            )
-        )
-    dbt_rule_binding_views_path = dbt_path / "models" / "rule_binding_views"
-    dbt_rule_binding_views_path.mkdir(parents=True, exist_ok=True)
-    click.secho(
-        f"Writing generated sql to {dbt_rule_binding_views_path.absolute()}/",
-        fg="yellow",
-    )
-    configs_path = Path(rule_binding_config_path)
-    if debug:
-        click.secho(
-            f"Loading rule bindings from: {configs_path.absolute()} ", fg="yellow"
-        )
+    # Prepare connection configurations
+    resolve_connection_configs(
+        dbt_profiles_dir,
+        environment_target,
+        bigquery_oauth_connection_configs,
+        bigquery_sa_keys_connection_configs,
+        bigquery_sa_impersonation_connection_configs,
+        debug)
+    # Prepare local dbt environment
+    dbt_path = resolve_dbt_path(dbt_path=dbt_path, debug=debug)
+    dbt_rule_binding_views_path = prepare_dbt_directory(dbt_path=dbt_path, debug=debug)
+    # Load metadata
     metadata = json.loads(metadata)
+    # Prepare DQ Summary Table
     dq_summary_table_name = lib.get_bigquery_dq_summary_table_name(
         dbt_profiles_dir, environment_target, dbt_project_path
     )
@@ -230,10 +234,18 @@ def main(  # noqa: C901
         f"Writing summary results to BigQuery table: `{dq_summary_table_name}`. ",
         fg="yellow",
     )
+    # Load Rule Bindings
+    configs_path = Path(rule_binding_config_path)
+    if debug:
+        click.secho(
+            f"Loading rule bindings from: {configs_path.absolute()} ", fg="yellow"
+        )
     all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
+    # Prepare list of Rule Bindings in-scope for run
     target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
     if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
         target_rule_binding_ids = list(all_rule_bindings.keys())
+    # Load all other configs
     (
         entities_collection,
         row_filters_collection,

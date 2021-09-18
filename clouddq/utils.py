@@ -28,8 +28,7 @@ from dbt.main import main as dbt
 
 ENV_VAR_PATTERN = re.compile(r".*env_var\((.+?)\).*", re.IGNORECASE)
 
-
-def get_source_file_path():
+def get_source_file_path() -> Path:
     return Path(getsourcefile(lambda: 0)).resolve().parent
 
 
@@ -43,6 +42,14 @@ def get_template_file(file_path: Path) -> str:
     data = template_path.read_text()
     return data
 
+
+def write_templated_file_to_path(path: Path, lookup_table: typing.Dict) -> None:
+    path.write_text(
+        get_template_file(
+            lookup_table.get(path.name)
+        )
+    )
+    
 
 @contextlib.contextmanager
 def working_directory(path):
