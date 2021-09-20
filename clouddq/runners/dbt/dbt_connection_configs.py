@@ -96,5 +96,3 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
 
     def to_dbt_profiles_dict(self) -> Dict:
         return self.to_dbt_bigquery_profiles_dict()
-
-    def from_

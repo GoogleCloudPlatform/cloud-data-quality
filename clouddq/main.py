@@ -232,7 +232,7 @@ click_logging.basic_config(
 )
 @click.option(
     "--skip_sql_validation",
-    help="If True, skip validation step of generated SQL using GCP dry-run.",
+    help="If True, skip validation step of generated SQL using BigQuery dry-run.",
     is_flag=True,
     default=False,
 )
