@@ -19,20 +19,14 @@ from pathlib import Path
 from pprint import pprint
 import typing
 
-from jinja2 import ChainableUndefined  # type: ignore
-from jinja2 import DebugUndefined
-from jinja2 import Environment
-from jinja2 import FileSystemLoader
-from jinja2 import Template
-from jinja2 import select_autoescape
 import yaml
 
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_rule_binding import DqRuleBinding
+from clouddq.runners.dbt.dbt_utils import extract_dbt_env_var
 from clouddq.utils import assert_not_none_or_empty
-from clouddq.utils import extract_dbt_env_var
-from clouddq.utils import get_source_file_path
 from clouddq.utils import sha256_digest
+from clouddq.utils import load_jinja_template
 
 
 def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
@@ -44,10 +38,11 @@ def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
 
 
 def get_bigquery_dq_summary_table_name(
-    dbt_profile_dir: Path, environment_target: str, dbt_project_path: Path
+    dbt_profile_dir: Path, environment_target: str, dbt_path: Path
 ) -> str:
     # Get bigquery project and dataset for dq_summary table names
-    if not dbt_project_path.is_file() and dbt_project_path.name == "dbt_project.yml":
+    dbt_project_path = dbt_path.joinpath("dbt_project.sql")
+    if not dbt_project_path.is_file():
         raise ValueError(
             "Not able to find 'dbt_project.yml' config file at "
             "input path {dbt_project_path}."
@@ -107,24 +102,6 @@ def load_row_filters_config(configs_path: Path) -> typing.Dict:
     return load_configs(configs_path, DqConfigType.ROW_FILTERS)
 
 
-class DebugChainableUndefined(ChainableUndefined, DebugUndefined):
-    pass
-
-
-def load_template(template: str) -> Template:
-    try:
-        environment = load_template.environment
-    except AttributeError:
-        load_template.environment = environment = Environment(
-            loader=FileSystemLoader(
-                get_source_file_path().joinpath("templates", "dbt", "macros").absolute()
-            ),
-            autoescape=select_autoescape(),
-            undefined=DebugChainableUndefined,
-        )
-    return environment.get_template(template)
-
-
 def create_rule_binding_view_model(
     rule_binding_id: str,
     rule_binding_configs: typing.Dict,
@@ -138,7 +115,10 @@ def create_rule_binding_view_model(
     debug: bool = False,
     progress_watermark: bool = True,
 ) -> str:
-    template = load_template("run_dq_main.sql")
+    template = load_jinja_template(
+        template="run_dq_main.sql",
+        template_parent=Path("dbt", "macros")
+        )
     configs = prepare_configs_from_rule_binding_id(
         rule_binding_id=rule_binding_id,
         rule_binding_configs=rule_binding_configs,
