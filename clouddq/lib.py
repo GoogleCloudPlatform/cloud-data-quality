@@ -25,8 +25,8 @@ from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.runners.dbt.dbt_utils import extract_dbt_env_var
 from clouddq.utils import assert_not_none_or_empty
-from clouddq.utils import sha256_digest
 from clouddq.utils import load_jinja_template
+from clouddq.utils import sha256_digest
 
 
 def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
@@ -41,7 +41,7 @@ def get_bigquery_dq_summary_table_name(
     dbt_profile_dir: Path, environment_target: str, dbt_path: Path
 ) -> str:
     # Get bigquery project and dataset for dq_summary table names
-    dbt_project_path = dbt_path.joinpath("dbt_project.sql")
+    dbt_project_path = dbt_path.joinpath("dbt_project.yml")
     if not dbt_project_path.is_file():
         raise ValueError(
             "Not able to find 'dbt_project.yml' config file at "
@@ -116,9 +116,8 @@ def create_rule_binding_view_model(
     progress_watermark: bool = True,
 ) -> str:
     template = load_jinja_template(
-        template="run_dq_main.sql",
-        template_parent=Path("dbt", "macros")
-        )
+        template_path=Path("dbt", "macros", "run_dq_main.sql")
+    )
     configs = prepare_configs_from_rule_binding_id(
         rule_binding_id=rule_binding_id,
         rule_binding_configs=rule_binding_configs,

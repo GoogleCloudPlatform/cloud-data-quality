@@ -1,21 +1,38 @@
-from pathlib import Path
-from typing import Dict, Optional
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
-logger = logging.getLogger(__name__)
+from pathlib import Path
+from typing import Dict
+from typing import Optional
 
 from clouddq.lib import load_jinja_template
+from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig
+from clouddq.runners.dbt.dbt_connection_configs import GcpDbtConnectionConfig
+from clouddq.runners.dbt.dbt_utils import run_dbt
 from clouddq.utils import write_templated_file_to_path
-from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig, GcpDbtConnectionConfig
-from clouddq.runners.dbt.dbt_utils import run_dbt, resolve_dbt_path
 
+
+logger = logging.getLogger(__name__)
 
 DBT_TEMPLATED_FILE_LOCATIONS = {
     "profiles.yml": Path("dbt", "profiles.yml"),
     "dbt_project.yml": Path("dbt", "dbt_project.yml"),
     "main.sql": Path("dbt", "models", "data_quality_engine", "main.sql"),
-    "main.sql": Path("dbt", "models", "data_quality_engine", "dq_summary.sql"),
+    "dq_summary.sql": Path("dbt", "models", "data_quality_engine", "dq_summary.sql"),
 }
+
 
 class DbtRunner:
     dbt_path: Path
@@ -25,7 +42,8 @@ class DbtRunner:
     dbt_rule_binding_views_path: Path
     debug: bool
 
-    def __init__(self,
+    def __init__(
+        self,
         dbt_path: Optional[Path],
         dbt_profiles_dir: Optional[str],
         environment_target: Optional[str],
@@ -33,14 +51,15 @@ class DbtRunner:
         gcp_sa_keys_connection_configs: Optional[str],
         gcp_sa_impersonation_connection_configs: Optional[str],
         create_paths_if_not_exists: bool = True,
-        debug: bool = False
-        ):
+        debug: bool = False,
+    ):
         self.debug = debug
-         # Prepare local dbt environment
+        # Prepare local dbt environment
         self.dbt_path = self.__resolve_dbt_path(
             dbt_path=dbt_path,
             create_paths_if_not_exists=create_paths_if_not_exists,
-            debug=debug)
+            debug=debug,
+        )
         self.__prepare_dbt_project_path()
         self.__prepare_dbt_main_path()
         self.__prepare_rule_binding_view_path()
@@ -52,6 +71,7 @@ class DbtRunner:
             gcp_sa_keys_connection_configs=gcp_sa_keys_connection_configs,
             gcp_sa_impersonation_connection_configs=gcp_sa_impersonation_connection_configs,
         )
+        # self.__test_dbt_connection_configs()
         self.__write_connection_configs_to_dbt_profiles_yml_file()
 
     def run(self, configs: Dict, debug: bool = False, dry_run: bool = False):
@@ -65,6 +85,10 @@ class DbtRunner:
             dry_run=dry_run,
         )
 
+    def get_rule_binding_view_path(self) -> Path:
+        self.__prepare_rule_binding_view_path()
+        return self.dbt_rule_binding_views_path
+
     def __resolve_connection_configs(
         self,
         dbt_profiles_dir: Optional[str],
@@ -72,7 +96,7 @@ class DbtRunner:
         gcp_oauth_connection_configs: Optional[str],
         gcp_sa_keys_connection_configs: Optional[str],
         gcp_sa_impersonation_connection_configs: Optional[str],
-        debug: bool
+        debug: bool,
     ) -> DbtConnectionConfig:
         if dbt_profiles_dir:
             dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
@@ -87,23 +111,25 @@ class DbtRunner:
             logger.warn(
                 "Unless `dbt_profiles_dir` is defined, the following argument "
                 "for `environment_target` will be ignored: %s",
-                environment_target
+                environment_target,
             )
         else:
             # create GcpDbtConnectionConfig
             connection_arguments = [
                 gcp_oauth_connection_configs,
                 gcp_sa_keys_connection_configs,
-                gcp_sa_impersonation_connection_configs]
+                gcp_sa_impersonation_connection_configs,
+            ]
             if len([arg for arg in connection_arguments if arg]) != 1:
                 raise ValueError(
                     "Exactly one GCP connection config must be specified from %s",
-                    connection_arguments
-                    )
+                    connection_arguments,
+                )
             elif gcp_oauth_connection_configs:
-                (project_id,
-                gcp_region,
-                dataset_id,
+                (
+                    project_id,
+                    gcp_region,
+                    dataset_id,
                 ) = gcp_oauth_connection_configs
                 connection_config = GcpDbtConnectionConfig(
                     project_id=project_id,
@@ -111,10 +137,11 @@ class DbtRunner:
                     dataset_id=dataset_id,
                 )
             elif gcp_sa_keys_connection_configs:
-                (project_id,
-                gcp_region,
-                dataset_id,
-                service_account_key_path,
+                (
+                    project_id,
+                    gcp_region,
+                    dataset_id,
+                    service_account_key_path,
                 ) = gcp_sa_keys_connection_configs
                 connection_config = GcpDbtConnectionConfig(
                     project_id=project_id,
@@ -123,30 +150,32 @@ class DbtRunner:
                     service_account_key_path=service_account_key_path,
                 )
             elif gcp_sa_impersonation_connection_configs:
-                (project_id,
-                gcp_region,
-                dataset_id,
-                impersonation_credentials
+                (
+                    project_id,
+                    gcp_region,
+                    dataset_id,
+                    impersonation_credentials,
                 ) = gcp_sa_impersonation_connection_configs
                 connection_config = GcpDbtConnectionConfig(
                     project_id=project_id,
                     gcp_region=gcp_region,
                     dataset_id=dataset_id,
-                    impersonation_credentials=impersonation_credentials
+                    impersonation_credentials=impersonation_credentials,
                 )
+            else:
+                raise ValueError("No valid DBT connection method found.")
             self.connection_config = connection_config
             self.dbt_profiles_dir = self.dbt_path
         if debug:
             logger.debug("Using 'dbt_profiles_dir': %s", dbt_profiles_dir)
+
+    def __test_dbt_connection_configs(self):
         # todo: test dbt connection
         pass
 
     def __resolve_dbt_path(
-        self,
-        dbt_path: str,
-        create_paths_if_not_exists: bool,
-        debug: bool
-        ) -> Path:
+        self, dbt_path: str, create_paths_if_not_exists: bool, debug: bool
+    ) -> Path:
         if debug:
             logger.info("Current working directory: %s", Path().cwd())
         if not dbt_path:
@@ -169,9 +198,7 @@ class DbtRunner:
                     )
                 dbt_path.mkdir(parents=True, exist_ok=True)
             else:
-                raise ValueError(
-                    "Provided 'dbt_path' does not exists: %s", dbt_path
-                )
+                raise ValueError("Provided 'dbt_path' does not exists: %s", dbt_path)
         if debug:
             logger.info(f"Using 'dbt_path': {dbt_path}", fg="yellow")
         return dbt_path
@@ -196,13 +223,19 @@ class DbtRunner:
         dbt_main_path = self.dbt_path / "models" / "data_quality_engine"
         dbt_main_path.mkdir(parents=True, exist_ok=True)
         if not dbt_main_path.joinpath("main.sql").is_file():
-            write_templated_file_to_path(dbt_main_path.joinpath("main.sql"), DBT_TEMPLATED_FILE_LOCATIONS)
+            write_templated_file_to_path(
+                dbt_main_path.joinpath("main.sql"), DBT_TEMPLATED_FILE_LOCATIONS
+            )
         if not dbt_main_path.joinpath("dq_summary.sql").is_file():
-            write_templated_file_to_path(dbt_main_path.joinpath("dq_summary.sql"), DBT_TEMPLATED_FILE_LOCATIONS)
+            write_templated_file_to_path(
+                dbt_main_path.joinpath("dq_summary.sql"), DBT_TEMPLATED_FILE_LOCATIONS
+            )
 
     def __prepare_rule_binding_view_path(self) -> None:
         assert self.dbt_path.is_dir()
-        self.dbt_rule_binding_views_path = self.dbt_path / "models" / "rule_binding_views"
+        self.dbt_rule_binding_views_path = (
+            self.dbt_path / "models" / "rule_binding_views"
+        )
         self.dbt_rule_binding_views_path.mkdir(parents=True, exist_ok=True)
         logger.info(
             "Writing generated sql to %s/",
@@ -212,11 +245,13 @@ class DbtRunner:
     def __write_connection_configs_to_dbt_profiles_yml_file(self) -> None:
         template = load_jinja_template(
             template="profiles.yml",
-            template_parent=DBT_TEMPLATED_FILE_LOCATIONS["profiles.yml"])
+            template_parent=DBT_TEMPLATED_FILE_LOCATIONS["profiles.yml"],
+        )
         dbt_profiles_configs = self.connection_config.to_dbt_profiles_dict()
         dbt_profiles_generated = template.render(dbt_profiles_configs)
         logging.warn(
-            "Writing user input GCP connection profile to dbt profiles.yml at path:\n%s",
-            self.dbt_profiles_dir
+            "Writing user input GCP connection profile to dbt profiles.yml "
+            "at path:\n%s",
+            self.dbt_profiles_dir,
         )
         self.dbt_profiles_dir.write_text(dbt_profiles_generated)

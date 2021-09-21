@@ -13,106 +13,113 @@
 # limitations under the License.
 
 """todo: add main docstring."""
+from datetime import datetime
 import json
-from pathlib import Path
-from pprint import pprint
-import typing
 import logging
 import logging.config
+from pathlib import Path
+from pprint import pprint
+import sys
+import traceback
+import typing
 
 import click
 import click_logging
 
 from clouddq import lib
 from clouddq.bigquery_utils import validate_sql_string
-from clouddq.utils import assert_not_none_or_empty
 from clouddq.runners.dbt import DbtRunner
+from clouddq.utils import assert_not_none_or_empty
 
-import json
-import logging
-import sys
-import traceback
 
-from datetime import datetime
+APP_NAME = "clouddq"
+APP_VERSION = "git rev-parse HEAD"
+LOG_LEVEL = logging._nameToLevel["INFO"]
 
-APP_NAME = 'clouddq'
-APP_VERSION = 'git rev-parse HEAD'
-LOG_LEVEL = logging._nameToLevel['INFO']
 
 class JsonEncoderStrFallback(json.JSONEncoder):
-  def default(self, obj):
-    try:
-      return super().default(obj)
-    except TypeError as exc:
-      if 'not JSON serializable' in str(exc):
-        return str(obj)
-      raise
+    def default(self, obj):
+        try:
+            return super().default(obj)
+        except TypeError as exc:
+            if "not JSON serializable" in str(exc):
+                return str(obj)
+            raise
 
 
 class JsonEncoderDatetime(JsonEncoderStrFallback):
-  def default(self, obj):
-    if isinstance(obj, datetime):
-      return obj.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    else:
-      return super().default(obj)
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        else:
+            return super().default(obj)
 
-logger = logging.getLogger('clouddq')
+
+logger = logging.getLogger("clouddq")
 logging.basicConfig(
-  format='%(json_formatted)s',
-  level=LOG_LEVEL,
-  handlers=[
-    #logging.FileHandler('/var/log/clouddq.log', 'a'),
-    logging.StreamHandler(sys.stderr),
-  ],
+    format="%(json_formatted)s",
+    level=LOG_LEVEL,
+    handlers=[
+        # logging.FileHandler('/var/log/clouddq.log', 'a'),
+        logging.StreamHandler(sys.stderr),
+    ],
 )
 
 _record_factory_bak = logging.getLogRecordFactory()
-def record_factory(*args, **kwargs) -> logging.LogRecord:
-  record = _record_factory_bak(*args, **kwargs)
 
-  record.json_formatted = json.dumps(
-    {
-      'severity': record.levelname,
-      'time': record.created,
-      'location': '{}:{}:{}'.format(
-        record.pathname or record.filename,
-        record.funcName,
-        record.lineno,
-      ),
-      'exception': record.exc_info,
-      'traceback': traceback.format_exception(*record.exc_info) if record.exc_info else None,
-      'message': record.getMessage(),
-      'labels': {
-        'name': APP_NAME,
-        'releaseId': APP_VERSION,
-      },
-    },
-    cls=JsonEncoderDatetime,
-  )
-  return record
+
+def record_factory(*args, **kwargs) -> logging.LogRecord:
+    record = _record_factory_bak(*args, **kwargs)
+
+    record.json_formatted = json.dumps(
+        {
+            "severity": record.levelname,
+            "time": record.created,
+            "location": "{}:{}:{}".format(
+                record.pathname or record.filename,
+                record.funcName,
+                record.lineno,
+            ),
+            "exception": record.exc_info,
+            "traceback": traceback.format_exception(*record.exc_info)
+            if record.exc_info
+            else None,
+            "message": record.getMessage(),
+            "labels": {
+                "name": APP_NAME,
+                "releaseId": APP_VERSION,
+            },
+        },
+        cls=JsonEncoderDatetime,
+    )
+    return record
+
+
 logger.setLogRecordFactory(record_factory)
 
 click_logging_style_kwargs = {
-    'debug': dict(fg='cyan', blink=True),
-    'info': dict(fg='yellow', blink=True),
-    'warn': dict(fg='magenta', blink=True),
-    'error': dict(fg='red', blink=True),
-    'exception': dict(fg='red', blink=True),
-    'critical': dict(fg='red', blink=True)
+    "debug": dict(fg="cyan", blink=True),
+    "info": dict(fg="yellow", blink=True),
+    "warn": dict(fg="magenta", blink=True),
+    "error": dict(fg="red", blink=True),
+    "exception": dict(fg="red", blink=True),
+    "critical": dict(fg="red", blink=True),
 }
 click_logging_echo_kwargs = {
-    'debug': dict(err=True),
-    'info': dict(err=True),
-    'warn': dict(err=True),
-    'error': dict(err=True),
-    'exception': dict(err=True),
-    'critical': dict(err=True),
+    "debug": dict(err=True),
+    "info": dict(err=True),
+    "warn": dict(err=True),
+    "error": dict(err=True),
+    "exception": dict(err=True),
+    "critical": dict(err=True),
 }
 click_logging.basic_config(
     logger,
     style_kwargs=click_logging_style_kwargs,
-    echo_kwargs=click_logging_echo_kwargs
+    echo_kwargs=click_logging_echo_kwargs,
 )
+
+
 @click.command()
 @click_logging.simple_verbosity_option(logger)
 @click.argument("rule_binding_ids")
@@ -133,30 +140,33 @@ click_logging.basic_config(
     " - GCP Project ID: used for executing GCP Jobs "
     " - GCP Region: GCP region used for running GCP Jobs and for storing "
     " any intemediate DQ summary results "
-    " - GCP Dataset ID: used for storing rule_binding views and intermediate DQ summary results "
+    " - GCP Dataset ID: used for storing rule_binding views and intermediate"
+    " DQ summary results. "
     "Example usage: "
-    "`--gcp_oauth_connection_configs $PROJECT_ID $BIGQUERY_DATASET $BIGQUERY_REGION`"
+    "`--gcp_oauth_connection_configs $PROJECT_ID $BIGQUERY_REGION $BIGQUERY_DATASET`"
     "Only one CLI argument for GCP connection config with format "
-    "--gcp_{*}_connection_configs can be configured per run. "
+    "--gcp_*_connection_configs can be configured per run. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
-    type=(str, str, str)
+    type=(str, str, str),
 )
 @click.option(
     "--gcp_sa_keys_connection_configs",
     help="Connection profile for authenticating to GCP using "
-    "a local service account JSON key. "
+    "an exported service account JSON key available locally. "
     "Takes as input a 4-value tuple of: "
     " - GCP Project ID: used for executing GCP Jobs "
     " - GCP Region: GCP region used for running GCP Jobs and for storing "
     " any intemediate DQ summary results "
-    " - GCP Dataset ID: used for storing rule_binding views and intermediate DQ summary results "
+    " - GCP Dataset ID: used for storing rule_binding views and intermediate"
+    " DQ summary results. "
     " - Service Account Key Path: file system path to the GCP service account JSON key"
     "Example usage: "
-    "`--gcp_sa_keys_connection_configs $PROJECT_ID $BIGQUERY_DATASET $BIGQUERY_REGION /path/to/gcp/keyfile.json`"
+    "`--gcp_sa_keys_connection_configs $PROJECT_ID $BIGQUERY_REGION "
+    "$BIGQUERY_DATASET /path/to/gcp/keyfile.json`"
     "Only one CLI argument for GCP connection config with format "
-    "--gcp_{*}_connection_configs can be configured per run. "
+    "--gcp_*_connection_configs can be configured per run. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
-    type=(str, str, str, str)
+    type=(str, str, str, str),
 )
 @click.option(
     "--gcp_sa_impersonation_connection_configs",
@@ -168,22 +178,28 @@ click_logging.basic_config(
     " - GCP Project ID: used for executing GCP Jobs "
     " - GCP Region: GCP region used for running GCP Jobs and for storing "
     " any intemediate DQ summary results "
-    " - GCP Dataset ID: used for storing rule_binding views and intermediate DQ summary results "
+    " - GCP Dataset ID: used for storing rule_binding views and intermediate"
+    " DQ summary results. "
     " - Service Account Name: name of the service account you want to impersonate"
     "Example usage: "
-    "`--gcp_sa_keys_connection_configs $PROJECT_ID $BIGQUERY_DATASET $BIGQUERY_REGION /path/to/gcp/keyfile.json`"
+    "`--gcp_sa_keys_connection_configs $PROJECT_ID $BIGQUERY_REGION "
+    "$BIGQUERY_DATASET $SA_NAME`"
     "Only one CLI argument for GCP connection config with format "
-    "--gcp_{*}_connection_configs can be configured per run. "
+    "--gcp_*_connection_configs can be configured per run. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
-    type=(str, str, str, str)
+    type=(str, str, str, str),
 )
 @click.option(
     "--dbt_profiles_dir",
     help="Path to dbt profiles.yml. "
-    "This is a required argument for configuring dbt connection profiles "
-    "if another argument --{*}_connection_configs was not provided."
-    "Defaults to environment variable DBT_PROFILES_DIR if set. "
-    "If set, you can also specify the profile target with --environment_target.",
+    "Path containing the dbt profiles.yml configs for connecting to GCP."
+    "As dbt supports multiple connection configs in a single profiles.yml file, "
+    "you can also specify the dbt target for the run with --environment_target."
+    "Defaults to environment variable DBT_PROFILES_DIR if present. "
+    "If another connection config with pattern --*_connection_configs "
+    "was not provided, this argument is mandatory. "
+    "If --dbt_profiles_dir is present, all other connection configs "
+    "with pattern --*_connection_configs will be ignored.",
     type=click.Path(exists=True),
     envvar="DBT_PROFILES_DIR",
 )
@@ -198,10 +214,11 @@ click_logging.basic_config(
 )
 @click.option(
     "--environment_target",
-    help="Execution environment target as defined in dbt profile, "
+    help="Execution environment target as defined in dbt profiles.yml, "
     "e.g. dev, test, prod.  "
-    "Defaults 'dev' or the environment variable ENV if set. "
-    "Only relevant if --dbt_profiles_dir is set. ",
+    "Defaults to 'dev' if not set. "
+    "Uses the environment variable ENV if present. "
+    "This value be ignored if --dbt_profiles_dir is not set. ",
     envvar="ENV",
     default="dev",
 )
@@ -289,6 +306,7 @@ def main(  # noqa: C901
       --environment_target=dev
 
     """
+    # Prepare dbt runtime
     dbt_runner = DbtRunner(
         dbt_path=dbt_path,
         dbt_profiles_dir=dbt_profiles_dir,
@@ -296,7 +314,9 @@ def main(  # noqa: C901
         gcp_oauth_connection_configs=gcp_oauth_connection_configs,
         gcp_sa_keys_connection_configs=gcp_sa_keys_connection_configs,
         gcp_sa_impersonation_connection_configs=gcp_sa_impersonation_connection_configs,
-        debug=debug)
+        debug=debug,
+    )
+    dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
     # Load metadata
     metadata = json.loads(metadata)
     # Prepare DQ Summary Table
@@ -310,9 +330,7 @@ def main(  # noqa: C901
     # Load Rule Bindings
     configs_path = Path(rule_binding_config_path)
     if debug:
-        logger.debug(
-            "Loading rule bindings from: %s", configs_path.absolute()
-        )
+        logger.debug("Loading rule bindings from: %s", configs_path.absolute())
     all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
     # Prepare list of Rule Bindings in-scope for run
     target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
@@ -357,8 +375,7 @@ def main(  # noqa: C901
             validate_sql_string(sql_string)
         if debug:
             logger.debug(
-                "*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
-                "%s.sql",
+                "*** Writing sql to {dbt_rule_binding_views_path.absolute()}/" "%s.sql",
                 rule_binding_id,
             )
         lib.write_sql_string_as_dbt_model(
@@ -373,11 +390,7 @@ def main(  # noqa: C901
     configs = {"target_rule_binding_ids": target_rule_binding_ids}
     try:
         logger.info("Running dbt in path: %s", dbt_path)
-        dbt_runner.run(
-            configs=configs,
-            debug=debug,
-            dry_run=dry_run
-        )
+        dbt_runner.run(configs=configs, debug=debug, dry_run=dry_run)
     except Exception as e:
         logger.error("Encountered unexpected error: " + str(e), exc_info=True)
 

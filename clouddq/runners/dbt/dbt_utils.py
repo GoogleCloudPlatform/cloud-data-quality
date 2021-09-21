@@ -1,15 +1,31 @@
-import json
-import os
-import re
-from pathlib import Path
-from typing import Dict
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+import json
 import logging
-logger = logging.getLogger(__name__)
+import os
+from pathlib import Path
+import re
+from typing import Dict
 
 from dbt.main import main as dbt
 
-from clouddq.utils import working_directory, assert_not_none_or_empty
+from clouddq.utils import assert_not_none_or_empty
+from clouddq.utils import working_directory
+
+
+logger = logging.getLogger(__name__)
 
 ENV_VAR_PATTERN = re.compile(r".*env_var\((.+?)\).*", re.IGNORECASE)
 
@@ -58,6 +74,7 @@ def run_dbt(
             logger.info("\nExecuting dbt command:\n %s", command)
         if not dry_run:
             dbt(command)
+
 
 def extract_dbt_env_var(text: str) -> str:
     var_env = re.search(ENV_VAR_PATTERN, text).group(1)

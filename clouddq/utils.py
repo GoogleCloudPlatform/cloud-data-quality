@@ -31,8 +31,11 @@ from jinja2 import select_autoescape
 
 
 def get_templates_path(file_path: Path) -> Path:
-    template_path = Path(getsourcefile(lambda: 0)).resolve().parent.joinpath("templates", file_path)
+    template_path = (
+        Path(getsourcefile(lambda: 0)).resolve().parent.joinpath("templates", file_path)
+    )
     return template_path
+
 
 def get_template_file(file_path: Path) -> str:
     template_path = get_templates_path(file_path)
@@ -44,12 +47,10 @@ def get_template_file(file_path: Path) -> str:
     data = template_path.read_text()
     return data
 
+
 def write_templated_file_to_path(path: Path, lookup_table: typing.Dict) -> None:
-    path.write_text(
-        get_template_file(
-            lookup_table.get(path.name)
-        )
-    )
+    path.write_text(get_template_file(lookup_table.get(path.name)))
+
 
 @contextlib.contextmanager
 def working_directory(path):
@@ -60,6 +61,7 @@ def working_directory(path):
         yield
     finally:
         os.chdir(prev_cwd)
+
 
 def assert_not_none_or_empty(value: typing.Any, error_msg: str) -> None:
     """
@@ -99,22 +101,24 @@ class DebugChainableUndefined(ChainableUndefined, DebugUndefined):
     pass
 
 
-def load_jinja_template(template: str, template_parent: Path) -> Template:
+def load_jinja_template(template_path: Path) -> Template:
     try:
         environment = load_jinja_template.environment
+        return environment.get_template(template_path.name)
     except AttributeError:
-        templates_path = get_templates_path(template_parent).absolute()
-        if not templates_path.is_dir():
+        templates_parent_path = get_templates_path(template_path.parent).absolute()
+        if not templates_parent_path.is_dir():
             raise ValueError(
-                f"Error while loading template {template}:\n"
-                f"Jinja template directory not found: {templates_path.absolute()}"
+                f"Error while loading template: {template_path}:\n"
+                f"Jinja template directory not found: "
+                f"{templates_parent_path.absolute()}"
             )
         load_jinja_template.environment = environment = Environment(
-            loader=FileSystemLoader(templates_path),
+            loader=FileSystemLoader(templates_parent_path),
             autoescape=select_autoescape(),
             undefined=DebugChainableUndefined,
         )
-    return environment.get_template(template)
+        return environment.get_template(template_path.name)
 
 
 def get_format_string_arguments(format_string: str) -> typing.List[str]:
