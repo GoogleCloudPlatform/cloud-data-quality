@@ -44,6 +44,7 @@ filegroup(
 
 DEPS = [
     "//clouddq:classes",
+    "//clouddq:integration",
     "//clouddq:clouddq_lib",
     requirement("py"),
     requirement("pytest"),
@@ -99,6 +100,14 @@ py_test(
 
 py_test(
     name = "test_bigquery_dry_run_client",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "test_dataplex_clouddq_task_integration",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,

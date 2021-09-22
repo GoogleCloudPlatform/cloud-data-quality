@@ -79,6 +79,15 @@ py_library(
     ],
 )
 
+py_library(
+    name = "integration",
+    srcs = glob(["integration/*.py"]),
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        requirement("jinja2"),
+    ],
+)
+
 compile_pip_requirements(
     name = "requirements",
 )
