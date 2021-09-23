@@ -13,18 +13,22 @@
 # limitations under the License.
 
 import json
-from requests import Session, Response
-import google.auth
-from requests_oauth2 import OAuth2BearerToken
-import google.auth.transport.requests
 import time
 
+import google.auth
+import google.auth.transport.requests
+from requests import Response
+from requests import Session
+from requests_oauth2 import OAuth2BearerToken
+
+
 # getting the credentials and project details for gcp project
-credentials, your_project_id = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+credentials, your_project_id = google.auth.default(
+    scopes=["https://www.googleapis.com/auth/cloud-platform"]
+)
 
 
 def getAuthToken(credentials):
-
     """
     This method is used to get the authentication token.
 
@@ -44,15 +48,17 @@ def getAuthToken(credentials):
 
     return auth_token
 
+
 # get auth token
 auth_token = getAuthToken(credentials)
 
 # create request headers
 headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + auth_token
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + auth_token,
 }
+
 
 def getSession():
     """
@@ -69,8 +75,7 @@ def getSession():
 session = getSession()
 
 
-class DqDataplex():
-
+class DqDataplex:
     dataplex_endpoint: str
     project_id: str
     location_id: str
@@ -91,8 +96,11 @@ class DqDataplex():
         :return: Response object
         """
         response = session.post(
-            f"{self.dataplex_endpoint}/v1/projects/{self.project_id}/locations/{self.location_id}/lakes/{self.lake_name}/tasks?task_id={task_id}",
-            headers=headers, data=json.dumps(body))  # create task api
+            f"{self.dataplex_endpoint}/v1/projects/{self.project_id}/locations/"
+            f"{self.location_id}/lakes/{self.lake_name}/tasks?task_id={task_id}",
+            headers=headers,
+            data=json.dumps(body),
+        )  # create task api
 
         return response
 
@@ -105,8 +113,10 @@ class DqDataplex():
         """
 
         res = session.get(
-            f"{self.dataplex_endpoint}/v1/projects/{self.project_id}/locations/{self.location_id}/lakes/{self.lake_name}/tasks/{task_id}/jobs",
-            headers=headers)
+            f"{self.dataplex_endpoint}/v1/projects/{self.project_id}/locations/"
+            f"{self.location_id}/lakes/{self.lake_name}/tasks/{task_id}/jobs",
+            headers=headers,
+        )
         return res
 
     def getDataplexTaskStatus(self, task_id: str) -> str:
@@ -121,10 +131,14 @@ class DqDataplex():
         print(res.status_code)
         print(res.text)
         resp_obj = json.loads(res.text)
-        if res.status_code == 200 and len(resp_obj['jobs']) > 0:
-            if 'state' in resp_obj['jobs'][0]:
-                task_status = resp_obj['jobs'][0]['state']
-                return task_status
-            else:
-                time.sleep(60)
-                self.getDataplexTaskStatus(task_id)
+
+        if res.status_code == 200:
+            if len(resp_obj["jobs"]) > 0:
+                if "state" in resp_obj["jobs"][0]:
+                    task_status = resp_obj["jobs"][0]["state"]
+                    return task_status
+                else:
+                    time.sleep(60)
+                    self.getDataplexTaskStatus(task_id)
+        else:
+            return "Error creating task"

@@ -36,13 +36,12 @@ class TestDataplexIntegration:
     @pytest.fixture
     def test_dq_dataplex(self):
 
-        dataplex_endpoint = 'https://dataplex.googleapis.com'
+        dataplex_endpoint = "https://dataplex.googleapis.com"
         location_id = 'us-central1'
         lake_name = "amandeep-dev-lake"
         project_id = "dataplex-clouddq"
 
         return DqDataplex(dataplex_endpoint, project_id, location_id, lake_name)
-
 
 
     def test_create_bq_dataplex_task_check_status_code_equals_200(self, test_dq_dataplex):

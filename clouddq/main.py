@@ -110,6 +110,8 @@ def not_null_or_empty(
     type=bool,
     default=True,
 )
+# user argument for destination table(target_project.target_dataset.tablename)
+# single argument
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
