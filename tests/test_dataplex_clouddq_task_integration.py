@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pytest
-from clouddq.integration.dq_dataplex import DqDataplex
+from clouddq.integration.dq_dataplex import CloudDqDataplex
 import json
 import time
 import datetime
@@ -36,12 +36,12 @@ class TestDataplexIntegration:
     @pytest.fixture
     def test_dq_dataplex(self):
 
-        dataplex_endpoint = "https://dataplex.googleapis.com"
+        dataplex_endpoint = "https://autopush-dataplex.sandbox.googleapis.com"
         location_id = 'us-central1'
-        lake_name = "amandeep-dev-lake"
-        project_id = "dataplex-clouddq"
+        lake_name = "hello"
+        project_id = "dataplex-demo"
 
-        return DqDataplex(dataplex_endpoint, project_id, location_id, lake_name)
+        return CloudDqDataplex(dataplex_endpoint, project_id, location_id, lake_name)
 
 
     def test_create_bq_dataplex_task_check_status_code_equals_200(self, test_dq_dataplex):
@@ -81,14 +81,12 @@ class TestDataplexIntegration:
         :return:
         """
         task_status = test_dq_dataplex.getDataplexTaskStatus(task_id)
-        logger.info("Task Status")
-        logger.info(task_status)
+        logger.info("Task Status %s", task_status)
 
         while (task_status != 'SUCCEEDED' and task_status != 'FAILED'):
             logger.info(time.ctime())
             time.sleep(30)
             task_status = test_dq_dataplex.getDataplexTaskStatus(task_id)
-            logger.info("Task status after wait")
             logger.info(task_status)
 
         assert task_status == 'SUCCEEDED'

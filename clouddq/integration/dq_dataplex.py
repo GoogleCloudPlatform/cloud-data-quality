@@ -17,75 +17,84 @@ import time
 
 import google.auth
 import google.auth.transport.requests
+from  google.auth.credentials import Credentials
 from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
 
+import logging
 
-# getting the credentials and project details for gcp project
-credentials, your_project_id = google.auth.default(
-    scopes=["https://www.googleapis.com/auth/cloud-platform"]
-)
+# Create and configure logger
+logging.basicConfig(format='%(asctime)s %(message)s')
+# Creating an object
+logger = logging.getLogger()
+# Setting the threshold of logger to DEBUG
+logger.setLevel(logging.DEBUG)
 
+class CloudDqDataplex:
 
-def getAuthToken(credentials):
-    """
-    This method is used to get the authentication token.
-
-    Returns:
-    auth_token (str):
-    """
-
-    # getting request object
-    auth_req = google.auth.transport.requests.Request()
-
-    print(credentials.valid)  # logger.debugs False
-    credentials.refresh(auth_req)  # refresh token
-    # check for valid credentials
-    print(credentials.valid)  # logger.debugs True
-    auth_token = credentials.token
-    print(auth_token)
-
-    return auth_token
-
-
-# get auth token
-auth_token = getAuthToken(credentials)
-
-# create request headers
-headers = {
-    "Accept": "application/json",
-    "Content-Type": "application/json",
-    "Authorization": "Bearer " + auth_token,
-}
-
-
-def getSession():
-    """
-    This method create the session object for request
-    :return:
-    session object
-    """
-    with Session() as session:
-        session.auth = OAuth2BearerToken(auth_token)
-
-    return session
-
-
-session = getSession()
-
-
-class DqDataplex:
-    dataplex_endpoint: str
+    dataplex_endpoint: str = "https://dataplex.googleapis.com"
     project_id: str
     location_id: str
     lake_name: str
+    headers: dict
+    session : Session
+    auth_token : str
+
 
     def __init__(self, dataplex_endpoint, project_id, location_id, lake_name):
         self.dataplex_endpoint = dataplex_endpoint
         self.project_id = project_id
         self.location_id = location_id
         self.lake_name = lake_name
+
+    # getting the credentials and project details for gcp project
+    credentials, your_project_id = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+
+    def getAuthToken(credentials: Credentials) -> str:
+        """
+        This method is used to get the authentication token.
+
+        Returns:
+        auth_token (str):
+        """
+
+        # getting request object
+        auth_req = google.auth.transport.requests.Request()
+
+        logger.info(credentials.valid)  # logger.debugs False
+        credentials.refresh(auth_req)  # refresh token
+        # check for valid credentials
+        logger.info(credentials.valid)  # logger.debugs True
+        auth_token = credentials.token
+        logger.info(auth_token)
+
+        return auth_token
+
+    # get auth token
+    auth_token = getAuthToken(credentials)
+
+    # create request headers
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + auth_token,
+    }
+
+    def getSession(auth_token: str) -> Session:
+        """
+        This method create the session object for request
+        :return:
+        session object
+        """
+        with Session() as session:
+            session.auth = OAuth2BearerToken(auth_token)
+
+        return session
+
+    session = getSession(auth_token)
 
     def createDataplexTask(self, task_id: str, body: dict) -> Response:
 
@@ -95,10 +104,10 @@ class DqDataplex:
         :param body: request body for the task
         :return: Response object
         """
-        response = session.post(
+        response = self.session.post(
             f"{self.dataplex_endpoint}/v1/projects/{self.project_id}/locations/"
             f"{self.location_id}/lakes/{self.lake_name}/tasks?task_id={task_id}",
-            headers=headers,
+            headers=self.headers,
             data=json.dumps(body),
         )  # create task api
 
@@ -112,10 +121,10 @@ class DqDataplex:
         :return: Response object
         """
 
-        res = session.get(
+        res = self.session.get(
             f"{self.dataplex_endpoint}/v1/projects/{self.project_id}/locations/"
             f"{self.location_id}/lakes/{self.lake_name}/tasks/{task_id}/jobs",
-            headers=headers,
+            headers=self.headers,
         )
         return res
 
