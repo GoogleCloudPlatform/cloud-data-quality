@@ -32,7 +32,7 @@ source /tmp/clouddq_test_env/bin/activate
 python3 -m pip install .
 
 # set project id
-export PROJECT_ID=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 
 # smoke test clouddq commands
 python3 clouddq --help

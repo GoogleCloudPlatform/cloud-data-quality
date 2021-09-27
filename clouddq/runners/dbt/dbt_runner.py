@@ -194,9 +194,8 @@ class DbtRunner:
         dbt_project_path = self.dbt_path.absolute().joinpath("dbt_project.yml")
         if not dbt_project_path.is_file():
             logger.debug(
-                "Cannot find `dbt_project.yml` configurations in current path: %s"
-                "Writing templated 'dbt_project.yml' to: %s",
-                dbt_project_path,
+                f"Cannot find `dbt_project.yml` configurations in current path: {dbt_project_path}"
+                f"Writing templated 'dbt_project.yml' to: {dbt_project_path}"
             )
             write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
         logger.info("Using 'dbt_project_path': %s", dbt_project_path)
