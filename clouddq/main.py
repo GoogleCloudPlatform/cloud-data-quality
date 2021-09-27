@@ -17,8 +17,13 @@ import json
 from pathlib import Path
 from pprint import pprint
 import typing
+import logging
+import logging.config
+import sys
+import traceback
 
 import click
+import click_logging
 
 from clouddq import lib
 from clouddq import utils
@@ -39,7 +44,94 @@ def not_null_or_empty(
         )
 
 
+APP_NAME = "clouddq"
+APP_VERSION = "git rev-parse HEAD"
+LOG_LEVEL = logging._nameToLevel["INFO"]
+
+
+class JsonEncoderStrFallback(json.JSONEncoder):
+    def default(self, obj):
+        try:
+            return super().default(obj)
+        except TypeError as exc:
+            if "not JSON serializable" in str(exc):
+                return str(obj)
+            raise
+
+
+class JsonEncoderDatetime(JsonEncoderStrFallback):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        else:
+            return super().default(obj)
+
+
+logger = logging.getLogger("clouddq")
+logging.basicConfig(
+    format="%(json_formatted)s",
+    level=LOG_LEVEL,
+    handlers=[
+        # logging.FileHandler('/var/log/clouddq.log', 'a'),
+        logging.StreamHandler(sys.stderr),
+    ],
+)
+_record_factory_bak = logging.getLogRecordFactory()
+
+
+def record_factory(*args, **kwargs) -> logging.LogRecord:
+    record = _record_factory_bak(*args, **kwargs)
+    record.json_formatted = json.dumps(
+        {
+            "severity": record.levelname,
+            "time": record.created,
+            "location": "{}:{}:{}".format(
+                record.pathname or record.filename,
+                record.funcName,
+                record.lineno,
+            ),
+            "exception": record.exc_info,
+            "traceback": traceback.format_exception(*record.exc_info)
+            if record.exc_info
+            else None,
+            "message": record.getMessage(),
+            "labels": {
+                "name": APP_NAME,
+                "releaseId": APP_VERSION,
+            },
+        },
+        cls=JsonEncoderDatetime,
+    )
+    return record
+
+
+logging.setLogRecordFactory(record_factory)
+
+click_logging_style_kwargs = {
+    "debug": dict(fg="cyan", blink=True),
+    "info": dict(fg="yellow", blink=True),
+    "warn": dict(fg="magenta", blink=True),
+    "error": dict(fg="red", blink=True),
+    "exception": dict(fg="red", blink=True),
+    "critical": dict(fg="red", blink=True),
+    }
+click_logging_echo_kwargs = {
+    "debug": dict(err=True),
+    "info": dict(err=True),
+    "warn": dict(err=True),
+    "error": dict(err=True),
+    "exception": dict(err=True),
+    "critical": dict(err=True),
+    }
+click_logging.basic_config(
+    logger,
+    style_kwargs = click_logging_style_kwargs,
+    echo_kwargs = click_logging_echo_kwargs,
+
+)
+
 @click.command()
+@click_logging.simple_verbosity_option(logger)
 @click.argument("rule_binding_ids")
 @click.argument(
     "rule_binding_config_path",
@@ -153,6 +245,10 @@ def main(  # noqa: C901
       --environment_target=dev
 
     """
+
+    if debug:
+        logger.setLevel("DEBUG")
+
     if debug:
         click.secho(f"Current working directory: {Path().cwd()}", fg="yellow")
     dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
