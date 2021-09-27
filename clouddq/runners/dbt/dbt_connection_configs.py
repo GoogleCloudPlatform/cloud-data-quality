@@ -23,8 +23,14 @@ from pathlib import Path
 from typing import Dict
 from typing import Optional
 
+import yaml
+
 
 logger = logging.getLogger(__name__)
+
+DBT_PROFILES_YML_TEMPLATE = {
+    "default": {"target": "clouddq", "outputs": {"clouddq": {}}}
+}
 
 
 @unique
@@ -40,9 +46,19 @@ class DbtBigQueryConnectionMethod(str, Enum):
 class DbtConnectionConfig(ABC):
     """Abstract base class for dbt connection profiles configurations."""
 
-    @abstractmethod()
+    @abstractmethod
     def to_dbt_profiles_dict(self) -> Dict:
         pass
+
+    @abstractmethod
+    def to_dbt_profiles_yml(self, target_directory: Optional[Path] = None) -> str:
+        template = DBT_PROFILES_YML_TEMPLATE
+        profiles_content = self.to_dbt_profiles_dict()
+        template["default"]["outputs"]["clouddq"] = profiles_content
+        if target_directory:
+            with open(target_directory, "w") as f:
+                yaml.dump(template, f)
+        return yaml.dump(template)
 
 
 @dataclass
@@ -100,8 +116,8 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
     def get_connection_method(self) -> str:
         if (
             self.connection_method == DbtBigQueryConnectionMethod.OAUTH
-            or self.connection_method
-            == DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_IMPERSONATION
+            or self.connection_method  # noqa: W503
+            == DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_IMPERSONATION  # noqa: W503
         ):
             return "oauth"
         elif self.connection_method.SERVICE_ACCOUNT_KEY:
@@ -126,7 +142,7 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
             profiles_configs["keyfile"] = self.service_account_key_path
         elif (
             self.connection_method
-            == DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_IMPERSONATION
+            == DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_IMPERSONATION  # noqa: W503
         ):
             assert self.service_account_impersonation_credentials
             assert profiles_configs["method"] == "oauth"

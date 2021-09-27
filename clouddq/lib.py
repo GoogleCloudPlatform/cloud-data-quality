@@ -19,45 +19,12 @@ from pathlib import Path
 from pprint import pprint
 import typing
 
-import yaml
-
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_rule_binding import DqRuleBinding
-from clouddq.runners.dbt.dbt_utils import extract_dbt_env_var
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import load_jinja_template
+from clouddq.utils import load_yaml
 from clouddq.utils import sha256_digest
-
-
-def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
-    with file_path.open() as f:
-        yaml_configs = yaml.safe_load(f)
-    if not yaml_configs:
-        return dict()
-    return yaml_configs.get(key, dict())
-
-
-def get_bigquery_dq_summary_table_name(
-    dbt_profile_dir: Path, environment_target: str, dbt_path: Path
-) -> str:
-    # Get bigquery project and dataset for dq_summary table names
-    dbt_project_path = dbt_path.joinpath("dbt_project.yml")
-    if not dbt_project_path.is_file():
-        raise ValueError(
-            "Not able to find 'dbt_project.yml' config file at "
-            "input path {dbt_project_path}."
-        )
-    dbt_profiles_key = load_yaml(dbt_project_path, "profile")
-    dbt_profiles_config = load_yaml(dbt_profile_dir / "profiles.yml", dbt_profiles_key)
-    dbt_profile = dbt_profiles_config["outputs"][environment_target]
-    dbt_project = dbt_profile["project"]
-    if "{{" in dbt_project:
-        dbt_project = extract_dbt_env_var(dbt_project)
-    dbt_dataset = dbt_profile["dataset"]
-    if "{{" in dbt_dataset:
-        dbt_dataset = extract_dbt_env_var(dbt_dataset)
-    dq_summary_table_name = f"{dbt_project}.{dbt_dataset}.dq_summary"
-    return dq_summary_table_name
 
 
 def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:

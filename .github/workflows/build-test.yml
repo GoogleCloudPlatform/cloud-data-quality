@@ -63,10 +63,10 @@ jobs:
 
       - name: test pip install
         run: |
-          export PROJECT_ID="${GCLOUD_PROJECT}"
+          export GOOGLE_CLOUD_PROJECT="${GCLOUD_PROJECT}"
           export CLOUDDQ_BIGQUERY_DATASET="dq_test"
           export CLOUDDQ_BIGQUERY_REGION="europe-west2"
-          sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g configs/entities/test-data.yml
+          sed -i s/\<your_gcp_project_id\>/${GOOGLE_CLOUD_PROJECT}/g configs/entities/test-data.yml
           make test-pip-install
         shell: bash
 

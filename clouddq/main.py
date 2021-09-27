@@ -28,7 +28,8 @@ import click_logging
 
 from clouddq import lib
 from clouddq.bigquery_utils import validate_sql_string
-from clouddq.runners.dbt import DbtRunner
+from clouddq.runners.dbt.dbt_runner import DbtRunner
+from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.utils import assert_not_none_or_empty
 
 
@@ -95,7 +96,7 @@ def record_factory(*args, **kwargs) -> logging.LogRecord:
     return record
 
 
-logger.setLogRecordFactory(record_factory)
+logging.setLogRecordFactory(record_factory)
 
 click_logging_style_kwargs = {
     "debug": dict(fg="cyan", blink=True),
@@ -128,6 +129,10 @@ click_logging.basic_config(
     type=click.Path(exists=True),
 )
 # @click.option(
+#     "--write_dq_summary_to_stdout",
+#     help="",
+# )
+# @click.option(
 #     "--target_bigquery_summary_table",
 #     help="",
 # )
@@ -136,6 +141,7 @@ click_logging.basic_config(
     help="Connection profile for authenticating to GCP using credentials "
     "automatically discovered via Application Default Credentials (ADC). "
     "More on how ADC discovers credentials: https://google.aip.dev/auth/4110. "
+    "\b"
     "Takes as input a 3-value tuple of: "
     " - GCP Project ID: used for executing GCP Jobs "
     " - GCP Region: GCP region used for running GCP Jobs and for storing "
@@ -147,12 +153,14 @@ click_logging.basic_config(
     "Only one CLI argument for GCP connection config with format "
     "--gcp_*_connection_configs can be configured per run. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
-    type=(str, str, str),
+    default=[None] * 3,
+    type=click.Tuple([str, str, str]),
 )
 @click.option(
     "--gcp_sa_keys_connection_configs",
     help="Connection profile for authenticating to GCP using "
     "an exported service account JSON key available locally. "
+    "\b"
     "Takes as input a 4-value tuple of: "
     " - GCP Project ID: used for executing GCP Jobs "
     " - GCP Region: GCP region used for running GCP Jobs and for storing "
@@ -166,7 +174,8 @@ click_logging.basic_config(
     "Only one CLI argument for GCP connection config with format "
     "--gcp_*_connection_configs can be configured per run. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
-    type=(str, str, str, str),
+    default=[None] * 4,
+    type=click.Tuple([str, str, str, str]),
 )
 @click.option(
     "--gcp_sa_impersonation_connection_configs",
@@ -174,6 +183,7 @@ click_logging.basic_config(
     "service account impersonation via a local ADC credentials. "
     "Ensure the local ADC credentials has permission to impersonate "
     "the service account such as `roles/iam.serviceAccountTokenCreator`."
+    "\b"
     "Takes as input a 4-value tuple of: "
     " - GCP Project ID: used for executing GCP Jobs "
     " - GCP Region: GCP region used for running GCP Jobs and for storing "
@@ -187,7 +197,8 @@ click_logging.basic_config(
     "Only one CLI argument for GCP connection config with format "
     "--gcp_*_connection_configs can be configured per run. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
-    type=(str, str, str, str),
+    default=[None] * 4,
+    type=click.Tuple([str, str, str, str]),
 )
 @click.option(
     "--dbt_profiles_dir",
@@ -306,6 +317,8 @@ def main(  # noqa: C901
       --environment_target=dev
 
     """
+    if debug:
+        logger.setLevel("DEBUG")
     # Prepare dbt runtime
     dbt_runner = DbtRunner(
         dbt_path=dbt_path,
@@ -314,14 +327,16 @@ def main(  # noqa: C901
         gcp_oauth_connection_configs=gcp_oauth_connection_configs,
         gcp_sa_keys_connection_configs=gcp_sa_keys_connection_configs,
         gcp_sa_impersonation_connection_configs=gcp_sa_impersonation_connection_configs,
-        debug=debug,
     )
+    dbt_path = dbt_runner.get_dbt_path()
     dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
     # Load metadata
     metadata = json.loads(metadata)
     # Prepare DQ Summary Table
-    dq_summary_table_name = lib.get_bigquery_dq_summary_table_name(
-        dbt_profiles_dir, environment_target, dbt_path
+    dq_summary_table_name = get_bigquery_dq_summary_table_name(
+        dbt_path=Path(dbt_path),
+        dbt_profiles_dir=Path(dbt_profiles_dir),
+        environment_target=environment_target,
     )
     logger.info(
         "Writing summary results to GCP table: `%s`. ",
@@ -329,8 +344,7 @@ def main(  # noqa: C901
     )
     # Load Rule Bindings
     configs_path = Path(rule_binding_config_path)
-    if debug:
-        logger.debug("Loading rule bindings from: %s", configs_path.absolute())
+    logger.debug("Loading rule bindings from: %s", configs_path.absolute())
     all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
     # Prepare list of Rule Bindings in-scope for run
     target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
@@ -373,11 +387,10 @@ def main(  # noqa: C901
         )
         if not skip_sql_validation:
             validate_sql_string(sql_string)
-        if debug:
-            logger.debug(
-                "*** Writing sql to {dbt_rule_binding_views_path.absolute()}/" "%s.sql",
-                rule_binding_id,
-            )
+        logger.debug(
+            "*** Writing sql to {dbt_rule_binding_views_path.absolute()}/" "%s.sql",
+            rule_binding_id,
+        )
         lib.write_sql_string_as_dbt_model(
             rule_binding_id=rule_binding_id,
             sql_string=sql_string,
@@ -389,7 +402,6 @@ def main(  # noqa: C901
             view.unlink()
     configs = {"target_rule_binding_ids": target_rule_binding_ids}
     try:
-        logger.info("Running dbt in path: %s", dbt_path)
         dbt_runner.run(configs=configs, debug=debug, dry_run=dry_run)
     except Exception as e:
         logger.error("Encountered unexpected error: " + str(e), exc_info=True)

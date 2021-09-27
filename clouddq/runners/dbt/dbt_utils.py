@@ -18,10 +18,12 @@ import os
 from pathlib import Path
 import re
 from typing import Dict
+from typing import Optional
 
 from dbt.main import main as dbt
 
 from clouddq.utils import assert_not_none_or_empty
+from clouddq.utils import load_yaml
 from clouddq.utils import working_directory
 
 
@@ -33,8 +35,8 @@ ENV_VAR_PATTERN = re.compile(r".*env_var\((.+?)\).*", re.IGNORECASE)
 def run_dbt(
     dbt_path: Path,
     dbt_profile_dir: Path,
-    configs: Dict,
-    environment: str,
+    configs: Optional[Dict] = None,
+    environment: str = "clouddq",
     debug: bool = False,
     dry_run: bool = False,
 ) -> None:
@@ -51,6 +53,8 @@ def run_dbt(
     Returns:
 
     """
+    if not configs:
+        configs = {}
     command = []
     command.extend(["run"])
     command += [
@@ -71,9 +75,10 @@ def run_dbt(
                 dbt(debug_commands)
             except SystemExit:
                 pass
-            logger.info("\nExecuting dbt command:\n %s", command)
-        if not dry_run:
-            dbt(command)
+        else:
+            if not dry_run:
+                logger.info("\nExecuting dbt command:\n %s", command)
+                dbt(command)
 
 
 def extract_dbt_env_var(text: str) -> str:
@@ -88,3 +93,26 @@ def extract_dbt_env_var(text: str) -> str:
         value, f"Enviromment variable not found for dbt env_var variable: {text}"
     )
     return value
+
+
+def get_bigquery_dq_summary_table_name(
+    dbt_path: Path, dbt_profiles_dir: Path, environment_target: str
+) -> str:
+    # Get bigquery project and dataset for dq_summary table names
+    dbt_project_path = dbt_path.joinpath("dbt_project.yml")
+    if not dbt_project_path.is_file():
+        raise ValueError(
+            "Not able to find 'dbt_project.yml' config file at "
+            "input path {dbt_project_path}."
+        )
+    dbt_profiles_key = load_yaml(dbt_project_path, "profile")
+    dbt_profiles_config = load_yaml(dbt_profiles_dir / "profiles.yml", dbt_profiles_key)
+    dbt_profile = dbt_profiles_config["outputs"][environment_target]
+    dbt_project = dbt_profile["project"]
+    if "{{" in dbt_project:
+        dbt_project = extract_dbt_env_var(dbt_project)
+    dbt_dataset = dbt_profile["dataset"]
+    if "{{" in dbt_dataset:
+        dbt_dataset = extract_dbt_env_var(dbt_dataset)
+    dq_summary_table_name = f"{dbt_project}.{dbt_dataset}.dq_summary"
+    return dq_summary_table_name
