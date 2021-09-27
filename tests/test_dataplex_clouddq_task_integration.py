@@ -36,10 +36,10 @@ class TestDataplexIntegration:
     @pytest.fixture
     def test_dq_dataplex(self):
 
-        dataplex_endpoint = 'https://autopush-dataplex.sandbox.googleapis.com'
+        dataplex_endpoint = 'https://dataplex.googleapis.com'
         location_id = 'us-central1'
-        lake_name = "hello"
-        project_id = "dataplex-demo"
+        lake_name = "amandeep-dev-lake"
+        project_id = "dataplex-clouddq"
 
         return CloudDqDataplex(dataplex_endpoint, project_id, location_id, lake_name)
 
