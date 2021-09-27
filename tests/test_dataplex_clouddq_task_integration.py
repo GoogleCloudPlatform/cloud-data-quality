@@ -36,10 +36,10 @@ class TestDataplexIntegration:
     @pytest.fixture
     def test_dq_dataplex(self):
 
-        dataplex_endpoint = "https://dataplex.googleapis.com"
+        dataplex_endpoint = 'https://autopush-dataplex.sandbox.googleapis.com'
         location_id = 'us-central1'
-        lake_name = "amandeep-dev-lake"
-        project_id = "dataplex-clouddq"
+        lake_name = "hello"
+        project_id = "dataplex-demo"
 
         return CloudDqDataplex(dataplex_endpoint, project_id, location_id, lake_name)
 
@@ -50,26 +50,13 @@ class TestDataplexIntegration:
         :return:
         """
         body = {
-            "spark": {
-                "python_script": "gs://dataplex-clouddq-api-integration-test/clouddq_pyspark_driver.py",
-                "archive_uris": ["gs://dataplex-clouddq-api-integration-test/clouddq-configs.zip"],
-                "file_uris": ["gs://dataplex-clouddq-api-integration-test/clouddq_patched.zip",
-                              "gs://dataplex-clouddq-api-integration-test/clouddq_patched.zip.hashsum",
-                              "gs://dataplex-clouddq-api-integration-test/profiles.yml"]
-            },
-            "execution_spec": {
-                "args": {
-                    "TASK_ARGS": "clouddq_patched.zip, ALL, configs, --dbt_profiles_dir=., --environment_target=bq, --skip_sql_validation"
-                }
-            },
-
             "trigger_spec": {
                 "type": "ON_DEMAND"
             },
-            "description": "task_1"
+            "description": "Clouddq task"
         }
 
-        response = test_dq_dataplex.createDataplexTask(task_id, body)
+        response = test_dq_dataplex.createCloudDQTask(task_id, body)
         logger.info(response.text)
         assert response.status_code == 200
 
@@ -80,13 +67,13 @@ class TestDataplexIntegration:
         This test is for getting the success status for CloudDQ Dataplex Task
         :return:
         """
-        task_status = test_dq_dataplex.getDataplexTaskStatus(task_id)
+        task_status = test_dq_dataplex.getCloudDQTaskStatus(task_id)
         logger.info("Task Status %s", task_status)
 
         while (task_status != 'SUCCEEDED' and task_status != 'FAILED'):
             logger.info(time.ctime())
             time.sleep(30)
-            task_status = test_dq_dataplex.getDataplexTaskStatus(task_id)
+            task_status = test_dq_dataplex.getCloudDQTaskStatus(task_id)
             logger.info(task_status)
 
         assert task_status == 'SUCCEEDED'

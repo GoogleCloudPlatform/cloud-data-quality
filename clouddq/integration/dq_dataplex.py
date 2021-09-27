@@ -13,34 +13,36 @@
 # limitations under the License.
 
 import json
+import logging
 import time
+import traceback
 
 import google.auth
+from google.auth.credentials import Credentials
 import google.auth.transport.requests
-from  google.auth.credentials import Credentials
 from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
 
-import logging
+from clouddq.integration.dataplex_client import DataplexClient
+
 
 # Create and configure logger
-logging.basicConfig(format='%(asctime)s %(message)s')
+logging.basicConfig(format="%(asctime)s %(message)s")
 # Creating an object
 logger = logging.getLogger()
 # Setting the threshold of logger to DEBUG
 logger.setLevel(logging.DEBUG)
 
-class CloudDqDataplex:
 
+class CloudDqDataplex:
     dataplex_endpoint: str = "https://dataplex.googleapis.com"
     project_id: str
     location_id: str
     lake_name: str
     headers: dict
-    session : Session
-    auth_token : str
-
+    session: Session
+    auth_token: str
 
     def __init__(self, dataplex_endpoint, project_id, location_id, lake_name):
         self.dataplex_endpoint = dataplex_endpoint
@@ -96,7 +98,7 @@ class CloudDqDataplex:
 
     session = getSession(auth_token)
 
-    def createDataplexTask(self, task_id: str, body: dict) -> Response:
+    def createCloudDQTask(self, task_id: str, body: dict) -> Response:
 
         """
         Creates dataplex task
@@ -104,16 +106,47 @@ class CloudDqDataplex:
         :param body: request body for the task
         :return: Response object
         """
-        response = self.session.post(
-            f"{self.dataplex_endpoint}/v1/projects/{self.project_id}/locations/"
-            f"{self.location_id}/lakes/{self.lake_name}/tasks?task_id={task_id}",
+
+        default_body = {
+            "spark": {
+                "python_script": f'{"gs://dataplex-clouddq-api-integration-test/"}'
+                f'{"clouddq_pyspark_driver.py"}',
+                "archive_uris": [
+                    "gs://dataplex-clouddq-api-integration-test/clouddq-configs.zip"
+                ],
+                "file_uris": [
+                    "gs://dataplex-clouddq-api-integration-test/clouddq_patched.zip",
+                    f'{"gs://dataplex-clouddq-api-integration-test/"}'
+                    f'{"clouddq_patched.zip.hashsum"}',
+                    "gs://dataplex-clouddq-api-integration-test/profiles.yml",
+                ],
+            },
+            "execution_spec": {
+                "args": {
+                    "TASK_ARGS": f'{"clouddq_patched.zip, ALL, configs,"}'
+                    f'{"--dbt_profiles_dir=.,"}'
+                    f'{"--environment_target=bq, --skip_sql_validation"}'
+                }
+            },
+        }
+
+        default_body.update(body)
+
+        response = DataplexClient.createDataplexTask(
+            self,
+            dataplex_endpoint=self.dataplex_endpoint,
+            project_id=self.project_id,
+            location_id=self.location_id,
+            lake_name=self.lake_name,
+            task_id=task_id,
+            session=self.session,
             headers=self.headers,
-            data=json.dumps(body),
-        )  # create task api
+            body=default_body,
+        )
 
         return response
 
-    def listDataplexTaskJobs(self, task_id: str) -> Response:
+    def getCloudDQTaskJobs(self, task_id: str) -> Response:
 
         """
         List the dataplex task jobs
@@ -121,33 +154,44 @@ class CloudDqDataplex:
         :return: Response object
         """
 
-        res = self.session.get(
-            f"{self.dataplex_endpoint}/v1/projects/{self.project_id}/locations/"
-            f"{self.location_id}/lakes/{self.lake_name}/tasks/{task_id}/jobs",
+        response = DataplexClient.getDataplexTaskJobs(
+            self,
+            dataplex_endpoint=self.dataplex_endpoint,
+            project_id=self.project_id,
+            location_id=self.location_id,
+            lake_name=self.lake_name,
+            task_id=task_id,
+            session=self.session,
             headers=self.headers,
         )
-        return res
 
-    def getDataplexTaskStatus(self, task_id: str) -> str:
+        return response
+
+    def getCloudDQTaskStatus(self, task_id: str) -> str:
 
         """
         Get the dataplex task status
         :param task_id: dataplex task id
         :return: Task status
         """
+        try:
+            res = self.getCloudDQTaskJobs(task_id)
+            logger.debug(res.status_code)
+            logger.debug(res.text)
+            resp_obj = json.loads(res.text)
 
-        res = self.listDataplexTaskJobs(task_id)
-        print(res.status_code)
-        print(res.text)
-        resp_obj = json.loads(res.text)
+            if res.status_code == 200:
 
-        if res.status_code == 200:
-            if len(resp_obj["jobs"]) > 0:
-                if "state" in resp_obj["jobs"][0]:
+                if (
+                    "jobs" in resp_obj
+                    and len(resp_obj["jobs"]) > 0
+                    and "state" in resp_obj["jobs"][0]
+                ):
                     task_status = resp_obj["jobs"][0]["state"]
                     return task_status
                 else:
                     time.sleep(60)
-                    self.getDataplexTaskStatus(task_id)
-        else:
-            return "Error creating task"
+                    self.getCloudDQTaskStatus(task_id)
+
+        except RuntimeError:
+            logger.debug(traceback.format_exc())
