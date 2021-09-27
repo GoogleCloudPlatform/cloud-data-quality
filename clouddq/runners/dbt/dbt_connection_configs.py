@@ -28,8 +28,12 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_DBT_ENVIRONMENT_TARGET = "clouddq"
 DBT_PROFILES_YML_TEMPLATE = {
-    "default": {"target": "clouddq", "outputs": {"clouddq": {}}}
+    "default": {
+        "target": DEFAULT_DBT_ENVIRONMENT_TARGET,
+        "outputs": {DEFAULT_DBT_ENVIRONMENT_TARGET: {}},
+    }
 }
 
 
@@ -50,13 +54,14 @@ class DbtConnectionConfig(ABC):
     def to_dbt_profiles_dict(self) -> Dict:
         pass
 
-    @abstractmethod
     def to_dbt_profiles_yml(self, target_directory: Optional[Path] = None) -> str:
         template = DBT_PROFILES_YML_TEMPLATE
         profiles_content = self.to_dbt_profiles_dict()
-        template["default"]["outputs"]["clouddq"] = profiles_content
+        template["default"]["outputs"][
+            DEFAULT_DBT_ENVIRONMENT_TARGET
+        ] = profiles_content
         if target_directory:
-            with open(target_directory, "w") as f:
+            with open(Path(target_directory).joinpath("profiles.yml"), "w") as f:
                 yaml.dump(template, f)
         return yaml.dump(template)
 
@@ -65,12 +70,12 @@ class DbtConnectionConfig(ABC):
 class GcpDbtConnectionConfig(DbtConnectionConfig):
     """Data class for dbt connection profiles configurations to GCP."""
 
-    project_id: str
-    gcp_region: str
-    dataset_id: str
+    gcp_project_id: str
+    gcp_region_id: str
+    gcp_bq_dataset_id: str
     connection_method: DbtBigQueryConnectionMethod
-    service_account_key_path: Optional[str]
-    service_account_impersonation_credentials: Optional[str]
+    gcp_service_account_key_path: Optional[str]
+    service_account_gcp_impersonation_credentials: Optional[str]
     threads: int = 1
     timeout_seconds: int = 600
     priority: str = "interactive"
@@ -78,40 +83,47 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
 
     def __init__(
         self,
-        project_id: str,
-        gcp_region: str,
-        dataset_id: str,
-        service_account_key_path: Optional[str],
-        impersonation_credentials: Optional[str],
+        gcp_project_id: str,
+        gcp_region_id: str,
+        gcp_bq_dataset_id: str,
+        gcp_service_account_key_path: Optional[str],
+        gcp_impersonation_credentials: Optional[str],
     ):
-        if not any(service_account_key_path, impersonation_credentials):
+        defined_connection_types = [
+            conn
+            for conn in [gcp_service_account_key_path, gcp_impersonation_credentials]
+            if conn
+        ]
+        if not any(defined_connection_types):
             logger.info(
                 "Using Application-Default Credentials (ADC) to connect to GCP..."
             )
             self.connection_method = DbtBigQueryConnectionMethod.OAUTH
-        elif all(service_account_key_path, impersonation_credentials):
+        elif all(defined_connection_types):
             raise AssertionError(
                 "Either one or neither but not both of service account JSON key "
                 "or service account impersonation can be used."
             )
-        elif service_account_key_path:
+        elif gcp_service_account_key_path:
             logger.info("Using exported service account key to connect to GCP...")
-            self.service_account_key_path = service_account_key_path
+            self.gcp_service_account_key_path = gcp_service_account_key_path
             self.connection_method = DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_KEY
-        elif impersonation_credentials:
+        elif gcp_impersonation_credentials:
             logger.info(
                 "Using service account impersonation via local ADC credentials "
                 "to connect to GCP..."
             )
-            self.service_account_impersonation_credentials = impersonation_credentials
+            self.service_account_gcp_impersonation_credentials = (
+                gcp_impersonation_credentials
+            )
             self.connection_method = (
                 DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_IMPERSONATION
             )
         else:
             raise ValueError("Unable to create dbt connection profile for GCP.")
-        self.project_id = project_id
-        self.gcp_region = gcp_region
-        self.dataset_id = dataset_id
+        self.gcp_project_id = gcp_project_id
+        self.gcp_region_id = gcp_region_id
+        self.gcp_bq_dataset_id = gcp_bq_dataset_id
 
     def get_connection_method(self) -> str:
         if (
@@ -129,26 +141,26 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
         profiles_configs = {
             "type": "bigquery",
             "method": self.get_connection_method(),
-            "project": self.project_id,
-            "dataset": self.dataset_id,
-            "location": self.gcp_region,
+            "project": self.gcp_project_id,
+            "dataset": self.gcp_bq_dataset_id,
+            "location": self.gcp_region_id,
             "threads": self.threads,
             "timeout_seconds": self.timeout_seconds,
             "priority": self.priority,
             "retries": self.retries,
         }
         if self.connection_method == DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_KEY:
-            assert Path(self.service_account_key_path).is_file()
-            profiles_configs["keyfile"] = self.service_account_key_path
+            assert Path(self.gcp_service_account_key_path).is_file()
+            profiles_configs["keyfile"] = self.gcp_service_account_key_path
         elif (
             self.connection_method
             == DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_IMPERSONATION  # noqa: W503
         ):
-            assert self.service_account_impersonation_credentials
+            assert self.service_account_gcp_impersonation_credentials
             assert profiles_configs["method"] == "oauth"
             profiles_configs[
                 "impersonate_service_account"
-            ] = self.service_account_impersonation_credentials
+            ] = self.service_account_gcp_impersonation_credentials
         else:
             assert profiles_configs["method"] == "oauth"
         return profiles_configs

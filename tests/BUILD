@@ -45,13 +45,16 @@ filegroup(
 DEPS = [
     "//clouddq:classes",
     "//clouddq:clouddq_lib",
+    "//clouddq:dbt_runners",
     requirement("py"),
     requirement("pytest"),
     requirement("click"),
+    requirement("click-logging"),
 ]
 
 SRCS = glob([
-    "test_*.py",
+    "unit/test_*.py",
+    "integration/test_*.py",
 ]) + ["conftest.py"]
 
 DATA = [
@@ -82,7 +85,15 @@ py_test(
 )
 
 py_test(
-    name = "test_cli",
+    name = "test_cli_unit",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "test_cli_integration",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,

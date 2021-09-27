@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import click.testing
 import pytest
 
@@ -43,7 +45,7 @@ class TestCli:
             ]
         result = runner.invoke(main, args)
         print(result.output)
-        assert result.exit_code == 2
+        assert result.exit_code == 1
 
     def test_cli_dry_run(self, runner):
         args = [

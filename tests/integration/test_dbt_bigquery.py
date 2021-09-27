@@ -22,7 +22,6 @@ import pytest
 from clouddq import main
 from clouddq import utils
 
-
 @pytest.mark.e2e
 class TestDbtBigQuery:
     """ """

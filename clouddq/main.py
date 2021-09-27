@@ -21,7 +21,7 @@ from pathlib import Path
 from pprint import pprint
 import sys
 import traceback
-import typing
+from typing import Optional
 
 import click
 import click_logging
@@ -137,87 +137,73 @@ click_logging.basic_config(
 #     help="",
 # )
 @click.option(
-    "--gcp_oauth_connection_configs",
-    help="Connection profile for authenticating to GCP using credentials "
+    "--gcp_project_id",
+    help="GCP Project ID used for executing GCP Jobs. "
+    "This argument will be ignored if --dbt_profiles_dir is set.",
+    default=None,
+    type=str,
+)
+@click.option(
+    "--gcp_region_id",
+    help="GCP region used for running BigQuery Jobs and for storing "
+    " any intemediate DQ summary results. "
+    "This argument will be ignored if --dbt_profiles_dir is set.",
+    default=None,
+    type=str,
+)
+@click.option(
+    "--gcp_bq_dataset_id",
+    help="GCP BigQuery Dataset ID used for storing rule_binding views "
+    "and intermediate DQ summary results. "
+    "This argument will be ignored if --dbt_profiles_dir is set.",
+    default=None,
+    type=str,
+)
+@click.option(
+    "--gcp_service_account_key_path",
+    help="File system path to the exported GCP service account JSON key "
+    "for authenticating to GCP. "
+    "If neither --gcp_service_account_key_path or "
+    "--gcp_impersonation_credentials are specified, defaults to using "
+    "oauth for authenticating to GCP using credentials "
     "automatically discovered via Application Default Credentials (ADC). "
     "More on how ADC discovers credentials: https://google.aip.dev/auth/4110. "
-    "\b"
-    "Takes as input a 3-value tuple of: "
-    " - GCP Project ID: used for executing GCP Jobs "
-    " - GCP Region: GCP region used for running GCP Jobs and for storing "
-    " any intemediate DQ summary results "
-    " - GCP Dataset ID: used for storing rule_binding views and intermediate"
-    " DQ summary results. "
-    "Example usage: "
-    "`--gcp_oauth_connection_configs $PROJECT_ID $BIGQUERY_REGION $BIGQUERY_DATASET`"
-    "Only one CLI argument for GCP connection config with format "
-    "--gcp_*_connection_configs can be configured per run. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
-    default=[None] * 3,
-    type=click.Tuple([str, str, str]),
+    default=None,
+    type=click.Path(exists=True),
 )
 @click.option(
-    "--gcp_sa_keys_connection_configs",
-    help="Connection profile for authenticating to GCP using "
-    "an exported service account JSON key available locally. "
-    "\b"
-    "Takes as input a 4-value tuple of: "
-    " - GCP Project ID: used for executing GCP Jobs "
-    " - GCP Region: GCP region used for running GCP Jobs and for storing "
-    " any intemediate DQ summary results "
-    " - GCP Dataset ID: used for storing rule_binding views and intermediate"
-    " DQ summary results. "
-    " - Service Account Key Path: file system path to the GCP service account JSON key"
-    "Example usage: "
-    "`--gcp_sa_keys_connection_configs $PROJECT_ID $BIGQUERY_REGION "
-    "$BIGQUERY_DATASET /path/to/gcp/keyfile.json`"
-    "Only one CLI argument for GCP connection config with format "
-    "--gcp_*_connection_configs can be configured per run. "
-    "This argument will be ignored if --dbt_profiles_dir is set.",
-    default=[None] * 4,
-    type=click.Tuple([str, str, str, str]),
-)
-@click.option(
-    "--gcp_sa_impersonation_connection_configs",
-    help="Connection profile for authenticating to GCP using "
+    "--gcp_impersonation_credentials",
+    help="Service Account Name for authenticating to GCP using "
     "service account impersonation via a local ADC credentials. "
     "Ensure the local ADC credentials has permission to impersonate "
-    "the service account such as `roles/iam.serviceAccountTokenCreator`."
-    "\b"
-    "Takes as input a 4-value tuple of: "
-    " - GCP Project ID: used for executing GCP Jobs "
-    " - GCP Region: GCP region used for running GCP Jobs and for storing "
-    " any intemediate DQ summary results "
-    " - GCP Dataset ID: used for storing rule_binding views and intermediate"
-    " DQ summary results. "
-    " - Service Account Name: name of the service account you want to impersonate"
-    "Example usage: "
-    "`--gcp_sa_keys_connection_configs $PROJECT_ID $BIGQUERY_REGION "
-    "$BIGQUERY_DATASET $SA_NAME`"
-    "Only one CLI argument for GCP connection config with format "
-    "--gcp_*_connection_configs can be configured per run. "
+    "the service account such as `roles/iam.serviceAccountTokenCreator`. "
+    "If neither --gcp_service_account_key_path or "
+    "--gcp_impersonation_credentials are specified, defaults to using "
+    "oauth for authenticating to GCP using credentials "
+    "automatically discovered via Application Default Credentials (ADC). "
+    "More on how ADC discovers credentials: https://google.aip.dev/auth/4110. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
-    default=[None] * 4,
-    type=click.Tuple([str, str, str, str]),
+    default=None,
+    type=str,
 )
 @click.option(
     "--dbt_profiles_dir",
-    help="Path to dbt profiles.yml. "
-    "Path containing the dbt profiles.yml configs for connecting to GCP."
+    help="Path containing the dbt profiles.yml configs for connecting to GCP."
     "As dbt supports multiple connection configs in a single profiles.yml file, "
-    "you can also specify the dbt target for the run with --environment_target."
+    "you can also specify the dbt target for the run with --environment_target. "
     "Defaults to environment variable DBT_PROFILES_DIR if present. "
     "If another connection config with pattern --*_connection_configs "
     "was not provided, this argument is mandatory. "
     "If --dbt_profiles_dir is present, all other connection configs "
-    "with pattern --*_connection_configs will be ignored.",
+    "with pattern --gcp_* will be ignored.",
     type=click.Path(exists=True),
     envvar="DBT_PROFILES_DIR",
 )
 @click.option(
     "--dbt_path",
     help="Path to dbt model directory where a new view will be created "
-    "containing the sql execution statement for each rule binding."
+    "containing the sql execution statement for each rule binding. "
     "If not specified, clouddq will created a new directory in "
     "the current working directory for the dbt generated sql files.",
     type=click.Path(exists=True),
@@ -274,13 +260,15 @@ click_logging.basic_config(
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
-    dbt_path: str,
-    dbt_profiles_dir: str,
-    environment_target: str,
-    gcp_oauth_connection_configs: typing.Tuple[str, str, str],
-    gcp_sa_keys_connection_configs: typing.Tuple[str, str, str, str],
-    gcp_sa_impersonation_connection_configs: typing.Tuple[str, str, str, str],
-    metadata: str,
+    dbt_path: Optional[str],
+    dbt_profiles_dir: Optional[str],
+    environment_target: Optional[str],
+    gcp_project_id: Optional[str],
+    gcp_region_id: Optional[str],
+    gcp_bq_dataset_id: Optional[str],
+    gcp_service_account_key_path: Optional[Path],
+    gcp_impersonation_credentials: Optional[str],
+    metadata: Optional[str],
     dry_run: bool,
     progress_watermark: bool,
     debug: bool = False,
@@ -302,18 +290,20 @@ def main(  # noqa: C901
 
     Usage examples:
 
-    > python clouddq \\\n
-      T2_DQ_1_EMAIL \\\n
-      configs/rule_bindings/team-2-rule-bindings.yml \\\n
-      --dbt_profiles_dir=dbt \\\n
-      --metadata='{"test":"test"}' \\\n
+    \b
+    > python clouddq \\
+      T2_DQ_1_EMAIL \\
+      configs/rule_bindings/team-2-rule-bindings.yml \\
+      --dbt_profiles_dir=dbt \\
+      --metadata='{"test":"test"}' \\
 
-    > python bazel-bin/clouddq/clouddq_patched.zip \\\n
-      ALL \\\n
-      configs/ \\\n
-      --metadata='{"test":"test"}' \\\n
-      --dbt_profiles_dir=dbt \\\n
-      --dbt_path=dbt \\\n
+    \b
+    > python bazel-bin/clouddq/clouddq_patched.zip \\
+      ALL \\
+      configs/ \\
+      --metadata='{"test":"test"}' \\
+      --dbt_profiles_dir=dbt \\
+      --dbt_path=dbt \\
       --environment_target=dev
 
     """
@@ -324,14 +314,16 @@ def main(  # noqa: C901
         dbt_path=dbt_path,
         dbt_profiles_dir=dbt_profiles_dir,
         environment_target=environment_target,
-        gcp_oauth_connection_configs=gcp_oauth_connection_configs,
-        gcp_sa_keys_connection_configs=gcp_sa_keys_connection_configs,
-        gcp_sa_impersonation_connection_configs=gcp_sa_impersonation_connection_configs,
+        gcp_project_id=gcp_project_id,
+        gcp_region_id=gcp_region_id,
+        gcp_bq_dataset_id=gcp_bq_dataset_id,
+        gcp_service_account_key_path=gcp_service_account_key_path,
+        gcp_impersonation_credentials=gcp_impersonation_credentials,
     )
     dbt_path = dbt_runner.get_dbt_path()
     dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
-    # Load metadata
-    metadata = json.loads(metadata)
+    dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir()
+    environment_target = dbt_runner.get_dbt_environment_target()
     # Prepare DQ Summary Table
     dq_summary_table_name = get_bigquery_dq_summary_table_name(
         dbt_path=Path(dbt_path),
@@ -342,6 +334,8 @@ def main(  # noqa: C901
         "Writing summary results to GCP table: `%s`. ",
         dq_summary_table_name,
     )
+    # Load metadata
+    metadata = json.loads(metadata)
     # Load Rule Bindings
     configs_path = Path(rule_binding_config_path)
     logger.debug("Loading rule bindings from: %s", configs_path.absolute())

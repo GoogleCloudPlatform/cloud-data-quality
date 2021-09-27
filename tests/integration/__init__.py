@@ -11,17 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-default:
-  target: dev
-  outputs:
-    dev:
-      type: bigquery
-      method: oauth
-      project: "{{ env_var('GOOGLE_CLOUD_PROJECT', '<your_gcp_project_id>') }}"
-      dataset: "{{ env_var('CLOUDDQ_BIGQUERY_DATASET', 'clouddq') }}"
-      threads: 1
-      timeout_seconds: 90
-      location: "{{ env_var('CLOUDDQ_BIGQUERY_REGION', 'EU') }}"
-      priority: interactive
-      retries: 1

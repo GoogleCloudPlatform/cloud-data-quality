@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Dict
 from typing import Optional
 
+from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_DBT_ENVIRONMENT_TARGET
 from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig
 from clouddq.runners.dbt.dbt_connection_configs import GcpDbtConnectionConfig
 from clouddq.runners.dbt.dbt_utils import run_dbt
@@ -45,9 +46,11 @@ class DbtRunner:
         dbt_path: Optional[Path],
         dbt_profiles_dir: Optional[str],
         environment_target: Optional[str],
-        gcp_oauth_connection_configs: Optional[str],
-        gcp_sa_keys_connection_configs: Optional[str],
-        gcp_sa_impersonation_connection_configs: Optional[str],
+        gcp_project_id: Optional[str],
+        gcp_region_id: Optional[str],
+        gcp_bq_dataset_id: Optional[str],
+        gcp_service_account_key_path: Optional[Path],
+        gcp_impersonation_credentials: Optional[str],
         create_paths_if_not_exists: bool = True,
     ):
         # Prepare local dbt environment
@@ -63,10 +66,13 @@ class DbtRunner:
         self.connection_config = self.__resolve_connection_configs(
             dbt_profiles_dir=dbt_profiles_dir,
             environment_target=environment_target,
-            gcp_oauth_connection_configs=gcp_oauth_connection_configs,
-            gcp_sa_keys_connection_configs=gcp_sa_keys_connection_configs,
-            gcp_sa_impersonation_connection_configs=gcp_sa_impersonation_connection_configs,  # noqa: E501
+            gcp_project_id=gcp_project_id,
+            gcp_region_id=gcp_region_id,
+            gcp_bq_dataset_id=gcp_bq_dataset_id,
+            gcp_service_account_key_path=gcp_service_account_key_path,
+            gcp_impersonation_credentials=gcp_impersonation_credentials,
         )
+        logger.debug("Using 'dbt_profiles_dir': %s", self.dbt_profiles_dir)
 
     def run(self, configs: Dict, debug: bool = False, dry_run: bool = False):
         logger.info("Running dbt in path: %s", self.dbt_path)
@@ -92,19 +98,35 @@ class DbtRunner:
 
     def get_dbt_path(self) -> Path:
         self.__resolve_dbt_path(self.dbt_path)
-        return self.dbt_path
+        return Path(self.dbt_path)
 
     def get_rule_binding_view_path(self) -> Path:
         self.__prepare_rule_binding_view_path()
-        return self.dbt_rule_binding_views_path
+        return Path(self.dbt_rule_binding_views_path)
+
+    def get_dbt_profiles_dir(self) -> Path:
+        self.__resolve_connection_configs(
+            dbt_profiles_dir=self.dbt_profiles_dir,
+            environment_target=self.environment_target,
+        )
+        return Path(self.dbt_profiles_dir)
+
+    def get_dbt_environment_target(self) -> str:
+        self.__resolve_connection_configs(
+            dbt_profiles_dir=self.dbt_profiles_dir,
+            environment_target=self.environment_target,
+        )
+        return self.environment_target
 
     def __resolve_connection_configs(
         self,
         dbt_profiles_dir: Optional[str],
         environment_target: Optional[str],
-        gcp_oauth_connection_configs: Optional[str],
-        gcp_sa_keys_connection_configs: Optional[str],
-        gcp_sa_impersonation_connection_configs: Optional[str],
+        gcp_project_id: Optional[str] = None,
+        gcp_region_id: Optional[str] = None,
+        gcp_bq_dataset_id: Optional[str] = None,
+        gcp_service_account_key_path: Optional[Path] = None,
+        gcp_impersonation_credentials: Optional[str] = None,
     ) -> DbtConnectionConfig:
         if dbt_profiles_dir:
             dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
@@ -115,72 +137,30 @@ class DbtRunner:
                 )
             self.dbt_profiles_dir = dbt_profiles_dir
             self.environment_target = environment_target
-        elif environment_target:
-            logger.warn(
-                "Unless `dbt_profiles_dir` is defined, the following argument "
-                "for `environment_target` will be ignored: %s",
-                environment_target,
-            )
         else:
+            if environment_target:
+                logger.warn(
+                    "Unless `dbt_profiles_dir` is defined, the following argument "
+                    "for `environment_target` will be ignored: %s",
+                    environment_target,
+                )
             # create GcpDbtConnectionConfig
-            connection_arguments = [
-                gcp_oauth_connection_configs,
-                gcp_sa_keys_connection_configs,
-                gcp_sa_impersonation_connection_configs,
-            ]
-            if len([arg for arg in connection_arguments if arg]) != 1:
-                raise ValueError(
-                    "Exactly one GCP connection config must be specified from %s",
-                    connection_arguments,
-                )
-            elif gcp_oauth_connection_configs:
-                (
-                    project_id,
-                    gcp_region,
-                    dataset_id,
-                ) = gcp_oauth_connection_configs
-                connection_config = GcpDbtConnectionConfig(
-                    project_id=project_id,
-                    gcp_region=gcp_region,
-                    dataset_id=dataset_id,
-                )
-            elif gcp_sa_keys_connection_configs:
-                (
-                    project_id,
-                    gcp_region,
-                    dataset_id,
-                    service_account_key_path,
-                ) = gcp_sa_keys_connection_configs
-                connection_config = GcpDbtConnectionConfig(
-                    project_id=project_id,
-                    gcp_region=gcp_region,
-                    dataset_id=dataset_id,
-                    service_account_key_path=service_account_key_path,
-                )
-            elif gcp_sa_impersonation_connection_configs:
-                (
-                    project_id,
-                    gcp_region,
-                    dataset_id,
-                    impersonation_credentials,
-                ) = gcp_sa_impersonation_connection_configs
-                connection_config = GcpDbtConnectionConfig(
-                    project_id=project_id,
-                    gcp_region=gcp_region,
-                    dataset_id=dataset_id,
-                    impersonation_credentials=impersonation_credentials,
-                )
-            else:
-                raise ValueError("No valid DBT connection method found.")
+            connection_config = GcpDbtConnectionConfig(
+                gcp_project_id=gcp_project_id,
+                gcp_region_id=gcp_region_id,
+                gcp_bq_dataset_id=gcp_bq_dataset_id,
+                gcp_service_account_key_path=gcp_service_account_key_path,
+                gcp_impersonation_credentials=gcp_impersonation_credentials,
+            )
             self.connection_config = connection_config
-            self.dbt_profiles_dir = self.dbt_path
-            logging.warn(
+            self.dbt_profiles_dir = Path(self.dbt_path)
+            self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
+            logger.warn(
                 "Writing user input GCP connection profile to dbt profiles.yml "
-                "at path:\n%s",
+                "at path: %s",
                 self.dbt_profiles_dir,
             )
             self.connection_config.to_dbt_profiles_yml(self.dbt_profiles_dir)
-        logger.debug("Using 'dbt_profiles_dir': %s", dbt_profiles_dir)
 
     def __resolve_dbt_path(
         self,
