@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""todo: add main docstring."""
+"""Data Quality Engine for BigQuery."""
 import json
 from pathlib import Path
 from pprint import pprint
@@ -72,7 +72,7 @@ logging.basicConfig(
     format="%(json_formatted)s",
     level=LOG_LEVEL,
     handlers=[
-        # logging.FileHandler('/var/log/clouddq.log', 'a'),
+        logging.FileHandler(Path('clouddq.log'), 'a'),
         logging.StreamHandler(sys.stderr),
     ],
 )
@@ -248,51 +248,37 @@ def main(  # noqa: C901
 
     if debug:
         logger.setLevel("DEBUG")
-
-    if debug:
-        click.secho(f"Current working directory: {Path().cwd()}", fg="yellow")
+    logger.debug("Current working directory: %s", Path().cwd())
     dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
     if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
         raise ValueError(
             f"Cannot find connection `profiles.yml` configurations at "
             f"`dbt_profiles_dir` path: {dbt_profiles_dir}"
         )
-    if debug:
-        click.secho(f"Using 'dbt_profiles_dir': {dbt_profiles_dir}", fg="yellow")
+    logger.debug("Using 'dbt_profiles_dir': %s", dbt_profiles_dir)
     if not dbt_path:
         dbt_path = Path().cwd().joinpath("dbt").absolute()
-        if debug:
-            click.secho(
-                f"No argument 'dbt_path' provided. Defaulting to use "
-                f"'dbt' directory in current working directory at: {dbt_path}",
-                fg="magenta",
-            )
+        logger.debug(
+            "No argument 'dbt_path' provided. Defaulting to use "
+            "'dbt' directory in current working directory at: %s",
+            dbt_path,
+        )
     else:
         dbt_path = Path(dbt_path).absolute()
         if dbt_path.name != "dbt":
             dbt_path = dbt_path / "dbt"
     if not dbt_path.is_dir():
-        if debug:
-            click.secho(
-                f"Creating a new dbt directory at 'dbt_path': {dbt_path}", fg="magenta"
-            )
+        logger.debug("Creating a new dbt directory at 'dbt_path': %s", dbt_path)
         dbt_path.mkdir(parents=True, exist_ok=True)
-    if debug:
-        click.secho(f"Using 'dbt_path': {dbt_path}", fg="yellow")
+    logger.info("Using 'dbt_path': %s", dbt_path)
     dbt_project_path = dbt_path.absolute().joinpath("dbt_project.yml")
     if not dbt_project_path.is_file():
-        if debug:
-            click.secho(
-                f"Cannot find `dbt_project.yml` configurations in current path: "
-                f"{dbt_project_path}",
-                fg="magenta",
-            )
-            click.secho(
-                f"Writing templated 'dbt_project.yml' to: {dbt_project_path} ",
-                fg="magenta",
-            )
+        logger.debug(
+            f"Cannot find `dbt_project.yml` configurations in current path: {dbt_project_path}"
+            f"Writing templated 'dbt_project.yml' to: {dbt_project_path}"
+        )
         dbt_project_path.write_text(get_template_file(Path("dbt", "dbt_project.yml")))
-    click.secho(f"Using 'dbt_project_path': {dbt_project_path}", fg="yellow")
+    logger.info("Using 'dbt_project_path': %s", dbt_project_path)
     dbt_main_path = dbt_path / "models" / "data_quality_engine"
     dbt_main_path.mkdir(parents=True, exist_ok=True)
     if not dbt_main_path.joinpath("main.sql").is_file():
@@ -309,22 +295,19 @@ def main(  # noqa: C901
         )
     dbt_rule_binding_views_path = dbt_path / "models" / "rule_binding_views"
     dbt_rule_binding_views_path.mkdir(parents=True, exist_ok=True)
-    click.secho(
-        f"Writing generated sql to {dbt_rule_binding_views_path.absolute()}/",
-        fg="yellow",
-    )
+    logger.info(
+                "Writing generated sql to %s/",
+                dbt_rule_binding_views_path.absolute(),
+            )
     configs_path = Path(rule_binding_config_path)
-    if debug:
-        click.secho(
-            f"Loading rule bindings from: {configs_path.absolute()} ", fg="yellow"
-        )
+    logger.debug("Loading rule bindings from: %s", configs_path.absolute())
     metadata = json.loads(metadata)
     dq_summary_table_name = lib.get_bigquery_dq_summary_table_name(
         dbt_profiles_dir, environment_target, dbt_project_path
     )
-    click.secho(
-        f"Writing summary results to BigQuery table: `{dq_summary_table_name}`. ",
-        fg="yellow",
+    logger.info(
+        "Writing summary results to GCP table: `%s`. ",
+        dq_summary_table_name,
     )
     all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
     target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
@@ -345,11 +328,11 @@ def main(  # noqa: C901
             f"in config path {configs_path.absolute()}.",
         )
         if debug:
-            click.secho(
-                f"Creating sql string from configs for rule binding: {rule_binding_id}",
-                fg="cyan",
+            logger.debug(
+                "Creating sql string from configs for rule binding: %s",
+                rule_binding_id,
             )
-            click.secho("Rule binding config json:", fg="cyan")
+            logger.debug("Rule binding config json:")
             pprint(rule_binding_configs)
         sql_string = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
@@ -367,10 +350,9 @@ def main(  # noqa: C901
         if not skip_sql_validation:
             validate_sql_string(sql_string)
         if debug:
-            click.secho(
-                f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
-                f"{rule_binding_id}.sql",
-                fg="cyan",
+            logger.debug(
+                "*** Writing sql to {dbt_rule_binding_views_path.absolute()}/" "%s.sql",
+                rule_binding_id,
             )
         lib.write_sql_string_as_dbt_model(
             rule_binding_id=rule_binding_id,
@@ -383,7 +365,7 @@ def main(  # noqa: C901
             view.unlink()
     configs = {"target_rule_binding_ids": target_rule_binding_ids}
     try:
-        click.secho(f"Running dbt in path: {dbt_path}", fg="yellow")
+        logger.info("Running dbt in path: %s", dbt_path)
         utils.run_dbt(
             dbt_path=dbt_path,
             dbt_profile_dir=dbt_profiles_dir,
@@ -393,7 +375,7 @@ def main(  # noqa: C901
             dry_run=dry_run,
         )
     except Exception as e:
-        click.secho("Encountered error: " + str(e), fg="red")
+        logger.error("Encountered unexpected error: " + str(e), exc_info=True)
 
 
 if __name__ == "__main__":
