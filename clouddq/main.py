@@ -27,6 +27,7 @@ import click
 import coloredlogs
 from git import InvalidGitRepositoryError
 from git import Repo
+from git import GitCommandError
 
 from clouddq import lib
 from clouddq import utils
@@ -51,7 +52,7 @@ APP_VERSION = None
 try:
     repo = Repo(search_parent_directories=True)
     APP_VERSION = repo.git.describe()
-except InvalidGitRepositoryError:
+except (InvalidGitRepositoryError, GitCommandError):
     pass
 
 APP_NAME = "clouddq"
