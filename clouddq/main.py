@@ -27,7 +27,6 @@ import click
 import coloredlogs
 from git import InvalidGitRepositoryError
 from git import Repo
-import pkg_resources
 
 from clouddq import lib
 from clouddq import utils
@@ -47,12 +46,12 @@ def not_null_or_empty(
             f"Variable {param} must not be empty or none. Input value: {value}"
         )
 
-
+APP_VERSION = None
 try:
     repo = Repo(search_parent_directories=True)
     APP_VERSION = repo.git.describe()
 except InvalidGitRepositoryError:
-    APP_VERSION = pkg_resources.get_distribution("clouddq").version
+    pass
 
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
