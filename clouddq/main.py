@@ -25,9 +25,9 @@ import typing
 
 import click
 import coloredlogs
+from git import GitCommandError
 from git import InvalidGitRepositoryError
 from git import Repo
-from git import GitCommandError
 
 from clouddq import lib
 from clouddq import utils
