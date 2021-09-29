@@ -18,8 +18,9 @@ import json
 import logging
 import logging.config
 from pathlib import Path
-from pprint import pprint
-import git
+from pprint import pformat
+from git import Repo, InvalidGitRepositoryError
+import pkg_resources
 import sys
 import traceback
 import typing
@@ -45,10 +46,14 @@ def not_null_or_empty(
             f"Variable {param} must not be empty or none. Input value: {value}"
         )
 
+try:
+    repo = Repo(search_parent_directories=True)
+    APP_VERSION = repo.git.describe()
+except InvalidGitRepositoryError:
+    APP_VERSION = pkg_resources.get_distribution('clouddq').version
 
 APP_NAME = "clouddq"
-APP_VERSION = git.Repo(search_parent_directories=True).git.describe()
-LOG_LEVEL = logging._nameToLevel["INFO"]
+LOG_LEVEL = logging._nameToLevel["DEBUG"]
 
 
 class JsonEncoderStrFallback(json.JSONEncoder):
@@ -242,7 +247,9 @@ def main(  # noqa: C901
 
     """
     if debug:
-        logger.setLevel("DEBUG")
+        for handler in logger.handlers:
+            handler.setLevel(logging.DEBUG)
+            logger.debug('Debug logging enabled')
     logger.info("Starting CloudDQ run with parameters:")
     json_logger.warn(locals())
     try:
@@ -334,7 +341,7 @@ def main(  # noqa: C901
                     f"{rule_binding_id}"
                 )
                 logger.debug("Rule binding config json:")
-                pprint(rule_binding_configs)
+                logger.debug(pformat(rule_binding_configs))
             sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
@@ -376,7 +383,7 @@ def main(  # noqa: C901
         )
     except Exception as error:
         json_logger.error(error)
-        logger.exception(error, exc_info=True)
+        logger.fatal(error, exc_info=True)
 
 
 if __name__ == "__main__":
