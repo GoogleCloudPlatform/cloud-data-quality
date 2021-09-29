@@ -19,14 +19,15 @@ import logging
 import logging.config
 from pathlib import Path
 from pprint import pformat
-from git import Repo, InvalidGitRepositoryError
-import pkg_resources
 import sys
 import traceback
 import typing
 
 import click
 import coloredlogs
+from git import InvalidGitRepositoryError
+from git import Repo
+import pkg_resources
 
 from clouddq import lib
 from clouddq import utils
@@ -46,11 +47,12 @@ def not_null_or_empty(
             f"Variable {param} must not be empty or none. Input value: {value}"
         )
 
+
 try:
     repo = Repo(search_parent_directories=True)
     APP_VERSION = repo.git.describe()
 except InvalidGitRepositoryError:
-    APP_VERSION = pkg_resources.get_distribution('clouddq').version
+    APP_VERSION = pkg_resources.get_distribution("clouddq").version
 
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
@@ -249,7 +251,7 @@ def main(  # noqa: C901
     if debug:
         for handler in logger.handlers:
             handler.setLevel(logging.DEBUG)
-            logger.debug('Debug logging enabled')
+            logger.debug("Debug logging enabled")
     logger.info("Starting CloudDQ run with parameters:")
     json_logger.warn(locals())
     try:
