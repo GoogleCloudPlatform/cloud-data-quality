@@ -60,6 +60,7 @@ py_binary(
         ":clouddq_lib",
         requirement("click"),
         requirement("coloredlogs"),
+        requirement("gitpython"),
     ],
 )
 

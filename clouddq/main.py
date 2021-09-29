@@ -19,7 +19,7 @@ import logging
 import logging.config
 from pathlib import Path
 from pprint import pprint
-import subprocess
+import git
 import sys
 import traceback
 import typing
@@ -47,11 +47,7 @@ def not_null_or_empty(
 
 
 APP_NAME = "clouddq"
-APP_VERSION = (
-    subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
-    .decode("ascii")
-    .strip()
-)
+APP_VERSION = git.Repo(search_parent_directories=True).git.describe()
 LOG_LEVEL = logging._nameToLevel["INFO"]
 
 
