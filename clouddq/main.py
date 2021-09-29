@@ -254,7 +254,7 @@ def main(  # noqa: C901
             handler.setLevel(logging.DEBUG)
             logger.debug("Debug logging enabled")
     logger.info("Starting CloudDQ run with parameters:")
-    json_logger.warn(locals())
+    json_logger.warn({"run_configs": locals()})
     try:
         logger.debug("Current working directory: %s", Path().cwd())
         dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
