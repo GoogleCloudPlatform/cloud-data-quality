@@ -10,7 +10,7 @@ Note the following assumes you have already met the project dependencies outline
 
 First clone the project:
 ```
-git clone https://github.com/GoogleCloudPlatform/cloud-data-quality.git
+git clone -b 'v0.2.1'  https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 cd cloud-data-quality
 ```
 
