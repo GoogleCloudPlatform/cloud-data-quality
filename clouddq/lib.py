@@ -15,8 +15,9 @@
 """todo: add lib docstring."""
 import itertools
 import json
+import logging
 from pathlib import Path
-from pprint import pprint
+from pprint import pformat
 import typing
 
 from jinja2 import ChainableUndefined  # type: ignore
@@ -33,6 +34,9 @@ from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import extract_dbt_env_var
 from clouddq.utils import get_source_file_path
 from clouddq.utils import sha256_digest
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
@@ -154,7 +158,7 @@ def create_rule_binding_view_model(
     sql_string = template.render(configs)
     if debug:
         configs.update({"generated_sql_string": sql_string})
-        pprint(configs)
+        logger.debug(pformat(configs))
     return sql_string
 
 

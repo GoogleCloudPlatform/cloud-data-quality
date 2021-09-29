@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "clouddq"
-version = "0.1.0"
+version = "0.3.0"
 description = "Data Quality Engine for BigQuery"
 authors = ["Thinh Ha <thinhha@google.com>"]
 license = "Apache-2.0"
@@ -20,6 +20,8 @@ clouddq = "clouddq.main:main"
 [tool.poetry.dependencies]
 python = "^3.8.6,<3.9.0"
 click = "^7.1.2"
+coloredlogs="^15.0.1"
+gitpython="^3.1.24"
 # Waiting for dbt to upgrade their jinja2 dependency to remove vulnerability in 2.11.2
 Jinja2 = "^2.11.2"
 PyYAML = "^5.3.1"
