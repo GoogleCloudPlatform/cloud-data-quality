@@ -188,7 +188,7 @@ Ensure you have installed:
 
 Clone the project:
 ```
-git clone https://github.com/GoogleCloudPlatform/cloud-data-quality
+git clone -b 'v0.2.1'  https://github.com/GoogleCloudPlatform/cloud-data-quality
 ```
 
 Create a new python virtualenv:

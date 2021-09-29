@@ -10,7 +10,7 @@ Note that for this step we will need to build a self-contained CloudDQ Python ex
 
 First clone the project:
 ```
-git clone https://github.com/GoogleCloudPlatform/cloud-data-quality.git
+git clone -b 'v0.2.1'  https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 cd cloud-data-quality
 ```
 
