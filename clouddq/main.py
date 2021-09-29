@@ -46,6 +46,7 @@ def not_null_or_empty(
             f"Variable {param} must not be empty or none. Input value: {value}"
         )
 
+
 APP_VERSION = None
 try:
     repo = Repo(search_parent_directories=True)
