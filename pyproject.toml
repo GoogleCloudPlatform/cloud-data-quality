@@ -20,7 +20,7 @@ clouddq = "clouddq.main:main"
 [tool.poetry.dependencies]
 python = "^3.8.6,<3.9.0"
 click = "^7.1.2"
-click-logging = "^1.0.1"
+coloredlogs="^15.0.1"
 # Waiting for dbt to upgrade their jinja2 dependency to remove vulnerability in 2.11.2
 Jinja2 = "^2.11.2"
 PyYAML = "^5.3.1"

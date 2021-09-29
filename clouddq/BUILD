@@ -59,7 +59,7 @@ py_binary(
     deps = [
         ":clouddq_lib",
         requirement("click"),
-        requirement("click-logging"),
+        requirement("coloredlogs"),
     ],
 )
 
