@@ -161,7 +161,7 @@ coloredlogs.install(logger=logger)
     "e.g. dev, test, prod.  "
     "Defaults 'dev' or the environment variable ENV if set.",
     envvar="ENV",
-    default="clouddq",
+    default="dev",
     callback=not_null_or_empty,
 )
 @click.option(
