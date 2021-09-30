@@ -49,7 +49,8 @@ DEPS = [
     requirement("py"),
     requirement("pytest"),
     requirement("click"),
-    requirement("click-logging"),
+    requirement("coloredlogs"),
+    requirement("gitpython"),
 ]
 
 SRCS = glob([

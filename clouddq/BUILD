@@ -53,7 +53,8 @@ py_binary(
         ":clouddq_lib",
         ":dbt_runners",
         requirement("click"),
-        requirement("click-logging"),
+        requirement("coloredlogs"),
+        requirement("gitpython"),
     ],
 )
 

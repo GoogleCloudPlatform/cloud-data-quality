@@ -14,20 +14,21 @@
 
 import json
 from pathlib import Path
-import platform
+import logging
 import re
 
 import pytest
-import typing
-from pprint import pprint
+from pprint import pformat
 
 from clouddq import lib
 from clouddq import utils
-from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
+
+logger = logging.getLogger(__name__)
+
 
 RE_NEWLINES = r"(\n( )*)+"
 RE_CONFIGS_HASHSUM = r"'[\w\d]+' AS configs_hashsum,"
@@ -108,7 +109,7 @@ class TestJinjaTemplates:
 
     def test_resolve_time_filter_column(self, test_rule_bindings_collection_team_1):
         """ """
-        pprint(test_rule_bindings_collection_team_1)
+        logger.info(pformat(test_rule_bindings_collection_team_1))
         first_rule_binding_config = (
             test_rule_bindings_collection_team_1.values().__iter__().__next__()
         )
@@ -378,7 +379,7 @@ class TestJinjaTemplates:
             metadata=metadata,
             configs_path=Path("tests/resources/configs"),
         )
-        pprint(json.dumps(configs["configs"]))
+        logger.info(pformat(json.dumps(configs["configs"])))
         with open("tests/resources/expected_configs.json") as f:
             expected_configs = json.loads(f.read())
         assert configs["configs"] == dict(expected_configs)

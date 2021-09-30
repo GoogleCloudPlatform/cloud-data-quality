@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from enum import auto
 from enum import unique
-import logging
 from pathlib import Path
 from typing import Dict
 from typing import Optional
@@ -28,7 +29,7 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_DBT_ENVIRONMENT_TARGET = "clouddq"
+DEFAULT_DBT_ENVIRONMENT_TARGET = "dev"
 DBT_PROFILES_YML_TEMPLATE = {
     "default": {
         "target": DEFAULT_DBT_ENVIRONMENT_TARGET,
@@ -54,12 +55,15 @@ class DbtConnectionConfig(ABC):
     def to_dbt_profiles_dict(self) -> Dict:
         pass
 
-    def to_dbt_profiles_yml(self, target_directory: Optional[Path] = None) -> str:
+    def to_dbt_profiles_yml(
+        self,
+        target_directory: Optional[Path] = None,
+        environment_target: str = DEFAULT_DBT_ENVIRONMENT_TARGET,
+    ) -> str:
         template = DBT_PROFILES_YML_TEMPLATE
         profiles_content = self.to_dbt_profiles_dict()
-        template["default"]["outputs"][
-            DEFAULT_DBT_ENVIRONMENT_TARGET
-        ] = profiles_content
+        template["default"]["target"] = environment_target
+        template["default"]["outputs"][environment_target] = profiles_content
         if target_directory:
             with open(Path(target_directory).joinpath("profiles.yml"), "w") as f:
                 yaml.dump(template, f)
@@ -89,6 +93,24 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
         gcp_service_account_key_path: Optional[str],
         gcp_impersonation_credentials: Optional[str],
     ):
+        if not gcp_project_id:
+            raise ValueError(
+                f"Invalid input to connection config argument 'gcp_project_id': "
+                f"{gcp_project_id}."
+            )
+        if not gcp_region_id:
+            raise ValueError(
+                f"Invalid input to connection config argument 'gcp_region_id': "
+                f"{gcp_region_id}."
+            )
+        if not gcp_bq_dataset_id:
+            raise ValueError(
+                f"Invalid input to connection config argument 'gcp_bq_dataset_id': "
+                f"{gcp_bq_dataset_id}."
+            )
+        self.gcp_project_id = gcp_project_id
+        self.gcp_region_id = gcp_region_id
+        self.gcp_bq_dataset_id = gcp_bq_dataset_id
         defined_connection_types = [
             conn
             for conn in [gcp_service_account_key_path, gcp_impersonation_credentials]
@@ -100,7 +122,7 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
             )
             self.connection_method = DbtBigQueryConnectionMethod.OAUTH
         elif all(defined_connection_types):
-            raise AssertionError(
+            raise ValueError(
                 "Either one or neither but not both of service account JSON key "
                 "or service account impersonation can be used."
             )
@@ -121,9 +143,6 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
             )
         else:
             raise ValueError("Unable to create dbt connection profile for GCP.")
-        self.gcp_project_id = gcp_project_id
-        self.gcp_region_id = gcp_region_id
-        self.gcp_bq_dataset_id = gcp_bq_dataset_id
 
     def get_connection_method(self) -> str:
         if (

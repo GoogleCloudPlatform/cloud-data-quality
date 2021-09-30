@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+
 from pathlib import Path
 from typing import Dict
 from typing import Optional
@@ -63,7 +64,7 @@ class DbtRunner:
         self.__prepare_dbt_main_path()
         self.__prepare_rule_binding_view_path(write_log=True)
         # Prepare connection configurations
-        self.connection_config = self.__resolve_connection_configs(
+        self.__resolve_connection_configs(
             dbt_profiles_dir=dbt_profiles_dir,
             environment_target=environment_target,
             gcp_project_id=gcp_project_id,
@@ -72,10 +73,10 @@ class DbtRunner:
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
         )
-        logger.debug("Using 'dbt_profiles_dir': %s", self.dbt_profiles_dir)
+        logger.debug(f"Using 'dbt_profiles_dir': {self.dbt_profiles_dir}")
 
     def run(self, configs: Dict, debug: bool = False, dry_run: bool = False):
-        logger.info("Running dbt in path: %s", self.dbt_path)
+        logger.info(f"Running dbt in path: {self.dbt_path}")
         if debug:
             self.test_dbt_connection()
         run_dbt(
@@ -127,7 +128,7 @@ class DbtRunner:
         gcp_bq_dataset_id: Optional[str] = None,
         gcp_service_account_key_path: Optional[Path] = None,
         gcp_impersonation_credentials: Optional[str] = None,
-    ) -> DbtConnectionConfig:
+    ) -> None:
         if dbt_profiles_dir:
             dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
             if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
@@ -138,12 +139,6 @@ class DbtRunner:
             self.dbt_profiles_dir = dbt_profiles_dir
             self.environment_target = environment_target
         else:
-            if environment_target:
-                logger.warn(
-                    "Unless `dbt_profiles_dir` is defined, the following argument "
-                    "for `environment_target` will be ignored: %s",
-                    environment_target,
-                )
             # create GcpDbtConnectionConfig
             connection_config = GcpDbtConnectionConfig(
                 gcp_project_id=gcp_project_id,
@@ -154,13 +149,22 @@ class DbtRunner:
             )
             self.connection_config = connection_config
             self.dbt_profiles_dir = Path(self.dbt_path)
-            self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
             logger.warn(
                 "Writing user input GCP connection profile to dbt profiles.yml "
-                "at path: %s",
-                self.dbt_profiles_dir,
+                f"at path: {self.dbt_profiles_dir}",
             )
-            self.connection_config.to_dbt_profiles_yml(self.dbt_profiles_dir)
+            if environment_target:
+                logger.debug(f"Using `environment_target`: {environment_target}")
+                self.environment_target = environment_target
+                self.connection_config.to_dbt_profiles_yml(
+                    target_directory=self.dbt_profiles_dir,
+                    environment_target=self.environment_target,
+                )
+            else:
+                self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
+                self.connection_config.to_dbt_profiles_yml(
+                    target_directory=self.dbt_profiles_dir
+                )
 
     def __resolve_dbt_path(
         self,
@@ -168,13 +172,12 @@ class DbtRunner:
         create_paths_if_not_exists: bool = False,
         write_log: bool = False,
     ) -> Path:
-        logger.debug("Current working directory: %s", Path().cwd())
+        logger.debug(f"Current working directory: {Path().cwd()}")
         if not dbt_path:
             dbt_path = Path().cwd().joinpath("dbt").absolute()
             logger.debug(
                 "No argument 'dbt_path' provided. Defaulting to use "
-                "'dbt' directory in current working directory at: %s",
-                dbt_path,
+                f"'dbt' directory in current working directory at: {dbt_path}"
             )
         else:
             dbt_path = Path(dbt_path).absolute()
@@ -182,23 +185,23 @@ class DbtRunner:
                 dbt_path = dbt_path / "dbt"
         if not dbt_path.is_dir():
             if create_paths_if_not_exists:
-                logger.debug("Creating a new dbt directory at 'dbt_path': %s", dbt_path)
+                logger.debug(f"Creating a new dbt directory at 'dbt_path': {dbt_path}")
                 dbt_path.mkdir(parents=True, exist_ok=True)
             else:
-                raise ValueError("Provided 'dbt_path' does not exists: %s", dbt_path)
+                raise ValueError(f"Provided 'dbt_path' does not exists: {dbt_path}")
         if write_log:
-            logger.info("Using 'dbt_path': %s", dbt_path)
+            logger.info(f"Using 'dbt_path': {dbt_path}")
         return dbt_path
 
     def __prepare_dbt_project_path(self) -> None:
         dbt_project_path = self.dbt_path.absolute().joinpath("dbt_project.yml")
         if not dbt_project_path.is_file():
             logger.debug(
-                f"Cannot find `dbt_project.yml` configurations in current path: {dbt_project_path}"
-                f"Writing templated 'dbt_project.yml' to: {dbt_project_path}"
+                f"Cannot find `dbt_project.yml` in path: {dbt_project_path} \n"
+                f"Writing templated file to: {dbt_project_path}/dbt_project.yml"
             )
             write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
-        logger.info("Using 'dbt_project_path': %s", dbt_project_path)
+        logger.info(f"Using 'dbt_project_path': {dbt_project_path}")
 
     def __prepare_dbt_main_path(self) -> None:
         assert self.dbt_path.is_dir()
@@ -221,6 +224,6 @@ class DbtRunner:
         self.dbt_rule_binding_views_path.mkdir(parents=True, exist_ok=True)
         if write_log:
             logger.info(
-                "Writing generated sql to %s/",
-                self.dbt_rule_binding_views_path.absolute(),
+                "Writing generated sql to "
+                f"{self.dbt_rule_binding_views_path.absolute()}/",
             )

@@ -16,9 +16,11 @@ from __future__ import annotations
 
 import logging
 import re
+
 from string import Template
 
 from google.api_core.exceptions import NotFound
+from google.auth.credentials import Credentials
 from google.cloud import bigquery
 
 from clouddq.classes.dry_run_client import DryRunClient
@@ -61,11 +63,24 @@ RE_EXTRACT_TABLE_NAME = ".*Not found: Table (.+?) was not found in.*"
 
 
 class BigQueryDryRunClient(DryRunClient):
+    __client: bigquery.client.Client = None
+
     @classmethod
-    def get_connection(cls, new=False):
+    def get_connection(cls, credentials: Credentials = None):
         """Creates return new Singleton database connection"""
-        job_config = bigquery.QueryJobConfig(dry_run=True, use_query_cache=False)
-        return bigquery.Client(default_query_job_config=job_config)
+        if credentials or cls.__client is None:
+            job_config = bigquery.QueryJobConfig(dry_run=True, use_query_cache=False)
+            cls.__client = bigquery.Client(
+                default_query_job_config=job_config, credentials=credentials
+            )
+            return cls.__client
+        else:
+            return cls.__client
+
+    @classmethod
+    def close_connection(cls):
+        if cls.__client:
+            cls.__client.close()
 
     @classmethod
     def check_query(cls, query_string: str) -> None:

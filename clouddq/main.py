@@ -12,30 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""todo: add main docstring."""
-from datetime import datetime
+"""Data Quality Engine for BigQuery."""
 import json
 import logging
 import logging.config
-from pathlib import Path
-from pprint import pprint
 import sys
 import traceback
+
+from datetime import datetime
+from pathlib import Path
+from pprint import pformat
 from typing import Optional
 
 import click
-import click_logging
+import coloredlogs
+
+from git import GitCommandError
+from git import InvalidGitRepositoryError
+from git import Repo
 
 from clouddq import lib
-from clouddq.bigquery_utils import validate_sql_string
+from clouddq.classes.dry_run_bigquery import BigQueryDryRunClient
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.utils import assert_not_none_or_empty
 
 
+APP_VERSION = None
+try:
+    repo = Repo(search_parent_directories=True)
+    APP_VERSION = repo.git.describe()
+except (InvalidGitRepositoryError, GitCommandError):
+    pass
+
 APP_NAME = "clouddq"
-APP_VERSION = "git rev-parse HEAD"
-LOG_LEVEL = logging._nameToLevel["INFO"]
+LOG_LEVEL = logging._nameToLevel["DEBUG"]
 
 
 class JsonEncoderStrFallback(json.JSONEncoder):
@@ -56,86 +67,70 @@ class JsonEncoderDatetime(JsonEncoderStrFallback):
             return super().default(obj)
 
 
-logger = logging.getLogger("clouddq")
-logging.basicConfig(
-    format="%(json_formatted)s",
-    level=LOG_LEVEL,
-    handlers=[
-        # logging.FileHandler('/var/log/clouddq.log', 'a'),
-        logging.StreamHandler(sys.stderr),
-    ],
-)
+class JSONFormatter(logging.Formatter):
+    def __init__(self):
+        super().__init__()
 
-_record_factory_bak = logging.getLogRecordFactory()
-
-
-def record_factory(*args, **kwargs) -> logging.LogRecord:
-    record = _record_factory_bak(*args, **kwargs)
-
-    record.json_formatted = json.dumps(
-        {
-            "severity": record.levelname,
-            "time": record.created,
-            "location": "{}:{}:{}".format(
-                record.pathname or record.filename,
-                record.funcName,
-                record.lineno,
-            ),
-            "exception": record.exc_info,
-            "traceback": traceback.format_exception(*record.exc_info)
-            if record.exc_info
-            else None,
-            "message": record.getMessage(),
-            "labels": {
-                "name": APP_NAME,
-                "releaseId": APP_VERSION,
+    def format(self, record):
+        record.msg = json.dumps(
+            {
+                "severity": record.levelname,
+                "time": datetime.utcfromtimestamp(record.created)
+                .astimezone()
+                .isoformat()
+                .replace("+00:00", "Z"),
+                "logging.googleapis.com/sourceLocation": {
+                    "file": record.pathname or record.filename,
+                    "function": record.funcName,
+                    "line": record.lineno,
+                },
+                "exception": record.exc_info,
+                "traceback": traceback.format_exception(*record.exc_info)
+                if record.exc_info
+                else None,
+                "message": record.getMessage(),
+                "logging.googleapis.com/labels": {
+                    "name": APP_NAME,
+                    "releaseId": APP_VERSION,
+                },
             },
-        },
-        cls=JsonEncoderDatetime,
+            cls=JsonEncoderDatetime,
+        )
+        return super().format(record)
+
+
+def get_json_logger():
+    json_logger = logging.getLogger("clouddq-json-logger")
+    json_logger.setLevel(LOG_LEVEL)
+    logging_stream_handler = logging.StreamHandler(sys.stderr)
+    logging_stream_handler.setFormatter(JSONFormatter())
+    json_logger.addHandler(logging_stream_handler)
+    return json_logger
+
+
+def get_logger():
+    logger = logging.getLogger("clouddq")
+    logger.setLevel(LOG_LEVEL)
+    logging_stream_handler = logging.StreamHandler(sys.stderr)
+    stream_formatter = logging.Formatter(
+        "{asctime} {name} {levelname:8s} {message}", style="{"
     )
-    return record
+    logging_stream_handler.setFormatter(stream_formatter)
+    logger.addHandler(logging_stream_handler)
+    return logger
 
 
-logging.setLogRecordFactory(record_factory)
-
-click_logging_style_kwargs = {
-    "debug": dict(fg="cyan", blink=True),
-    "info": dict(fg="yellow", blink=True),
-    "warn": dict(fg="magenta", blink=True),
-    "error": dict(fg="red", blink=True),
-    "exception": dict(fg="red", blink=True),
-    "critical": dict(fg="red", blink=True),
-}
-click_logging_echo_kwargs = {
-    "debug": dict(err=True),
-    "info": dict(err=True),
-    "warn": dict(err=True),
-    "error": dict(err=True),
-    "exception": dict(err=True),
-    "critical": dict(err=True),
-}
-click_logging.basic_config(
-    logger,
-    style_kwargs=click_logging_style_kwargs,
-    echo_kwargs=click_logging_echo_kwargs,
-)
+json_logger = get_json_logger()
+logger = get_logger()
+coloredlogs.install(logger=logger)
 
 
 @click.command()
-@click_logging.simple_verbosity_option(logger)
 @click.argument("rule_binding_ids")
 @click.argument(
     "rule_binding_config_path",
     type=click.Path(exists=True),
 )
-# @click.option(
-#     "--write_dq_summary_to_stdout",
-#     help="",
-# )
-# @click.option(
-#     "--target_bigquery_summary_table",
-#     help="",
-# )
 @click.option(
     "--gcp_project_id",
     help="GCP Project ID used for executing GCP Jobs. "
@@ -309,96 +304,110 @@ def main(  # noqa: C901
     """
     if debug:
         logger.setLevel("DEBUG")
-    # Prepare dbt runtime
-    dbt_runner = DbtRunner(
-        dbt_path=dbt_path,
-        dbt_profiles_dir=dbt_profiles_dir,
-        environment_target=environment_target,
-        gcp_project_id=gcp_project_id,
-        gcp_region_id=gcp_region_id,
-        gcp_bq_dataset_id=gcp_bq_dataset_id,
-        gcp_service_account_key_path=gcp_service_account_key_path,
-        gcp_impersonation_credentials=gcp_impersonation_credentials,
-    )
-    dbt_path = dbt_runner.get_dbt_path()
-    dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
-    dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir()
-    environment_target = dbt_runner.get_dbt_environment_target()
-    # Prepare DQ Summary Table
-    dq_summary_table_name = get_bigquery_dq_summary_table_name(
-        dbt_path=Path(dbt_path),
-        dbt_profiles_dir=Path(dbt_profiles_dir),
-        environment_target=environment_target,
-    )
-    logger.info(
-        "Writing summary results to GCP table: `%s`. ",
-        dq_summary_table_name,
-    )
-    # Load metadata
-    metadata = json.loads(metadata)
-    # Load Rule Bindings
-    configs_path = Path(rule_binding_config_path)
-    logger.debug("Loading rule bindings from: %s", configs_path.absolute())
-    all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
-    # Prepare list of Rule Bindings in-scope for run
-    target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
-    if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
-        target_rule_binding_ids = list(all_rule_bindings.keys())
-    # Load all other configs
-    (
-        entities_collection,
-        row_filters_collection,
-        rules_collection,
-    ) = lib.load_configs_if_not_defined(
-        configs_path=configs_path,
-    )
-    for rule_binding_id in target_rule_binding_ids:
-        rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
-        assert_not_none_or_empty(
-            rule_binding_configs,
-            f"Target Rule Binding Id: {rule_binding_id} not found "
-            f"in config path {configs_path.absolute()}.",
-        )
-        if debug:
-            logger.debug(
-                "Creating sql string from configs for rule binding: %s",
-                rule_binding_id,
-            )
-            logger.debug("Rule binding config json:")
-            pprint(rule_binding_configs)
-        sql_string = lib.create_rule_binding_view_model(
-            rule_binding_id=rule_binding_id,
-            rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name=dq_summary_table_name,
-            entities_collection=entities_collection,
-            rules_collection=rules_collection,
-            row_filters_collection=row_filters_collection,
-            configs_path=configs_path,
-            environment=environment_target,
-            metadata=metadata,
-            debug=print_sql_queries,
-            progress_watermark=progress_watermark,
-        )
-        if not skip_sql_validation:
-            validate_sql_string(sql_string)
-        logger.debug(
-            "*** Writing sql to {dbt_rule_binding_views_path.absolute()}/" "%s.sql",
-            rule_binding_id,
-        )
-        lib.write_sql_string_as_dbt_model(
-            rule_binding_id=rule_binding_id,
-            sql_string=sql_string,
-            dbt_rule_binding_views_path=dbt_rule_binding_views_path,
-        )
-    # clean up old rule_bindings
-    for view in dbt_rule_binding_views_path.glob("*.sql"):
-        if view.stem not in target_rule_binding_ids:
-            view.unlink()
-    configs = {"target_rule_binding_ids": target_rule_binding_ids}
+        for handler in logger.handlers:
+            handler.setLevel(logging.DEBUG)
+            logger.debug("Debug logging enabled")
+    logger.info("Starting CloudDQ run with configs:")
+    json_logger.warn({"run_configs": locals()})
     try:
-        dbt_runner.run(configs=configs, debug=debug, dry_run=dry_run)
-    except Exception as e:
-        logger.error("Encountered unexpected error: " + str(e), exc_info=True)
+        # Prepare dbt runtime
+        dbt_runner = DbtRunner(
+            dbt_path=dbt_path,
+            dbt_profiles_dir=dbt_profiles_dir,
+            environment_target=environment_target,
+            gcp_project_id=gcp_project_id,
+            gcp_region_id=gcp_region_id,
+            gcp_bq_dataset_id=gcp_bq_dataset_id,
+            gcp_service_account_key_path=gcp_service_account_key_path,
+            gcp_impersonation_credentials=gcp_impersonation_credentials,
+        )
+        dbt_path = dbt_runner.get_dbt_path()
+        dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
+        dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir()
+        environment_target = dbt_runner.get_dbt_environment_target()
+        # Prepare DQ Summary Table
+        dq_summary_table_name = get_bigquery_dq_summary_table_name(
+            dbt_path=Path(dbt_path),
+            dbt_profiles_dir=Path(dbt_profiles_dir),
+            environment_target=environment_target,
+        )
+        logger.info(
+            f"Writing summary results to GCP table: `{dq_summary_table_name}`. "
+        )
+        # Load metadata
+        metadata = json.loads(metadata)
+        # Load Rule Bindings
+        configs_path = Path(rule_binding_config_path)
+        logger.debug("Loading rule bindings from: %s", configs_path.absolute())
+        all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
+        # Prepare list of Rule Bindings in-scope for run
+        target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
+        if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
+            target_rule_binding_ids = list(all_rule_bindings.keys())
+        # Load all other configs
+        (
+            entities_collection,
+            row_filters_collection,
+            rules_collection,
+        ) = lib.load_configs_if_not_defined(
+            configs_path=configs_path,
+        )
+        for rule_binding_id in target_rule_binding_ids:
+            rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
+            assert_not_none_or_empty(
+                rule_binding_configs,
+                f"Target Rule Binding Id: {rule_binding_id} not found "
+                f"in config path {configs_path.absolute()}.",
+            )
+            if debug:
+                logger.debug(
+                    f"Creating sql string from configs for rule binding: "
+                    f"{rule_binding_id}"
+                )
+                logger.debug("Rule binding config json:")
+                logger.debug(pformat(rule_binding_configs))
+            sql_string = lib.create_rule_binding_view_model(
+                rule_binding_id=rule_binding_id,
+                rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name=dq_summary_table_name,
+                entities_collection=entities_collection,
+                rules_collection=rules_collection,
+                row_filters_collection=row_filters_collection,
+                configs_path=configs_path,
+                environment=environment_target,
+                metadata=metadata,
+                debug=print_sql_queries,
+                progress_watermark=progress_watermark,
+            )
+            if not skip_sql_validation:
+                BigQueryDryRunClient.check_query(query_string=sql_string)
+            if debug:
+                logger.debug(
+                    f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
+                    f"{rule_binding_id}.sql",
+                )
+            lib.write_sql_string_as_dbt_model(
+                rule_binding_id=rule_binding_id,
+                sql_string=sql_string,
+                dbt_rule_binding_views_path=dbt_rule_binding_views_path,
+            )
+        # clean up old rule_bindings
+        for view in dbt_rule_binding_views_path.glob("*.sql"):
+            if view.stem not in target_rule_binding_ids:
+                view.unlink()
+        configs = {"target_rule_binding_ids": target_rule_binding_ids}
+        logger.info(f"Running dbt in path: {dbt_path}")
+        dbt_runner.run(
+            configs=configs,
+            debug=debug,
+            dry_run=dry_run,
+        )
+    except Exception as error:
+        json_logger.error(error, exc_info=True)
+        logger.fatal(error, exc_info=True)
+        raise
+    finally:
+        BigQueryDryRunClient.close_connection()
 
 
 if __name__ == "__main__":

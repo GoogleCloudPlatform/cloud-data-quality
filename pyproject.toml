@@ -20,7 +20,8 @@ clouddq = "clouddq.main:main"
 [tool.poetry.dependencies]
 python = "^3.8.6,<3.9.0"
 click = "^7.1.2"
-click-logging = "^1.0.1"
+coloredlogs="^15.0.1"
+gitpython="^3.1.24"
 # Waiting for dbt to upgrade their jinja2 dependency to remove vulnerability in 2.11.2
 Jinja2 = "^2.11.2"
 PyYAML = "^5.3.1"
@@ -76,7 +77,6 @@ pyflakes = ['-F401']
 [tool.isort]
 profile = "google"
 force_single_line = true
-force_sort_within_sections = true
 reverse_relative = true
 atomic = true
 include_trailing_comma = true
@@ -87,5 +87,5 @@ src_paths = ["clouddq", "tests"]
 skip_glob = ["*/setup.py"]
 filter_files = true
 known_first_party = "clouddq"
-known_third_party = ['typical','click','jinja2','pytest','yaml']
+known_third_party = ['click','jinja2','pytest','yaml', 'pyyaml', 'dbt', 'gitpython', 'coloredlogs']
 no_lines_before = "LOCALFOLDER"

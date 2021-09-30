@@ -15,8 +15,10 @@
 import json
 import logging
 import os
-from pathlib import Path
 import re
+
+from pathlib import Path
+from pprint import pformat
 from typing import Dict
 from typing import Optional
 
@@ -107,6 +109,7 @@ def get_bigquery_dq_summary_table_name(
         )
     dbt_profiles_key = load_yaml(dbt_project_path, "profile")
     dbt_profiles_config = load_yaml(dbt_profiles_dir / "profiles.yml", dbt_profiles_key)
+    logger.debug(f"Content of dbt_profiles.yml: {pformat(dbt_profiles_config)}")
     dbt_profile = dbt_profiles_config["outputs"][environment_target]
     dbt_project = dbt_profile["project"]
     if "{{" in dbt_project:

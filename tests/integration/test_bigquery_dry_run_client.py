@@ -15,28 +15,20 @@
 from google.api_core.exceptions import BadRequest
 import pytest
 
-from clouddq.bigquery_utils import validate_sql_string
 from clouddq.classes.dry_run_bigquery import BigQueryDryRunClient
 
 
 @pytest.mark.e2e
 class TestBigQueryDryRunClient:
-    @pytest.fixture
-    def client(self):
-        return BigQueryDryRunClient()
 
-    def test_succeeds(self, client):
-        query = "SELECT 1 + 2"
-        client.check_query(query)
-
-    def test_failure(self, client):
+    def test_failure(self):
         query = "SELECT 1; drop table students;--"
         with pytest.raises(BadRequest):
-            client.check_query(query)
+            BigQueryDryRunClient.check_query(query)
 
     def test_validate_sql(self):
         query = "SELECT 1 + 2"
-        validate_sql_string(query)
+        BigQueryDryRunClient.check_query(query)
 
 
 if __name__ == "__main__":

@@ -15,9 +15,11 @@
 """todo: add lib docstring."""
 import itertools
 import json
-from pathlib import Path
-from pprint import pprint
+import logging
 import typing
+
+from pathlib import Path
+from pprint import pformat
 
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_rule_binding import DqRuleBinding
@@ -25,6 +27,9 @@ from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import load_jinja_template
 from clouddq.utils import load_yaml
 from clouddq.utils import sha256_digest
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
@@ -100,7 +105,7 @@ def create_rule_binding_view_model(
     sql_string = template.render(configs)
     if debug:
         configs.update({"generated_sql_string": sql_string})
-        pprint(configs)
+        logger.debug(pformat(configs))
     return sql_string
 
 

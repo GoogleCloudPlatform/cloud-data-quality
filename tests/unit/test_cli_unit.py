@@ -15,10 +15,12 @@
 import os
 
 import click.testing
+import logging
 import pytest
 
 from clouddq.main import main
 
+logger = logging.getLogger(__name__)
 
 class TestCli:
     @pytest.fixture
@@ -27,12 +29,12 @@ class TestCli:
 
     def test_cli_no_args_fail(self, runner):
         result = runner.invoke(main)
-        print(result.output)
+        logger.info(result.output)
         assert result.exit_code == 2
 
     def test_cli_help_text(self, runner):
         result = runner.invoke(main, ["--help"])
-        print(result.output)
+        logger.info(result.output)
         assert result.exit_code == 0
 
     def test_cli_missing_dbt_profiles_dir_fail(self, runner):
@@ -44,7 +46,7 @@ class TestCli:
             "--skip_sql_validation"
             ]
         result = runner.invoke(main, args)
-        print(result.output)
+        logger.info(result.output)
         assert result.exit_code == 1
 
     def test_cli_dry_run(self, runner):
@@ -57,7 +59,7 @@ class TestCli:
             "--skip_sql_validation"
             ]
         result = runner.invoke(main, args)
-        print(result.output)
+        logger.info(result.output)
         assert result.exit_code == 0
 
 if __name__ == "__main__":

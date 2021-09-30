@@ -15,8 +15,9 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
+import logging
+
 from dataclasses import dataclass
-import sys
 
 from clouddq.classes.dq_entity_column import DqEntityColumn
 from clouddq.utils import assert_not_none_or_empty
@@ -31,6 +32,8 @@ ENTITY_CUSTOM_CONFIG_MAPPING = {
         "instance_name": "{project_name}",
     },
 }
+
+logger = logging.getLogger(__name__)
 
 
 def get_custom_entity_configs(
@@ -60,14 +63,13 @@ def get_custom_entity_configs(
         config_value = entity_config_template.format(**entity_config_arguments)
     except KeyError:
         if config_key in configs_map:
-            print(
+            logger.warning(
                 f"Entity Config ID '{entity_id}' with source_database "
                 f"'{source_database}' is using deprecated "
                 f"config value '{config_key}'.\n"
                 f"This will be removed in version 1.0.\n"
                 f"Migrate to use the config values "
-                f"'{entity_config_template_arguments}' instead.",
-                file=sys.stderr,
+                f"'{entity_config_template_arguments}' instead."
             )
             config_value = configs_map.get(config_key)
         else:
