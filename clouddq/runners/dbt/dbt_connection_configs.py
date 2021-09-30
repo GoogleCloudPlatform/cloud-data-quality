@@ -21,6 +21,7 @@ from enum import Enum
 from enum import auto
 from enum import unique
 from pathlib import Path
+from pprint import pformat
 from typing import Dict
 from typing import Optional
 
@@ -121,10 +122,11 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
                 "Using Application-Default Credentials (ADC) to connect to GCP..."
             )
             self.connection_method = DbtBigQueryConnectionMethod.OAUTH
-        elif all(defined_connection_types):
+        elif len(defined_connection_types) > 1:
             raise ValueError(
                 "Either one or neither but not both of service account JSON key "
-                "or service account impersonation can be used."
+                "or service account impersonation can be used. "
+                f"Defined connection types:\n{pformat(defined_connection_types)}"
             )
         elif gcp_service_account_key_path:
             logger.info("Using exported service account key to connect to GCP...")

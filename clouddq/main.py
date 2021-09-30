@@ -184,7 +184,7 @@ coloredlogs.install(logger=logger)
 )
 @click.option(
     "--dbt_profiles_dir",
-    help="Path containing the dbt profiles.yml configs for connecting to GCP."
+    help="Path containing the dbt profiles.yml configs for connecting to GCP. "
     "As dbt supports multiple connection configs in a single profiles.yml file, "
     "you can also specify the dbt target for the run with --environment_target. "
     "Defaults to environment variable DBT_PROFILES_DIR if present. "
@@ -210,7 +210,9 @@ coloredlogs.install(logger=logger)
     "e.g. dev, test, prod.  "
     "Defaults to 'dev' if not set. "
     "Uses the environment variable ENV if present. "
-    "This value be ignored if --dbt_profiles_dir is not set. ",
+    "Set this to the same value as 'environment' in "
+    "entity 'environment_override' config to trigger "
+    "field substitution.",
     envvar="ENV",
     default="dev",
 )
@@ -310,6 +312,12 @@ def main(  # noqa: C901
     logger.info("Starting CloudDQ run with configs:")
     json_logger.warn({"run_configs": locals()})
     try:
+        # Create GCP client
+        bigquery_client = BigQueryDryRunClient(
+            project_id=gcp_project_id,
+            gcp_service_account_key_path=gcp_service_account_key_path,
+            gcp_impersonation_credentials=gcp_impersonation_credentials,
+        )
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -380,7 +388,7 @@ def main(  # noqa: C901
                 progress_watermark=progress_watermark,
             )
             if not skip_sql_validation:
-                BigQueryDryRunClient.check_query(query_string=sql_string)
+                bigquery_client.check_query(query_string=sql_string)
             if debug:
                 logger.debug(
                     f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"

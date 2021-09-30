@@ -31,8 +31,11 @@ source /tmp/clouddq_test_env/bin/activate
 # install clouddq wheel into temporary env
 python3 -m pip install .
 
-# set project id
+# set variables
 export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
+export GCP_BQ_DATASET_ID="dq_test"
+export GCP_REGION="EU"
+export IMPERSONATION_SERVICE_ACCOUNT="argo-svc@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
 
 # smoke test clouddq commands
 python3 clouddq --help
@@ -47,3 +50,36 @@ cp -r configs "$TEST_DIR"
 cp tests/resources/test_dbt_profiles_dir/profiles.yml "$TEST_DIR"
 cd "$TEST_DIR"
 python3 -m clouddq ALL configs --dbt_profiles_dir="$TEST_DIR" --debug --dry_run --skip_sql_validation
+
+# test clouddq with direct connection profiles
+python3 -m clouddq ALL configs \
+    --gcp_project_id=$GOOGLE_CLOUD_PROJECT \
+    --gcp_bq_dataset_id=$GCP_BQ_DATASET_ID \
+    --gcp_region_id=$GCP_REGION \
+    --debug \
+    --dry_run \
+    --skip_sql_validation
+
+# test clouddq with exported service account key if exists
+if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+    python3 -m clouddq ALL configs \
+        --gcp_project_id=$GOOGLE_CLOUD_PROJECT \
+        --gcp_bq_dataset_id=$GCP_BQ_DATASET_ID \
+        --gcp_region_id=$GCP_REGION \
+        --gcp_service_account_key_path=$GOOGLE_APPLICATION_CREDENTIALS \
+        --debug \
+        --dry_run \
+        --skip_sql_validation
+fi
+
+# test clouddq with service account impersonation
+if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+    python3 -m clouddq ALL configs \
+        --gcp_project_id=$GOOGLE_CLOUD_PROJECT \
+        --gcp_bq_dataset_id=$GCP_BQ_DATASET_ID \
+        --gcp_region_id=$GCP_REGION \
+        --gcp_impersonation_credentials=$IMPERSONATION_SERVICE_ACCOUNT \
+        --debug \
+        --dry_run \
+        --skip_sql_validation
+fi

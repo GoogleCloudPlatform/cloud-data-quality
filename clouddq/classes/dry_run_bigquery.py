@@ -17,14 +17,21 @@ from __future__ import annotations
 import logging
 import re
 
+from pathlib import Path
 from string import Template
 
+import google.auth
+
 from google.api_core.exceptions import NotFound
+from google.auth import impersonated_credentials
 from google.auth.credentials import Credentials
 from google.cloud import bigquery
+from google.oauth2 import service_account
 
 from clouddq.classes.dry_run_client import DryRunClient
 
+
+TARGET_SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]
 
 CHECK_QUERY = Template(
     """
@@ -64,21 +71,54 @@ RE_EXTRACT_TABLE_NAME = ".*Not found: Table (.+?) was not found in.*"
 
 class BigQueryDryRunClient(DryRunClient):
     __client: bigquery.client.Client = None
+    __credentials: Credentials = None
+    __project_id: str = None
+
+    def __init__(
+        self,
+        credentials: Credentials = None,
+        project_id: str = None,
+        gcp_service_account_key_path: Path = None,
+        gcp_impersonation_credentials: str = None,
+    ) -> BigQueryDryRunClient:
+        if credentials:
+            self.__credentials = credentials
+            if project_id:
+                self.__project_id = project_id
+            else:
+                self.__project_id = credentials.project_id
+        elif gcp_service_account_key_path:
+            self.__credentials = service_account.Credentials.from_service_account_file(
+                filename=gcp_service_account_key_path, scopes=TARGET_SCOPES
+            )
+            self.__project_id = self.__credentials.project_id
+        else:
+            self.__credentials, self.__project_id = google.auth.default()
+            if gcp_impersonation_credentials:
+                target_credentials = impersonated_credentials.Credentials(
+                    source_credentials=credentials,
+                    target_principal=gcp_impersonation_credentials,
+                    target_scopes=TARGET_SCOPES,
+                    lifetime=500,
+                )
+                self.__credentials = target_credentials
 
     @classmethod
-    def get_connection(cls, credentials: Credentials = None):
+    def get_connection(cls) -> bigquery.client.Client:
         """Creates return new Singleton database connection"""
-        if credentials or cls.__client is None:
+        if cls.__client is None:
             job_config = bigquery.QueryJobConfig(dry_run=True, use_query_cache=False)
             cls.__client = bigquery.Client(
-                default_query_job_config=job_config, credentials=credentials
+                default_query_job_config=job_config,
+                credentials=cls.__credentials,
+                project=cls.__project_id,
             )
             return cls.__client
         else:
             return cls.__client
 
     @classmethod
-    def close_connection(cls):
+    def close_connection(cls) -> None:
         if cls.__client:
             cls.__client.close()
 
