@@ -140,9 +140,7 @@ class BigQueryDryRunClient(DryRunClient):
             logging.fatal(e)
             raise e
         except GoogleAuthError as e:
-            logging.fatal(
-                "Error connecting to GCP."
-            )
+            logging.fatal("Error connecting to GCP.")
             raise e
         if query_job:
             # A dry run query completes immediately.
