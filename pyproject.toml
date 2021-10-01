@@ -22,7 +22,6 @@ python = "^3.8.6,<3.9.0"
 click = "^7.1.2"
 coloredlogs="^15.0.1"
 gitpython="^3.1.24"
-# Waiting for dbt to upgrade their jinja2 dependency to remove vulnerability in 2.11.2
 Jinja2 = "^2.11.3"
 PyYAML = "^5.3.1"
 dbt-bigquery = "^0.20.2"
