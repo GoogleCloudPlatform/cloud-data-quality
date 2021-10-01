@@ -119,29 +119,34 @@ class BigQueryClient:
             # Otherwise use source_credentials
             self.__credentials = source_credentials
         # Try to get service account credentials email
-        if self.__credentials.__dict__.get("service_account_email"):
+        if self.__credentials.__dict__.get("_service_account_email"):
             self.__user_email = self.__credentials.service_account_email
         else:
             # Otherwise try to get ADC credentials email
             request = google.auth.transport.requests.Request()
             token = self.__credentials.id_token
             id_info = id_token.verify_oauth2_token(token, request)
-            if "email" in id_info:
-                self.__user_email = id_info["email"]
-            else:
-                raise ValueError("Cannot find user email from credentials.")
-        logger.info(
-            f"Successfully created BigQuery Client with user: {self.__user_email}"
-        )
+            self.__user_email = id_info["email"]
+        if self.__user_email:
+            logger.info(
+                f"Successfully created BigQuery Client with user: "
+                f"{self.__user_email}"
+            )
+        else:
+            logger.warning(
+                "Encountered error while retrieving user from ADC " "credentials.",
+            )
         # Get project ID
         if project_id:
             self.__project_id = project_id
-        elif self.__credentials.__dict__.get("project_id"):
+        elif self.__credentials.__dict__.get("_project_id"):
             self.__project_id = self.__credentials.project_id
         elif self.__credentials.__dict__.get("_quota_project_id"):
             self.__project_id = self.__credentials._quota_project_id
         else:
-            raise ValueError("Cannot retrieve project_id for BigQuery client.")
+            logger.warn(
+                "Could not retrieve project_id from ADC credentials.", exc_info=True
+            )
 
     def get_connection(self, new: bool = False) -> bigquery.client.Client:
         """Creates return new Singleton database connection"""
