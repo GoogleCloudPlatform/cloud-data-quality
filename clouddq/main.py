@@ -19,6 +19,7 @@ import logging.config
 import sys
 import traceback
 
+from datetime import date
 from datetime import datetime
 from pathlib import Path
 from pprint import pformat
@@ -32,10 +33,12 @@ from git import InvalidGitRepositoryError
 from git import Repo
 
 from clouddq import lib
+from clouddq.classes.dq_target_table_utils import TargetTable
 from clouddq.classes.dry_run_bigquery import BigQueryDryRunClient
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
+from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
 
 
@@ -131,6 +134,10 @@ coloredlogs.install(logger=logger)
 @click.argument(
     "rule_binding_config_path",
     type=click.Path(exists=True),
+)
+@click.option(
+    "--target_bigquery_summary_table",
+    help="",
 )
 @click.option(
     "--gcp_project_id",
@@ -269,6 +276,7 @@ def main(  # noqa: C901
     metadata: Optional[str],
     dry_run: bool,
     progress_watermark: bool,
+    target_bigquery_summary_table: str,
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
@@ -413,6 +421,14 @@ def main(  # noqa: C901
         )
         if job_status == JobStatus.SUCCESS:
             logger.info("Job completed successfully.")
+            invocation_id = get_dbt_invocation_id(dbt_path)
+            logger.info("Invocation id is %s ", invocation_id)
+            partition_date = date.today()
+            logger.info("Partition date is %s", partition_date)
+            target_table = TargetTable(invocation_id)
+            target_table.write_to_target_bq_table(
+                partition_date, target_bigquery_summary_table
+            )
         elif job_status == JobStatus.FAILED:
             logger.error("Job failed.")
         else:

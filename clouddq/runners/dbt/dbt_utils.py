@@ -143,3 +143,13 @@ def get_bigquery_dq_summary_table_name(
         dbt_dataset = extract_dbt_env_var(dbt_dataset)
     dq_summary_table_name = f"{dbt_project}.{dbt_dataset}.dq_summary"
     return dq_summary_table_name
+
+
+def get_dbt_invocation_id(dbt_path: Path) -> str:
+
+    logger.info("DBT path is %s", dbt_path)
+    # JSON file
+    f = open(f"{dbt_path}/target/manifest.json")
+    # Reading from file
+    data = json.loads(f.read())
+    return data["metadata"]["invocation_id"]
