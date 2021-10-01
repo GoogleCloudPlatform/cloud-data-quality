@@ -121,6 +121,8 @@ class BigQueryClient:
         # Try to get service account credentials email
         if self.__credentials.__dict__.get("_service_account_email"):
             self.__user_email = self.__credentials.service_account_email
+        elif self.__credentials.__dict__.get("_target_principal"):
+            self.__user_email = self.__credentials.service_account_email
         else:
             # Otherwise try to get ADC credentials email
             request = google.auth.transport.requests.Request()
