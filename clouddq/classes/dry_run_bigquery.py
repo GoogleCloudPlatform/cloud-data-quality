@@ -25,6 +25,7 @@ import google.auth
 from google.api_core.exceptions import NotFound
 from google.auth import impersonated_credentials
 from google.auth.credentials import Credentials
+from google.auth.exceptions import GoogleAuthError
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
@@ -135,10 +136,15 @@ class BigQueryDryRunClient(DryRunClient):
             table_name = re.search(RE_EXTRACT_TABLE_NAME, str(e))
             if table_name:
                 table_name = table_name.group(1).replace(":", ".")
-                logging.warning(f"""Table name `{table_name}` does not exist.""")
-                logging.fatal(e)
-            else:
-                logging.fatal(e)
+                logging.warning(f"Table name `{table_name}` does not exist.")
+            logging.fatal(e)
+            raise e
+        except GoogleAuthError as e:
+            logging.fatal(
+                f"Error connecting to GCP project '{cls.__project_id}'"
+                f" using credentials: {cls.__credentials}"
+            )
+            raise e
         if query_job:
             # A dry run query completes immediately.
             logging.info(

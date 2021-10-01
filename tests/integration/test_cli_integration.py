@@ -39,7 +39,11 @@ class TestCliIntegration:
 
     @pytest.fixture
     def gcp_sa_key(self):
-        return os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
+        sa_key_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
+        if "application_default_credentials.json" in sa_key_path:
+            return None
+        else:
+            return sa_key_path
 
     def test_cli_dry_run_oauth_configs(
         self, 
@@ -86,7 +90,7 @@ class TestCliIntegration:
         if gcp_sa_key:
             assert result.exit_code == 0
         else:
-            assert result.exit_code == 1
+            assert result.exit_code == 2
 
 
     def test_cli_dry_run_incompatible_conn_failure(
@@ -95,7 +99,6 @@ class TestCliIntegration:
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
-        gcp_sa_key
     ):
         args = [
             "ALL", 

@@ -17,6 +17,8 @@ import logging
 import os
 import re
 
+from enum import Enum
+from enum import unique
 from pathlib import Path
 from pprint import pformat
 from typing import Dict
@@ -34,6 +36,15 @@ logger = logging.getLogger(__name__)
 ENV_VAR_PATTERN = re.compile(r".*env_var\((.+?)\).*", re.IGNORECASE)
 
 
+@unique
+class JobStatus(Enum):
+    """ """
+
+    UNKNOWN = 0
+    SUCCESS = 1
+    FAILED = 2
+
+
 def run_dbt(
     dbt_path: Path,
     dbt_profile_dir: Path,
@@ -41,7 +52,7 @@ def run_dbt(
     environment: str = "clouddq",
     debug: bool = False,
     dry_run: bool = False,
-) -> None:
+) -> JobStatus:
     """
 
     Args:
@@ -67,20 +78,33 @@ def run_dbt(
         "--target",
         environment,
     ]
-    with working_directory(dbt_path):
-        if debug:
-            logger.info("Using dbt working directory: %s", Path.cwd())
-            debug_commands = command.copy()
-            debug_commands[0] = "debug"
-            try:
-                logger.info("\nExecuting dbt command:\n %s", debug_commands)
-                dbt(debug_commands)
-            except SystemExit:
-                pass
+    try:
+        with working_directory(dbt_path):
+            if debug:
+                logger.info("Using dbt working directory: %s", Path.cwd())
+                debug_commands = command.copy()
+                debug_commands[0] = "debug"
+                try:
+                    logger.info("\nExecuting dbt command:\n %s", debug_commands)
+                    dbt(debug_commands)
+                except SystemExit:
+                    pass
+            else:
+                if not dry_run:
+                    logger.info("\nExecuting dbt command:\n %s", command)
+                    dbt(command)
+    except SystemExit as sysexit:
+        if sysexit.code == 0:
+            logger.debug("dbt run completed successfully.")
+            return JobStatus.SUCCESS
         else:
-            if not dry_run:
-                logger.info("\nExecuting dbt command:\n %s", command)
-                dbt(command)
+            logger.error(
+                f"dbt run failed with error {sysexit.code}\n" f"{str(sysexit)}."
+            )
+            return JobStatus.FAILED
+    except Exception as e:
+        logger.error(f"dbt run failed with error {e}\n", exc_info=True)
+        return JobStatus.UNKNOWN
 
 
 def extract_dbt_env_var(text: str) -> str:

@@ -34,6 +34,7 @@ from git import Repo
 from clouddq import lib
 from clouddq.classes.dry_run_bigquery import BigQueryDryRunClient
 from clouddq.runners.dbt.dbt_runner import DbtRunner
+from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.utils import assert_not_none_or_empty
 
@@ -405,11 +406,17 @@ def main(  # noqa: C901
                 view.unlink()
         configs = {"target_rule_binding_ids": target_rule_binding_ids}
         logger.info(f"Running dbt in path: {dbt_path}")
-        dbt_runner.run(
+        job_status: JobStatus = dbt_runner.run(
             configs=configs,
             debug=debug,
             dry_run=dry_run,
         )
+        if job_status == JobStatus.SUCCESS:
+            logger.info("Job completed successfully.")
+        elif job_status == JobStatus.FAILED:
+            logger.error("Job failed.")
+        else:
+            logger.error("Job failed with unknown status.")
     except Exception as error:
         json_logger.error(error, exc_info=True)
         logger.fatal(error, exc_info=True)
