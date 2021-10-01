@@ -153,7 +153,7 @@ class DbtRunner:
             )
             self.connection_config = connection_config
             self.dbt_profiles_dir = Path(self.dbt_path)
-            logger.warn(
+            logger.debug(
                 "Writing user input GCP connection profile to dbt profiles.yml "
                 f"at path: {self.dbt_profiles_dir}",
             )
@@ -194,7 +194,7 @@ class DbtRunner:
             else:
                 raise ValueError(f"Provided 'dbt_path' does not exists: {dbt_path}")
         if write_log:
-            logger.info(f"Using 'dbt_path': {dbt_path}")
+            logger.debug(f"Using 'dbt_path': {dbt_path}")
         return dbt_path
 
     def __prepare_dbt_project_path(self) -> None:
@@ -205,7 +205,7 @@ class DbtRunner:
                 f"Writing templated file to: {dbt_project_path}/dbt_project.yml"
             )
             write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
-        logger.info(f"Using 'dbt_project_path': {dbt_project_path}")
+        logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
 
     def __prepare_dbt_main_path(self) -> None:
         assert self.dbt_path.is_dir()
@@ -227,7 +227,7 @@ class DbtRunner:
         )
         self.dbt_rule_binding_views_path.mkdir(parents=True, exist_ok=True)
         if write_log:
-            logger.info(
+            logger.debug(
                 "Writing generated sql to "
                 f"{self.dbt_rule_binding_views_path.absolute()}/",
             )

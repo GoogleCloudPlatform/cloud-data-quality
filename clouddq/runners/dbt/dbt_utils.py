@@ -81,7 +81,7 @@ def run_dbt(
     try:
         with working_directory(dbt_path):
             if debug:
-                logger.info("Using dbt working directory: %s", Path.cwd())
+                logger.debug("Using dbt working directory: %s", Path.cwd())
                 debug_commands = command.copy()
                 debug_commands[0] = "debug"
                 try:
@@ -93,6 +93,8 @@ def run_dbt(
                 if not dry_run:
                     logger.info("\nExecuting dbt command:\n %s", command)
                     dbt(command)
+                else:
+                    return JobStatus.SUCCESS
     except SystemExit as sysexit:
         if sysexit.code == 0:
             logger.debug("dbt run completed successfully.")
@@ -122,7 +124,10 @@ def extract_dbt_env_var(text: str) -> str:
 
 
 def get_bigquery_dq_summary_table_name(
-    dbt_path: Path, dbt_profiles_dir: Path, environment_target: str
+    dbt_path: Path,
+    dbt_profiles_dir: Path,
+    environment_target: str,
+    table_name: str = "dq_summary",
 ) -> str:
     # Get bigquery project and dataset for dq_summary table names
     dbt_project_path = dbt_path.joinpath("dbt_project.yml")
@@ -141,5 +146,5 @@ def get_bigquery_dq_summary_table_name(
     dbt_dataset = dbt_profile["dataset"]
     if "{{" in dbt_dataset:
         dbt_dataset = extract_dbt_env_var(dbt_dataset)
-    dq_summary_table_name = f"{dbt_project}.{dbt_dataset}.dq_summary"
+    dq_summary_table_name = f"{dbt_project}.{dbt_dataset}.{table_name}"
     return dq_summary_table_name

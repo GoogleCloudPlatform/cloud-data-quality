@@ -110,7 +110,7 @@ py_test(
 )
 
 py_test(
-    name = "test_bigquery_dry_run_client",
+    name = "test_bigquery_client",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,

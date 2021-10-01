@@ -21,7 +21,6 @@ from enum import Enum
 from enum import auto
 from enum import unique
 from pathlib import Path
-from pprint import pformat
 from typing import Dict
 from typing import Optional
 
@@ -45,7 +44,6 @@ class DbtBigQueryConnectionMethod(str, Enum):
 
     OAUTH = auto()
     SERVICE_ACCOUNT_KEY = auto()
-    SERVICE_ACCOUNT_IMPERSONATION = auto()
 
 
 @dataclass
@@ -78,9 +76,9 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
     gcp_project_id: str
     gcp_region_id: str
     gcp_bq_dataset_id: str
-    connection_method: DbtBigQueryConnectionMethod
-    gcp_service_account_key_path: Optional[str]
-    service_account_gcp_impersonation_credentials: Optional[str]
+    connection_method: DbtBigQueryConnectionMethod = None
+    gcp_service_account_key_path: Optional[str] = None
+    service_account_gcp_impersonation_credentials: Optional[str] = None
     threads: int = 1
     timeout_seconds: int = 600
     priority: str = "interactive"
@@ -112,56 +110,31 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
         self.gcp_project_id = gcp_project_id
         self.gcp_region_id = gcp_region_id
         self.gcp_bq_dataset_id = gcp_bq_dataset_id
-        defined_connection_types = [
-            conn
-            for conn in [gcp_service_account_key_path, gcp_impersonation_credentials]
-            if conn
-        ]
-        if not any(defined_connection_types):
+        if gcp_service_account_key_path:
             logger.info(
-                "Using Application-Default Credentials (ADC) to connect to GCP..."
+                f"Using exported service account key at {gcp_service_account_key_path}"
+                " to authenticate to GCP..."
             )
-            self.connection_method = DbtBigQueryConnectionMethod.OAUTH
-        elif len(defined_connection_types) > 1:
-            raise ValueError(
-                "Either one or neither but not both of service account JSON key "
-                "or service account impersonation can be used. "
-                f"Defined connection types:\n{pformat(defined_connection_types)}"
-            )
-        elif gcp_service_account_key_path:
-            logger.info("Using exported service account key to connect to GCP...")
             self.gcp_service_account_key_path = gcp_service_account_key_path
             self.connection_method = DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_KEY
-        elif gcp_impersonation_credentials:
+        else:
             logger.info(
-                "Using service account impersonation via local ADC credentials "
-                "to connect to GCP..."
+                "Using Application-Default Credentials (ADC) to authenticate to GCP..."
+            )
+            self.connection_method = DbtBigQueryConnectionMethod.OAUTH
+        if gcp_impersonation_credentials:
+            logger.info(
+                f"Attempting to impersonate service account "
+                f"{gcp_impersonation_credentials}..."
             )
             self.service_account_gcp_impersonation_credentials = (
                 gcp_impersonation_credentials
             )
-            self.connection_method = (
-                DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_IMPERSONATION
-            )
-        else:
-            raise ValueError("Unable to create dbt connection profile for GCP.")
-
-    def get_connection_method(self) -> str:
-        if (
-            self.connection_method == DbtBigQueryConnectionMethod.OAUTH
-            or self.connection_method  # noqa: W503
-            == DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_IMPERSONATION  # noqa: W503
-        ):
-            return "oauth"
-        elif self.connection_method.SERVICE_ACCOUNT_KEY:
-            return "service-account"
-        else:
-            raise ValueError("Unable to get dbt connection method for GCP.")
 
     def to_dbt_profiles_dict(self) -> Dict:
         profiles_configs = {
             "type": "bigquery",
-            "method": self.get_connection_method(),
+            "method": None,
             "project": self.gcp_project_id,
             "dataset": self.gcp_bq_dataset_id,
             "location": self.gcp_region_id,
@@ -172,16 +145,14 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
         }
         if self.connection_method == DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_KEY:
             assert Path(self.gcp_service_account_key_path).is_file()
+            profiles_configs["method"] = "service-account"
             profiles_configs["keyfile"] = self.gcp_service_account_key_path
-        elif (
-            self.connection_method
-            == DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_IMPERSONATION  # noqa: W503
-        ):
-            assert self.service_account_gcp_impersonation_credentials
-            assert profiles_configs["method"] == "oauth"
+        elif self.connection_method == DbtBigQueryConnectionMethod.OAUTH:
+            profiles_configs["method"] = "oauth"
+        else:
+            raise ValueError("Unable to get dbt connection method for GCP.")
+        if self.service_account_gcp_impersonation_credentials:
             profiles_configs[
                 "impersonate_service_account"
             ] = self.service_account_gcp_impersonation_credentials
-        else:
-            assert profiles_configs["method"] == "oauth"
         return profiles_configs

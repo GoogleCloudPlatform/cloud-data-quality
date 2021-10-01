@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# set -o errexit
-# set -o nounset
-# set -o pipefail
+set -o errexit
+set -o nounset
+set -o pipefail
 
 set -x
 
@@ -33,8 +33,8 @@ python3 -m pip install .
 
 # set variables
 export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
-export GCP_BQ_DATASET_ID="dq_test"
-export GCP_REGION="EU"
+export CLOUDDQ_BIGQUERY_DATASET="dq_test"
+export CLOUDDQ_BIGQUERY_REGION="EU"
 export IMPERSONATION_SERVICE_ACCOUNT="argo-svc@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
 
 # smoke test clouddq commands
@@ -54,8 +54,8 @@ python3 -m clouddq ALL configs --dbt_profiles_dir="$TEST_DIR" --debug --dry_run 
 # test clouddq with direct connection profiles
 python3 -m clouddq ALL configs \
     --gcp_project_id=$GOOGLE_CLOUD_PROJECT \
-    --gcp_bq_dataset_id=$GCP_BQ_DATASET_ID \
-    --gcp_region_id=$GCP_REGION \
+    --gcp_bq_dataset_id=$CLOUDDQ_BIGQUERY_DATASET \
+    --gcp_region_id=$CLOUDDQ_BIGQUERY_REGION \
     --debug \
     --dry_run \
     --skip_sql_validation
@@ -64,8 +64,8 @@ python3 -m clouddq ALL configs \
 if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
     python3 -m clouddq ALL configs \
         --gcp_project_id=$GOOGLE_CLOUD_PROJECT \
-        --gcp_bq_dataset_id=$GCP_BQ_DATASET_ID \
-        --gcp_region_id=$GCP_REGION \
+        --gcp_bq_dataset_id=$CLOUDDQ_BIGQUERY_DATASET \
+        --gcp_region_id=$CLOUDDQ_BIGQUERY_REGION \
         --gcp_service_account_key_path=$GOOGLE_APPLICATION_CREDENTIALS \
         --debug \
         --dry_run \
@@ -76,8 +76,8 @@ fi
 if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
     python3 -m clouddq ALL configs \
         --gcp_project_id=$GOOGLE_CLOUD_PROJECT \
-        --gcp_bq_dataset_id=$GCP_BQ_DATASET_ID \
-        --gcp_region_id=$GCP_REGION \
+        --gcp_bq_dataset_id=$CLOUDDQ_BIGQUERY_DATASET \
+        --gcp_region_id=$CLOUDDQ_BIGQUERY_REGION \
         --gcp_impersonation_credentials=$IMPERSONATION_SERVICE_ACCOUNT \
         --debug \
         --dry_run \
