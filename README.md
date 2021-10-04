@@ -77,11 +77,16 @@ rules:
       custom_sql_arguments:
         - column_names
       custom_sql_statement: |-
-        select
-          $column_names
-        from data
-        group by $column_names
-        having count(*) > 1
+        select a.*
+        from data a
+        inner join (
+          select
+            $column_names
+          from data
+          group by $column_names
+          having count(*) > 1
+        ) duplicates
+        using ($column_names)
 ```
 We will add more default rule types over time. For the time being, most data quality rule can be defined with SQL using either `CUSTOM_SQL_EXPR` or `CUSTOM_SQL_STATEMENT`. `CUSTOM_SQL_EXPR` will flag any row that `custom_sql_expr` evaluated to False as a failure. `CUSTOM_SQL_STATEMENT` will flag any value returned by the whole statement as failures.
 

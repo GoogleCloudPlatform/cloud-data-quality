@@ -20,7 +20,7 @@ rules:
       custom_sql_arguments:
         - column_names
       custom_sql_statement: |-
-        select a.*, duplicates.*
+        select a.*
         from data a
         inner join (
           select
