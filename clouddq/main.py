@@ -166,10 +166,9 @@ coloredlogs.install(logger=logger)
     "--gcp_service_account_key_path",
     help="File system path to the exported GCP service account JSON key "
     "for authenticating to GCP. "
-    "If neither --gcp_service_account_key_path or "
-    "--gcp_impersonation_credentials are specified, defaults to using "
-    "oauth for authenticating to GCP using credentials "
-    "automatically discovered via Application Default Credentials (ADC). "
+    "If --gcp_service_account_key_path is not specified, "
+    "defaults to using automatically discovered credentials "
+    "via Application Default Credentials (ADC). "
     "More on how ADC discovers credentials: https://google.aip.dev/auth/4110. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
@@ -177,15 +176,12 @@ coloredlogs.install(logger=logger)
 )
 @click.option(
     "--gcp_impersonation_credentials",
-    help="Service Account Name for authenticating to GCP using "
-    "service account impersonation via a local ADC credentials. "
-    "Ensure the local ADC credentials has permission to impersonate "
-    "the service account such as `roles/iam.serviceAccountTokenCreator`. "
-    "If neither --gcp_service_account_key_path or "
-    "--gcp_impersonation_credentials are specified, defaults to using "
-    "oauth for authenticating to GCP using credentials "
-    "automatically discovered via Application Default Credentials (ADC). "
-    "More on how ADC discovers credentials: https://google.aip.dev/auth/4110. "
+    help="Target Service Account Name for authenticating to GCP using "
+    "service account impersonation via a source credentials. "
+    "Source credentials can be obtained from either "
+    "--gcp_service_account_key_path or local ADC credentials. "
+    "Ensure the source credentials has sufficient IAM permission to "
+    "impersonate the target service account. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
     type=str,
@@ -199,7 +195,10 @@ coloredlogs.install(logger=logger)
     "If another connection config with pattern --*_connection_configs "
     "was not provided, this argument is mandatory. "
     "If --dbt_profiles_dir is present, all other connection configs "
-    "with pattern --gcp_* will be ignored.",
+    "with pattern --gcp_* will be ignored. "
+    "Passing in dbt configs directly via --dbt_profiles_dir will be "
+    "deprecated in v0.1.0. Please migrate to use native-flags for "
+    "specifying connection configs instead.",
     type=click.Path(exists=True),
     envvar="DBT_PROFILES_DIR",
 )
@@ -208,7 +207,11 @@ coloredlogs.install(logger=logger)
     help="Path to dbt model directory where a new view will be created "
     "containing the sql execution statement for each rule binding. "
     "If not specified, clouddq will created a new directory in "
-    "the current working directory for the dbt generated sql files.",
+    "the current working directory for the dbt generated sql files. "
+    "Passing in dbt models directly via --dbt_path will be "
+    "deprecated in v0.1.0. If you will be affected by this "
+    "deprecation, please raise a Github issue with details "
+    "of your use-case.",
     type=click.Path(exists=True),
     default=None,
 )
@@ -321,12 +324,13 @@ def main(  # noqa: C901
     logger.info("Starting CloudDQ run with configs:")
     json_logger.warn({"run_configs": locals()})
     try:
-        # Create GCP client
-        bigquery_client = BigQueryDryRunClient(
-            project_id=gcp_project_id,
-            gcp_service_account_key_path=gcp_service_account_key_path,
-            gcp_impersonation_credentials=gcp_impersonation_credentials,
-        )
+        if not skip_sql_validation:
+            # Create BigQuery client for query dry-runs
+            bigquery_client = BigQueryClient(
+                project_id=gcp_project_id,
+                gcp_service_account_key_path=gcp_service_account_key_path,
+                gcp_impersonation_credentials=gcp_impersonation_credentials,
+            )
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -348,6 +352,10 @@ def main(  # noqa: C901
             dbt_profiles_dir=Path(dbt_profiles_dir),
             environment_target=environment_target,
         )
+        if gcp_region_id and not skip_sql_validation:
+            bigquery_client.assert_table_is_in_region(
+                table=dq_summary_table_name, region=gcp_region_id
+            )
         logger.info(
             f"Writing summary results to GCP table: `{dq_summary_table_name}`. "
         )
@@ -397,12 +405,11 @@ def main(  # noqa: C901
                 progress_watermark=progress_watermark,
             )
             if not skip_sql_validation:
-                bigquery_client.check_query(query_string=sql_string)
-            if debug:
-                logger.debug(
-                    f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
-                    f"{rule_binding_id}.sql",
-                )
+                bigquery_client.check_query_dry_run(query_string=sql_string)
+            logger.debug(
+                f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
+                f"{rule_binding_id}.sql",
+            )
             lib.write_sql_string_as_dbt_model(
                 rule_binding_id=rule_binding_id,
                 sql_string=sql_string,
@@ -413,7 +420,6 @@ def main(  # noqa: C901
             if view.stem not in target_rule_binding_ids:
                 view.unlink()
         configs = {"target_rule_binding_ids": target_rule_binding_ids}
-        logger.info(f"Running dbt in path: {dbt_path}")
         job_status: JobStatus = dbt_runner.run(
             configs=configs,
             debug=debug,
@@ -430,15 +436,16 @@ def main(  # noqa: C901
                 partition_date, target_bigquery_summary_table
             )
         elif job_status == JobStatus.FAILED:
-            logger.error("Job failed.")
+            raise RuntimeError("Job failed.")
         else:
-            logger.error("Job failed with unknown status.")
+            raise RuntimeError("Job failed with unknown status.")
     except Exception as error:
         json_logger.error(error, exc_info=True)
-        logger.fatal(error, exc_info=True)
+        logger.fatal(error)
         raise
     finally:
-        BigQueryDryRunClient.close_connection()
+        if bigquery_client:
+            bigquery_client.close_connection()
 
 
 if __name__ == "__main__":
