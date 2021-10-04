@@ -144,14 +144,9 @@ class BigQueryClient:
         if self.__client:
             self.__client.close()
 
-    def assert_table_is_in_region(self, table: str, region: str) -> None:
+    def assert_dataset_is_in_region(self, dataset: str, region: str) -> None:
         client = self.get_connection()
-        try:
-            table_info = client.get_table(table)
-        except NotFound as e:
-            # todo: option to create table if not exists
-            logging.warn(e)
-            return
+        table_info = client.get_dataset(dataset)
         if table_info.location != region:
             raise AssertionError(
                 f"BigQuery jobs location in argument --gcp_region_id: '{region}' "

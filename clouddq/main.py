@@ -359,8 +359,9 @@ def main(  # noqa: C901
             environment_target=environment_target,
         )
         if gcp_region_id and not skip_sql_validation:
-            bigquery_client.assert_table_is_in_region(
-                table=dq_summary_table_name, region=gcp_region_id
+            dq_summary_dataset = ".".join(dq_summary_table_name.split(".")[:1])
+            bigquery_client.assert_dataset_is_in_region(
+                dataset=dq_summary_dataset, region=gcp_region_id
             )
         logger.info(
             f"Writing summary results to GCP table: `{dq_summary_table_name}`. "
