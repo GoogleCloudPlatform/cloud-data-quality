@@ -27,6 +27,7 @@ from google.api_core.exceptions import Forbidden
 from google.api_core.exceptions import NotFound
 from google.auth import impersonated_credentials
 from google.auth.credentials import Credentials
+from google.auth import compute_engine
 from google.cloud import bigquery
 from google.oauth2 import id_token
 from google.oauth2 import service_account
@@ -36,7 +37,6 @@ logger = logging.getLogger(__name__)
 
 TARGET_SCOPES = [
     "https://www.googleapis.com/auth/cloud-platform",
-    "https://www.googleapis.com/auth/userinfo.email",
 ]
 
 CHECK_QUERY = Template(
@@ -72,7 +72,7 @@ class BigQueryClient:
         # Use service account json key if provided
         elif gcp_service_account_key_path:
             source_credentials = service_account.Credentials.from_service_account_file(
-                filename=gcp_service_account_key_path, scopes=TARGET_SCOPES
+                filename=gcp_service_account_key_path, scopes=TARGET_SCOPES, quota_project_id=project_id
             )
         # Otherwise, use Application Default Credentials
         else:
@@ -80,7 +80,7 @@ class BigQueryClient:
                 scopes=TARGET_SCOPES, quota_project_id=project_id
             )
         # Attempt to refresh token if not currently valid
-        if not source_credentials.valid:
+        if not source_credentials.is_valid:
             auth_req = google.auth.transport.requests.Request()
             source_credentials.refresh(auth_req)
         # Attempt service account impersonation if requested
@@ -96,7 +96,7 @@ class BigQueryClient:
             # Otherwise use source_credentials
             self.__credentials = source_credentials
         self.__project_id = self.__resolve_project_id(project_id=project_id)
-        self.__username == self.__resolve_credentials_username()
+        self.__username = self.__resolve_credentials_username()
         if self.__username:
             logger.info(
                 f"Successfully created BigQuery Client with user: " f"{self.__username}"
@@ -107,6 +107,9 @@ class BigQueryClient:
             )
 
     def __resolve_credentials_username(self) -> None:
+        # Attempt to refresh token
+        auth_req = google.auth.transport.requests.Request()
+        self.__credentials.refresh(auth_req)
         # Try to get service account credentials username
         if self.__credentials.__dict__.get("_service_account_name"):
             username = self.__credentials.service_account_name
