@@ -46,19 +46,19 @@ class TestCliIntegration:
             return sa_key_path
 
     def test_cli_dry_run_oauth_configs(
-        self, 
-        runner, 
+        self,
+        runner,
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
     ):
         args = [
-            "ALL", 
-            "tests/resources/configs", 
+            "ALL",
+            "tests/resources/configs",
             f"--gcp_project_id={gcp_project_id}",
-            f"--gcp_bq_dataset_id={gcp_bq_dataset}", 
+            f"--gcp_bq_dataset_id={gcp_bq_dataset}",
             f"--gcp_region_id={gcp_bq_region}",
-            "--dry_run", 
+            "--dry_run",
             "--debug",
             "--skip_sql_validation"
             ]
@@ -67,21 +67,21 @@ class TestCliIntegration:
         assert result.exit_code == 0
 
     def test_cli_dry_run_sa_key_configs(
-        self, 
-        runner, 
+        self,
+        runner,
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_sa_key
     ):
         args = [
-            "ALL", 
-            "tests/resources/configs", 
+            "ALL",
+            "tests/resources/configs",
             f"--gcp_project_id={gcp_project_id}",
-            f"--gcp_bq_dataset_id={gcp_bq_dataset}", 
+            f"--gcp_bq_dataset_id={gcp_bq_dataset}",
             f"--gcp_region_id={gcp_bq_region}",
             f"--gcp_service_account_key_path={gcp_sa_key}",
-            "--dry_run", 
+            "--dry_run",
             "--debug",
             "--skip_sql_validation"
             ]
@@ -93,28 +93,29 @@ class TestCliIntegration:
             assert result.exit_code == 2
 
 
-    def test_cli_dry_run_incompatible_conn_failure(
-        self, 
-        runner, 
+    def test_cli_dry_run_sa_key_and_impersonation(
+        self,
+        runner,
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
+        gcp_sa_key,
     ):
         args = [
-            "ALL", 
-            "tests/resources/configs", 
+            "ALL",
+            "tests/resources/configs",
             f"--gcp_project_id={gcp_project_id}",
-            f"--gcp_bq_dataset_id={gcp_bq_dataset}", 
+            f"--gcp_bq_dataset_id={gcp_bq_dataset}",
             f"--gcp_region_id={gcp_bq_region}",
-            f"--gcp_service_account_key_path=tests/resources/expected_configs.json",
+            f"--gcp_service_account_key_path={gcp_sa_key}",
             f"--gcp_impersonation_credentials=svc@project.iam.gserviceaccount.com",
-            "--dry_run", 
+            "--dry_run",
             "--debug",
             "--skip_sql_validation"
             ]
         result = runner.invoke(main, args)
         print(result.output)
-        assert result.exit_code == 1
+        assert result.exit_code == 0
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__]))
