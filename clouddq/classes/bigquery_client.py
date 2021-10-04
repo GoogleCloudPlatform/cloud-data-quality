@@ -97,9 +97,11 @@ class BigQueryClient:
             # Otherwise use source_credentials
             self.__credentials = source_credentials
         self.__project_id = self.__resolve_project_id(
-            credentials=credentials, project_id=project_id
+            credentials=self.__credentials, project_id=project_id
         )
-        self.__user_id = self.__resolve_credentials_username(credentials=credentials)
+        self.__user_id = self.__resolve_credentials_username(
+            credentials=self.__credentials
+        )
         if self.__user_id:
             logger.info("Successfully created BigQuery Client.")
         else:
@@ -131,7 +133,7 @@ class BigQueryClient:
         if project_id:
             _project_id = project_id
         elif credentials.__dict__.get("_project_id"):
-            _project_id = self.__credentials.project_id
+            _project_id = credentials.project_id
         else:
             logger.warn(
                 "Could not retrieve project_id from GCP credentials.", exc_info=True
