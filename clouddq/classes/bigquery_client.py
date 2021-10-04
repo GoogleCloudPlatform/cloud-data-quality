@@ -97,7 +97,7 @@ class BigQueryClient:
             # Otherwise use source_credentials
             self.__credentials = source_credentials
         self.__project_id = self.__resolve_project_id(project_id=project_id)
-        self.__user_id = self.__resolve_credentials_username()
+        self.__user_id = self.__resolve_credentials_username(credentials=credentials)
         if self.__user_id:
             logger.info(
                 f"Successfully created BigQuery Client with user: " f"{self.__user_id}"
@@ -107,31 +107,29 @@ class BigQueryClient:
                 "Encountered error while retrieving user from GCP credentials.",
             )
 
-    def __resolve_credentials_username(self) -> None:
+    def __resolve_credentials_username(self, credentials: Credentials) -> str:
         # Attempt to refresh token
         auth_req = google.auth.transport.requests.Request()
-        self.__credentials.refresh(auth_req)
-        # Try to get service account credentials username
-        if self.__credentials.__dict__.get("_service_account_name"):
-            username = self.__credentials.service_account_name
-        elif self.__credentials.__dict__.get("_target_principal"):
-            username = self.__credentials.service_account_name
+        credentials.refresh(auth_req)
+        # Try to get service account credentials user_id
+        if credentials.__dict__.get("_service_account_email"):
+            user_id = credentials.service_account_email
+        elif credentials.__dict__.get("_target_principal"):
+            user_id = credentials.service_account_email
         else:
-            # Otherwise try to get ADC credentials username
+            # Otherwise try to get ADC credentials user_id
             request = google.auth.transport.requests.Request()
-            token = self.__credentials.id_token
+            token = credentials.id_token
             id_info = id_token.verify_oauth2_token(token, request)
-            username = id_info["email"]
-        return username
+            user_id = id_info["email"]
+        return user_id
 
-    def __resolve_project_id(self, project_id: str = None) -> None:
+    def __resolve_project_id(self, credentials: Credentials, project_id: str = None) -> str:
         """Get project ID from local configs"""
         if project_id:
             _project_id = project_id
-        elif self.__credentials.__dict__.get("_project_id"):
+        elif credentials.__dict__.get("_project_id"):
             _project_id = self.__credentials.project_id
-        elif self.__credentials.__dict__.get("_quota_project_id"):
-            _project_id = self.__credentials._quota_project_id
         else:
             logger.warn(
                 "Could not retrieve project_id from GCP credentials.", exc_info=True
