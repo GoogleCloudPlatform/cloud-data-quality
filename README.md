@@ -6,9 +6,9 @@
 
 ## Introductions
 
-`CloudDQ` is a cloud-native, declarative, and scalable Data Quality validation framework for Google BigQuery.
+`CloudDQ` is a cloud-native, declarative, and scalable Data Quality validation Command-Line Interface (CLI) application for Google BigQuery.
 
-Data Quality validation tests can be defined using a flexible and reusable YAML configurations language. For each rule binding definition in the YAML configs, `CloudDQ` creates a corresponding SQL view in your Data Warehouse. It then executes the view and collects the data quality validation outputs into a summary table for reporting and visualization.
+It takes as input Data Quality validation tests defined using a flexible and reusable YAML configurations language. For each rule binding definition in the YAML configs, `CloudDQ` creates a corresponding SQL view in your Data Warehouse. It then executes the view and collects the data quality validation outputs into a summary table for reporting and visualization.
 
 `CloudDQ` currently supports in-place validation of BigQuery data.
 
@@ -32,7 +32,7 @@ rule_bindings:
       - REGEX_VALID_EMAIL
       - CUSTOM_SQL_LENGTH_LE_30
     metadata:
-      brand: one
+      team: team-2
 
   T3_DQ_1_EMAIL_DUPLICATE:
     entity_id: TEST_TABLE
@@ -43,15 +43,15 @@ rule_bindings:
           column_names: "value"
       - NOT_NULL_SIMPLE
     metadata:
-      brand: two
+      team: team-3
 ```
 Each `rule_binding` must define the fields `entity_id`, `column_id`, `row_filter_id`, and `rule_ids`. If `incremental_time_filter_column_id` is defined, `CloudDQ` will only validate rows with a timestamp higher than the last run timestamp on each run, otherwise it will validate all rows matching the `row_filter_id` on each run.
 
-Under the `metadata` config, you may add key-value pairs that will be added as a JSON on each DQ summary row output. The JSON allows custom aggregations and drilldowns over the summary data.
+Under the `metadata` config, you may add any key-value pairs that will be added as a JSON on each DQ summary row output. For example, this can be the team responsible for a `rule_binding`, the table type (raw, curated, reference). The JSON allows custom aggregations and drilldowns over the summary data.
 
-On each run, CloudDQ converts each `rule_binding` into a SQL script, create a corresponding [view](https://cloud.google.com/bigquery/docs/views) in BigQuery, and aggregate the validation results into a table called `dq_summary` at the location defined in the project's `profiles.yml`configurations.
+On each run, CloudDQ converts each `rule_binding` into a SQL script, create a corresponding [view](https://cloud.google.com/bigquery/docs/views) in BigQuery, and aggregate the validation results summary per `rule_binding` and `rule` for each CloudDQ run into a DQ Summary Statistics table in BigQuery. This table is called called `dq_summary`, and is automatically created by CloudDQ in the BigQuery dataset defined in the argument `--gcp_bq_dataset_id` or in the project's `profiles.yml`configurations.
 
-You can then use any dashboarding solution such as Data Studio or Looker to visualize the DQ summary table for monitoring and alerting purposes.
+You can then use any dashboarding solution such as Data Studio or Looker to visualize the DQ Summary Statistics table, or use the DQ Summary Statistics table for monitoring and alerting purposes.
 
 **Rules**: Defines reusable sets of validation logic for data quality.
 ```yaml
@@ -83,9 +83,9 @@ rules:
         group by $column_names
         having count(*) > 1
 ```
-We will add more default rule types over time. For the time being, most data quality rule can be defined with SQL using either `CUSTOM_SQL_EXPR` or `CUSTOM_SQL_STATEMENT`. `CUSTOM_SQL_EXPR` will flag any row that `custom_sql_expr` evaluated to False as a failure. `CUSTOM_SQL_STATEMENT` will flag any value returned by the whole statement as failures.
+We will add more default rule types over time. For the time being, most data quality rule can be defined as SQL using either `CUSTOM_SQL_EXPR` or `CUSTOM_SQL_STATEMENT`. `CUSTOM_SQL_EXPR` will flag any row that `custom_sql_expr` evaluated to False as a failure. `CUSTOM_SQL_STATEMENT` will flag any value returned by the whole statement as failures.
 
-`CloudDQ` will substitute the string `$column` with the YAML config value provided in `column_id`. `CUSTOM_SQL_STATEMENT` additionally supports custom parameterized variables in `custom_sql_arguments` that can be defined separately in each `rule_binding`.
+`CloudDQ` will substitute the string `$column` with the YAML config value provided in the field `column_id` of each `rule_binding` `CUSTOM_SQL_STATEMENT` additionally supports custom parameterized variables in `custom_sql_arguments` that can be defined separately in each `rule_binding`.
 
 When using `CUSTOM_SQL_STATEMENT`, the table `data` contains rows returned once all `row_filters` and incremental validation logic have been applied. We recommend simply selecting from `data` in `CUSTOM_SQL_STATEMENT` instead of trying to apply your own templating logic to define the target table for validation.
 
@@ -106,8 +106,8 @@ entities:
   TEST_TABLE:
     source_database: BIGQUERY
     table_name: contact_details
-    database_name: dq_test
-    instance_name: <your_project_id>
+    dataset_name: <your_dataset_id>
+    project_name: <your_project_id>
     environment_override:
       TEST:
         environment: test
@@ -115,8 +115,13 @@ entities:
           database_name: <your_project_id>
           instance_name: <your_project_id>
     columns:
-      KEY:
-        name: key
+      ROW_ID:
+        name: row_id
+        data_type: STRING
+        description: |-
+          unique identifying id
+      CONTACT_TYPE:
+        name: contact_type
         data_type: STRING
         description: |-
           contact detail type
@@ -132,103 +137,112 @@ entities:
           updated timestamp
 ```
 
-An example entity configurations is provided at `configs/entities/test-data.yml`. The BigQuery table `contact_details` that is referred in this config can created using `dbt seed --profiles-dir=.` [details](#setting-up-`dbt`).
+An example entity configurations is provided at `configs/entities/test-data.yml`. The BigQuery table `contact_details` is referred in this config can can be found in `tests/data/contact_details.csv`.
 
-If you are testing CloudDQ with the provided configs, ensure you update the `<your_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) you are using in the `profiles.yml` file.
+You can load this data into BigQuery using the `bq load` command (the [`bq` CLI ](https://cloud.google.com/bigquery/docs/bq-command-line-tool) is installed as part of the [`gcloud` SDK](https://cloud.google.com/sdk/docs/install)):
 
-You can get the project ID of your project by running:
-
-```
-gcloud config get-value project
-```
-
-## Usage Guide
-
-### Setting up `dbt`
-
-The project uses [dbt](https://www.getdbt.com/) to execute SQL queries against BigQuery.
-
-To set up `dbt`, you must configure connection profiles to a BigQuery project on GCP using a `profiles.yml` file, specifying the GCP `project` ID, BigQuery `dataset`, BigQuery job `location`, and authentication `method`. Within this same config file, you can define different target environment for `dev`, `test`, `prod`, etc... to be passed into CloudDQ's `environment_target` argument.
-
-We recommend authenticating using `oauth` ([details](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#oauth-via-gcloud)), either 1) with your [application-default](https://google.aip.dev/auth/4110) credentials via `gcloud auth application-default login` ([details]((https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#oauth-via-gcloud))) for Development, or 2) with `impersonate_service_account` ([details](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#service-account-impersonation)) for Test/Production.
-
-More information about dbt's `profiles.yml` configuration options for BigQuery can be found at https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile/.
-
-You can start by copying the template at:
 ```bash
-cp dbt/profiles.yml.template dbt/profiles.yml
-```
-
-Note that if you change the `profile` name in `profiles.yml.template` from `default` to something else, you will need to make the corresponding change to the config `profile` in `dbt_project.yml`.
-
-The Data Quality validation results from each run will be collected into a table called `dq_summary` located at the `project` and `dataset` location in the `profile.yml` configs.
-
-To create the test dataset used in the code's test-suites and in the following examples, run (after installing `dbt` in a Python virtualenv):
-```
-dbt seed --profiles-dir=.
-```
-
-Alternatively, you can use `bq load` instead of `dbt seed`:
-```bash
-export CLOUDDQ_BIGQUERY_REGION=EU # ensure this is the same as the 'location' config in your `profiles.yml` file.
-export CLOUDDQ_BIGQUERY_DATASET=clouddq # ensure this is the same as the 'dataset' config in your `profiles.yml` file.
+#!/bin/bash
+# Create a BigQuery Dataset in a region of your choice and load data
+export CLOUDDQ_BIGQUERY_REGION=EU
+export CLOUDDQ_BIGQUERY_DATASET=clouddq
+# Skip the `bq mk` step if `CLOUDDQ_BIGQUERY_DATASET` already exists
 bq mk --location=${CLOUDDQ_BIGQUERY_REGION} ${CLOUDDQ_BIGQUERY_DATASET}
-bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details dbt/data/contact_details.csv
+bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details tests/data/contact_details.csv
 ```
 
 Ensure you have sufficient IAM privileges to create BigQuery datasets and tables in your project.
 
-### Installing
+If you are testing CloudDQ with the provided configs, ensure you update the `<your_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) and the `<your_dataset_id>` field with the BigQuery dataset containing the `contact_details` table.
 
-Ensure you have installed:
-* Python version >3.8.6. We suggest using pyenv: https://github.com/pyenv/pyenv
-* gcloud SDK (for interacting with GCP): https://cloud.google.com/sdk/docs/install
+## Usage Guide
 
-#### Installing from source
+#### Overview
 
-Clone the project:
+CloudDQ is a Command-Line Interface (CLI) application. It takes as input YAML Data Quality configurations, generates and executes SQL code in BigQuery using provided connection configurations, and writes the resulting Data Quality summary statistics to a BigQuery table of your choice.
+
+#### System Requirements
+
+CloudDQ is currently only tested to run on Ubuntu/Debian linux distributions. it may not work properly on other OS such as MacOS, Windows, or CentOS/RHEL/Fedora.
+
+For development or trying out CloudDQ, we recommend using either [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor) or a [Google Cloud Compute Engine VM](https://cloud.google.com/compute) with the [Ubuntu 18.04 OS distribution](https://cloud.google.com/compute/docs/images/os-details#ubuntu_lts).
+
+CloudDQ requires a Python 3.8 interpreter. If you are using the pre-built artifact, the Python interpreter is bundled into the zip so it can be executed using any Python verion.
+
+### Using Pre-Built Executable
+
+The simplest way to run CloudDQ is to use one of the pre-built executable provided in the Github releases page: https://github.com/GoogleCloudPlatform/cloud-data-quality/releases
+
+For example, from [Cloud Shell](https://shell.cloud.google.com/? show=ide%2Cterminal), you can download the executable with the following commands:
+
+```bash
+#!/bin/bash
+export CLOUDDQ_RELEASE_VERSION="0.3.0"
+wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_linux-amd64.zip
 ```
-git clone -b 'v0.2.1'  https://github.com/GoogleCloudPlatform/cloud-data-quality
+
+You can then use the CLI by passing the zip into a Python interpreter:
+
+```bash
+#!/bin/bash
+python3 clouddq_executable.zip --help
 ```
 
-Create a new python virtualenv:
-```
-python3 -m venv env
-source env/bin/activate
-```
-
-Install `clouddq` from source:
-```
-python3 -m pip install .
-```
-
-You can then call the CLI by running:
-```
-python3 -m clouddq --help
-```
-
-### Usage
-
-#### Testing the CLI with the default configurations
-
-For a detailed, step-by-step walk through on how to test CloudDQ using the default configurations in this project, see [docs/getting-started-with-default-configs.md](docs/getting-started-with-default-configs.md).
+This should show you the help text.
 
 #### Example CLI commands
 
-Below is an example command to execute two rule bindings `T2_DQ_1_EMAIL` and `T3_DQ_1_EMAIL_DUPLICATE` from a path `configs` containing the complete YAML configurations:
+In the below examples, we will use the example YAML `configs` provided in this project.
+
+The following command will also authenticate to GCP with your user's credentials via Application Default Credentials (ADC). Ensure you have a GCP project and your user's GCP credentials have at minimum project-level IAM permission to run BigQuery jobs (`roles/bigquery.jobUser`) and to create new BigQuery datasets (`roles/bigquery.dataEditor`) in that project.
+
+From either [Cloud Shell](https://shell.cloud.google.com/? show=ide%2Cterminal) or a Ubuntu/Debian machine, clone the CloudDQ project to get the sample config directory:
+
+```bash
+#!/bin/bash
+export CLOUDDQ_RELEASE_VERSION="0.3.0"
+git clone -b "v${CLOUDDQ_RELEASE_VERSION}"  https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 ```
-python3 clouddq \
+
+Then enter the project and get the pre-built executable from Github:
+
+```bash
+#!/bin/bash
+export CLOUDDQ_RELEASE_VERSION="0.3.0"
+cd cloud-data-quality
+wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_linux-amd64.zip
+```
+
+Then authenticate to GCP to set-up local application-default credentials. This command will promp you to login and set the variable
+```bash
+#!/bin/bash
+gcloud auth application-default login
+```
+
+```bash
+#!/bin/bash
+export PROJECT_ID=$(gcloud config get region)
+export CLOUDDQ_BIGQUERY_REGION=EU
+export CLOUDDQ_BIGQUERY_DATASET=clouddq
+sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g configs/entities/test-data.yml
+sed -i s/dq_test/${CLOUDDQ_BIGQUERY_DATASET}/g configs/entities/test-data.yml
+```
+
+Below is an example command to execute two rule bindings `T2_DQ_1_EMAIL` and `T3_DQ_1_EMAIL_DUPLICATE` from a the `configs` directory containing the complete YAML configurations:
+```bash
+#!/bin/bash
+python3 clouddq_executable.zip \
     T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE \
     configs \
-    --metadata='{"test":"test"}' \
-    --dbt_profiles_dir=dbt \
-    --dbt_path=dbt \
-    --environment_target=dev
+    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
+    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
+    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}"
 ```
 
 To execute all rule bindings in a path containing the complete YAML configurations called `configs`, use `ALL` as the `RULE_BINDING_IDS`:
 ```
-python3 clouddq \
+#!/bin/bash
+python3 clouddq_executable.zip \
     ALL \
     configs \
     --metadata='{"test":"test"}' \
@@ -237,20 +251,11 @@ python3 clouddq \
     --environment_target=dev
 ```
 
-The CLI expects the paths for `dbt_profiles_dir`, `dbt_path`, and `environment_target` to be provided at runtime.
 
-`dbt_profiles_dir` is the path to the `profiles.yml` config file containing the connection profile to BigQuery. You can additionally specify the `dbt` profile you want to use by passing the profile name to the input variable `environment_target`. You can find more details about configuring `dbt`'s `profiles.yml` file at [Setting up `dbt`](./README.md#setting-up-dbt).
 
-The input variable `dbt_path` is where `CloudDQ` will stage the SQL views for each rule-bindings before creating them and aggregating the validation output into the `dq_summary` table. If a directory named `dbt` is not present at the path provided in the input argument, `CloudDQ` will create one using the default configurations as is provided in this git repository.
+#### Testing the CLI with the default configurations
 
-The content of `dbt_profiles_dir` and `dbt_path` can be customized to meet your needs. For example, you can:
-1) customize the values returned in the `dq_summary` table by modifying `dbt/models/data_quality_engine/dq_summary.sql`,
-2) calculate different summary scores in `dbt/models/data_quality_engine/main.sql`, or
-3) create a new SQL model to write rows that failed a particular `rule_binding` from `dbt/models/rule_binding_views/` into a different table for reporting and remediation.
-
-By default, `clouddq` does not write data from the original tables into any other table to avoid accidentally leaking PII.
-
-`clouddq` CLI expects to find a local top-level `macros` directory, even if you cannot pass it in during runtime. This is why we recommend either installing `clouddq` by cloning the entire repository or by [building a self-contained Python executable with Bazel](#build-a-self-contained-python-executable-with-bazel).
+For a detailed, step-by-step walk through on how to test CloudDQ using the default configurations in this project, see [docs/getting-started-with-default-configs.md](docs/getting-started-with-default-configs.md).
 
 ### Development
 

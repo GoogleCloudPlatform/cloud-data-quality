@@ -9,12 +9,13 @@ Note the following assumes you have already met the project dependencies outline
 ### 1. Project Set-Up
 
 First clone the project:
-```
+```bash
+export CLOUDDQ_RELEASE_VERSION="0.2.1"
 git clone -b 'v0.2.1'  https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 cd cloud-data-quality
 ```
 
-Ensure you have created a [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) created for running the Data Quality Validation jobs. 
+Ensure you have created a [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) created for running the Data Quality Validation jobs.
 
 We then set the project ID as an enviroment variable and as the main project used by `gcloud`:
 ```bash
@@ -88,7 +89,7 @@ python3 clouddq_executable_v0.2.1.zip --help
 Create the corresponding test table `contact_details` mentioned in the entities config `configs/entities/test-data.yml` by using `bq load` :
 ```bash
 bq mk --location=${CLOUDDQ_BIGQUERY_REGION} ${CLOUDDQ_BIGQUERY_DATASET}
-bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details dbt/data/contact_details.csv
+bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details tests/data/contact_details.csv
 ```
 
 Ensure you have sufficient IAM privileges to create BigQuery datasets and tables in your project.

@@ -1,0 +1,10 @@
+row_id,contact_type,value,ts
+a,name,hebel,2021-01-01 00:00:00
+a,email,hebel@email.com,2021-01-01 00:00:00
+a,email,fixed_email_a@email.com,2021-01-03 00:00:00
+b,email,fixed_email_b@email.com,2021-01-03 00:00:00
+b,email,fixed_name,2021-01-03 00:00:00
+a,email,not_an_email,2021-01-02 00:00:00
+a,email,,2021-01-02 00:00:00
+b,name,,2021-01-02 00:00:00
+b,email,very_long_email_that_is_possibly_fake,2021-01-02 00:00:00
