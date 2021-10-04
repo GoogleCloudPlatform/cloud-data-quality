@@ -90,18 +90,18 @@ class BigQueryClient:
                 source_credentials=source_credentials,
                 target_principal=gcp_impersonation_credentials,
                 target_scopes=TARGET_SCOPES,
-                lifetime=500,
+                lifetime=3600,
             )
             self.__credentials = target_credentials
         else:
             # Otherwise use source_credentials
             self.__credentials = source_credentials
-        self.__project_id = self.__resolve_project_id(project_id=project_id)
+        self.__project_id = self.__resolve_project_id(
+            credentials=credentials, project_id=project_id
+        )
         self.__user_id = self.__resolve_credentials_username(credentials=credentials)
         if self.__user_id:
-            logger.info(
-                f"Successfully created BigQuery Client."
-            )
+            logger.info("Successfully created BigQuery Client.")
         else:
             logger.warning(
                 "Encountered error while retrieving user from GCP credentials.",
@@ -124,7 +124,9 @@ class BigQueryClient:
             user_id = id_info["email"]
         return user_id
 
-    def __resolve_project_id(self, credentials: Credentials, project_id: str = None) -> str:
+    def __resolve_project_id(
+        self, credentials: Credentials, project_id: str = None
+    ) -> str:
         """Get project ID from local configs"""
         if project_id:
             _project_id = project_id
