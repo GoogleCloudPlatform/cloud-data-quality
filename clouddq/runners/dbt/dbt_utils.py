@@ -101,7 +101,8 @@ def run_dbt(
             return JobStatus.SUCCESS
         else:
             logger.error(
-                f"dbt run failed with error {sysexit.code}\n" f"{str(sysexit)}."
+                f"dbt run failed with error {sysexit.code}\n{str(sysexit)}.",
+                exc_info=True
             )
             return JobStatus.FAILED
     except Exception as e:

@@ -79,7 +79,7 @@ class DbtRunner:
     def run(
         self, configs: Dict, debug: bool = False, dry_run: bool = False
     ) -> JobStatus:
-        logger.info(f"Running dbt in path: {self.dbt_path}")
+        logger.debug(f"Running dbt in path: {self.dbt_path}")
         if debug:
             self.test_dbt_connection()
         job_status = run_dbt(
