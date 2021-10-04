@@ -49,29 +49,6 @@ FROM (
 """
 )
 
-CREATE_DQ_SUMMARY_TABLE_SQL = Template(
-    """
-CREATE TABLE $table_name (
-    execution_ts TIMESTAMP,
-    rule_binding_id STRING,
-    rule_id STRING,
-    table_id STRING,
-    column_id STRING,
-    rows_validated INT64,
-    success_count INT64,
-    success_percentage FLOAT64,
-    failed_count INT64,
-    failed_percentage FLOAT64,
-    null_count INT64,
-    null_percentage FLOAT64,
-    metadata_json_string STRING,
-    configs_hashsum STRING,
-    dq_run_id STRING,
-    progress_watermark BOOL,
-)
-"""
-)
-
 RE_EXTRACT_TABLE_NAME = ".*Not found: Table (.+?) was not found in.*"
 
 
@@ -173,7 +150,8 @@ class BigQueryClient:
             table_info = client.get_table(table)
         except NotFound as e:
             # todo: option to create table if not exists
-            raise e
+            logging.warn(e)
+            return
         if table_info.location != region:
             raise AssertionError(
                 f"BigQuery jobs location in argument --gcp_region_id: '{region}' "
