@@ -191,5 +191,5 @@ class BigQueryClient:
                 table_name = table_name.group(1).replace(":", ".")
                 raise AssertionError(f"Table name `{table_name}` does not exist.")
         except Forbidden as e:
-            logger.error(f"User {self.__user_id} has insufficient permissions.")
+            logger.error(f"User has insufficient permissions.")
             raise e
