@@ -56,7 +56,7 @@ class BigQueryClient:
     __client: bigquery.client.Client = None
     __credentials: Credentials = None
     __project_id: str = None
-    __username: str = None
+    __user_id: str = None
     target_audience = "https://bigquery.googleapis.com"
 
     def __init__(
@@ -80,7 +80,7 @@ class BigQueryClient:
                 scopes=TARGET_SCOPES, quota_project_id=project_id
             )
         # Attempt to refresh token if not currently valid
-        if not source_credentials.is_valid:
+        if not source_credentials.valid:
             auth_req = google.auth.transport.requests.Request()
             source_credentials.refresh(auth_req)
         # Attempt service account impersonation if requested
@@ -96,10 +96,10 @@ class BigQueryClient:
             # Otherwise use source_credentials
             self.__credentials = source_credentials
         self.__project_id = self.__resolve_project_id(project_id=project_id)
-        self.__username = self.__resolve_credentials_username()
-        if self.__username:
+        self.__user_id = self.__resolve_credentials_username()
+        if self.__user_id:
             logger.info(
-                f"Successfully created BigQuery Client with user: " f"{self.__username}"
+                f"Successfully created BigQuery Client with user: " f"{self.__user_id}"
             )
         else:
             logger.warning(
@@ -188,5 +188,5 @@ class BigQueryClient:
                 table_name = table_name.group(1).replace(":", ".")
                 raise AssertionError(f"Table name `{table_name}` does not exist.")
         except Forbidden as e:
-            logger.error(f"User {self.__username} has insufficient permissions.")
+            logger.error(f"User {self.__user_id} has insufficient permissions.")
             raise e
