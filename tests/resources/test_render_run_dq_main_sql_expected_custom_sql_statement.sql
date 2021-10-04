@@ -35,7 +35,7 @@ SELECT
     FALSE AS simple_rule_row_is_valid,
     COUNT(*) as complex_rule_validation_errors_count,
   FROM (
-    select a.*, duplicates.*
+    select a.*
     from data a
     inner join (
       select
