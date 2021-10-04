@@ -100,7 +100,7 @@ class BigQueryClient:
         self.__user_id = self.__resolve_credentials_username(credentials=credentials)
         if self.__user_id:
             logger.info(
-                f"Successfully created BigQuery Client with user: " f"{self.__user_id}"
+                f"Successfully created BigQuery Client."
             )
         else:
             logger.warning(
