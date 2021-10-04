@@ -27,7 +27,6 @@ from google.api_core.exceptions import Forbidden
 from google.api_core.exceptions import NotFound
 from google.auth import impersonated_credentials
 from google.auth.credentials import Credentials
-from google.auth import compute_engine
 from google.cloud import bigquery
 from google.oauth2 import id_token
 from google.oauth2 import service_account
@@ -72,7 +71,9 @@ class BigQueryClient:
         # Use service account json key if provided
         elif gcp_service_account_key_path:
             source_credentials = service_account.Credentials.from_service_account_file(
-                filename=gcp_service_account_key_path, scopes=TARGET_SCOPES, quota_project_id=project_id
+                filename=gcp_service_account_key_path,
+                scopes=TARGET_SCOPES,
+                quota_project_id=project_id,
             )
         # Otherwise, use Application Default Credentials
         else:
