@@ -111,10 +111,7 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
         self.gcp_region_id = gcp_region_id
         self.gcp_bq_dataset_id = gcp_bq_dataset_id
         if gcp_service_account_key_path:
-            logger.info(
-                f"Using exported service account key at {gcp_service_account_key_path}"
-                " to authenticate to GCP..."
-            )
+            logger.info("Using exported service account key to authenticate to GCP...")
             self.gcp_service_account_key_path = gcp_service_account_key_path
             self.connection_method = DbtBigQueryConnectionMethod.SERVICE_ACCOUNT_KEY
         else:

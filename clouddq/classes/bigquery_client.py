@@ -36,7 +36,6 @@ logger = logging.getLogger(__name__)
 
 TARGET_SCOPES = [
     "https://www.googleapis.com/auth/cloud-platform",
-    "https://www.googleapis.com/auth/userinfo.email",
 ]
 
 CHECK_QUERY = Template(
@@ -49,29 +48,6 @@ FROM (
 """
 )
 
-CREATE_DQ_SUMMARY_TABLE_SQL = Template(
-    """
-CREATE TABLE $table_name (
-    execution_ts TIMESTAMP,
-    rule_binding_id STRING,
-    rule_id STRING,
-    table_id STRING,
-    column_id STRING,
-    rows_validated INT64,
-    success_count INT64,
-    success_percentage FLOAT64,
-    failed_count INT64,
-    failed_percentage FLOAT64,
-    null_count INT64,
-    null_percentage FLOAT64,
-    metadata_json_string STRING,
-    configs_hashsum STRING,
-    dq_run_id STRING,
-    progress_watermark BOOL,
-)
-"""
-)
-
 RE_EXTRACT_TABLE_NAME = ".*Not found: Table (.+?) was not found in.*"
 
 
@@ -79,7 +55,7 @@ class BigQueryClient:
     __client: bigquery.client.Client = None
     __credentials: Credentials = None
     __project_id: str = None
-    __user_email: str = None
+    __user_id: str = None
     target_audience = "https://bigquery.googleapis.com"
 
     def __init__(
@@ -95,7 +71,9 @@ class BigQueryClient:
         # Use service account json key if provided
         elif gcp_service_account_key_path:
             source_credentials = service_account.Credentials.from_service_account_file(
-                filename=gcp_service_account_key_path, scopes=TARGET_SCOPES
+                filename=gcp_service_account_key_path,
+                scopes=TARGET_SCOPES,
+                quota_project_id=project_id,
             )
         # Otherwise, use Application Default Credentials
         else:
@@ -112,48 +90,60 @@ class BigQueryClient:
                 source_credentials=source_credentials,
                 target_principal=gcp_impersonation_credentials,
                 target_scopes=TARGET_SCOPES,
-                lifetime=500,
+                lifetime=3600,
             )
             self.__credentials = target_credentials
         else:
             # Otherwise use source_credentials
             self.__credentials = source_credentials
-        # Try to get service account credentials email
-        if self.__credentials.__dict__.get("_service_account_email"):
-            self.__user_email = self.__credentials.service_account_email
-        elif self.__credentials.__dict__.get("_target_principal"):
-            self.__user_email = self.__credentials.service_account_email
-        else:
-            # Otherwise try to get ADC credentials email
-            request = google.auth.transport.requests.Request()
-            token = self.__credentials.id_token
-            id_info = id_token.verify_oauth2_token(token, request)
-            self.__user_email = id_info["email"]
-        if self.__user_email:
-            logger.info(
-                f"Successfully created BigQuery Client with user: "
-                f"{self.__user_email}"
-            )
+        self.__project_id = self.__resolve_project_id(
+            credentials=self.__credentials, project_id=project_id
+        )
+        self.__user_id = self.__resolve_credentials_username(
+            credentials=self.__credentials
+        )
+        if self.__user_id:
+            logger.info("Successfully created BigQuery Client.")
         else:
             logger.warning(
-                "Encountered error while retrieving user from ADC " "credentials.",
+                "Encountered error while retrieving user from GCP credentials.",
             )
-        # Get project ID
+
+    def __resolve_credentials_username(self, credentials: Credentials) -> str:
+        # Attempt to refresh token
+        auth_req = google.auth.transport.requests.Request()
+        credentials.refresh(auth_req)
+        # Try to get service account credentials user_id
+        if credentials.__dict__.get("_service_account_email"):
+            user_id = credentials.service_account_email
+        elif credentials.__dict__.get("_target_principal"):
+            user_id = credentials.service_account_email
+        else:
+            # Otherwise try to get ADC credentials user_id
+            request = google.auth.transport.requests.Request()
+            token = credentials.id_token
+            id_info = id_token.verify_oauth2_token(token, request)
+            user_id = id_info["email"]
+        return user_id
+
+    def __resolve_project_id(
+        self, credentials: Credentials, project_id: str = None
+    ) -> str:
+        """Get project ID from local configs"""
         if project_id:
-            self.__project_id = project_id
-        elif self.__credentials.__dict__.get("_project_id"):
-            self.__project_id = self.__credentials.project_id
-        elif self.__credentials.__dict__.get("_quota_project_id"):
-            self.__project_id = self.__credentials._quota_project_id
+            _project_id = project_id
+        elif credentials.__dict__.get("_project_id"):
+            _project_id = credentials.project_id
         else:
             logger.warn(
-                "Could not retrieve project_id from ADC credentials.", exc_info=True
+                "Could not retrieve project_id from GCP credentials.", exc_info=True
             )
+        return _project_id
 
     def get_connection(self, new: bool = False) -> bigquery.client.Client:
         """Creates return new Singleton database connection"""
         if self.__client is None or new:
-            job_config = bigquery.QueryJobConfig(dry_run=True, use_query_cache=False)
+            job_config = bigquery.QueryJobConfig(use_legacy_sql=False)
             self.__client = bigquery.Client(
                 default_query_job_config=job_config,
                 credentials=self.__credentials,
@@ -167,27 +157,28 @@ class BigQueryClient:
         if self.__client:
             self.__client.close()
 
-    def assert_table_is_in_region(self, table: str, region: str) -> None:
+    def assert_dataset_is_in_region(self, dataset: str, region: str) -> None:
         client = self.get_connection()
-        try:
-            table_info = client.get_table(table)
-        except NotFound as e:
-            # todo: option to create table if not exists
-            raise e
-        if table_info.location != region:
+        dataset_info = client.get_dataset(dataset)
+        if dataset_info.location != region:
             raise AssertionError(
-                f"BigQuery jobs location in argument --gcp_region_id: '{region}' "
-                f"must be the same as table '{table}' location: "
-                f"'{table_info.location}'."
+                f"GCP region for BogQuery jobs in argument --gcp_region_id: "
+                f"'{region}' must be the same as dataset '{dataset}' location: "
+                f"'{dataset_info.location}'."
             )
 
     def check_query_dry_run(self, query_string: str) -> None:
-        """check whether query is valid on singleton db connection"""
+        """check whether query is valid."""
+        dry_run_job_config = bigquery.QueryJobConfig(
+            dry_run=True, use_query_cache=False, use_legacy_sql=False
+        )
         try:
             client = self.get_connection()
             query = CHECK_QUERY.safe_substitute(query_string=query_string.strip())
             # Start the query, passing in the extra configuration.
-            query_job = client.query(query=query, timeout=10)  # Make an API request.
+            query_job = client.query(
+                query=query, timeout=10, job_config=dry_run_job_config
+            )
             # A dry run query completes immediately.
             logger.debug(
                 "This query will process {} bytes.".format(
@@ -200,7 +191,7 @@ class BigQueryClient:
                 table_name = table_name.group(1).replace(":", ".")
                 raise AssertionError(f"Table name `{table_name}` does not exist.")
         except Forbidden as e:
-            logger.error(f"User {self.__user_email} has insufficient permissions.")
+            logger.error("User has insufficient permissions.")
             raise e
 
     def is_table_exists(self, table: str) -> bool:

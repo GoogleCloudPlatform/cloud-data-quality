@@ -300,20 +300,23 @@ def main(  # noqa: C901
     Usage examples:
 
     \b
-    > python clouddq \\
+    > python clouddq_executable.zip \\
       T2_DQ_1_EMAIL \\
-      configs/rule_bindings/team-2-rule-bindings.yml \\
-      --dbt_profiles_dir=dbt \\
-      --metadata='{"test":"test"}' \\
+      configs/ \\
+      --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
+      --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
+      --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
+      --metadata='{"key":"value"}' \\
 
     \b
-    > python bazel-bin/clouddq/clouddq_patched.zip \\
+    > python clouddq_executable.zip \\
       ALL \\
       configs/ \\
-      --metadata='{"test":"test"}' \\
-      --dbt_profiles_dir=dbt \\
-      --dbt_path=dbt \\
-      --environment_target=dev
+      --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
+      --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
+      --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
+      --dry_run  \\
+      --debug
 
     """
     if debug:
@@ -352,8 +355,9 @@ def main(  # noqa: C901
             environment_target=environment_target,
         )
         if gcp_region_id and not skip_sql_validation:
-            bigquery_client.assert_table_is_in_region(
-                table=dq_summary_table_name, region=gcp_region_id
+            dq_summary_dataset = ".".join(dq_summary_table_name.split(".")[:1])
+            bigquery_client.assert_dataset_is_in_region(
+                dataset=dq_summary_dataset, region=gcp_region_id
             )
         logger.info(
             f"Writing summary results to GCP table: `{dq_summary_table_name}`. "

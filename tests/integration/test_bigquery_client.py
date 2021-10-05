@@ -37,16 +37,16 @@ class TestBigQueryClient:
         query = "SELECT 1 + 2"
         client.check_query_dry_run(query)
 
-    def test_assert_table_is_in_region(self, client):
-        table = "bigquery-public-data.google_analytics_sample.ga_sessions_20170801"
+    def test_assert_dataset_is_in_region(self, client):
+        dataset = "bigquery-public-data.google_analytics_sample"
         region = "US"
-        client.assert_table_is_in_region(table=table, region=region)
+        client.assert_dataset_is_in_region(dataset=dataset, region=region)
 
-    def test_assert_table_is_in_region_failure(self, client):
-        table = "bigquery-public-data.google_analytics_sample.ga_sessions_20170801"
+    def test_assert_dataset_is_in_region_failure(self, client):
+        dataset = "bigquery-public-data.google_analytics_sample"
         region = "EU"
         with pytest.raises(AssertionError):
-            client.assert_table_is_in_region(table=table, region=region)
+            client.assert_dataset_is_in_region(dataset=dataset, region=region)
 
 
 if __name__ == "__main__":
