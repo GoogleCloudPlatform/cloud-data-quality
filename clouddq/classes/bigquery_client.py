@@ -202,3 +202,30 @@ class BigQueryClient:
         except Forbidden as e:
             logger.error(f"User {self.__user_email} has insufficient permissions.")
             raise e
+
+    def is_table_exists(self, table: str) -> bool:
+        try:
+            client = self.get_connection()
+            client.get_table(table)
+            return True
+        except NotFound:
+            return False
+
+
+    def execute_query(self, query_string: str, job_config) -> bigquery.job.QueryJob:
+        """
+        The method is used to execute the sql query
+        Parameters:
+        query_string (str) : sql query to be executed
+        Returns:
+            result of the sql execution is returned
+        """
+        try:
+            client = self.get_connection()
+            logger.debug("Query string is \n %s", query_string)
+            query_job = client.query(query_string, job_config=job_config).result()
+            return query_job
+
+        except Exception as e:
+            logger.error(f"Query Execution failed with error {e}\n", exc_info=True)
+

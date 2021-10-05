@@ -17,103 +17,79 @@ import logging
 from datetime import date
 
 import google.auth
-
 from google.cloud import bigquery
-from google.cloud.bigquery.job import QueryJob
-from google.cloud.exceptions import NotFound
-
 
 logger = logging.getLogger(__name__)
 
-# getting the credentials and project details for gcp project
-credentials, your_project_id = google.auth.default(
-    scopes=["https://www.googleapis.com/auth/cloud-platform"]
-)
-# creating a big query clients.
-bqclient = bigquery.Client(
-    credentials=credentials,
-    project=your_project_id,
-)
 
+def load_target_table_from_bigquery(bigquery_client: bigquery.client.Client, invocation_id: str,
+                     partition_date: date,
+                     target_bigquery_summary_table: str):
 
-def is_tbl_exists(bqclient, table) -> bool:
-    try:
-        bqclient.get_table(table)
-        return True
-    except NotFound:
-        return False
+    default_job_config = bigquery.QueryJobConfig(use_query_cache=True)
 
+    if bigquery_client.is_table_exists(target_bigquery_summary_table):
 
-def execute_query(query_string: str) -> QueryJob:
-    """
-    The method is used to execute the sql query
-    Parameters:
-    query_string (str) : sql query to be executed
-    Returns:
-        result of the sql execution is returned
-    """
-    try:
-        logger.debug("Query string is \n %s", query_string)
-        job_config = bigquery.QueryJobConfig(use_query_cache=True)
-        query_object = bqclient.query(query_string, job_config=job_config).result()
-        return query_object
+        job_config = bigquery.QueryJobConfig(
+            destination=target_bigquery_summary_table,
+            write_disposition="WRITE_APPEND",
+        )
 
-    except Exception as e:
-        logger.error(f"Query Execution failed with error {e}\n", exc_info=True)
+        query_string = f"""SELECT * FROM `dataplex-clouddq.dataplex_clouddq.dq_summary` 
+         WHERE invocation_id='{invocation_id}' 
+         and DATE(execution_ts) = '{partition_date}'"""
+
+        # Start the query, passing in the extra configuration.
+        # Make an API request and wait for the job to complete
+        bigquery_client.execute_query(query_string=query_string, job_config=job_config).result()
+        logger.info(
+            "Table already exists \n "
+            "and query results loaded to the table {}".format(
+                target_bigquery_summary_table
+            )
+        )
+
+    else:
+
+        query_string = f"""CREATE TABLE 
+        `{target_bigquery_summary_table}` 
+        PARTITION BY TIMESTAMP_TRUNC(execution_ts, DAY) 
+        CLUSTER BY table_id, column_id, rule_binding_id, rule_id 
+        AS 
+        SELECT * from `dataplex-clouddq.dataplex_clouddq.dq_summary` 
+        WHERE invocation_id='{invocation_id}' 
+        AND DATE(execution_ts) = '{partition_date}'
+        """
+        bigquery_client.execute_query(query_string=query_string, job_config=default_job_config).result()
+        logger.info(
+            "Table created and query results loaded to the table {}".format(
+                target_bigquery_summary_table
+            )
+        )
+
 
 
 class TargetTable:
-    invocation_id: str = None
 
-    def __init__(self, invocation_id):
+    invocation_id: str = None
+    bigquery_client: bigquery.client.Client = None
+
+    def __init__(self, invocation_id: str, bigquery_client:  bigquery.client.Client):
         self.invocation_id = invocation_id
+        self.bigquery_client = bigquery_client
 
     def write_to_target_bq_table(
-        self, partition_date: date, target_bigquery_summary_table: str
+            self, partition_date: date, target_bigquery_summary_table: str
     ):
         try:
 
-            if is_tbl_exists(bqclient, target_bigquery_summary_table):
-
-                job_config = bigquery.QueryJobConfig(
-                    destination=target_bigquery_summary_table,
-                    write_disposition="WRITE_APPEND",
-                )
-
-                query_string = f"""SELECT * FROM `dataplex-clouddq.dataplex_clouddq.dq_summary` 
-                 WHERE invocation_id='{self.invocation_id}' 
-                 and DATE(execution_ts) = '{partition_date}'"""
-
-                # Start the query, passing in the extra configuration.
-                # Make an API request and wait for the job to complete
-                bqclient.query(query_string, job_config=job_config).result()
-                logger.info(
-                    "Table already exists \n "
-                    "and query results loaded to the table {}".format(
-                        target_bigquery_summary_table
-                    )
-                )
-
-            else:
-
-                query_string = f"""CREATE TABLE 
-                `{target_bigquery_summary_table}` 
-                PARTITION BY TIMESTAMP_TRUNC(execution_ts, DAY) 
-                CLUSTER BY table_id, column_id, rule_binding_id, rule_id 
-                AS 
-                SELECT * from `dataplex-clouddq.dataplex_clouddq.dq_summary` 
-                WHERE invocation_id='{self.invocation_id}' 
-                AND DATE(execution_ts) = '{partition_date}'
-                """
-                bqclient.query(query_string).result()
-                logger.info(
-                    "Table created and query results loaded to the table {}".format(
-                        target_bigquery_summary_table
-                    )
-                )
+            load_target_table_from_bigquery(bigquery_client=self.bigquery_client,
+                               invocation_id=self.invocation_id,
+                               partition_date=partition_date,
+                               target_bigquery_summary_table=target_bigquery_summary_table)
 
         except Exception as e:
 
             logger.error(
-                f" Target table creation failed with error {e}\n", exc_info=True
+                f" Target table creation or update failed with error {e}\n", exc_info=True
             )

@@ -34,7 +34,7 @@ from git import Repo
 
 from clouddq import lib
 from clouddq.classes.dq_target_table_utils import TargetTable
-from clouddq.classes.dry_run_bigquery import BigQueryDryRunClient
+from clouddq.classes.bigquery_client import BigQueryClient
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
@@ -324,13 +324,12 @@ def main(  # noqa: C901
     logger.info("Starting CloudDQ run with configs:")
     json_logger.warn({"run_configs": locals()})
     try:
-        if not skip_sql_validation:
-            # Create BigQuery client for query dry-runs
-            bigquery_client = BigQueryClient(
-                project_id=gcp_project_id,
-                gcp_service_account_key_path=gcp_service_account_key_path,
-                gcp_impersonation_credentials=gcp_impersonation_credentials,
-            )
+        # Create BigQuery client
+        bigquery_client = BigQueryClient(
+            project_id=gcp_project_id,
+            gcp_service_account_key_path=gcp_service_account_key_path,
+            gcp_impersonation_credentials=gcp_impersonation_credentials,
+        )
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -431,7 +430,7 @@ def main(  # noqa: C901
             logger.info("Invocation id is %s ", invocation_id)
             partition_date = date.today()
             logger.info("Partition date is %s", partition_date)
-            target_table = TargetTable(invocation_id)
+            target_table = TargetTable(invocation_id, bigquery_client)
             target_table.write_to_target_bq_table(
                 partition_date, target_bigquery_summary_table
             )
