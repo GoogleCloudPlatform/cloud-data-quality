@@ -11,10 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Utilities for interacting with Google BigQuery."""
-from clouddq.classes.dry_run_bigquery import BigQueryDryRunClient
-
-
-def validate_sql_string(sql_string: str) -> None:
-    BigQueryDryRunClient.check_query(query_string=sql_string)

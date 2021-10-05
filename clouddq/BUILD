@@ -16,13 +16,6 @@ load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirements")
 
-DEPS = [
-    ":classes",
-    requirement("pyyaml"),
-    requirement("jinja2"),
-    requirement("dbt-bigquery"),
-]
-
 filegroup(
     name = "dbt_template",
     srcs = glob(["templates/dbt/models/data_quality_engine/**/*.sql"]),
@@ -58,6 +51,7 @@ py_binary(
     visibility = ["//tests:__subpackages__"],
     deps = [
         ":clouddq_lib",
+        ":dbt_runners",
         requirement("click"),
         requirement("coloredlogs"),
         requirement("gitpython"),
@@ -69,7 +63,12 @@ py_library(
     srcs = glob(["*.py"]),
     data = [":macros_template"],
     visibility = ["//tests:__subpackages__"],
-    deps = DEPS,
+    deps = [
+        ":classes",
+        requirement("pyyaml"),
+        requirement("jinja2"),
+        requirement("dbt-bigquery"),
+    ],
 )
 
 py_library(
@@ -78,6 +77,17 @@ py_library(
     visibility = ["//tests:__subpackages__"],
     deps = [
         requirement("jinja2"),
+    ],
+)
+
+py_library(
+    name = "dbt_runners",
+    srcs = glob(["runners/dbt/*.py"]),
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        ":clouddq_lib",
+        requirement("dbt-bigquery"),
+        requirement("pyyaml"),
     ],
 )
 
