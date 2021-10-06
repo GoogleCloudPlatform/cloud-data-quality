@@ -328,7 +328,7 @@ def main(  # noqa: C901
             "If --dbt_profiles_dir is present, all other connection configs "
             "with pattern --gcp_* will be ignored. "
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
-            "deprecated in v0.1.0. Please migrate to use native-flags for "
+            "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
         )
     bigquery_client = None
