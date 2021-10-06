@@ -114,7 +114,7 @@ class BigQueryClient:
             auth_req = google.auth.transport.requests.Request()
             credentials.refresh(auth_req)
         except RefreshError as err:
-            logger.error("Could not refresh credentials for GCP.")
+            logger.error("Could not get refreshed credentials for GCP.")
             raise err
 
     def __resolve_credentials_username(self, credentials: Credentials) -> str:

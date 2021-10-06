@@ -173,5 +173,51 @@ class TestCliIntegration:
         print(result.output)
         assert result.exit_code == 0
 
+    def test_cli_dry_run_oath_impersonation(
+        self,
+        runner,
+        temp_configs_dir,
+        gcp_project_id,
+        gcp_bq_region,
+        gcp_bq_dataset,
+        gcp_impersonation_credentials,
+    ):
+        args = [
+            "ALL",
+            f"{temp_configs_dir}",
+            f"--gcp_project_id={gcp_project_id}",
+            f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+            f"--gcp_region_id={gcp_bq_region}",
+            f"--gcp_impersonation_credentials={gcp_impersonation_credentials}",
+            "--dry_run",
+            "--debug",
+            ]
+        result = runner.invoke(main, args)
+        print(result.output)
+        assert result.exit_code == 0
+
+    def test_cli_dry_run_oath_impersonation_fail(
+        self,
+        runner,
+        temp_configs_dir,
+        gcp_project_id,
+        gcp_bq_region,
+        gcp_bq_dataset,
+    ):
+        args = [
+            "ALL",
+            f"{temp_configs_dir}",
+            f"--gcp_project_id={gcp_project_id}",
+            f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+            f"--gcp_region_id={gcp_bq_region}",
+            f"--gcp_impersonation_credentials=non-existent-svc@non-existent-project.com",
+            "--dry_run",
+            "--debug",
+            ]
+        result = runner.invoke(main, args)
+        print(result.output)
+        assert result.exit_code == 1
+        assert "Could not get refreshed credentials for GCP." in result.output
+
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__]))

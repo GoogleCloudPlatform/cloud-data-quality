@@ -444,8 +444,7 @@ def main(  # noqa: C901
             raise RuntimeError("Job failed with unknown status.")
     except Exception as error:
         json_logger.error(error, exc_info=True)
-        logger.fatal(error)
-        raise
+        raise error
     finally:
         if bigquery_client:
             bigquery_client.close_connection()
