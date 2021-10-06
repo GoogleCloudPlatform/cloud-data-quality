@@ -193,7 +193,7 @@ For example, from [Cloud Shell](https://shell.cloud.google.com/?show=ide%2Ctermi
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.3.0"
+export CLOUDDQ_RELEASE_VERSION="0.3.1"
 wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_linux-amd64.zip
 ```
 
@@ -216,7 +216,7 @@ From either [Cloud Shell](https://shell.cloud.google.com) or a `Ubuntu`/`Debian`
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.3.0"
+export CLOUDDQ_RELEASE_VERSION="0.3.1"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 ```
 
@@ -224,7 +224,7 @@ Then change directory to the git project and get the pre-built executable from G
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.3.0"
+export CLOUDDQ_RELEASE_VERSION="0.3.1"
 cd cloud-data-quality
 wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_linux-amd64.zip
 ```
