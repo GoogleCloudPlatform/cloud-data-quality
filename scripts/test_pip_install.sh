@@ -24,11 +24,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/scripts/common.sh"
 
 # Check that all required env var are set
-require_env_var GOOGLE_CLOUD_PROJECT
-require_env_var CLOUDDQ_BIGQUERY_DATASET
-require_env_var CLOUDDQ_BIGQUERY_REGION
-require_env_var GOOGLE_APPLICATION_CREDENTIALS
-require_env_var IMPERSONATION_SERVICE_ACCOUNT
+require_env_var GOOGLE_CLOUD_PROJECT "Set this to the project_id used for integration testing."
+require_env_var CLOUDDQ_BIGQUERY_DATASET "Set this to the BigQuery dataset used for integration testing."
+require_env_var CLOUDDQ_BIGQUERY_REGION "Set this to the BigQuery region used for integration testing."
+require_env_var GOOGLE_APPLICATION_CREDENTIALS "Set this to the exported service account key path used for integration testing."
+require_env_var IMPERSONATION_SERVICE_ACCOUNT "Set this to the service account name for impersonation used for integration testing."
 
 # set variables
 # if running locally you'd have to ensure the following are correctly set for your project/auth details
