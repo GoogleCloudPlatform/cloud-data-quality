@@ -32,7 +32,7 @@ require_env_var IMPERSONATION_SERVICE_ACCOUNT
 
 # set variables
 # if running locally you'd have to ensure the following are correctly set for your project/auth details
-GOOGLE_CLOUD_PROJECT="$(gcloud config get-value project)"
+GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}"
 CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" 
 CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}"
 GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"
