@@ -21,6 +21,8 @@ import tempfile
 import shutil
 from pathlib import Path
 
+from google.auth.exceptions import RefreshError
+
 from clouddq.main import main
 
 logger = logging.getLogger(__name__)
@@ -217,7 +219,48 @@ class TestCliIntegration:
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 1
-        assert "Could not get refreshed credentials for GCP." in result.output
+        assert isinstance(result.exception, RefreshError)
+
+    def test_cli_dry_run_missing_project_id_fail(
+        self,
+        runner,
+        temp_configs_dir,
+        gcp_bq_region,
+        gcp_bq_dataset,
+    ):
+        args = [
+            "ALL",
+            f"{temp_configs_dir}",
+            f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+            f"--gcp_region_id={gcp_bq_region}",
+            "--dry_run",
+            "--debug",
+            ]
+        result = runner.invoke(main, args)
+        print(result.output)
+        assert result.exit_code == 1
+        assert isinstance(result.exception, ValueError)
+
+    def test_cli_dry_run_dataset_in_wrong_region_fail(
+        self,
+        runner,
+        temp_configs_dir,
+        gcp_project_id,
+        gcp_bq_dataset,
+    ):
+        args = [
+            "ALL",
+            f"{temp_configs_dir}",
+            f"--gcp_project_id={gcp_project_id}",
+            f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+            "--gcp_region_id=nonexistentregion",
+            "--dry_run",
+            "--debug",
+            ]
+        result = runner.invoke(main, args)
+        print(result.output)
+        assert result.exit_code == 1
+        assert isinstance(result.exception, AssertionError)
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__]))

@@ -170,7 +170,7 @@ class BigQueryClient:
         dataset_info = client.get_dataset(dataset)
         if dataset_info.location != region:
             raise AssertionError(
-                f"GCP region for BogQuery jobs in argument --gcp_region_id: "
+                f"GCP region for BigQuery jobs in argument --gcp_region_id: "
                 f"'{region}' must be the same as dataset '{dataset}' location: "
                 f"'{dataset_info.location}'."
             )

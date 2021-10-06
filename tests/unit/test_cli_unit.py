@@ -40,6 +40,7 @@ class TestCli:
         result = runner.invoke(main)
         logger.info(result.output)
         assert result.exit_code == 2
+        assert isinstance(result.exception, SystemExit)
 
     def test_cli_help_text(self, runner):
         result = runner.invoke(main, ["--help"])
@@ -60,6 +61,7 @@ class TestCli:
         result = runner.invoke(main, args)
         logger.info(result.output)
         assert result.exit_code == 1
+        assert isinstance(result.exception, ValueError)
 
     def test_cli_dry_run(
         self, 
