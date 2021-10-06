@@ -19,6 +19,25 @@ set -o pipefail
 
 set -x
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=/dev/null
+source "$ROOT/scripts/common.sh"
+
+# Check that all required env var are set
+require_env_var GOOGLE_CLOUD_PROJECT
+require_env_var CLOUDDQ_BIGQUERY_DATASET
+require_env_var CLOUDDQ_BIGQUERY_REGION
+require_env_var GOOGLE_APPLICATION_CREDENTIAL
+require_env_var IMPERSONATION_SERVICE_ACCOUNT
+
+# set variables
+# if running locally you'd have to ensure the following are correctly set for your project/auth details
+GOOGLE_CLOUD_PROJECT="$(gcloud config get-value project)"
+CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" 
+CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}"
+GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"
+IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}"
+
 # get diagnostic info
 which python3
 python3 --version
@@ -30,15 +49,6 @@ source /tmp/clouddq_test_env/bin/activate
 
 # install clouddq wheel into temporary env
 python3 -m pip install .
-
-# set variables
-# note this only works in github actions
-# if running locally you'd have to ensure the following are correctly set for your project/auth details
-GOOGLE_CLOUD_PROJECT="$(gcloud config get-value project)" || err "Test cannot proceed unless environment variable GOOGLE_CLOUD_PROJECT is set to the test project_id"
-CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" || err "Test cannot proceed unless environment variable CLOUDDQ_BIGQUERY_DATASET is set to the test gcp_bq_dataset."
-CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" || err "Test cannot proceed unless environment variable CLOUDDQ_BIGQUERY_REGION is set to the test gcp_bq_region."
-GOOGLE_APPLICATION_CREDENTIAL="${GOOGLE_APPLICATION_CREDENTIALS}" || err "Test cannot proceed unless environment variable GOOGLE_APPLICATION_CREDENTIALS is set to the test service_account key path."
-IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}" || err "Test cannot proceed unless environment variable GOOGLE_IMPERSONATION_CREDENTIALS is set to the service_account impersonation ID."
 
 # test clouddq help
 python3 clouddq --help
