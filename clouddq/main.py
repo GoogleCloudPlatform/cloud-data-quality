@@ -190,7 +190,7 @@ coloredlogs.install(logger=logger)
     "If --dbt_profiles_dir is present, all other connection configs "
     "with pattern --gcp_* will be ignored. "
     "Passing in dbt configs directly via --dbt_profiles_dir will be "
-    "deprecated in v0.1.0. Please migrate to use native-flags for "
+    "deprecated in v1.0.0. Please migrate to use native-flags for "
     "specifying connection configs instead.",
     type=click.Path(exists=True),
     envvar="DBT_PROFILES_DIR",
@@ -202,7 +202,7 @@ coloredlogs.install(logger=logger)
     "If not specified, clouddq will created a new directory in "
     "the current working directory for the dbt generated sql files. "
     "Passing in dbt models directly via --dbt_path will be "
-    "deprecated in v0.1.0. If you will be affected by this "
+    "deprecated in v1.0.0. If you will be affected by this "
     "deprecation, please raise a Github issue with details "
     "of your use-case.",
     type=click.Path(exists=True),
@@ -321,7 +321,7 @@ def main(  # noqa: C901
     if dbt_path:
         logger.warn(
             "Passing in dbt models directly via --dbt_path will be "
-            "deprecated in v0.1.0."
+            "deprecated in v1.0.0"
         )
     if dbt_profiles_dir:
         logger.warn(

@@ -143,6 +143,7 @@ class BigQueryClient:
         elif credentials.__dict__.get("_project_id"):
             _project_id = credentials.project_id
         else:
+            _project_id = None
             logger.warn(
                 "Could not retrieve project_id from GCP credentials.", exc_info=True
             )
