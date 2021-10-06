@@ -52,8 +52,37 @@ function check_python3() {
   fi
 }
 
+# Print error message to stderr
 function err() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@" >&2
+}
+
+# Check to see that a required environment variable is set.  
+# Use it without the $, as in:
+#   require_env_var VARIABLE_NAME  
+# or   
+#   require_env_var VARIABLE_NAME "Some description of the variable"
+function require_env_var {
+  var_name="${1:-}"
+  if [ -z "${!var_name:-}" ]; then
+    echo "[X] The required env variable ${var_name} is empty"
+    if [ ! -z "${2:-}" ]; then        
+       echo "  - $2"     
+    fi
+    exit 1
+  fi
+}
+
+# Check to see that we have a required binary on the path
+function require_binary {
+  if [ -z "${1:-}" ]; then
+    echo "${FUNCNAME[0]} requires an argument"
+    exit 1
+  fi
+  if ! [ -x "$(command -v "$1")" ]; then
+    echo "The required executable '$1' is not on the path."
+    exit 1
+  fi
 }
 
 ###########################################################
