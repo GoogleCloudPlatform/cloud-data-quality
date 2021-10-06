@@ -45,6 +45,12 @@ jobs:
       - name: check addlicense
         run: make addlicense
 
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@master
         with:
@@ -55,25 +61,21 @@ jobs:
       - name: Get gcloud CLI info
         run: gcloud info
 
-      - name: Setup python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-
       - name: test pip install
         run: |
-          export GOOGLE_CLOUD_PROJECT="${GCLOUD_PROJECT}"
+          export GOOGLE_CLOUD_PROJECT=${{ secrets.GCP_PROJECT_ID }}
           export CLOUDDQ_BIGQUERY_DATASET="dq_test"
           export CLOUDDQ_BIGQUERY_REGION="EU"
-          gcloud config set project "${GCLOUD_PROJECT}"
+          export GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+          export IMPERSONATION_SERVICE_ACCOUNT=${{ secrets.IMPERSONATION_SERVICE_ACCOUNT }}
+          gcloud config set project "${GOOGLE_CLOUD_PROJECT}"
           sed -i s/\<your_gcp_project_id\>/${GOOGLE_CLOUD_PROJECT}/g configs/entities/test-data.yml
           make test-pip-install
         shell: bash
 
       - name: Use GCS Bazel Cache
         run: |
-          echo "common --remote_cache=https://storage.googleapis.com/kthxbayes-bazel-cache" >> .bazelrc
+          echo "common --remote_cache=https://storage.googleapis.com/${{ secrets.BAZEL_CACHE_BUCKET }}" >> .bazelrc
           echo "common --google_default_credentials" >> .bazelrc
         shell: bash
 

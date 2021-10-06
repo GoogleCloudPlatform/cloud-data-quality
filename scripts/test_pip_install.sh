@@ -19,6 +19,25 @@ set -o pipefail
 
 set -x
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=/dev/null
+source "$ROOT/scripts/common.sh"
+
+# Check that all required env var are set
+require_env_var GOOGLE_CLOUD_PROJECT
+require_env_var CLOUDDQ_BIGQUERY_DATASET
+require_env_var CLOUDDQ_BIGQUERY_REGION
+require_env_var GOOGLE_APPLICATION_CREDENTIALS
+require_env_var IMPERSONATION_SERVICE_ACCOUNT
+
+# set variables
+# if running locally you'd have to ensure the following are correctly set for your project/auth details
+GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}"
+CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" 
+CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}"
+GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"
+IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}"
+
 # get diagnostic info
 which python3
 python3 --version
@@ -30,15 +49,6 @@ source /tmp/clouddq_test_env/bin/activate
 
 # install clouddq wheel into temporary env
 python3 -m pip install .
-
-# set variables
-# note this only works in github actions
-# if running locally you'd have to ensure the following are correctly set for your project/auth details
-GOOGLE_CLOUD_PROJECT="$(gcloud config get-value project)"
-CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET:-dq_test}"
-CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION:-EU}"
-GOOGLE_APPLICATION_CREDENTIAL="${GOOGLE_APPLICATION_CREDENTIALS}"
-IMPERSONATION_SERVICE_ACCOUNT="argo-svc@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
 
 # test clouddq help
 python3 clouddq --help
