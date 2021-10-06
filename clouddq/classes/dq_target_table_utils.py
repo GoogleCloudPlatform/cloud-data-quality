@@ -41,7 +41,7 @@ def load_target_table_from_bigquery(bigquery_client: bigquery.client.Client, inv
 
         # Start the query, passing in the extra configuration.
         # Make an API request and wait for the job to complete
-        bigquery_client.execute_query(query_string=query_string, job_config=job_config).result()
+        bigquery_client.execute_query(query_string=query_string, job_config=job_config)
         logger.info(
             "Table already exists \n "
             "and query results loaded to the table {}".format(
@@ -60,7 +60,7 @@ def load_target_table_from_bigquery(bigquery_client: bigquery.client.Client, inv
         WHERE invocation_id='{invocation_id}' 
         AND DATE(execution_ts) = '{partition_date}'
         """
-        bigquery_client.execute_query(query_string=query_string, job_config=default_job_config).result()
+        bigquery_client.execute_query(query_string=query_string, job_config=default_job_config)
         logger.info(
             "Table created and query results loaded to the table {}".format(
                 target_bigquery_summary_table

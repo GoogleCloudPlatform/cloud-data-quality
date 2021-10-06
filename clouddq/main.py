@@ -40,6 +40,7 @@ from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
+from google.cloud import bigquery
 
 
 APP_VERSION = None
@@ -326,6 +327,7 @@ def main(  # noqa: C901
             logger.debug("Debug logging enabled")
     logger.info("Starting CloudDQ run with configs:")
     json_logger.warn({"run_configs": locals()})
+    bigquery_client: bigquery.client.Client = None
     try:
         # Create BigQuery client
         bigquery_client = BigQueryClient(
