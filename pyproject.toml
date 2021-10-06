@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "clouddq"
-version = "0.3.0"
+version = "0.3.1"
 description = "Data Quality Engine for BigQuery"
 authors = ["Thinh Ha <thinhha@google.com>"]
 license = "Apache-2.0"
