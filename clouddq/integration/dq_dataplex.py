@@ -109,16 +109,16 @@ class CloudDqDataplex:
 
         default_body = {
             "spark": {
-                "python_script": f'{"gs://dataplex-clouddq-api-integration-test/"}'
+                "python_script": f'{"gs://dataplex-clouddq-api-integration/"}'
                 f'{"clouddq_pyspark_driver.py"}',
                 "archive_uris": [
-                    "gs://dataplex-clouddq-api-integration-test/clouddq-configs.zip"
+                    "gs://dataplex-clouddq-api-integration/clouddq-configs.zip"
                 ],
                 "file_uris": [
-                    "gs://dataplex-clouddq-api-integration-test/clouddq_patched.zip",
-                    f'{"gs://dataplex-clouddq-api-integration-test/"}'
+                    "gs://dataplex-clouddq-api-integration/clouddq_patched.zip",
+                    f'{"gs://dataplex-clouddq-api-integration/"}'
                     f'{"clouddq_patched.zip.hashsum"}',
-                    "gs://dataplex-clouddq-api-integration-test/profiles.yml",
+                    "gs://dataplex-clouddq-api-integration/profiles.yml",
                 ],
             },
             "execution_spec": {
