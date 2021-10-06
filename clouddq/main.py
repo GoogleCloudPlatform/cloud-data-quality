@@ -13,13 +13,13 @@
 # limitations under the License.
 
 """Data Quality Engine for BigQuery."""
+from datetime import datetime
 import json
 import logging
 import logging.config
 import sys
 import traceback
 
-from datetime import date
 from datetime import datetime
 from pathlib import Path
 from pprint import pformat
@@ -33,14 +33,11 @@ from git import InvalidGitRepositoryError
 from git import Repo
 
 from clouddq import lib
-from clouddq.classes.dq_target_table_utils import TargetTable
 from clouddq.classes.bigquery_client import BigQueryClient
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
-from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
-from google.cloud import bigquery
 
 
 APP_VERSION = None
@@ -137,96 +134,31 @@ coloredlogs.install(logger=logger)
     type=click.Path(exists=True),
 )
 @click.option(
-    "--target_bigquery_summary_table",
-    help="",
-)
-@click.option(
-    "--gcp_project_id",
-    help="GCP Project ID used for executing GCP Jobs. "
-    "This argument will be ignored if --dbt_profiles_dir is set.",
-    default=None,
-    type=str,
-)
-@click.option(
-    "--gcp_region_id",
-    help="GCP region used for running BigQuery Jobs and for storing "
-    " any intemediate DQ summary results. "
-    "This argument will be ignored if --dbt_profiles_dir is set.",
-    default=None,
-    type=str,
-)
-@click.option(
-    "--gcp_bq_dataset_id",
-    help="GCP BigQuery Dataset ID used for storing rule_binding views "
-    "and intermediate DQ summary results. "
-    "This argument will be ignored if --dbt_profiles_dir is set.",
-    default=None,
-    type=str,
-)
-@click.option(
-    "--gcp_service_account_key_path",
-    help="File system path to the exported GCP service account JSON key "
-    "for authenticating to GCP. "
-    "If --gcp_service_account_key_path is not specified, "
-    "defaults to using automatically discovered credentials "
-    "via Application Default Credentials (ADC). "
-    "More on how ADC discovers credentials: https://google.aip.dev/auth/4110. "
-    "This argument will be ignored if --dbt_profiles_dir is set.",
-    default=None,
-    type=click.Path(exists=True),
-)
-@click.option(
-    "--gcp_impersonation_credentials",
-    help="Target Service Account Name for authenticating to GCP using "
-    "service account impersonation via a source credentials. "
-    "Source credentials can be obtained from either "
-    "--gcp_service_account_key_path or local ADC credentials. "
-    "Ensure the source credentials has sufficient IAM permission to "
-    "impersonate the target service account. "
-    "This argument will be ignored if --dbt_profiles_dir is set.",
-    default=None,
-    type=str,
-)
-@click.option(
     "--dbt_profiles_dir",
-    help="Path containing the dbt profiles.yml configs for connecting to GCP. "
-    "As dbt supports multiple connection configs in a single profiles.yml file, "
-    "you can also specify the dbt target for the run with --environment_target. "
-    "Defaults to environment variable DBT_PROFILES_DIR if present. "
-    "If another connection config with pattern --*_connection_configs "
-    "was not provided, this argument is mandatory. "
-    "If --dbt_profiles_dir is present, all other connection configs "
-    "with pattern --gcp_* will be ignored. "
-    "Passing in dbt configs directly via --dbt_profiles_dir will be "
-    "deprecated in v0.1.0. Please migrate to use native-flags for "
-    "specifying connection configs instead.",
+    help="Path to dbt profiles.yml. "
+    "This is a required argument for configuring dbt connection profiles."
+    "Defaults to environment variable DBT_PROFILES_DIR if set.",
     type=click.Path(exists=True),
     envvar="DBT_PROFILES_DIR",
+    callback=not_null_or_empty,
 )
 @click.option(
     "--dbt_path",
     help="Path to dbt model directory where a new view will be created "
-    "containing the sql execution statement for each rule binding. "
+    "containing the sql execution statement for each rule binding."
     "If not specified, clouddq will created a new directory in "
-    "the current working directory for the dbt generated sql files. "
-    "Passing in dbt models directly via --dbt_path will be "
-    "deprecated in v0.1.0. If you will be affected by this "
-    "deprecation, please raise a Github issue with details "
-    "of your use-case.",
+    "the current working directory for the dbt generated sql files.",
     type=click.Path(exists=True),
     default=None,
 )
 @click.option(
     "--environment_target",
-    help="Execution environment target as defined in dbt profiles.yml, "
+    help="Execution environment target as defined in dbt profile, "
     "e.g. dev, test, prod.  "
-    "Defaults to 'dev' if not set. "
-    "Uses the environment variable ENV if present. "
-    "Set this to the same value as 'environment' in "
-    "entity 'environment_override' config to trigger "
-    "field substitution.",
+    "Defaults 'dev' or the environment variable ENV if set.",
     envvar="ENV",
     default="dev",
+    callback=not_null_or_empty,
 )
 @click.option(
     "--metadata",
@@ -269,18 +201,12 @@ coloredlogs.install(logger=logger)
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
-    dbt_path: Optional[str],
-    dbt_profiles_dir: Optional[str],
-    environment_target: Optional[str],
-    gcp_project_id: Optional[str],
-    gcp_region_id: Optional[str],
-    gcp_bq_dataset_id: Optional[str],
-    gcp_service_account_key_path: Optional[Path],
-    gcp_impersonation_credentials: Optional[str],
-    metadata: Optional[str],
+    dbt_path: str,
+    dbt_profiles_dir: str,
+    environment_target: str,
+    metadata: str,
     dry_run: bool,
     progress_watermark: bool,
-    target_bigquery_summary_table: str,
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
@@ -327,14 +253,28 @@ def main(  # noqa: C901
             logger.debug("Debug logging enabled")
     logger.info("Starting CloudDQ run with configs:")
     json_logger.warn({"run_configs": locals()})
-    bigquery_client: bigquery.client.Client = None
-    try:
-        # Create BigQuery client
-        bigquery_client = BigQueryClient(
-            project_id=gcp_project_id,
-            gcp_service_account_key_path=gcp_service_account_key_path,
-            gcp_impersonation_credentials=gcp_impersonation_credentials,
+    if dbt_path:
+        logger.warn(
+            "Passing in dbt models directly via --dbt_path will be "
+            "deprecated in v0.1.0."
         )
+    if dbt_profiles_dir:
+        logger.warn(
+            "If --dbt_profiles_dir is present, all other connection configs "
+            "with pattern --gcp_* will be ignored. "
+            "Passing in dbt configs directly via --dbt_profiles_dir will be "
+            "deprecated in v0.1.0. Please migrate to use native-flags for "
+            "specifying connection configs instead."
+        )
+    bigquery_client = None
+    try:
+        if not skip_sql_validation:
+            # Create BigQuery client for query dry-runs
+            bigquery_client = BigQueryClient(
+                project_id=gcp_project_id,
+                gcp_service_account_key_path=gcp_service_account_key_path,
+                gcp_impersonation_credentials=gcp_impersonation_credentials,
+            )
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -427,6 +367,7 @@ def main(  # noqa: C901
         configs = {"target_rule_binding_ids": target_rule_binding_ids}
         job_status: JobStatus = dbt_runner.run(
             configs=configs,
+            environment=environment_target,
             debug=debug,
             dry_run=dry_run,
         )

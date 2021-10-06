@@ -16,6 +16,7 @@ It takes as input Data Quality validation tests defined using a flexible and reu
 
 ### Declarative Data Quality Configs
 
+#### Rule Bindings
 **Rule Bindings**:
 Defines a single Data Quality validation routine.
 Each value declared in `entity_id`, `column_id`, `filter_id`, and `rule_id`
@@ -45,14 +46,17 @@ rule_bindings:
     metadata:
       team: team-3
 ```
-Each `rule_binding` must define the fields `entity_id`, `column_id`, `row_filter_id`, and `rule_ids`. If `incremental_time_filter_column_id` is defined, `CloudDQ` will only validate rows with a timestamp higher than the last run timestamp on each run, otherwise it will validate all rows matching the `row_filter_id` on each run.
+Each `rule_binding` must define the fields `entity_id`, `column_id`, `row_filter_id`, and `rule_ids`. `entity_id` refers to the table being validated, `column_id` refers to the column in the table to be validated, `row_filter_id` refers to a filter condition to select rows in-scope for validation, and `rule_ids` refers to the list of data quality validation rules to apply on the selected column and rows.
+
+If `incremental_time_filter_column_id` is defined, `CloudDQ` will only validate rows with a timestamp higher than the last run timestamp on each run, otherwise it will validate all rows matching the `row_filter_id` on each run.
 
 Under the `metadata` config, you may add any key-value pairs that will be added as a JSON on each DQ summary row output. For example, this can be the team responsible for a `rule_binding`, the table type (raw, curated, reference). The JSON allows custom aggregations and drilldowns over the summary data.
 
-On each run, CloudDQ converts each `rule_binding` into a SQL script, create a corresponding [view](https://cloud.google.com/bigquery/docs/views) in BigQuery, and aggregate the validation results summary per `rule_binding` and `rule` for each CloudDQ run into a DQ Summary Statistics table in BigQuery. This table is called called `dq_summary`, and is automatically created by CloudDQ in the BigQuery dataset defined in the argument `--gcp_bq_dataset_id` or in the project's `profiles.yml`configurations.
+On each run, CloudDQ converts each `rule_binding` into a SQL script, create a corresponding [view](https://cloud.google.com/bigquery/docs/views) in BigQuery, and aggregate the validation results summary per `rule_binding` and `rule` for each CloudDQ run into a DQ Summary Statistics table in BigQuery. This table is called called `dq_summary`, and is automatically created by CloudDQ in the BigQuery dataset defined in the argument `--gcp_bq_dataset_id`.
 
 You can then use any dashboarding solution such as Data Studio or Looker to visualize the DQ Summary Statistics table, or use the DQ Summary Statistics table for monitoring and alerting purposes.
 
+#### Rules
 **Rules**: Defines reusable sets of validation logic for data quality.
 ```yaml
 rules:
@@ -77,11 +81,16 @@ rules:
       custom_sql_arguments:
         - column_names
       custom_sql_statement: |-
-        select
-          $column_names
-        from data
-        group by $column_names
-        having count(*) > 1
+        select a.*
+        from data a
+        inner join (
+          select
+            $column_names
+          from data
+          group by $column_names
+          having count(*) > 1
+        ) duplicates
+        using ($column_names)
 ```
 We will add more default rule types over time. For the time being, most data quality rule can be defined as SQL using either `CUSTOM_SQL_EXPR` or `CUSTOM_SQL_STATEMENT`. `CUSTOM_SQL_EXPR` will flag any row that `custom_sql_expr` evaluated to False as a failure. `CUSTOM_SQL_STATEMENT` will flag any value returned by the whole statement as failures.
 
@@ -89,6 +98,7 @@ We will add more default rule types over time. For the time being, most data qua
 
 When using `CUSTOM_SQL_STATEMENT`, the table `data` contains rows returned once all `row_filters` and incremental validation logic have been applied. We recommend simply selecting from `data` in `CUSTOM_SQL_STATEMENT` instead of trying to apply your own templating logic to define the target table for validation.
 
+#### Filters
 **Filters**: Defines how each `Rule Binding` can be filtered
 ```yaml
 row_filters:
@@ -100,6 +110,8 @@ row_filters:
     filter_sql_expr: |-
       contact_type = 'email'
 ```
+
+#### Entities
 **Entities**: defines the target data tables as validation target.
 ```yaml
 entities:
@@ -147,9 +159,12 @@ You can load this data into BigQuery using the `bq load` command (the [`bq` CLI 
 export PROJECT_ID=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
-# Skip the `bq mk` step if `CLOUDDQ_BIGQUERY_DATASET` already exists
+# Fetch the example csv file
+curl -LO https://raw.githubusercontent.com/GoogleCloudPlatform/cloud-data-quality/main/tests/data/contact_details.csv
+# Create BigQuery Dataset. Skip this step if `CLOUDDQ_BIGQUERY_DATASET` already exists
 bq --location=${CLOUDDQ_BIGQUERY_REGION} mk --dataset ${PROJECT_ID}:${CLOUDDQ_BIGQUERY_DATASET}
-bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details tests/data/contact_details.csv
+# Load sample data to the dataset
+bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details contact_details.csv
 ```
 
 Ensure you have sufficient IAM privileges to create BigQuery datasets and tables in your project.
@@ -174,7 +189,7 @@ CloudDQ requires a Python 3.8 interpreter. If you are using the pre-built artifa
 
 The simplest way to run CloudDQ is to use one of the pre-built executable provided in the Github releases page: https://github.com/GoogleCloudPlatform/cloud-data-quality/releases
 
-For example, from [Cloud Shell](https://shell.cloud.google.com/? show=ide%2Cterminal), you can download the executable with the following commands:
+For example, from [Cloud Shell](https://shell.cloud.google.com/?show=ide%2Cterminal), you can download the executable with the following commands:
 
 ```bash
 #!/bin/bash
@@ -228,7 +243,7 @@ export PROJECT_ID="<your_GCP_project_id>"
 gcloud config set project ${PROJECT_ID}
 ```
 
-Now we'll create a new dataset called "clouddq" in a location of our choice and load some sample data into it:
+Now we'll create a new dataset with a custom name in a location of our choice and load some sample data into it:
 
 ```bash
 #!/bin/bash
@@ -236,8 +251,9 @@ Now we'll create a new dataset called "clouddq" in a location of our choice and 
 export PROJECT_ID=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
-# Skip the `bq mk` step if `CLOUDDQ_BIGQUERY_DATASET` already exists
+# Create BigQuery Dataset. Skip this step if `CLOUDDQ_BIGQUERY_DATASET` already exists
 bq --location=${CLOUDDQ_BIGQUERY_REGION} mk --dataset ${PROJECT_ID}:${CLOUDDQ_BIGQUERY_DATASET}
+# Load sample data to the dataset
 bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details tests/data/contact_details.csv
 ```
 
@@ -268,14 +284,14 @@ python3 clouddq_executable.zip \
 ```
 
 By running this CLI command, `CloudDQ` will:
-1. validate that the YAML configs are valid, i.e. every `Rule`, `Entity`, and `Row Filter` referenced in each `Rule Binding` exists and there are no duplicated configuration ID
+1. validate that the YAML configs are valid, i.e. every `Rule`, `Entity`, and `Row Filter` referenced in each `Rule Binding` exists and there are no duplicated configuration ID. CloudDQ will attempt to parse all files with extensions `yml` and `yaml` discovered in a path and use the top-level keys (e.g. `rules`, `rule_bindings`, `row_filters`, `entities`) to determine the config type. Each configuration item must have a globally unique identifier in the `config` path.
 2. validate that the dataset `--gcp_bq_dataset_id` is located in the region `--gcp_region_id`
-3. generate BigQuery SQL for each `Rule Binding` and validate it is valid BigQuery SQL using BigQuery dry-run feature
-4. create a BigQuery view using the generated BigQuery SQL for each `Rule Binding` in the BigQuery dataset specified in `--gcp_bq_dataset_id`
-5. create a BigQuery job to execute the SQL in this view in the GCP project specified in `--gcp_project_id` and GCP region specified in `--gcp_region_id`
+3. generate BigQuery SQL code for each `Rule Binding` and validate that it is valid BigQuery SQL using BigQuery dry-run feature
+4. create a BigQuery view for each generated BigQuery SQL `Rule Binding` in the BigQuery dataset specified in `--gcp_bq_dataset_id`
+5. create a BigQuery job to execute all `Rule Binding` SQL views. The BigQuery jobs will be created in the GCP project specified in `--gcp_project_id` and GCP region specified in `--gcp_region_id`
 6. aggregate the validation outcomes and write the Data Quality summary results into a table called `dq_summary` in the BigQuery dataset specified in `--gcp_bq_dataset_id`
 
-To execute all `Rule Binding`s in the config directory, use `ALL` as the `RULE_BINDING_IDS`:
+To execute all `Rule Binding`s discovered in the config directory, use `ALL` as the `RULE_BINDING_IDS`:
 
 ```bash
 #!/bin/bash
@@ -301,18 +317,18 @@ bq show --view clouddq.T3_DQ_1_EMAIL_DUPLICATE
 
 ## Authentication
 
-CloudDQ supports the follow methods of authenticating to GCP:
-1. OAuth via locally discovered Application-Default credentials if only the arguments `--gcp_project_id`, `--gcp_bq_dataset_id`, and `--gcp_region_id` are provided.
-2. Using an exported JSON service account key if the argument `--gcp_service_account_key_path` is provided.
-3. Service Account impersonation via a source credentials if the argument `--gcp_impersonation_credentials` is provided. The source credentials can be obtained from either `--gcp_service_account_key_path` or from the local ADC credentials.
+CloudDQ supports the follow methods for authenticating to GCP:
+1. OAuth via locally discovered [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/best-practices-applications#overview_of_application_default_credentials) if only the arguments `--gcp_project_id`, `--gcp_bq_dataset_id`, and `--gcp_region_id` are provided.
+2. Using an [exported JSON service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) if the argument `--gcp_service_account_key_path` is provided.
+3. [Service Account impersonation](https://cloud.google.com/iam/docs/impersonating-service-accounts) via a source credentials if the argument `--gcp_impersonation_credentials` is provided. The source credentials can be obtained from either `--gcp_service_account_key_path` or from the local ADC credentials.
 
-### Development
+## Development
 
 CloudDQ is currently only tested to run on `Ubuntu`/`Debian` linux distributions. It may not work properly on other OS such as `MacOS`, `Windows`/`cygwin`, or `CentOS`/`Fedora`/`FreeBSD`, etc...
 
 For development or trying out CloudDQ, we recommend using either [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor) or a [Google Cloud Compute Engine VM](https://cloud.google.com/compute) with the [Ubuntu 18.04 OS distribution](https://cloud.google.com/compute/docs/images/os-details#ubuntu_lts).
 
-#### Dependencies
+### Dependencies
 
 * make: https://www.gnu.org/software/make/manual/make.html
 * golang (for building [bazelisk](https://github.com/bazelbuild/bazelisk)): https://golang.org/doc/install
@@ -324,10 +340,11 @@ From a `Ubuntu`/`Debian` machine, install the above dependencies by running the 
 
 ```bash
 #!/bin/bash
+git clone https://github.com/GoogleCloudPlatform/cloud-data-quality
 bash scripts/install_development_dependencies.sh
 ```
 
-#### Building a self-contained executable from source
+### Building a self-contained executable from source
 
 After installing all dependencies and building it, you can clone the latest version of the code and build it by running the following commands:
 
@@ -367,7 +384,7 @@ To speed up builds, you may want to update the [bazel cache](https://docs.bazel.
 build --remote_cache=https://storage.googleapis.com/<your_gcs_bucket_name>
 ```
 
-#### Running the CLI from source without building
+### Running the CLI from source without building
 
 You may prefer to run the CLI directly without first building a zip executable. In which case, you can run `bazelisk run` to execute the main CLI.
 
@@ -394,7 +411,7 @@ Note that `bazel run` execute the code in a sandbox, therefore non-absolute path
 
 Additionally, you may want to run `source scripts/common.sh && confirm_gcloud_login` to check that your `gcloud` credentials are set up correctly.
 
-#### Run tests and linting
+### Run tests and linting
 
 To run unit tests:
 ```
