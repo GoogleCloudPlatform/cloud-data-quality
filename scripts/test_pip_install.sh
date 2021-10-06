@@ -27,7 +27,7 @@ source "$ROOT/scripts/common.sh"
 require_env_var GOOGLE_CLOUD_PROJECT
 require_env_var CLOUDDQ_BIGQUERY_DATASET
 require_env_var CLOUDDQ_BIGQUERY_REGION
-require_env_var GOOGLE_APPLICATION_CREDENTIAL
+require_env_var GOOGLE_APPLICATION_CREDENTIALS
 require_env_var IMPERSONATION_SERVICE_ACCOUNT
 
 # set variables
