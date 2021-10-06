@@ -117,7 +117,6 @@ class BigQueryClient:
             logger.error("Could not refresh credentials for GCP.")
             raise err
 
-
     def __resolve_credentials_username(self, credentials: Credentials) -> str:
         # Attempt to refresh token if not currently valid
         if not credentials.valid:

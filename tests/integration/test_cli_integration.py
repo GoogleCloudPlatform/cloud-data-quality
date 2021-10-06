@@ -74,7 +74,7 @@ class TestCliIntegration:
             shutil.rmtree(temp_clouddq_dir)
         destination = shutil.copytree(source_configs_path, temp_clouddq_dir)
         test_data = Path(destination).joinpath("entities", "test-data.yml")
-        with open(test_data, "r") as source_file:
+        with open(test_data) as source_file:
             lines = source_file.read()
         with open(test_data, "w") as source_file:
             lines = lines.replace("<your_gcp_project_id>", gcp_project_id)
