@@ -37,11 +37,11 @@ GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"
 IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}"
 
 function bazel_test() {
-  confirm_gcloud_login || (( err "Failed to retrieve gcloud application-default credentials." && exit 1 ))
+#  confirm_gcloud_login || (( err "Failed to retrieve gcloud application-default credentials." && exit 1 ))
   set -x
   bin/bazelisk test \
     --test_env GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
-    --test_env GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS}" \
+    --test_env GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}" \
     --test_env CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" \
     --test_env CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" \
     --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}" \

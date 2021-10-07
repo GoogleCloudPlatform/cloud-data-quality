@@ -439,16 +439,20 @@ def main(  # noqa: C901
         )
         if job_status == JobStatus.SUCCESS:
             logger.info("Job completed successfully.")
-            invocation_id = get_dbt_invocation_id(dbt_path)
-            logger.info("Invocation id is %s ", invocation_id)
-            partition_date = date.today()
-            logger.info("Partition date is %s", partition_date)
-            target_table = TargetTable(invocation_id, bigquery_client)
-            target_table.write_to_target_bq_table(
-                partition_date,
-                target_bigquery_summary_table,
-                dq_summary_table_name
-            )
+
+            if not dry_run and target_bigquery_summary_table:
+                invocation_id = get_dbt_invocation_id(dbt_path)
+                logger.info("Invocation id is %s ", invocation_id)
+                partition_date = date.today()
+                logger.info("Partition date is %s", partition_date)
+                target_table = TargetTable(invocation_id, bigquery_client)
+                target_table.write_to_target_bq_table(
+                    partition_date,
+                    target_bigquery_summary_table,
+                    dq_summary_table_name
+                )
+            else:
+                raise RuntimeError("Target bigquery summary table is not provided or empty")
         elif job_status == JobStatus.FAILED:
             raise RuntimeError("Job failed.")
         else:
