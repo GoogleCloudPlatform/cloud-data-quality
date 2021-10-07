@@ -33,14 +33,13 @@ from git import InvalidGitRepositoryError
 from git import Repo
 
 from clouddq import lib
-from clouddq.classes.dq_target_table_utils import TargetTable
 from clouddq.classes.bigquery_client import BigQueryClient
+from clouddq.classes.dq_target_table_utils import TargetTable
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
-from google.cloud import bigquery
 
 
 APP_VERSION = None
@@ -446,7 +445,9 @@ def main(  # noqa: C901
             logger.info("Partition date is %s", partition_date)
             target_table = TargetTable(invocation_id, bigquery_client)
             target_table.write_to_target_bq_table(
-                partition_date, target_bigquery_summary_table
+                partition_date,
+                target_bigquery_summary_table,
+                dq_summary_table_name
             )
         elif job_status == JobStatus.FAILED:
             raise RuntimeError("Job failed.")

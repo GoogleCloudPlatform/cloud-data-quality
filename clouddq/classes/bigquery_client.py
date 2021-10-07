@@ -203,7 +203,6 @@ class BigQueryClient:
         except NotFound:
             return False
 
-
     def execute_query(self, query_string: str, job_config) -> bigquery.job.QueryJob:
         """
         The method is used to execute the sql query
@@ -220,4 +219,3 @@ class BigQueryClient:
 
         except Exception as e:
             logger.error(f"Query Execution failed with error {e}\n", exc_info=True)
-

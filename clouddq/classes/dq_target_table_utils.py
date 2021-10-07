@@ -16,15 +16,19 @@ import logging
 
 from datetime import date
 
-import google.auth
 from google.cloud import bigquery
+
 
 logger = logging.getLogger(__name__)
 
 
-def load_target_table_from_bigquery(bigquery_client: bigquery.client.Client, invocation_id: str,
-                     partition_date: date,
-                     target_bigquery_summary_table: str):
+def load_target_table_from_bigquery(
+    bigquery_client: bigquery.client.Client,
+    invocation_id: str,
+    partition_date: date,
+    target_bigquery_summary_table: str,
+    dq_summary_table_name: str,
+):
 
     default_job_config = bigquery.QueryJobConfig(use_query_cache=True)
 
@@ -35,9 +39,9 @@ def load_target_table_from_bigquery(bigquery_client: bigquery.client.Client, inv
             write_disposition="WRITE_APPEND",
         )
 
-        query_string = f"""SELECT * FROM `dataplex-clouddq.dataplex_clouddq.dq_summary` 
+        query_string = f"""SELECT * FROM `{dq_summary_table_name}` 
          WHERE invocation_id='{invocation_id}' 
-         and DATE(execution_ts) = '{partition_date}'"""
+         and DATE(execution_ts)='{partition_date}'"""
 
         # Start the query, passing in the extra configuration.
         # Make an API request and wait for the job to complete
@@ -56,11 +60,12 @@ def load_target_table_from_bigquery(bigquery_client: bigquery.client.Client, inv
         PARTITION BY TIMESTAMP_TRUNC(execution_ts, DAY) 
         CLUSTER BY table_id, column_id, rule_binding_id, rule_id 
         AS 
-        SELECT * from `dataplex-clouddq.dataplex_clouddq.dq_summary` 
+        SELECT * from `{dq_summary_table_name}` 
         WHERE invocation_id='{invocation_id}' 
-        AND DATE(execution_ts) = '{partition_date}'
-        """
-        bigquery_client.execute_query(query_string=query_string, job_config=default_job_config)
+        AND DATE(execution_ts)='{partition_date}'"""
+        bigquery_client.execute_query(
+            query_string=query_string, job_config=default_job_config
+        )
         logger.info(
             "Table created and query results loaded to the table {}".format(
                 target_bigquery_summary_table
@@ -68,28 +73,34 @@ def load_target_table_from_bigquery(bigquery_client: bigquery.client.Client, inv
         )
 
 
-
 class TargetTable:
 
     invocation_id: str = None
     bigquery_client: bigquery.client.Client = None
 
-    def __init__(self, invocation_id: str, bigquery_client:  bigquery.client.Client):
+    def __init__(self, invocation_id: str, bigquery_client: bigquery.client.Client):
         self.invocation_id = invocation_id
         self.bigquery_client = bigquery_client
 
     def write_to_target_bq_table(
-            self, partition_date: date, target_bigquery_summary_table: str
+        self,
+        partition_date: date,
+        target_bigquery_summary_table: str,
+        dq_summary_table_name: str,
     ):
         try:
 
-            load_target_table_from_bigquery(bigquery_client=self.bigquery_client,
-                               invocation_id=self.invocation_id,
-                               partition_date=partition_date,
-                               target_bigquery_summary_table=target_bigquery_summary_table)
+            load_target_table_from_bigquery(
+                bigquery_client=self.bigquery_client,
+                invocation_id=self.invocation_id,
+                partition_date=partition_date,
+                target_bigquery_summary_table=target_bigquery_summary_table,
+                dq_summary_table_name=dq_summary_table_name,
+            )
 
         except Exception as e:
 
             logger.error(
-                f" Target table creation or update failed with error {e}\n", exc_info=True
+                f" Target table creation or update failed with error {e}\n",
+                exc_info=True,
             )
