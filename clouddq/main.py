@@ -329,7 +329,7 @@ def main(  # noqa: C901
             "If --dbt_profiles_dir is present, all other connection configs "
             "with pattern --gcp_* will be ignored. "
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
-            "deprecated in v0.1.0. Please migrate to use native-flags for "
+            "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
         )
     bigquery_client = None
@@ -455,8 +455,7 @@ def main(  # noqa: C901
             raise RuntimeError("Job failed with unknown status.")
     except Exception as error:
         json_logger.error(error, exc_info=True)
-        logger.fatal(error)
-        raise
+        raise error
     finally:
         if bigquery_client:
             bigquery_client.close_connection()

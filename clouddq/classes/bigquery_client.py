@@ -27,6 +27,7 @@ from google.api_core.exceptions import Forbidden
 from google.api_core.exceptions import NotFound
 from google.auth import impersonated_credentials
 from google.auth.credentials import Credentials
+from google.auth.exceptions import RefreshError
 from google.cloud import bigquery
 from google.oauth2 import id_token
 from google.oauth2 import service_account
@@ -80,10 +81,8 @@ class BigQueryClient:
             source_credentials, _ = google.auth.default(
                 scopes=TARGET_SCOPES, quota_project_id=project_id
             )
-        # Attempt to refresh token if not currently valid
         if not source_credentials.valid:
-            auth_req = google.auth.transport.requests.Request()
-            source_credentials.refresh(auth_req)
+            self.__refresh_credentials(source_credentials)
         # Attempt service account impersonation if requested
         if gcp_impersonation_credentials:
             target_credentials = impersonated_credentials.Credentials(
@@ -109,10 +108,19 @@ class BigQueryClient:
                 "Encountered error while retrieving user from GCP credentials.",
             )
 
+    def __refresh_credentials(self, credentials: Credentials) -> str:
+        # Attempt to refresh token if not currently valid
+        try:
+            auth_req = google.auth.transport.requests.Request()
+            credentials.refresh(auth_req)
+        except RefreshError as err:
+            logger.error("Could not get refreshed credentials for GCP.")
+            raise err
+
     def __resolve_credentials_username(self, credentials: Credentials) -> str:
-        # Attempt to refresh token
-        auth_req = google.auth.transport.requests.Request()
-        credentials.refresh(auth_req)
+        # Attempt to refresh token if not currently valid
+        if not credentials.valid:
+            self.__refresh_credentials(credentials=credentials)
         # Try to get service account credentials user_id
         if credentials.__dict__.get("_service_account_email"):
             user_id = credentials.service_account_email
@@ -163,7 +171,7 @@ class BigQueryClient:
         dataset_info = client.get_dataset(dataset)
         if dataset_info.location != region:
             raise AssertionError(
-                f"GCP region for BogQuery jobs in argument --gcp_region_id: "
+                f"GCP region for BigQuery jobs in argument --gcp_region_id: "
                 f"'{region}' must be the same as dataset '{dataset}' location: "
                 f"'{dataset_info.location}'."
             )
