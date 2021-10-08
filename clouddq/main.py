@@ -137,7 +137,10 @@ coloredlogs.install(logger=logger)
 )
 @click.option(
     "--target_bigquery_summary_table",
-    help="",
+    help="Target Bigquery summary table for data quality output. "
+    "This should be a fully qualified table name in the format"
+    "<project_id>.<dataset_id>.<table_name>",
+    type=str,
 )
 @click.option(
     "--gcp_project_id",
@@ -279,7 +282,7 @@ def main(  # noqa: C901
     metadata: Optional[str],
     dry_run: bool,
     progress_watermark: bool,
-    target_bigquery_summary_table: str,
+    target_bigquery_summary_table: Optional[str],
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
@@ -438,21 +441,30 @@ def main(  # noqa: C901
             dry_run=dry_run,
         )
         if job_status == JobStatus.SUCCESS:
-            logger.info("Job completed successfully.")
 
             if not dry_run and target_bigquery_summary_table:
                 invocation_id = get_dbt_invocation_id(dbt_path)
-                logger.info("Invocation id is %s ", invocation_id)
+                logger.info(
+                    f"dbt invocation id for current execution " f"is {invocation_id}"
+                )
                 partition_date = date.today()
-                logger.info("Partition date is %s", partition_date)
+                logger.info(
+                    f"Partition date is {partition_date} and "
+                    f"is being used for getting the dq summary "
+                    f"results from summary table"
+                )
                 target_table = TargetTable(invocation_id, bigquery_client)
                 target_table.write_to_target_bq_table(
-                    partition_date,
-                    target_bigquery_summary_table,
-                    dq_summary_table_name
+                    partition_date, target_bigquery_summary_table, dq_summary_table_name
                 )
+                logger.info("Job completed successfully.")
             else:
-                raise RuntimeError("Target bigquery summary table is not provided or empty")
+                logger.warning(
+                    "'--target_bigquery_summary_table' was not provided. "
+                    "It is needed to append the dq summary results to the "
+                    "provided target bigquery table. This will become a "
+                    "required argument in v1.0.0"
+                )
         elif job_status == JobStatus.FAILED:
             raise RuntimeError("Job failed.")
         else:

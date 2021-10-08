@@ -30,13 +30,13 @@ def load_target_table_from_bigquery(
     dq_summary_table_name: str,
 ):
 
-    default_job_config = bigquery.QueryJobConfig(use_query_cache=True)
-
     if bigquery_client.is_table_exists(target_bigquery_summary_table):
 
         job_config = bigquery.QueryJobConfig(
             destination=target_bigquery_summary_table,
             write_disposition="WRITE_APPEND",
+            use_query_cache=False,
+            use_legacy_sql=False,
         )
 
         query_string = f"""SELECT * FROM `{dq_summary_table_name}` 
@@ -45,12 +45,12 @@ def load_target_table_from_bigquery(
 
         # Start the query, passing in the extra configuration.
         # Make an API request and wait for the job to complete
-        bigquery_client.execute_query(query_string=query_string, job_config=job_config)
+        bigquery_client.execute_query(
+            query_string=query_string, job_config=job_config
+        ).result()
         logger.info(
-            "Table already exists \n "
-            "and query results loaded to the table {}".format(
-                target_bigquery_summary_table
-            )
+            f"Table {target_bigquery_summary_table} already exists "
+            f"and query results are appended to the table."
         )
 
     else:
@@ -63,13 +63,11 @@ def load_target_table_from_bigquery(
         SELECT * from `{dq_summary_table_name}` 
         WHERE invocation_id='{invocation_id}' 
         AND DATE(execution_ts)='{partition_date}'"""
-        bigquery_client.execute_query(
-            query_string=query_string, job_config=default_job_config
-        )
+
+        bigquery_client.execute_query(query_string=query_string)
         logger.info(
-            "Table created and query results loaded to the table {}".format(
-                target_bigquery_summary_table
-            )
+            f"Table created and dq summary results loaded to the "
+            f"table {target_bigquery_summary_table}"
         )
 
 
@@ -98,9 +96,6 @@ class TargetTable:
                 dq_summary_table_name=dq_summary_table_name,
             )
 
-        except Exception as e:
+        except Exception as error:
 
-            logger.error(
-                f" Target table creation or update failed with error {e}\n",
-                exc_info=True,
-            )
+            raise error

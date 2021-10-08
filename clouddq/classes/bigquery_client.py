@@ -211,7 +211,9 @@ class BigQueryClient:
         except NotFound:
             return False
 
-    def execute_query(self, query_string: str, job_config) -> bigquery.job.QueryJob:
+    def execute_query(
+        self, query_string: str, job_config: bigquery.job.QueryJobConfig = None
+    ) -> bigquery.job.QueryJob:
         """
         The method is used to execute the sql query
         Parameters:
@@ -219,11 +221,19 @@ class BigQueryClient:
         Returns:
             result of the sql execution is returned
         """
-        try:
-            client = self.get_connection()
-            logger.debug("Query string is \n %s", query_string)
-            query_job = client.query(query_string, job_config=job_config).result()
-            return query_job
 
-        except Exception as e:
-            logger.error(f"Query Execution failed with error {e}\n", exc_info=True)
+        client = self.get_connection()
+        logger.debug(f"Query string is {query_string}")
+        default_job_config = bigquery.QueryJobConfig(
+            use_query_cache=False, use_legacy_sql=False
+        )
+        job_id_prefix = "clouddq-"
+
+        if not job_config:
+            job_config = default_job_config
+
+        query_job = client.query(
+            query_string, job_config=job_config, job_id_prefix=job_id_prefix
+        )
+
+        return query_job
