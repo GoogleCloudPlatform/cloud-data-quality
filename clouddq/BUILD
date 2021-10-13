@@ -91,6 +91,14 @@ py_library(
     ],
 )
 
+py_library(
+    name = "dataplex_integration",
+    srcs = glob(["integration/*.py"]),
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+    ],
+)
+
 compile_pip_requirements(
     name = "requirements",
 )
