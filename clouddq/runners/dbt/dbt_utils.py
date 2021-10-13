@@ -154,7 +154,7 @@ def get_bigquery_dq_summary_table_name(
 def get_dbt_invocation_id(dbt_path: Path) -> str:
 
     try:
-        logger.debug("dbt path is %s", dbt_path)
+        logger.debug(f"Attempting to get dbt invocation_id from path {dbt_path}")
         # JSON file
         with open(dbt_path.joinpath("target", "manifest.json")) as f:
             # Reading from file
@@ -162,7 +162,7 @@ def get_dbt_invocation_id(dbt_path: Path) -> str:
             return data["metadata"]["invocation_id"]
     except (FileNotFoundError, KeyError) as e:
         logger.error(
-            f"Invocation Id is not found, dbt hasn't run yet or "
+            f"dbt invocation_id is not found, dbt hasn't run yet or "
             f"the execution has failed {e}\n",
             exc_info=True,
         )
