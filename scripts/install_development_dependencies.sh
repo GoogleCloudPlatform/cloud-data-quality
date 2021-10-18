@@ -26,9 +26,6 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
     exit 1
 fi
 
-ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
-DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
-
 # Install sandboxfs
 apt-get update
 apt install -y libfuse2
@@ -37,6 +34,9 @@ curl -Lo /tmp/sandboxfs-0.2.0.tgz https://github.com/bazelbuild/sandboxfs/releas
 tar xzv -C /usr/local -f /tmp/sandboxfs-0.2.0.tgz
 rm /tmp/sandboxfs-0.2.0.tgz
 sandboxfs --help
+
+ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 
 # Install Python dependencies
 apt-get update;  apt-get install -y make build-essential libssl-dev zlib1g-dev \
