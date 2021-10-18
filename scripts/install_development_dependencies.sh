@@ -26,6 +26,9 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
     exit 1
 fi
 
+ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+
 # Install sandboxfs
 apt-get update
 apt install -y libfuse2
