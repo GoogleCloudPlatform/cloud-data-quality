@@ -27,6 +27,7 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
 fi
 
 # Install sandboxfs
+apt-get update
 apt install -y libfuse2
 curl -Lo /tmp/sandboxfs-0.2.0.tgz https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
 tar xzv -C /usr/local -f /tmp/sandboxfs-0.2.0.tgz
