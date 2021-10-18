@@ -49,3 +49,7 @@ rm -rf /usr/local/go
 tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 go version
+
+#install make
+
+apt-get install make
