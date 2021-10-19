@@ -30,7 +30,7 @@ export PATH=$PATH:/usr/local/go/bin
 go version
 
 #installing git
-apt-get install git
+apt-get -y install git
 
 GO111MODULE=off go get github.com/bazelbuild/bazelisk
 GO111MODULE=off go build -o bin/bazelisk github.com/bazelbuild/bazelisk
