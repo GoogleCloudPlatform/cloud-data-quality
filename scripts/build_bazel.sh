@@ -17,9 +17,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+#ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
-source "$ROOT/scripts/common.sh"
+#source "$ROOT/scripts/common.sh"
+source "scripts/common.sh"
 
 check_go
 
