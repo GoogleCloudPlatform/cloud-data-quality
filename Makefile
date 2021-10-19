@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Make will use bash instead of sh
-SHELL := /usr/bin/env bash
+# SHELL := /usr/bin/env bash
 
 bin/bazelisk: ## install bazel
 	@source scripts/build_bazel.sh
