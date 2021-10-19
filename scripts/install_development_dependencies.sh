@@ -51,5 +51,4 @@ export PATH=$PATH:/usr/local/go/bin
 go version
 
 #install make
-
-apt-get install make
+apt-get install --reinstall build-essential
