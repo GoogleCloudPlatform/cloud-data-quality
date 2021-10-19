@@ -21,6 +21,9 @@ set -o pipefail
 # shellcheck source=/dev/null
 source "scripts/common.sh"
 
+echo "bazel current directory"
+pwd
+
 check_go
 
 GO111MODULE=off go get github.com/bazelbuild/bazelisk

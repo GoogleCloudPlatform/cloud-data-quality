@@ -21,6 +21,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "$ROOT/scripts/common.sh"
 
+echo $ROOT
+echo "current directory"
+pwd
+
 if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
     err "This script is only tested to work on Debian/Ubuntu. Developing CloudDQ on OS type '${OSTYPE}' is not currently supported. Exiting..."
     exit 1
