@@ -29,5 +29,8 @@ tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 go version
 
+#installing git
+apt-get install git
+
 GO111MODULE=off go get github.com/bazelbuild/bazelisk
 GO111MODULE=off go build -o bin/bazelisk github.com/bazelbuild/bazelisk
