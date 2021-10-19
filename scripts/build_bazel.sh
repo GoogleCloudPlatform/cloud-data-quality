@@ -19,7 +19,7 @@ set -o pipefail
 
 #ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
-source "/scripts/common.sh"
+source "scripts/common.sh"
 
 check_go
 
