@@ -56,9 +56,9 @@ class TestCliIntegration:
 
     @pytest.fixture
     def gcp_sa_key(self):
-        sa_key_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
+        sa_key_path = os.environ.get('GOOGLE_SDK_CREDENTIALS', None)
         if not sa_key_path:
-            logger.fatal("Required test environment variable GOOGLE_APPLICATION_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing.")
+            logger.fatal("Required test environment variable GOOGLE_SDK_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing.")
         return sa_key_path
 
     @pytest.fixture

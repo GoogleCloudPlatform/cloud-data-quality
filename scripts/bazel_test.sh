@@ -23,25 +23,18 @@ source "$ROOT/scripts/common.sh"
 
 
 # Check that all required env var are set
+# if running locally you'd have to ensure the following are correctly set for your project/auth details
 require_env_var GOOGLE_CLOUD_PROJECT "Set this to the project_id used for integration testing."
 require_env_var CLOUDDQ_BIGQUERY_DATASET "Set this to the BigQuery dataset used for integration testing."
 require_env_var CLOUDDQ_BIGQUERY_REGION "Set this to the BigQuery region used for integration testing."
-require_env_var GOOGLE_APPLICATION_CREDENTIALS "Set this to the exported service account key path used for integration testing."
+require_env_var GOOGLE_SDK_CREDENTIALS "Set this to the fully-qualified exported service account key path used for integration testing."
 require_env_var IMPERSONATION_SERVICE_ACCOUNT "Set this to the service account name for impersonation used for integration testing."
-# set variables
-# if running locally you'd have to ensure the following are correctly set for your project/auth details
-GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}"
-CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" 
-CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}"
-GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"
-IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}"
 
 function bazel_test() {
-  confirm_gcloud_login || (( err "Failed to retrieve gcloud application-default credentials." && exit 1 ))
   set -x
   bin/bazelisk test \
     --test_env GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
-    --test_env GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS}" \
+    --test_env GOOGLE_SDK_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS}" \
     --test_env CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" \
     --test_env CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" \
     --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}" \
