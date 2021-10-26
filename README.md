@@ -124,8 +124,8 @@ entities:
       TEST:
         environment: test
         override:
-          database_name: <your_project_id>
-          instance_name: <your_project_id>
+          dataset_name: <your_project_id>
+          project_name: <your_project_id>
     columns:
       ROW_ID:
         name: row_id
