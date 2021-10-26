@@ -103,7 +103,7 @@ class CloudDqDataplex:
 
         default_body = {
             "spark": {
-                "python_script": f"gs://dataplex-clouddq-api-integration/"
+                "python_script_file": f"gs://dataplex-clouddq-api-integration/"
                 f"clouddq_pyspark_driver.py",
                 "archive_uris": data_quality_spec_file_paths,
                 "file_uris": [
