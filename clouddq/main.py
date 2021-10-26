@@ -449,29 +449,30 @@ def main(  # noqa: C901
         )
         if job_status == JobStatus.SUCCESS:
 
-            if not dry_run and target_bigquery_summary_table:
-                invocation_id = get_dbt_invocation_id(dbt_path)
-                logger.info(
-                    f"dbt invocation id for current execution " f"is {invocation_id}"
-                )
-                partition_date = date.today()
-                logger.info(
-                    f"Partition date is {partition_date} and "
-                    f"is being used for getting the dq summary "
-                    f"results from summary table"
-                )
-                target_table = TargetTable(invocation_id, bigquery_client)
-                target_table.write_to_target_bq_table(
-                    partition_date, target_bigquery_summary_table, dq_summary_table_name
-                )
-                logger.info("Job completed successfully.")
-            else:
-                logger.warning(
-                    "'--target_bigquery_summary_table' was not provided. "
-                    "It is needed to append the dq summary results to the "
-                    "provided target bigquery table. This will become a "
-                    "required argument in v1.0.0"
-                )
+            if not dry_run:
+                if target_bigquery_summary_table:
+                    invocation_id = get_dbt_invocation_id(dbt_path)
+                    logger.info(
+                        f"dbt invocation id for current execution " f"is {invocation_id}"
+                    )
+                    partition_date = date.today()
+                    logger.info(
+                        f"Partition date is {partition_date} and "
+                        f"is being used for getting the dq summary "
+                        f"results from summary table"
+                    )
+                    target_table = TargetTable(invocation_id, bigquery_client)
+                    target_table.write_to_target_bq_table(
+                        partition_date, target_bigquery_summary_table, dq_summary_table_name
+                    )
+                    logger.info("Job completed successfully.")
+                else:
+                    logger.warning(
+                        "'--target_bigquery_summary_table' was not provided. "
+                        "It is needed to append the dq summary results to the "
+                        "provided target bigquery table. This will become a "
+                        "required argument in v1.0.0"
+                    )
         elif job_status == JobStatus.FAILED:
             raise RuntimeError("Job failed.")
         else:
