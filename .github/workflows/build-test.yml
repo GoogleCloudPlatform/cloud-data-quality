@@ -102,6 +102,7 @@ jobs:
           export CLOUDDQ_BIGQUERY_DATASET="dq_test"
           export CLOUDDQ_BIGQUERY_REGION="EU"
           export GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+          export GOOGLE_SDK_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
           export IMPERSONATION_SERVICE_ACCOUNT=${{ secrets.IMPERSONATION_SERVICE_ACCOUNT }}
           gcloud config set project "${GOOGLE_CLOUD_PROJECT}"
           make test
