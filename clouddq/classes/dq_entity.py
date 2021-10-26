@@ -31,6 +31,11 @@ ENTITY_CUSTOM_CONFIG_MAPPING = {
         "database_name": "{dataset_name}",
         "instance_name": "{project_name}",
     },
+    "DATAPLEX": {
+        "table_name": "{table_name}",
+        "database_name": "{lake_name}_{zone_name}",
+        "instance_name": "{project_name}",
+    },
 }
 
 logger = logging.getLogger(__name__)
