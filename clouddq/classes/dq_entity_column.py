@@ -111,6 +111,7 @@ class DatabaseType(str, Enum):
     """ """
 
     BIGQUERY = "BIGQUERY"
+    DATAPLEX = "DATAPLEX"
 
     def get_column_type(
         self: DqEntityColumn, column_type: DatabaseColumnType | str
@@ -118,6 +119,16 @@ class DatabaseType(str, Enum):
         if type(column_type) != DatabaseColumnType:
             column_type = DatabaseColumnType(column_type)
         if self == DatabaseType.BIGQUERY:
+            database_column_type = BIGQUERY_COLUMN_TYPES_MAPPING.get(column_type, None)
+            assert_not_none_or_empty(
+                database_column_type,
+                f"Database: {self} does not have type {column_type} "
+                f"defined in column type mapping."
+                f"Current mapping: {BIGQUERY_COLUMN_TYPES_MAPPING}",
+            )
+            return database_column_type
+        if self == DatabaseType.DATAPLEX:
+            # todo: implement dataplex specific data types
             database_column_type = BIGQUERY_COLUMN_TYPES_MAPPING.get(column_type, None)
             assert_not_none_or_empty(
                 database_column_type,
