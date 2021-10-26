@@ -21,16 +21,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "$ROOT/scripts/common.sh"
 
-#check_go
-# Install golang for building Bazelisk
-curl -Lo  /tmp/go1.16.5.linux-amd64.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
-rm -rf /usr/local/go
-tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
-go version
-
-#installing git
-apt-get -y install git
+check_go
 
 GO111MODULE=off go get github.com/bazelbuild/bazelisk
 GO111MODULE=off go build -o bin/bazelisk github.com/bazelbuild/bazelisk

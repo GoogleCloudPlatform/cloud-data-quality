@@ -288,15 +288,20 @@ def main(  # noqa: C901
     skip_sql_validation: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
+
     RULE_BINDING_IDS:
     comma-separated Rule Binding ID(s) containing the
     configurations for the run.
+
     Set RULE_BINDING_IDS to 'ALL' to run all rule_bindings
     in RULE_BINDING_CONFIG_PATH.
+
     RULE_BINDING_CONFIG_PATH:
     Path to YAML configs directory containing `rule_bindings`,
     `entities`, `rules`, and `row_filters` YAML config files.
+
     Usage examples:
+
     \b
     > python clouddq_executable.zip \\
       T2_DQ_1_EMAIL \\
@@ -305,6 +310,7 @@ def main(  # noqa: C901
       --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
       --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
       --metadata='{"key":"value"}' \\
+
     \b
     > python clouddq_executable.zip \\
       ALL \\
@@ -314,6 +320,7 @@ def main(  # noqa: C901
       --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
       --dry_run  \\
       --debug
+
     """
     if debug:
         logger.setLevel("DEBUG")
