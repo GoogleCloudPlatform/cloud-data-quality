@@ -144,7 +144,7 @@ class BigQueryClient:
             _project_id = credentials.project_id
         else:
             _project_id = None
-            logger.warn(
+            logger.warning(
                 "Could not retrieve project_id from GCP credentials.", exc_info=True
             )
         return _project_id

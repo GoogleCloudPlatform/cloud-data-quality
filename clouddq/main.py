@@ -317,14 +317,14 @@ def main(  # noqa: C901
             handler.setLevel(logging.DEBUG)
             logger.debug("Debug logging enabled")
     logger.info("Starting CloudDQ run with configs:")
-    json_logger.warn({"run_configs": locals()})
+    json_logger.warning({"run_configs": locals()})
     if dbt_path:
-        logger.warn(
+        logger.warning(
             "Passing in dbt models directly via --dbt_path will be "
             "deprecated in v1.0.0"
         )
     if dbt_profiles_dir:
-        logger.warn(
+        logger.warning(
             "If --dbt_profiles_dir is present, all other connection configs "
             "with pattern --gcp_* will be ignored. "
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
