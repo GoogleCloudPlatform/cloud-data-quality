@@ -122,27 +122,32 @@ function get_application_client_account() {
   check_gcloud
   check_python3
   if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
-    echo "Authenticating to GCP using GOOGLE_APPLICATION_CREDENTIALS at path $GOOGLE_APPLICATION_CREDENTIALS."
+    err "Authenticating to GCP using GOOGLE_APPLICATION_CREDENTIALS at path $GOOGLE_APPLICATION_CREDENTIALS."
     export GOOGLE_SDK_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS"
     if [[ $(cat "$GOOGLE_APPLICATION_CREDENTIALS") == *"client_email"* ]]; then
       local GCLOUD_SDK_ACCOUNT=$(python3 -c "import sys, json; print(json.load(sys.stdin)['client_email'])" <"$GOOGLE_APPLICATION_CREDENTIALS")
-      echo "Environment variable GOOGLE_APPLICATION_CREDENTIALS currently set to a json credential for account: $GCLOUD_SDK_ACCOUNT"
+      err "Environment variable GOOGLE_APPLICATION_CREDENTIALS currently set to a json credential for account: $GCLOUD_SDK_ACCOUNT"
     else
       err "Invalid GOOGLE_APPLICATION_CREDENTIALS. Exiting..."
-      return 1
+      exit 1
     fi
   elif [[ -f ~/.config/gcloud/application_default_credentials.json ]]; then
-    local access_token=$(gcloud auth application-default print-access-token) || err "Failed to get authentication token with 'gcloud auth application-default print-access-token'."
+    err "Using GCP credentials from environment variable GOOGLE_APPLICATION_CREDENTIALS at path $GOOGLE_APPLICATION_CREDENTIALS."
+    local access_token=$(gcloud auth application-default print-access-token)
+    if [ -z "${!access_token:-}" ]; then
+      err "Failed to get authentication token with 'gcloud auth application-default print-access-token'."
+      exit 1
+    fi
     local access_details=$(curl -s https://www.googleapis.com/oauth2/v3/tokeninfo?access_token="$access_token")
     if [[ "$access_details" == *"email"* ]]; then
       local GCLOUD_SDK_ACCOUNT=$(echo "$access_details" | python3 -c "import sys, json; print(json.load(sys.stdin)['email'])")
-      echo "User account in use for 'gcloud auth application-default print-access-token': ${GCLOUD_SDK_ACCOUNT}"
+      err "User account in use for 'gcloud auth application-default print-access-token': ${GCLOUD_SDK_ACCOUNT}"
       export GOOGLE_SDK_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
       echo
-      echo "Setting environment variable GOOGLE_SDK_CREDENTIALS to '~/.config/gcloud/application_default_credentials.json'."
+      err "Setting environment variable GOOGLE_SDK_CREDENTIALS to '~/.config/gcloud/application_default_credentials.json'."
     else
       err "Failed to retrieve active application_default credentials for the BigQuery client SDK."
-      return 1
+      exit 1
     fi
   fi
 }
@@ -150,11 +155,11 @@ function get_application_client_account() {
 # Confirm the user is already logged into gcloud, if they aren't
 # attempt to login.
 function confirm_gcloud_login() {
-  echo "Checking gcloud login state..."
-  echo
+  err "Checking gcloud login state..."
+  err
   GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
   export GOOGLE_CLOUD_PROJECT
-  echo "Using GCP project: $GOOGLE_CLOUD_PROJECT"
+  err "Using GCP project: $GOOGLE_CLOUD_PROJECT"
   gcloud auth application-default print-access-token 1>/dev/null || handle_no_token_error
   get_application_client_account
   echo
