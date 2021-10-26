@@ -27,3 +27,6 @@ rules:
     params:
       custom_sql_expr: |-
         LENGTH( $column ) <= 30
+
+  NOT_BLANK:
+    rule_type: NOT_BLANK

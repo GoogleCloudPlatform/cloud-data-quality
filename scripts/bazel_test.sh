@@ -21,33 +21,24 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "$ROOT/scripts/common.sh"
 
+
+# Check that all required env var are set
+# if running locally you'd have to ensure the following are correctly set for your project/auth details
+require_env_var GOOGLE_CLOUD_PROJECT "Set this to the project_id used for integration testing."
+require_env_var CLOUDDQ_BIGQUERY_DATASET "Set this to the BigQuery dataset used for integration testing."
+require_env_var CLOUDDQ_BIGQUERY_REGION "Set this to the BigQuery region used for integration testing."
+require_env_var GOOGLE_SDK_CREDENTIALS "Set this to the fully-qualified exported service account key path used for integration testing."
+require_env_var IMPERSONATION_SERVICE_ACCOUNT "Set this to the service account name for impersonation used for integration testing."
+
 function bazel_test() {
-  confirm_gcloud_login || (( err "Failed to retrieve gcloud application-default credentials." && exit 1 ))
-  if [[ -z "${GOOGLE_CLOUD_PROJECT:-}" ]]; then
-    err "Environment variable GOOGLE_CLOUD_PROJECT not found."
-    local GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
-    if [[ -z "${GOOGLE_CLOUD_PROJECT}" ]]; then
-      err "Unable to find gcloud project config."
-      exit 1
-    fi
-    err "Temporarily setting GOOGLE_CLOUD_PROJECT to: ${GOOGLE_CLOUD_PROJECT}"
-  fi
-  if [[ -z "${GOOGLE_SDK_CREDENTIALS:-}" ]]; then
-    err "Environment variable GOOGLE_SDK_CREDENTIALS not found."
-    if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
-       local GOOGLE_SDK_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"
-    elif [[ -f ~/.config/gcloud/application_default_credentials.json ]]; then
-       local GOOGLE_SDK_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
-    else
-      err "Unable to find gcloud application-default credentials."
-      exit 1
-    fi
-    err "Temporarily setting GOOGLE_SDK_CREDENTIALS to: ${GOOGLE_SDK_CREDENTIALS}"
-  fi
   set -x
   bin/bazelisk test \
     --test_env GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
-    --test_env GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS}" \
+    --test_env GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}" \
+    --test_env GOOGLE_SDK_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS}" \
+    --test_env CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" \
+    --test_env CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" \
+    --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}" \
     //tests"${1:-/...}"
   set +x
 }

@@ -11,22 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-rules:
-  NOT_NULL_SIMPLE:
-    rule_type: NOT_NULL
-
-  REGEX_VALID_EMAIL:
-    rule_type: REGEX
-    params:
-      pattern: |-
-        ^[^@]+[@]{1}[^@]+$
-
-  CUSTOM_SQL_LENGTH_LE_30:
-    rule_type: CUSTOM_SQL_EXPR
-    params:
-      custom_sql_expr: |-
-        LENGTH( $column ) <= 30
-
-  NOT_BLANK:
-    rule_type: NOT_BLANK

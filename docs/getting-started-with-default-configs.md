@@ -9,12 +9,13 @@ Note the following assumes you have already met the project dependencies outline
 ### 1. Project Set-Up
 
 First clone the project:
-```
-git clone https://github.com/GoogleCloudPlatform/cloud-data-quality.git
+```bash
+export CLOUDDQ_RELEASE_VERSION="0.2.1"
+git clone -b 'v0.2.1'  https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 cd cloud-data-quality
 ```
 
-Ensure you have created a [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) created for running the Data Quality Validation jobs. 
+Ensure you have created a [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) created for running the Data Quality Validation jobs.
 
 We then set the project ID as an enviroment variable and as the main project used by `gcloud`:
 ```bash
@@ -71,31 +72,24 @@ Install `CloudDQ` in a virtualenv using the instructions in [Installing from sou
 python3 clouddq --help
 ```
 
-Alternatively, you can build a standalone executable Python zip by running:
+Alternatively, you can download a pre-built zip artifact for `CloudDQ` by running:
 ```
-make build
+wget -O clouddq_executable_v0.2.1.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v0.2.1/clouddq_executable_v0.2.1_linux-amd64.zip
 ```
 
-This will take about 5 minutes to build the first time as `bazel` is fetching the Python interpreter as well as all of the project dependencies to be included in the Python zip executable.
+Currently, we only provide the self-contained executable zip artifact for running on debian/ubuntu linux systems. The artifact will not work on MacOS/Windows.
 
 Once completed you can use the CLI by passing the zip executable into any Python interpreter:
 ```
-python bazel-bin/clouddq/clouddq_patched.zip --help
+python3 clouddq_executable_v0.2.1.zip --help
 ```
-
-More details about this step can be found at the main [README.md](../README.md#build-a-self-contained-python-executable-with-bazel)
 
 ### 5. Create test data
 
-Create the corresponding test table `contact_details` mentioned in the entities config `configs/entities/test-data.yml` by running:
-```
-dbt seed --profiles-dir=.
-```
-
-Alternatively, you can use `bq load` instead of `dbt seed`:
+Create the corresponding test table `contact_details` mentioned in the entities config `configs/entities/test-data.yml` by using `bq load` :
 ```bash
 bq mk --location=${CLOUDDQ_BIGQUERY_REGION} ${CLOUDDQ_BIGQUERY_DATASET}
-bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details dbt/data/contact_details.csv
+bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details tests/data/contact_details.csv
 ```
 
 Ensure you have sufficient IAM privileges to create BigQuery datasets and tables in your project.
@@ -105,6 +99,18 @@ Ensure you have sufficient IAM privileges to create BigQuery datasets and tables
 Run the following command to execute the rule_bindings `T2_DQ_1_EMAIL` in `configs/rule_bindings/team-2-rule-bindings.yml`:
 ```
 python3 clouddq \
+    T2_DQ_1_EMAIL \
+    configs \
+    --metadata='{"test":"test"}' \
+    --dbt_profiles_dir=dbt \
+    --dbt_path=dbt \
+    --environment_target=dev
+```
+
+Or if you are using the pre-built zip file (only works on linux systems such as Debian/Ubuntu):
+
+```
+python3 clouddq_executable_v0.2.1.zip \
     T2_DQ_1_EMAIL \
     configs \
     --metadata='{"test":"test"}' \

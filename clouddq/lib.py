@@ -15,54 +15,21 @@
 """todo: add lib docstring."""
 import itertools
 import json
-from pathlib import Path
-from pprint import pprint
+import logging
 import typing
 
-from jinja2 import ChainableUndefined  # type: ignore
-from jinja2 import DebugUndefined
-from jinja2 import Environment
-from jinja2 import FileSystemLoader
-from jinja2 import Template
-from jinja2 import select_autoescape
-import yaml
+from pathlib import Path
+from pprint import pformat
 
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.utils import assert_not_none_or_empty
-from clouddq.utils import extract_dbt_env_var
-from clouddq.utils import get_source_file_path
+from clouddq.utils import load_jinja_template
+from clouddq.utils import load_yaml
 from clouddq.utils import sha256_digest
 
 
-def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
-    with file_path.open() as f:
-        yaml_configs = yaml.safe_load(f)
-    if not yaml_configs:
-        return dict()
-    return yaml_configs.get(key, dict())
-
-
-def get_bigquery_dq_summary_table_name(
-    dbt_profile_dir: Path, environment_target: str, dbt_project_path: Path
-) -> str:
-    # Get bigquery project and dataset for dq_summary table names
-    if not dbt_project_path.is_file() and dbt_project_path.name == "dbt_project.yml":
-        raise ValueError(
-            "Not able to find 'dbt_project.yml' config file at "
-            "input path {dbt_project_path}."
-        )
-    dbt_profiles_key = load_yaml(dbt_project_path, "profile")
-    dbt_profiles_config = load_yaml(dbt_profile_dir / "profiles.yml", dbt_profiles_key)
-    dbt_profile = dbt_profiles_config["outputs"][environment_target]
-    dbt_project = dbt_profile["project"]
-    if "{{" in dbt_project:
-        dbt_project = extract_dbt_env_var(dbt_project)
-    dbt_dataset = dbt_profile["dataset"]
-    if "{{" in dbt_dataset:
-        dbt_dataset = extract_dbt_env_var(dbt_dataset)
-    dq_summary_table_name = f"{dbt_project}.{dbt_dataset}.dq_summary"
-    return dq_summary_table_name
+logger = logging.getLogger(__name__)
 
 
 def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
@@ -107,24 +74,6 @@ def load_row_filters_config(configs_path: Path) -> typing.Dict:
     return load_configs(configs_path, DqConfigType.ROW_FILTERS)
 
 
-class DebugChainableUndefined(ChainableUndefined, DebugUndefined):
-    pass
-
-
-def load_template(template: str) -> Template:
-    try:
-        environment = load_template.environment
-    except AttributeError:
-        load_template.environment = environment = Environment(
-            loader=FileSystemLoader(
-                get_source_file_path().joinpath("templates", "dbt", "macros").absolute()
-            ),
-            autoescape=select_autoescape(),
-            undefined=DebugChainableUndefined,
-        )
-    return environment.get_template(template)
-
-
 def create_rule_binding_view_model(
     rule_binding_id: str,
     rule_binding_configs: typing.Dict,
@@ -138,7 +87,9 @@ def create_rule_binding_view_model(
     debug: bool = False,
     progress_watermark: bool = True,
 ) -> str:
-    template = load_template("run_dq_main.sql")
+    template = load_jinja_template(
+        template_path=Path("dbt", "macros", "run_dq_main.sql")
+    )
     configs = prepare_configs_from_rule_binding_id(
         rule_binding_id=rule_binding_id,
         rule_binding_configs=rule_binding_configs,
@@ -154,7 +105,7 @@ def create_rule_binding_view_model(
     sql_string = template.render(configs)
     if debug:
         configs.update({"generated_sql_string": sql_string})
-        pprint(configs)
+        logger.debug(pformat(configs))
     return sql_string
 
 

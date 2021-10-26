@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
-
-import abc
-from abc import ABC
-
-
-class DryRunClient(ABC):
-    @abc.abstractmethod
-    def check_query(self, query_string: str) -> None:
-        raise NotImplementedError()
+export GOOGLE_CLOUD_PROJECT="<your-project-id>"
+export CLOUDDQ_BIGQUERY_DATASET="<your-bigquery-dataset-id>"
+export CLOUDDQ_BIGQUERY_REGION="<gcp-region-for-bigquery-jobs>"
+export GOOGLE_SDK_CREDENTIALS="<path-to-exported-service-account-key>"
+export IMPERSONATION_SERVICE_ACCOUNT="<service-account-name-for-impersonation>"

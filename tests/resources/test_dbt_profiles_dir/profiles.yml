@@ -18,7 +18,7 @@ default:
     dev:
       type: bigquery
       method: oauth
-      project: "{{ env_var('PROJECT_ID', '<your_gcp_project_id>') }}"
+      project: "{{ env_var('GOOGLE_CLOUD_PROJECT', '<your_gcp_project_id>') }}"
       dataset: "{{ env_var('CLOUDDQ_BIGQUERY_DATASET', 'clouddq') }}"
       threads: 1
       timeout_seconds: 90

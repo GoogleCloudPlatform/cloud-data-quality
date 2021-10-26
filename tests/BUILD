@@ -45,13 +45,17 @@ filegroup(
 DEPS = [
     "//clouddq:classes",
     "//clouddq:clouddq_lib",
+    "//clouddq:dbt_runners",
     requirement("py"),
     requirement("pytest"),
     requirement("click"),
+    requirement("coloredlogs"),
+    requirement("gitpython"),
 ]
 
 SRCS = glob([
-    "test_*.py",
+    "unit/test_*.py",
+    "integration/test_*.py",
 ]) + ["conftest.py"]
 
 DATA = [
@@ -82,7 +86,7 @@ py_test(
 )
 
 py_test(
-    name = "test_cli",
+    name = "test_cli_unit",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,
@@ -90,7 +94,7 @@ py_test(
 )
 
 py_test(
-    name = "test_dbt_bigquery",
+    name = "test_cli_integration",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,
@@ -98,7 +102,7 @@ py_test(
 )
 
 py_test(
-    name = "test_bigquery_dry_run_client",
+    name = "test_bigquery_client",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,
