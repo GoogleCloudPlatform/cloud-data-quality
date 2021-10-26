@@ -453,7 +453,8 @@ def main(  # noqa: C901
                 if target_bigquery_summary_table:
                     invocation_id = get_dbt_invocation_id(dbt_path)
                     logger.info(
-                        f"dbt invocation id for current execution " f"is {invocation_id}"
+                        f"dbt invocation id for current execution "
+                        f"is {invocation_id}"
                     )
                     partition_date = date.today()
                     logger.info(
@@ -463,7 +464,9 @@ def main(  # noqa: C901
                     )
                     target_table = TargetTable(invocation_id, bigquery_client)
                     target_table.write_to_target_bq_table(
-                        partition_date, target_bigquery_summary_table, dq_summary_table_name
+                        partition_date,
+                        target_bigquery_summary_table,
+                        dq_summary_table_name,
                     )
                     logger.info("Job completed successfully.")
                 else:

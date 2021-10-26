@@ -39,8 +39,8 @@ def load_target_table_from_bigquery(
             use_legacy_sql=False,
         )
 
-        query_string = f"""SELECT * FROM `{dq_summary_table_name}` 
-         WHERE invocation_id='{invocation_id}' 
+        query_string = f"""SELECT * FROM `{dq_summary_table_name}`
+         WHERE invocation_id='{invocation_id}'
          and DATE(execution_ts)='{partition_date}'"""
 
         # Start the query, passing in the extra configuration.
@@ -55,15 +55,14 @@ def load_target_table_from_bigquery(
 
     else:
 
-        query_string = f"""CREATE TABLE 
-        `{target_bigquery_summary_table}` 
-        PARTITION BY TIMESTAMP_TRUNC(execution_ts, DAY) 
-        CLUSTER BY table_id, column_id, rule_binding_id, rule_id 
-        AS 
-        SELECT * from `{dq_summary_table_name}` 
-        WHERE invocation_id='{invocation_id}' 
+        query_string = f"""CREATE TABLE
+        `{target_bigquery_summary_table}`
+        PARTITION BY TIMESTAMP_TRUNC(execution_ts, DAY)
+        CLUSTER BY table_id, column_id, rule_binding_id, rule_id
+        AS
+        SELECT * from `{dq_summary_table_name}`
+        WHERE invocation_id='{invocation_id}'
         AND DATE(execution_ts)='{partition_date}'"""
-
         bigquery_client.execute_query(query_string=query_string)
         logger.info(
             f"Table created and dq summary results loaded to the "
