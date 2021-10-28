@@ -9,3 +9,4 @@ black==21.5b0
 pyupgrade==2.10.1
 isort==5.7.0
 flakehell==0.9.0
+flake8==3.9.2

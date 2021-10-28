@@ -136,6 +136,10 @@ To see the result DQ validation outcomes in the BigQuery table `dq_summary`, run
 echo "select * from \`${PROJECT_ID}\`.${CLOUDDQ_BIGQUERY_DATASET}.dq_summary" | bq query --location=${CLOUDDQ_BIGQUERY_REGION} --nouse_legacy_sql --format=json
 ```
 
+### 8. Clean up
+
+To avoid incurring unnecessary costs, ensure you delete all resources created in this guide.
+
 ## Improvements / Feedbacks
 
 If you encounter an issue with any of the above steps or have any feedback, please feel free to create a github issue or contact clouddq@google.com.

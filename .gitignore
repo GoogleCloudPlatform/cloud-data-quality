@@ -18,3 +18,4 @@ Pipfile*
 *.lock
 .bazelrc
 env/
+*.log

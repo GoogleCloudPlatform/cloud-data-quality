@@ -19,6 +19,7 @@ import logging.config
 import sys
 import traceback
 
+from datetime import date
 from datetime import datetime
 from pathlib import Path
 from pprint import pformat
@@ -33,9 +34,11 @@ from git import Repo
 
 from clouddq import lib
 from clouddq.classes.bigquery_client import BigQueryClient
+from clouddq.classes.dq_target_table_utils import TargetTable
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
+from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
 
 
@@ -131,6 +134,13 @@ coloredlogs.install(logger=logger)
 @click.argument(
     "rule_binding_config_path",
     type=click.Path(exists=True),
+)
+@click.option(
+    "--target_bigquery_summary_table",
+    help="Target Bigquery summary table for data quality output. "
+    "This should be a fully qualified table name in the format"
+    "<project_id>.<dataset_id>.<table_name>",
+    type=str,
 )
 @click.option(
     "--gcp_project_id",
@@ -272,6 +282,7 @@ def main(  # noqa: C901
     metadata: Optional[str],
     dry_run: bool,
     progress_watermark: bool,
+    target_bigquery_summary_table: Optional[str],
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
@@ -317,14 +328,14 @@ def main(  # noqa: C901
             handler.setLevel(logging.DEBUG)
             logger.debug("Debug logging enabled")
     logger.info("Starting CloudDQ run with configs:")
-    json_logger.warn({"run_configs": locals()})
+    json_logger.warning({"run_configs": locals()})
     if dbt_path:
-        logger.warn(
+        logger.warning(
             "Passing in dbt models directly via --dbt_path will be "
             "deprecated in v1.0.0"
         )
     if dbt_profiles_dir:
-        logger.warn(
+        logger.warning(
             "If --dbt_profiles_dir is present, all other connection configs "
             "with pattern --gcp_* will be ignored. "
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
@@ -437,7 +448,34 @@ def main(  # noqa: C901
             dry_run=dry_run,
         )
         if job_status == JobStatus.SUCCESS:
-            logger.info("Job completed successfully.")
+
+            if not dry_run:
+                if target_bigquery_summary_table:
+                    invocation_id = get_dbt_invocation_id(dbt_path)
+                    logger.info(
+                        f"dbt invocation id for current execution "
+                        f"is {invocation_id}"
+                    )
+                    partition_date = date.today()
+                    logger.info(
+                        f"Partition date is {partition_date} and "
+                        f"is being used for getting the dq summary "
+                        f"results from summary table"
+                    )
+                    target_table = TargetTable(invocation_id, bigquery_client)
+                    target_table.write_to_target_bq_table(
+                        partition_date,
+                        target_bigquery_summary_table,
+                        dq_summary_table_name,
+                    )
+                    logger.info("Job completed successfully.")
+                else:
+                    logger.warning(
+                        "'--target_bigquery_summary_table' was not provided. "
+                        "It is needed to append the dq summary results to the "
+                        "provided target bigquery table. This will become a "
+                        "required argument in v1.0.0"
+                    )
         elif job_status == JobStatus.FAILED:
             raise RuntimeError("Job failed.")
         else:

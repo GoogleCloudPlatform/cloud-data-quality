@@ -144,7 +144,7 @@ class BigQueryClient:
             _project_id = credentials.project_id
         else:
             _project_id = None
-            logger.warn(
+            logger.warning(
                 "Could not retrieve project_id from GCP credentials.", exc_info=True
             )
         return _project_id
@@ -202,3 +202,38 @@ class BigQueryClient:
         except Forbidden as e:
             logger.error("User has insufficient permissions.")
             raise e
+
+    def is_table_exists(self, table: str) -> bool:
+        try:
+            client = self.get_connection()
+            client.get_table(table)
+            return True
+        except NotFound:
+            return False
+
+    def execute_query(
+        self, query_string: str, job_config: bigquery.job.QueryJobConfig = None
+    ) -> bigquery.job.QueryJob:
+        """
+        The method is used to execute the sql query
+        Parameters:
+        query_string (str) : sql query to be executed
+        Returns:
+            result of the sql execution is returned
+        """
+
+        client = self.get_connection()
+        logger.debug(f"Query string is {query_string}")
+        default_job_config = bigquery.QueryJobConfig(
+            use_query_cache=False, use_legacy_sql=False
+        )
+        job_id_prefix = "clouddq-"
+
+        if not job_config:
+            job_config = default_job_config
+
+        query_job = client.query(
+            query_string, job_config=job_config, job_id_prefix=job_id_prefix
+        )
+
+        return query_job

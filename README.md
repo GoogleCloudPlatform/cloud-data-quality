@@ -124,8 +124,8 @@ entities:
       TEST:
         environment: test
         override:
-          database_name: <your_project_id>
-          instance_name: <your_project_id>
+          dataset_name: <your_project_id>
+          project_name: <your_project_id>
     columns:
       ROW_ID:
         name: row_id
@@ -156,13 +156,13 @@ You can load this data into BigQuery using the `bq load` command (the [`bq` CLI 
 ```bash
 #!/bin/bash
 # Create a BigQuery Dataset in a region of your choice and load data
-export PROJECT_ID=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
 # Fetch the example csv file
 curl -LO https://raw.githubusercontent.com/GoogleCloudPlatform/cloud-data-quality/main/tests/data/contact_details.csv
 # Create BigQuery Dataset. Skip this step if `CLOUDDQ_BIGQUERY_DATASET` already exists
-bq --location=${CLOUDDQ_BIGQUERY_REGION} mk --dataset ${PROJECT_ID}:${CLOUDDQ_BIGQUERY_DATASET}
+bq --location=${CLOUDDQ_BIGQUERY_REGION} mk --dataset ${GOOGLE_CLOUD_PROJECT}:${CLOUDDQ_BIGQUERY_DATASET}
 # Load sample data to the dataset
 bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details contact_details.csv
 ```
@@ -239,8 +239,8 @@ Then locate your [GCP project ID](https://support.google.com/googleapi/answer/70
 
 ```bash
 #!/bin/bash
-export PROJECT_ID="<your_GCP_project_id>"
-gcloud config set project ${PROJECT_ID}
+export GOOGLE_CLOUD_PROJECT="<your_GCP_project_id>"
+gcloud config set project ${GOOGLE_CLOUD_PROJECT}
 ```
 
 Now we'll create a new dataset with a custom name in a location of our choice and load some sample data into it:
@@ -248,11 +248,11 @@ Now we'll create a new dataset with a custom name in a location of our choice an
 ```bash
 #!/bin/bash
 # Create a BigQuery Dataset in a region of your choice and load data
-export PROJECT_ID=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
 # Create BigQuery Dataset. Skip this step if `CLOUDDQ_BIGQUERY_DATASET` already exists
-bq --location=${CLOUDDQ_BIGQUERY_REGION} mk --dataset ${PROJECT_ID}:${CLOUDDQ_BIGQUERY_DATASET}
+bq --location=${CLOUDDQ_BIGQUERY_REGION} mk --dataset ${GOOGLE_CLOUD_PROJECT}:${CLOUDDQ_BIGQUERY_DATASET}
 # Load sample data to the dataset
 bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details tests/data/contact_details.csv
 ```
@@ -261,10 +261,10 @@ Before running CloudDQ, we need to edit the table configurations in `configs/ent
 
 ```bash
 #!/bin/bash
-export PROJECT_ID=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
-sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g configs/entities/test-data.yml
+sed -i s/\<your_gcp_project_id\>/${GOOGLE_CLOUD_PROJECT}/g configs/entities/test-data.yml
 sed -i s/dq_test/${CLOUDDQ_BIGQUERY_DATASET}/g configs/entities/test-data.yml
 ```
 
@@ -272,13 +272,13 @@ Using the same Project ID, GCP Region, and BigQuery dataset ID as defined before
 
 ```bash
 #!/bin/bash
-export PROJECT_ID=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
 python3 clouddq_executable.zip \
     T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE \
     configs \
-    --gcp_project_id="${PROJECT_ID}" \
+    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
     --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
     --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}"
 ```
@@ -295,13 +295,13 @@ To execute all `Rule Binding`s discovered in the config directory, use `ALL` as 
 
 ```bash
 #!/bin/bash
-export PROJECT_ID=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
 python3 clouddq_executable.zip \
     ALL \
     configs \
-    --gcp_project_id="${PROJECT_ID}" \
+    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
     --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
     --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}"
 ```
@@ -309,10 +309,10 @@ python3 clouddq_executable.zip \
 To see the resulting Data Quality validation summary statistics in the BigQuery table `dq_summary`, run:
 ```bash
 #!/bin/bash
-export PROJECT_ID=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
-echo "select * from \`${PROJECT_ID}\`.${CLOUDDQ_BIGQUERY_DATASET}.dq_summary" | bq query --location=${CLOUDDQ_BIGQUERY_REGION} --nouse_legacy_sql
+echo "select * from \`${GOOGLE_CLOUD_PROJECT}\`.${CLOUDDQ_BIGQUERY_DATASET}.dq_summary" | bq query --location=${CLOUDDQ_BIGQUERY_REGION} --nouse_legacy_sql
 ```
 
 To see the BigQuery SQL logic generated by CloudDQ for each `Rule Binding`, run:
@@ -375,14 +375,7 @@ python bazel-bin/clouddq/clouddq_patched.zip --help
 
 As Bazel will fetch the Python interpreter as well as all of its dependencies, this step will take a few minutes to complete. Once completed for the first time, the artifacts will be cached and subsequent builds will be much faster.
 
-The Python zip have been tested with Python versions `>=2.7.17` and `>=3.8.6`. As the zip contains a bundled python interpreter as well as all of `clouddq`'s dependencies, there is no need to ensure the python interpreter used to execute the zip has the project's Python dependencies installed. You may still need to install relevant Python dependencies by running:
-
-```bash
-#!/bin/bash
-sudo apt-get update; sudo apt-get install -y make build-essential libssl-dev zlib1g-dev \
-libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
-```
+The Python zip have been tested with Python versions `>=2.7.17` and `>=3.8.6`. As the zip contains a bundled python interpreter as well as all of `clouddq`'s dependencies, there is no need to ensure the python interpreter used to execute the zip has the project's Python dependencies installed.
 
 The executable Python zip is not cross-platform compatible. You will need to build the executable separately for each of your target platforms.
 
@@ -406,26 +399,32 @@ Then run the CloudDQ CLI using `bazelisk run` and pass in the CLI arguments afte
 
 ```bash
 #!/bin/bash
-export PROJECT_ID=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
 bin/bazelisk run //clouddq:clouddq -- \
   T2_DQ_1_EMAIL \
   $(pwd)/configs \
-  --gcp_project_id="${PROJECT_ID}" \
+  --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
   --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
   --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}"
 ```
 
 Note that `bazel run` execute the code in a sandbox, therefore non-absolute paths will be relative to the sandbox path not the current path. Ensure you are passing absolute paths to the command line arguments such as `$(pwd)/configs`, `--gcp_service_account_key_path`, etc...
 
-Additionally, you may want to run `source scripts/common.sh && confirm_gcloud_login` to check that your `gcloud` credentials are set up correctly.
 
 ### Run tests and linting
 
-To run unit tests:
+To run all tests:
+
 ```
 make test
+```
+
+For integration testing, you must first set the environment variables outlined in `set_environment_variables.sh` before running  `make test`. For example:
+
+```
+source set_environment_variables.sh && make test
 ```
 
 To run a particular test:
@@ -441,13 +440,13 @@ make lint
 ## Troubleshooting
 
 ### 1. Cannot find shared library dependencies on system
-If running `make build` fails due to missing shared library dependencies (e.g. `_ctypes` or `libssl`), try the below steps to install them, then clear the bazel cache with `make clean` and retry.
+If running `make build` fails due to missing shared library dependencies (e.g. `_ctypes` or `libssl`), try running the below steps to install them, then clear the bazel cache with `make clean` and retry.
 
 #### `Ubuntu`/`Debian`:
 
 ```bash
 #!/bin/bash
-sudo apt-get update; sudo apt-get install --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+bash scripts/install_development_dependencies.sh
 ```
 
 ### 2. Wrong `glibc` version
