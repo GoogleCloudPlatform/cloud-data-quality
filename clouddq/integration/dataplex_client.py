@@ -13,31 +13,29 @@
 # limitations under the License.
 
 import json
-import logging
 
 from requests import Response
 from requests import Session
 
 
 class DataplexClient:
-
     def __init__(self):
         pass
 
     def create_dataplex_task(
-            self,
-            dataplex_endpoint: str,
-            project_id: str,
-            location_id: str,
-            lake_name: str,
-            task_id: str,
-            session: Session,
-            headers: dict,
-            body: dict,
+        self,
+        dataplex_endpoint: str,
+        gcp_project_id: str,
+        location_id: str,
+        lake_name: str,
+        task_id: str,
+        session: Session,
+        headers: dict,
+        body: dict,
     ) -> Response:
         """
         :param dataplex_endpoint:
-        :param project_id:
+        :param gcp_project_id:
         :param location_id:
         :param lake_name:
         :param task_id:
@@ -48,7 +46,7 @@ class DataplexClient:
         """
 
         response = session.post(
-            f"{dataplex_endpoint}/v1/projects/{project_id}/locations/"
+            f"{dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks?task_id={task_id}",
             headers=headers,
             data=json.dumps(body),
@@ -57,18 +55,18 @@ class DataplexClient:
         return response
 
     def get_dataplex_task_jobs(
-            self,
-            dataplex_endpoint: str,
-            project_id: str,
-            location_id: str,
-            lake_name: str,
-            task_id: str,
-            session: Session,
-            headers: dict,
+        self,
+        dataplex_endpoint: str,
+        gcp_project_id: str,
+        location_id: str,
+        lake_name: str,
+        task_id: str,
+        session: Session,
+        headers: dict,
     ) -> Response:
         """
         :param dataplex_endpoint:
-        :param project_id:
+        :param gcp_project_id:
         :param location_id:
         :param lake_name:
         :param task_id:
@@ -78,9 +76,40 @@ class DataplexClient:
         """
 
         response = session.get(
-            f"{dataplex_endpoint}/v1/projects/{project_id}/locations/"
+            f"{dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks/{task_id}/jobs",
             headers=headers,
+        )
+
+        return response
+
+    def get_iam_permissions(
+        self,
+        dataplex_endpoint: str,
+        gcp_project_id: str,
+        location_id: str,
+        lake_name: str,
+        session: Session,
+        headers: dict,
+        body: dict,
+    ) -> Response:
+        """
+        :param dataplex_endpoint:
+        :param gcp_project_id:
+        :param location_id:
+        :param lake_name:
+        :param task_id:
+        :param session:
+        :param headers:
+        :param body:
+        :return:
+        """
+
+        response = session.post(
+            f"{dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
+            f"{location_id}/lakes/{lake_name}/tasks/",
+            headers=headers,
+            data=json.dumps(body),
         )
 
         return response

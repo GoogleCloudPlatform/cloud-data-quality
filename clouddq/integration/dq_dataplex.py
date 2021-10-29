@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import json
 import logging
 import time
-import traceback
 
 import google.auth
-from google.auth.credentials import Credentials
 import google.auth.transport.requests
+
+from google.auth.credentials import Credentials
 from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
@@ -32,18 +34,35 @@ logger = logging.getLogger(__name__)
 
 class CloudDqDataplex:
     dataplex_endpoint: str = "https://dataplex.googleapis.com"
-    project_id: str
+    gcp_project_id: str
     location_id: str
     lake_name: str
     headers: dict
     session: Session
     auth_token: str
+    gcp_bq_dataset = str
+    gcp_bq_region = str
+    gcp_bucket_name: str = "dataplex-clouddq-api-integration"
 
-    def __init__(self, dataplex_endpoint, project_id, location_id, lake_name):
+    def __init__(
+        self,
+        dataplex_endpoint,
+        gcp_project_id,
+        location_id,
+        lake_name,
+        gcp_bucket_name,
+        gcp_bq_dataset,
+        gcp_bq_region,
+    ):
         self.dataplex_endpoint = dataplex_endpoint
-        self.project_id = project_id
+        self.gcp_project_id = gcp_project_id
         self.location_id = location_id
         self.lake_name = lake_name
+        self.gcp_bucket_name = gcp_bucket_name
+        self.gcp_bq_dataset = gcp_bq_dataset
+        self.gcp_bq_region = gcp_bq_region
+        # self.gcp_bucket_name = f"{gcp_bucket_name}_{location_id}"
+
 
     # getting the credentials and project details for gcp project
     credentials, your_project_id = google.auth.default(
@@ -93,46 +112,44 @@ class CloudDqDataplex:
 
     session = get_session(auth_token)
 
-    def create_clouddq_task(self, task_id: str,
-                            trigger_spec_type: str,
-                            task_description: str,
-                            data_quality_spec_file_paths: list,
-                            result_dataset_name: str,
-                            result_table_name: str) -> Response:
-
+    def create_clouddq_task(
+        self,
+        task_id: str,
+        trigger_spec_type: str,
+        task_description: str,
+        data_quality_spec_file_path: str,
+        result_dataset_name: str,
+        result_table_name: str,
+    ) -> Response:
 
         default_body = {
             "spark": {
-                "python_script_file": f"gs://dataplex-clouddq-api-integration/"
+                "python_script_file": f"gs://{self.gcp_bucket_name}/"
                 f"clouddq_pyspark_driver.py",
-                "archive_uris": data_quality_spec_file_paths,
+                "archive_uris": [data_quality_spec_file_path],
                 "file_uris": [
-                    "gs://dataplex-clouddq-api-integration/clouddq_patched.zip",
-                    f"gs://dataplex-clouddq-api-integration/"
-                    f"clouddq_patched.zip.hashsum",
-                    "gs://dataplex-clouddq-api-integration/profiles.yml",
+                    f"gs://{self.gcp_bucket_name}/clouddq-executable.zip",
+                    f"gs://{self.gcp_bucket_name}/clouddq-executable.zip.hashsum",
                 ],
             },
             "execution_spec": {
                 "args": {
-                    "TASK_ARGS": f"clouddq_patched.zip, ALL, configs, "
-                    f"--dbt_profiles_dir=.,"
-                    f"--environment_target=bq,"
-                    f"--target_bigquery_summary_table={result_dataset_name}.{result_table_name},"
-                    f"--skip_sql_validation"
+                    "TASK_ARGS": f"clouddq-executable.zip, ALL, configs, "
+                    f'--gcp_project_id="{self.gcp_project_id}", '
+                    f'--gcp_region_id="{self.gcp_bq_region}", '
+                    f'--gcp_bq_dataset_id="{self.gcp_bq_dataset}", '
+                    f"--target_bigquery_summary_table="
+                    f'"{self.gcp_project_id}.{result_dataset_name}.{result_table_name}",'
                 }
             },
-            "trigger_spec": {
-                "type": trigger_spec_type
-                },
-            "description": task_description
+            "trigger_spec": {"type": trigger_spec_type},
+            "description": task_description,
         }
-
 
         response = DataplexClient.create_dataplex_task(
             self,
             dataplex_endpoint=self.dataplex_endpoint,
-            project_id=self.project_id,
+            gcp_project_id=self.gcp_project_id,
             location_id=self.location_id,
             lake_name=self.lake_name,
             task_id=task_id,
@@ -142,7 +159,6 @@ class CloudDqDataplex:
         )
 
         return response
-
 
     def get_clouddq_task_jobs(self, task_id: str) -> Response:
 
@@ -155,7 +171,7 @@ class CloudDqDataplex:
         response = DataplexClient.get_dataplex_task_jobs(
             self,
             dataplex_endpoint=self.dataplex_endpoint,
-            project_id=self.project_id,
+            gcp_project_id=self.gcp_project_id,
             location_id=self.location_id,
             lake_name=self.lake_name,
             task_id=task_id,
@@ -164,7 +180,6 @@ class CloudDqDataplex:
         )
 
         return response
-
 
     def get_clouddq_task_status(self, task_id: str) -> str:
 
@@ -194,3 +209,17 @@ class CloudDqDataplex:
 
         except Exception as e:
             raise e
+
+    def get_iam_permissions(self) -> list:
+
+        body = {"resource": "dataplex", "permissions": ["roles/dataproc.worker"]}
+        return DataplexClient.get_iam_permissions(
+            self,
+            dataplex_endpoint=self.dataplex_endpoint,
+            gcp_project_id=self.gcp_project_id,
+            location_id=self.location_id,
+            lake_name=self.lake_name,
+            session=self.session,
+            headers=self.headers,
+            body=body,
+        )

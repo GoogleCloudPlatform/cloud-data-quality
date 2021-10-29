@@ -17,34 +17,85 @@ from clouddq.integration.dq_dataplex import CloudDqDataplex
 import json
 import time
 import datetime
+import logging
+import os
 
 
-task_id = f"test-task-1-{datetime.datetime.utcnow()}".replace(" ", "utc").replace(":", "-").replace(".", "-")
+logger = logging.getLogger(__name__)
+
+task_id = f"clouddq-test-task-{datetime.datetime.utcnow()}".replace(" ", "utc").replace(":", "-").replace(".", "-")
 
 class TestDataplexIntegration:
 
     @pytest.fixture
-    def test_dq_dataplex(self):
+    def gcp_project_id(self):
+        gcp_project_id = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
+        if not gcp_project_id:
+            logger.fatal("Required test environment variable GOOGLE_CLOUD_PROJECT cannot be found. Set this to the project_id used for integration testing.")
+        return gcp_project_id
+
+    @pytest.fixture
+    def gcp_bq_dataset(self):
+        gcp_bq_dataset = os.environ.get('CLOUDDQ_BIGQUERY_DATASET', None)
+        if not gcp_bq_dataset:
+            logger.fatal("Required test environment variable CLOUDDQ_BIGQUERY_DATASET cannot be found. Set this to the BigQuery dataset used for integration testing.")
+        return gcp_bq_dataset
+
+    @pytest.fixture
+    def gcp_bq_region(self):
+        gcp_bq_region = os.environ.get('CLOUDDQ_BIGQUERY_REGION', None)
+        if not gcp_bq_region:
+            logger.fatal("Required test environment variable CLOUDDQ_BIGQUERY_REGION cannot be found. Set this to the BigQuery region used for integration testing.")
+        return gcp_bq_region
+
+    @pytest.fixture
+    def gcp_sa_key(self):
+        sa_key_path = os.environ.get('GOOGLE_SDK_CREDENTIALS', None)
+        if not sa_key_path:
+            logger.fatal("Required test environment variable GOOGLE_SDK_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing.")
+        return sa_key_path
+
+    # @pytest.fixture
+    # def gcp_impersonation_credentials(self):
+    #     gcp_impersonation_credentials = os.environ.get('IMPERSONATION_SERVICE_ACCOUNT', None)
+    #     if not gcp_impersonation_credentials:
+    #         logger.fatal("Required test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found. Set this to the service account name for impersonation used for integration testing.")
+    #     return gcp_impersonation_credentials
+
+    @pytest.fixture
+    def gcp_bucket_name(self):
+        gcp_bucket_name = os.environ.get('GCP_BUCKET_NAME', None)
+        if not gcp_bucket_name:
+            logger.fatal("Required test environment variable GCP_BUCKET_NAME cannot be found. Set this to the gcp bucket name having the clouddq zip file.")
+        return gcp_bucket_name
+
+    @pytest.fixture
+    def test_dq_dataplex(self, gcp_project_id, gcp_bq_dataset, gcp_bq_region, gcp_bucket_name):
 
         dataplex_endpoint = "https://dataplex.googleapis.com"
         location_id = "us-central1"
         lake_name = "amandeep-dev-lake"
-        project_id = "dataplex-clouddq"
+        # lake_name = "us-lake"
+        gcp_project_id = gcp_project_id
+        gcp_bucket_name = gcp_bucket_name
+        gcp_bq_dataset = gcp_bq_dataset
+        gcp_bq_region = gcp_bq_region
 
-        return CloudDqDataplex(dataplex_endpoint, project_id, location_id, lake_name)
+        return CloudDqDataplex(dataplex_endpoint, gcp_project_id,
+                               location_id, lake_name, gcp_bucket_name,
+                               gcp_bq_dataset, gcp_bq_region)
 
-
-    def test_create_bq_dataplex_task_check_status_code_equals_200(self, test_dq_dataplex):
+    def test_create_bq_dataplex_task_check_status_code_equals_200(self, test_dq_dataplex, gcp_bucket_name):
         """
         This test is for dataplex clouddq task api integration for bigquery
         :return:
         """
         print(f"Dataplex batches task id is {task_id}")
+        print(test_dq_dataplex.gcp_bucket_name)
+        print(f"GCP bucket name  {gcp_bucket_name}")
         trigger_spec_type: str = "ON_DEMAND"
         task_description: str = "clouddq task"
-        data_quality_spec_file_paths = [
-            "gs://dataplex-clouddq-api-integration/clouddq-configs.zip"
-        ]
+        data_quality_spec_file_path: str = f"gs://{gcp_bucket_name}/clouddq-configs.zip"
         result_dataset_name: str = "dataplex_clouddq"
         result_table_name: str = "target_table_dataplex"
 
@@ -52,13 +103,12 @@ class TestDataplexIntegration:
                     task_id,
                     trigger_spec_type,
                     task_description,
-                    data_quality_spec_file_paths,
+                    data_quality_spec_file_path,
                     result_dataset_name,
                     result_table_name)
 
         print(f"CloudDQ task creation response is {response.text}")
         assert response.status_code == 200
-
 
     def test_task_status_success(self, test_dq_dataplex):
 
@@ -77,7 +127,6 @@ class TestDataplexIntegration:
             print(task_status)
 
         assert task_status == 'SUCCEEDED'
-
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
