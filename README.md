@@ -348,7 +348,7 @@ From a `Ubuntu`/`Debian` machine, install the above dependencies by running the 
 ```bash
 #!/bin/bash
 git clone https://github.com/GoogleCloudPlatform/cloud-data-quality
-bash scripts/install_development_dependencies.sh
+source scripts/install_development_dependencies.sh
 ```
 
 ### Building a self-contained executable from source
@@ -446,7 +446,7 @@ If running `make build` fails due to missing shared library dependencies (e.g. `
 
 ```bash
 #!/bin/bash
-bash scripts/install_development_dependencies.sh
+source scripts/install_development_dependencies.sh
 ```
 
 ### 2. Wrong `glibc` version
@@ -466,7 +466,7 @@ From a `Ubuntu`/`Debian` machine, install the above dependencies by running the 
 
 ```bash
 #!/bin/bash
-bash scripts/install_development_dependencies.sh
+source scripts/install_development_dependencies.sh
 ```
 
 ## Feedback / Questions
