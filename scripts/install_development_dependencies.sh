@@ -37,7 +37,7 @@ sandboxfs --help
 sudo apt-get update; sudo apt-get install -y make build-essential libssl-dev zlib1g-dev \
 libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
 libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
-unzip zip
+zip unzip python3-pip python3-venv
 
 # Install golang for building Bazelisk
 curl -Lo  /tmp/go1.16.5.linux-amd64.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
