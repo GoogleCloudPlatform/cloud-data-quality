@@ -53,6 +53,10 @@ test: bin/bazelisk  ## run tests, use 'make test <test_name>' to run a single te
 test-pip-install:  ## run tests on pip-install-path
 	@source scripts/test_pip_install.sh
 
+.PHONY: test-dataplex-integration-install
+test-pip-install:  ## run tests on pip-install-path
+	@source scripts/test_dataplex_integration_install.sh
+
 .PHONY: test-all
 test-all: test-pip-install test  ## run all tests
 
