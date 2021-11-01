@@ -1,0 +1,86 @@
+steps:
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    args:
+      - info
+    entrypoint: gcloud
+  - name: 'ubuntu:18.04'
+    args:
+      - '-c'
+      - env
+    entrypoint: /bin/bash
+  - name: 'ubuntu:18.04'
+    args:
+      - '-c'
+      - pwd
+    entrypoint: /bin/bash
+  - name: 'ubuntu:18.04'
+    args:
+      - '-c'
+      - ls
+    entrypoint: /bin/bash
+  - name: 'ubuntu:18.04'
+    args:
+      - '-c'
+      - >
+        chmod -R +x scripts
+
+        cat cloudbuild.yaml
+    entrypoint: /bin/bash
+  - name: 'ubuntu:18.04'
+    args:
+      - '-c'
+      - >
+        scripts/install_development_dependencies.sh
+        apt-get update
+        apt-get -y install make
+        ln -sf /usr/bin/python3 /usr/bin/python
+        type -a python
+        ls /usr/bin/python*
+        [[ -f /usr/bin/python ]] && echo "python found" || echo "python not found"
+        make -v
+        ls -ltr
+        echo "common
+        --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
+        >> .bazelrc
+        echo "common --google_default_credentials" >> .bazelrc
+
+        make bin/bazelisk
+
+        bin/bazelisk build //clouddq:clouddq
+
+        export GOOGLE_CLOUD_PROJECT="${_GOOGLE_CLOUD_PROJECT}"
+
+        export CLOUDDQ_BIGQUERY_DATASET="${_CLOUDDQ_BIGQUERY_DATASET}"
+
+        export CLOUDDQ_BIGQUERY_REGION="${_CLOUDDQ_BIGQUERY_REGION}"
+
+        export GOOGLE_APPLICATION_CREDENTIALS="${_IMPERSONATION_SERVICE_ACCOUNT}"
+
+        export GOOGLE_SDK_CREDENTIALS="${_IMPERSONATION_SERVICE_ACCOUNT}"
+
+        export IMPERSONATION_SERVICE_ACCOUNT="${_IMPERSONATION_SERVICE_ACCOUNT}"
+
+        export GCP_BUCKET_NAME="${_GCP_BUCKET_NAME}"
+
+        env
+
+#        make test-pip-install
+
+        make test_dataplex_integration_install
+
+        make test test_dataplex_clouddq_task_integration
+    entrypoint: /bin/bash
+timeout: 7200s
+logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
+options:
+  logStreamingOption: STREAM_ON
+  pool:
+    name: >-
+      projects/dataplex-clouddq/locations/europe-west6/workerPools/cloud-build-private-pool
+  env:
+  - '_GOOGLE_CLOUD_PROJECT=dataplex-clouddq'
+  - '_CLOUDDQ_BIGQUERY_DATASET=dataplex_clouddq'
+  - '_CLOUDDQ_BIGQUERY_REGION=US'
+  - '_IMPERSONATION_SERVICE_ACCOUNT=clouddq-runner@dataplex-clouddq.iam.gserviceaccount.com'
+  - '_GCP_BUCKET_NAME=dataplex-clouddq-api-integration'
+serviceAccount: 'projects/dataplex-clouddq/serviceAccounts/github-action@dataplex-clouddq.iam.gserviceaccount.com'
