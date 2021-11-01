@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import json
 import logging
 import time
@@ -62,7 +60,6 @@ class CloudDqDataplex:
         self.gcp_bq_dataset = gcp_bq_dataset
         self.gcp_bq_region = gcp_bq_region
         # self.gcp_bucket_name = f"{gcp_bucket_name}_{location_id}"
-
 
     # getting the credentials and project details for gcp project
     credentials, your_project_id = google.auth.default(
@@ -139,7 +136,8 @@ class CloudDqDataplex:
                     f'--gcp_region_id="{self.gcp_bq_region}", '
                     f'--gcp_bq_dataset_id="{self.gcp_bq_dataset}", '
                     f"--target_bigquery_summary_table="
-                    f'"{self.gcp_project_id}.{result_dataset_name}.{result_table_name}",'
+                    f'"{self.gcp_project_id}.'
+                    f'{result_dataset_name}.{result_table_name}",'
                 }
             },
             "trigger_spec": {"type": trigger_spec_type},
