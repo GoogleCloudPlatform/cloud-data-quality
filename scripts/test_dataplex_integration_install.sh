@@ -68,7 +68,7 @@ python3 -m clouddq ALL configs --dbt_profiles_dir="$TEST_DIR" --debug --dry_run
 python3 -m clouddq ALL configs --dbt_profiles_dir="$TEST_DIR" --dbt_path="$TEST_DIR" --debug --dry_run
 
 # set-up service account application-default credentials
-gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+#gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 
 # test clouddq with direct connection profiles
 #python3 -m clouddq ALL configs \
