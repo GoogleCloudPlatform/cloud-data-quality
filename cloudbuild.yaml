@@ -31,17 +31,27 @@ steps:
       - '-c'
       - >
         scripts/install_development_dependencies.sh
+
         apt-get update
+
         apt-get -y install make
+
         ln -sf /usr/bin/python3 /usr/bin/python
+
         type -a python
+
         ls /usr/bin/python*
+
         [[ -f /usr/bin/python ]] && echo "python found" || echo "python not found"
+
         make -v
+
         ls -ltr
+
         echo "common
         --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
         >> .bazelrc
+
         echo "common --google_default_credentials" >> .bazelrc
 
         make bin/bazelisk
@@ -63,8 +73,6 @@ steps:
         export GCP_BUCKET_NAME="${_GCP_BUCKET_NAME}"
 
         env
-
-#        make test-pip-install
 
         make test_dataplex_integration_install
 
