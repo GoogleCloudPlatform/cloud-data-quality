@@ -83,10 +83,13 @@ class TestDataplexIntegration:
         gcp_bq_dataset = gcp_bq_dataset
         gcp_bq_region = gcp_bq_region
 
-        return CloudDqDataplex(dataplex_endpoint, gcp_project_id,
-                               location_id, lake_name, gcp_bucket_name,
-                               gcp_bq_dataset, gcp_bq_region, None,
-                               gcp_sa_key, gcp_impersonation_credentials)
+        return CloudDqDataplex(dataplex_endpoint=dataplex_endpoint,
+                               gcp_project_id=gcp_project_id,
+                               location_id=location_id, lake_name=lake_name,
+                               gcp_bucket_name=gcp_bucket_name,
+                               gcp_bq_dataset=gcp_bq_dataset,
+                               gcp_bq_region=gcp_bq_region, credentials=None,
+                               gcp_service_account_key_path=None, gcp_impersonation_credentials=None)
 
     def test_create_bq_dataplex_task_check_status_code_equals_200(self, test_dq_dataplex, gcp_bucket_name):
         """
