@@ -27,20 +27,25 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
 fi
 
 # Install sandboxfs
-sudo apt install -y libfuse2
+apt-get update
+apt install -y libfuse2
+apt install -y curl
 curl -Lo /tmp/sandboxfs-0.2.0.tgz https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
-sudo tar xzv -C /usr/local -f /tmp/sandboxfs-0.2.0.tgz
+tar xzv -C /usr/local -f /tmp/sandboxfs-0.2.0.tgz
 rm /tmp/sandboxfs-0.2.0.tgz
 sandboxfs --help
 
+ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+
 # Install Python dependencies
-sudo apt-get update; sudo apt-get install -y make build-essential libssl-dev zlib1g-dev \
+apt-get update;  apt-get install -y make build-essential libssl-dev zlib1g-dev \
 libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
 libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
 
 # Install golang for building Bazelisk
 curl -Lo  /tmp/go1.16.5.linux-amd64.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
+rm -rf /usr/local/go
+tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 go version
