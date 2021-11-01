@@ -52,6 +52,8 @@ DEPS = [
     requirement("click"),
     requirement("coloredlogs"),
     requirement("gitpython"),
+    requirement("google-api-python-client"),
+    requirement("requests-oauth2"),
 ]
 
 SRCS = glob([
@@ -96,6 +98,14 @@ py_test(
 
 py_test(
     name = "test_cli_integration",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "test_dbt_bigquery",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,
