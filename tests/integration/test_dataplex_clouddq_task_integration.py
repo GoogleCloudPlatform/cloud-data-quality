@@ -70,7 +70,9 @@ class TestDataplexIntegration:
         return gcp_bucket_name
 
     @pytest.fixture
-    def test_dq_dataplex(self, gcp_project_id, gcp_bq_dataset, gcp_bq_region, gcp_bucket_name):
+    def test_dq_dataplex(self, gcp_project_id, gcp_bq_dataset,
+                         gcp_bq_region, gcp_bucket_name,
+                         gcp_sa_key, gcp_impersonation_credentials):
 
         dataplex_endpoint = "https://dataplex.googleapis.com"
         location_id = "us-central1"
@@ -83,7 +85,8 @@ class TestDataplexIntegration:
 
         return CloudDqDataplex(dataplex_endpoint, gcp_project_id,
                                location_id, lake_name, gcp_bucket_name,
-                               gcp_bq_dataset, gcp_bq_region)
+                               gcp_bq_dataset, gcp_bq_region, None,
+                               gcp_sa_key, gcp_impersonation_credentials)
 
     def test_create_bq_dataplex_task_check_status_code_equals_200(self, test_dq_dataplex, gcp_bucket_name):
         """

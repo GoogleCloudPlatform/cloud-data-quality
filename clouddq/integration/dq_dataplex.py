@@ -15,6 +15,7 @@
 import json
 import logging
 import time
+from pathlib import Path
 
 import google.auth
 import google.auth.transport.requests
@@ -24,11 +25,20 @@ from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
 
+from google.api_core.exceptions import Forbidden
+from google.api_core.exceptions import NotFound
+from google.auth import impersonated_credentials
+from google.auth.exceptions import RefreshError
+from google.oauth2 import id_token
+from google.oauth2 import service_account
+
 from clouddq.integration.dataplex_client import DataplexClient
 
 
 logger = logging.getLogger(__name__)
-
+TARGET_SCOPES = [
+    "https://www.googleapis.com/auth/cloud-platform",
+]
 
 class CloudDqDataplex:
     dataplex_endpoint: str = "https://dataplex.googleapis.com"
@@ -41,6 +51,8 @@ class CloudDqDataplex:
     gcp_bq_dataset = str
     gcp_bq_region = str
     gcp_bucket_name: str = "dataplex-clouddq-api-integration"
+    __credentials: Credentials = None
+    __user_id: str = None
 
     def __init__(
         self,
@@ -51,7 +63,10 @@ class CloudDqDataplex:
         gcp_bucket_name,
         gcp_bq_dataset,
         gcp_bq_region,
-    ):
+        credentials: Credentials = None,
+        gcp_service_account_key_path: Path = None,
+        gcp_impersonation_credentials: str = None,
+    ) -> None:
         self.dataplex_endpoint = dataplex_endpoint
         self.gcp_project_id = gcp_project_id
         self.location_id = location_id
@@ -62,11 +77,98 @@ class CloudDqDataplex:
         # self.gcp_bucket_name = f"{gcp_bucket_name}_{location_id}"
 
     # getting the credentials and project details for gcp project
-    credentials, your_project_id = google.auth.default(
-        scopes=["https://www.googleapis.com/auth/cloud-platform"]
-    )
+    # credentials, your_project_id = google.auth.default(
+    #     scopes=TARGET_SCOPES
+    # )
 
-    def get_auth_token(credentials: Credentials) -> str:
+        # Use Credentials object directly if provided
+        if credentials:
+            source_credentials = credentials
+        # Use service account json key if provided
+        elif gcp_service_account_key_path:
+            source_credentials = service_account.Credentials.from_service_account_file(
+                filename=gcp_service_account_key_path,
+                scopes=TARGET_SCOPES,
+                quota_project_id=gcp_project_id,
+            )
+        # Otherwise, use Application Default Credentials
+        else:
+            source_credentials, _ = google.auth.default(
+                scopes=TARGET_SCOPES, quota_project_id=gcp_project_id
+            )
+        if not source_credentials.valid:
+            self.__refresh_credentials(source_credentials)
+        # Attempt service account impersonation if requested
+        if gcp_impersonation_credentials:
+            target_credentials = impersonated_credentials.Credentials(
+                source_credentials=source_credentials,
+                target_principal=gcp_impersonation_credentials,
+                target_scopes=TARGET_SCOPES,
+                lifetime=3600,
+            )
+            self.__credentials = target_credentials
+        else:
+            # Otherwise use source_credentials
+            self.__credentials = source_credentials
+        self.__project_id = self.__resolve_project_id(
+            credentials=self.__credentials, project_id=gcp_project_id
+        )
+        self.__user_id = self.__resolve_credentials_username(
+            credentials=self.__credentials
+        )
+        self.auth_token = self.get_auth_token(credentials=self.__credentials)
+        self.headers = self.set_headers()
+        self.session = self.get_session()
+        if self.__user_id:
+            logger.info("Successfully created Dataplex Client.")
+        else:
+            logger.warning(
+                "Encountered error while retrieving user from GCP credentials.",
+            )
+
+    def __refresh_credentials(self, credentials: Credentials) -> str:
+        # Attempt to refresh token if not currently valid
+        try:
+            auth_req = google.auth.transport.requests.Request()
+            credentials.refresh(auth_req)
+        except RefreshError as err:
+            logger.error("Could not get refreshed credentials for GCP.")
+            raise err
+
+    def __resolve_credentials_username(self, credentials: Credentials) -> str:
+        # Attempt to refresh token if not currently valid
+        if not credentials.valid:
+            self.__refresh_credentials(credentials=credentials)
+        # Try to get service account credentials user_id
+        if credentials.__dict__.get("_service_account_email"):
+            user_id = credentials.service_account_email
+        elif credentials.__dict__.get("_target_principal"):
+            user_id = credentials.service_account_email
+        else:
+            # Otherwise try to get ADC credentials user_id
+            request = google.auth.transport.requests.Request()
+            token = credentials.id_token
+            id_info = id_token.verify_oauth2_token(token, request)
+            user_id = id_info["email"]
+        return user_id
+
+    def __resolve_project_id(
+        self, credentials: Credentials, project_id: str = None
+    ) -> str:
+        """Get project ID from local configs"""
+        if project_id:
+            _project_id = project_id
+        elif credentials.__dict__.get("_project_id"):
+            _project_id = credentials.project_id
+        else:
+            _project_id = None
+            logger.warning(
+                "Could not retrieve project_id from GCP credentials.", exc_info=True
+            )
+        return _project_id
+
+
+    def get_auth_token(self, credentials: Credentials) -> str:
         """
         This method is used to get the authentication token.
 
@@ -86,28 +188,26 @@ class CloudDqDataplex:
 
         return auth_token
 
-    # get auth token
-    auth_token = get_auth_token(credentials)
+    def set_headers(self) -> dict:
+        # create request headers
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + self.auth_token,
+        }
 
-    # create request headers
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + auth_token,
-    }
+        return headers
 
-    def get_session(auth_token: str) -> Session:
+    def get_session(self) -> Session:
         """
         This method create the session object for request
         :return:
         session object
         """
         with Session() as session:
-            session.auth = OAuth2BearerToken(auth_token)
+            session.auth = OAuth2BearerToken(self.auth_token)
 
         return session
-
-    session = get_session(auth_token)
 
     def create_clouddq_task(
         self,
