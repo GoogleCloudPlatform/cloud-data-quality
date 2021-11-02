@@ -38,6 +38,7 @@ function bazel_test() {
     --test_env GOOGLE_SDK_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS}" \
     --test_env CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" \
     --test_env CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" \
+    --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}" \
     --test_env GCP_BUCKET_NAME="${GCP_BUCKET_NAME}" \
     //tests"${1:-/...}"
   set +x
