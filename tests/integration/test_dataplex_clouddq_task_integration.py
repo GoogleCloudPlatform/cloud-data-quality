@@ -117,13 +117,49 @@ class TestDataplexIntegration:
         print(f"CloudDQ task creation response is {response.text}")
         assert response.status_code == 200
 
-    # def test_task_status_success(self, test_dq_dataplex):
-    #
+    def test_task_status_success(self, test_dq_dataplex):
+
+        """
+        This test is for getting the success status for CloudDQ Dataplex Task
+        :return:
+        """
+        print(f"Dataplex batches task id is {task_id}")
+        task_status = test_dq_dataplex.get_clouddq_task_status(task_id)
+        print(f"CloudDQ task status is {task_status}")
+
+        while (task_status != 'SUCCEEDED' and task_status != 'FAILED'):
+            print(time.ctime())
+            time.sleep(30)
+            task_status = test_dq_dataplex.get_clouddq_task_status(task_id)
+            print(task_status)
+
+        assert task_status == 'SUCCEEDED'
+
+    # def test_create_bq_dataplex_task_empty_configs_failure(self, test_dq_dataplex, gcp_bucket_name):
     #     """
-    #     This test is for getting the success status for CloudDQ Dataplex Task
+    #     This test is for dataplex clouddq task api integration for bigquery
     #     :return:
     #     """
+    #     task_id="test-clouddq-empty-configs"
     #     print(f"Dataplex batches task id is {task_id}")
+    #     print(test_dq_dataplex.gcp_bucket_name)
+    #     print(f"GCP bucket name  {gcp_bucket_name}")
+    #     trigger_spec_type: str = "ON_DEMAND"
+    #     task_description: str = "clouddq task"
+    #     data_quality_spec_file_path: str = f"gs://{gcp_bucket_name}/empty-configs.zip"
+    #     result_dataset_name: str = "clouddq_test_target_dataset"
+    #     result_table_name: str = "target_table_dataplex"
+    #
+    #     response = test_dq_dataplex.create_clouddq_task(
+    #                 task_id,
+    #                 trigger_spec_type,
+    #                 task_description,
+    #                 data_quality_spec_file_path,
+    #                 result_dataset_name,
+    #                 result_table_name)
+    #
+    #     print(f"CloudDQ task creation response is {response.text}")
+    #     assert response.status_code == 200
     #     task_status = test_dq_dataplex.get_clouddq_task_status(task_id)
     #     print(f"CloudDQ task status is {task_status}")
     #
@@ -133,7 +169,7 @@ class TestDataplexIntegration:
     #         task_status = test_dq_dataplex.get_clouddq_task_status(task_id)
     #         print(task_status)
     #
-    #     assert task_status == 'SUCCEEDED'
+    #     assert task_status == 'FAILED'
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
