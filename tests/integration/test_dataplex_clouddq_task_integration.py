@@ -64,7 +64,7 @@ class TestDataplexIntegration:
 
     @pytest.fixture
     def gcp_bucket_name(self):
-        gcp_bucket_name = os.environ.get('GCP_BUCKET_NAME', None)
+        gcp_bucket_name = os.environ.get('_GCP_BUCKET_NAME', None)
         if not gcp_bucket_name:
             logger.fatal("Required test environment variable GCP_BUCKET_NAME cannot be found. Set this to the gcp bucket name having the clouddq zip file.")
         return gcp_bucket_name
