@@ -105,14 +105,17 @@ class TestDataplexIntegration:
         data_quality_spec_file_path: str = f"gs://{gcp_bucket_name}/clouddq-configs.zip"
         result_dataset_name: str = "clouddq_test_target_dataset"
         result_table_name: str = "target_table_dataplex"
-
+        service_account: str = "168141520116-compute@developer.gserviceaccount.com"
+        labels: dict = {}
         response = test_dq_dataplex.create_clouddq_task(
                     task_id,
                     trigger_spec_type,
                     task_description,
                     data_quality_spec_file_path,
                     result_dataset_name,
-                    result_table_name)
+                    result_table_name,
+                    service_account,
+                    labels)
 
         print(f"CloudDQ task creation response is {response.text}")
         assert response.status_code == 200
@@ -149,14 +152,17 @@ class TestDataplexIntegration:
     #     data_quality_spec_file_path: str = f"gs://{gcp_bucket_name}/empty-configs.zip"
     #     result_dataset_name: str = "clouddq_test_target_dataset"
     #     result_table_name: str = "target_table_dataplex"
-    #
+    #     service_account: str = "168141520116-compute@developer.gserviceaccount.com"
+    #     labels: dict = {}
     #     response = test_dq_dataplex.create_clouddq_task(
     #                 task_id,
     #                 trigger_spec_type,
     #                 task_description,
     #                 data_quality_spec_file_path,
     #                 result_dataset_name,
-    #                 result_table_name)
+    #                 result_table_name,
+    #                 service_account,
+    #                 labels)
     #
     #     print(f"CloudDQ task creation response is {response.text}")
     #     assert response.status_code == 200

@@ -217,28 +217,32 @@ class CloudDqDataplex:
         data_quality_spec_file_path: str,
         result_dataset_name: str,
         result_table_name: str,
+        service_account: str,
+        labels: dict,
     ) -> Response:
 
         default_body = {
             "spark": {
                 "python_script_file": f"gs://{self.gcp_bucket_name}/"
-                f"clouddq_pyspark_driver.py",
-                "archive_uris": [data_quality_spec_file_path],
+                f"empty_clouddq_pyspark_driver.py",
+                # "archive_uris": [data_quality_spec_file_path],
                 "file_uris": [
                     f"gs://{self.gcp_bucket_name}/clouddq-executable.zip",
                     f"gs://{self.gcp_bucket_name}/clouddq-executable.zip.hashsum",
+                    f"{data_quality_spec_file_path}",
                 ],
             },
             "execution_spec": {
                 "args": {
-                    "TASK_ARGS": f"clouddq-executable.zip, ALL, configs, "
+                    "TASK_ARGS": f"clouddq-executable.zip, ALL, {data_quality_spec_file_path}, "
                     f'--gcp_project_id="{self.gcp_project_id}", '
                     f'--gcp_region_id="{self.gcp_bq_region}", '
                     f'--gcp_bq_dataset_id="{self.gcp_bq_dataset}", '
                     f"--target_bigquery_summary_table="
                     f'"{self.gcp_project_id}.'
                     f'{result_dataset_name}.{result_table_name}",'
-                }
+                },
+                "service_account": f"{service_account}"
             },
             "trigger_spec": {"type": trigger_spec_type},
             "description": task_description,
