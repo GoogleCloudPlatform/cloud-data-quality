@@ -54,10 +54,6 @@ steps:
 
         echo "common --google_default_credentials" >> .bazelrc
 
-        make bin/bazelisk
-
-        bin/bazelisk build //clouddq:clouddq
-
         export GOOGLE_CLOUD_PROJECT="${_GOOGLE_CLOUD_PROJECT}"
 
         export CLOUDDQ_BIGQUERY_DATASET="${_CLOUDDQ_BIGQUERY_DATASET}"
@@ -74,11 +70,9 @@ steps:
 
         env
 
-        make test_dataplex_integration_install
-
         make test test_dataplex_clouddq_task_integration
     entrypoint: /bin/bash
-timeout: 7200s
+timeout: 300s
 logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
 options:
   logStreamingOption: STREAM_ON
