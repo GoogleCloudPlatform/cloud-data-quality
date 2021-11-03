@@ -15,22 +15,20 @@
 import json
 import logging
 import time
+
 from pathlib import Path
 
 import google.auth
 import google.auth.transport.requests
 
-from google.auth.credentials import Credentials
-from requests import Response
-from requests import Session
-from requests_oauth2 import OAuth2BearerToken
-
-from google.api_core.exceptions import Forbidden
-from google.api_core.exceptions import NotFound
 from google.auth import impersonated_credentials
+from google.auth.credentials import Credentials
 from google.auth.exceptions import RefreshError
 from google.oauth2 import id_token
 from google.oauth2 import service_account
+from requests import Response
+from requests import Session
+from requests_oauth2 import OAuth2BearerToken
 
 from clouddq.integration.dataplex_client import DataplexClient
 
@@ -39,6 +37,7 @@ logger = logging.getLogger(__name__)
 TARGET_SCOPES = [
     "https://www.googleapis.com/auth/cloud-platform",
 ]
+
 
 class CloudDqDataplex:
     dataplex_endpoint: str = "https://dataplex.googleapis.com"
@@ -76,10 +75,10 @@ class CloudDqDataplex:
         self.gcp_bq_region = gcp_bq_region
         # self.gcp_bucket_name = f"{gcp_bucket_name}_{location_id}"
 
-    # getting the credentials and project details for gcp project
-    # credentials, your_project_id = google.auth.default(
-    #     scopes=TARGET_SCOPES
-    # )
+        # getting the credentials and project details for gcp project
+        # credentials, your_project_id = google.auth.default(
+        #     scopes=TARGET_SCOPES
+        # )
 
         # Use Credentials object directly if provided
         if credentials:
@@ -167,7 +166,6 @@ class CloudDqDataplex:
             )
         return _project_id
 
-
     def get_auth_token(self, credentials: Credentials) -> str:
         """
         This method is used to get the authentication token.
@@ -234,7 +232,8 @@ class CloudDqDataplex:
             },
             "execution_spec": {
                 "args": {
-                    "TASK_ARGS": f"clouddq-executable.zip, ALL, {data_quality_spec_file_path}, "
+                    "TASK_ARGS": f"clouddq-executable.zip, ALL, "
+                    f"{data_quality_spec_file_path}, "
                     f'--gcp_project_id="{self.gcp_project_id}", '
                     f'--gcp_region_id="{self.gcp_bq_region}", '
                     f'--gcp_bq_dataset_id="{self.gcp_bq_dataset}", '
@@ -242,7 +241,7 @@ class CloudDqDataplex:
                     f'"{self.gcp_project_id}.'
                     f'{result_dataset_name}.{result_table_name}",'
                 },
-                "service_account": f"{service_account}"
+                "service_account": f"{service_account}",
             },
             "trigger_spec": {"type": trigger_spec_type},
             "description": task_description,
