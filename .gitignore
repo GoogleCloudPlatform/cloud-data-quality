@@ -19,3 +19,4 @@ Pipfile*
 .bazelrc
 env/
 *.log
+set_environment_variables.sh
