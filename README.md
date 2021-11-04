@@ -427,6 +427,11 @@ For integration testing, you must first set the environment variables outlined i
 source set_environment_variables.sh && make test
 ```
 
+You may want to ask git to ignore changes to `set_environment_variables.sh` to avoid accidentally committing secrets into git.
+```
+git update-index --assume-unchanged set_environment_variables.sh
+```
+
 To run a particular test:
 ```
 make test test_templates
