@@ -14,10 +14,9 @@
 
 """PySpark Driver for launching CloudDQ as a Spark Job
 
-This is designed to be launched using a companion script such 
+This is designed to be launched using a companion script such
 as `scripts/dataproc/submit-dataproc-job.sh`.
 """
-
 
 import hashlib
 import os
