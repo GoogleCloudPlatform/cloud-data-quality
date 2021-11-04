@@ -18,12 +18,14 @@ from datetime import date
 
 from google.cloud import bigquery
 
+from clouddq.integration.bigquery_client import BigQueryClient
+
 
 logger = logging.getLogger(__name__)
 
 
 def load_target_table_from_bigquery(
-    bigquery_client: bigquery.client.Client,
+    bigquery_client: BigQueryClient,
     invocation_id: str,
     partition_date: date,
     target_bigquery_summary_table: str,
@@ -73,9 +75,9 @@ def load_target_table_from_bigquery(
 class TargetTable:
 
     invocation_id: str = None
-    bigquery_client: bigquery.client.Client = None
+    bigquery_client: BigQueryClient = None
 
-    def __init__(self, invocation_id: str, bigquery_client: bigquery.client.Client):
+    def __init__(self, invocation_id: str, bigquery_client: BigQueryClient):
         self.invocation_id = invocation_id
         self.bigquery_client = bigquery_client
 

@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
 
 import json
 import logging
-import time
+import re
+import typing
 
 from pathlib import Path
 
@@ -30,13 +32,15 @@ from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
 
-from clouddq.integration.dataplex_client import DataplexClient
+from clouddq.integration.dataplex.dataplex_client import DataplexClient
+from clouddq.integration.gcs import upload_blob
 
 
 logger = logging.getLogger(__name__)
 TARGET_SCOPES = [
     "https://www.googleapis.com/auth/cloud-platform",
 ]
+USER_AGENT_TAG = "Product_Dataplex/1.0 (GPN:Dataplex_CloudDQ)"
 
 
 class CloudDqDataplex:
@@ -216,14 +220,37 @@ class CloudDqDataplex:
         result_dataset_name: str,
         result_table_name: str,
         service_account: str,
-        labels: dict,
+        labels: dict | None = None,
+        clouddq_pyspark_driver_path: str | None = None,
     ) -> Response:
+
+        if not clouddq_pyspark_driver_path:
+            python_script_file = (
+                f"gs://{self.gcp_bucket_name}/clouddq_pyspark_driver.py"
+            )
+        else:
+            python_script_file = clouddq_pyspark_driver_path
+
+        if data_quality_spec_file_path[:5] == "gs://":
+            data_quality_spec_file_path = data_quality_spec_file_path
+        else:
+            upload_blob(
+                self.gcp_bucket_name,
+                data_quality_spec_file_path,
+                data_quality_spec_file_path,
+            )
+            gcs_uri = f"gs://{self.gcp_bucket_name}/{data_quality_spec_file_path}"
+            data_quality_spec_file_path = gcs_uri
+
+        allowed_user_agent_label = re.sub("[^0-9a-zA-Z]+", "-", USER_AGENT_TAG.lower())
+        if labels:
+            labels["user-agent"] = allowed_user_agent_label
+        else:
+            labels = {"user-agent": allowed_user_agent_label}
 
         default_body = {
             "spark": {
-                "python_script_file": f"gs://{self.gcp_bucket_name}/"
-                f"empty_clouddq_pyspark_driver.py",
-                # "archive_uris": [data_quality_spec_file_path],
+                "python_script_file": python_script_file,
                 "file_uris": [
                     f"gs://{self.gcp_bucket_name}/clouddq-executable.zip",
                     f"gs://{self.gcp_bucket_name}/clouddq-executable.zip.hashsum",
@@ -245,6 +272,7 @@ class CloudDqDataplex:
             },
             "trigger_spec": {"type": trigger_spec_type},
             "description": task_description,
+            "labels": labels,
         }
 
         response = DataplexClient.create_dataplex_task(
@@ -289,27 +317,55 @@ class CloudDqDataplex:
         :param task_id: dataplex task id
         :return: Task status
         """
-        try:
-            res = self.get_clouddq_task_jobs(task_id)
-            logger.debug(f"Response status code is {res.status_code}")
-            logger.debug(f"Response text is {res.text}")
-            resp_obj = json.loads(res.text)
+        res = self.get_clouddq_task_jobs(task_id)
+        logger.debug(f"Response status code is {res.status_code}")
+        logger.debug(f"Response text is {res.text}")
+        resp_obj = json.loads(res.text)
 
-            if res.status_code == 200:
+        if res.status_code == 200:
 
-                if (
-                    "jobs" in resp_obj
-                    and len(resp_obj["jobs"]) > 0
-                    and "state" in resp_obj["jobs"][0]
-                ):
-                    task_status = resp_obj["jobs"][0]["state"]
-                    return task_status
-                else:
-                    time.sleep(60)
-                    self.get_clouddq_task_status(task_id)
+            if (
+                "jobs" in resp_obj
+                and len(resp_obj["jobs"]) > 0  # noqa: W503
+                and "state" in resp_obj["jobs"][0]  # noqa: W503
+            ):
+                task_status = resp_obj["jobs"][0]["state"]
+                return task_status
+        else:
+            return res
 
-        except Exception as e:
-            raise e
+    def delete_clouddq_task_if_exists(self, task_id: str) -> Response:
+
+        """
+        List the dataplex task jobs
+        :param task_id: task id for dataplex task
+        :return: Response object
+        """
+
+        get_task_response = DataplexClient.get_task(
+            self,
+            dataplex_endpoint=self.dataplex_endpoint,
+            gcp_project_id=self.gcp_project_id,
+            location_id=self.location_id,
+            lake_name=self.lake_name,
+            task_id=task_id,
+            session=self.session,
+            headers=self.headers,
+        )
+        if get_task_response.status_code == 200:
+            delete_task_response = DataplexClient.delete_task(
+                self,
+                dataplex_endpoint=self.dataplex_endpoint,
+                gcp_project_id=self.gcp_project_id,
+                location_id=self.location_id,
+                lake_name=self.lake_name,
+                task_id=task_id,
+                session=self.session,
+                headers=self.headers,
+            )
+            return delete_task_response
+        else:
+            return get_task_response
 
     def get_iam_permissions(self) -> list:
 

@@ -53,7 +53,7 @@ function main() {
     --cluster "${DATAPROC_CLUSTER_NAME}" \
     --py-files=gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip,gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum,dbt/profiles.yml \
     --archives=gs://"${GCS_BUCKET_NAME}"/clouddq-configs.zip \
-    scripts/dataproc/clouddq_pyspark_driver.py \
+    clouddq/integration/dataplex/clouddq_pyspark_driver.py \
     -- \
     clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip \
     "${DQ_TARGET}" \

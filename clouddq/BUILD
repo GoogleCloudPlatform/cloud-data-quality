@@ -92,10 +92,15 @@ py_library(
 )
 
 py_library(
-    name = "dataplex_integration",
-    srcs = glob(["integration/*.py"]),
+    name = "integration",
+    srcs = glob(["integration/**/*.py"]),
     visibility = ["//tests:__subpackages__"],
     deps = [
+        requirement("requests"),
+        requirement("requests-oauth2"),
+        requirement("google-cloud-storage"),
+        requirement("google-cloud-bigquery"),
+        requirement("google-api-python-client"),
     ],
 )
 

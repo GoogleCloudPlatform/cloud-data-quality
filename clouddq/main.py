@@ -33,8 +33,8 @@ from git import InvalidGitRepositoryError
 from git import Repo
 
 from clouddq import lib
-from clouddq.classes.bigquery_client import BigQueryClient
 from clouddq.classes.dq_target_table_utils import TargetTable
+from clouddq.integration.bigquery_client import BigQueryClient
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name

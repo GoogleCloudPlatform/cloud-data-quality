@@ -70,20 +70,24 @@ class TestCliIntegration:
 
     @pytest.fixture
     def temp_configs_dir(self, gcp_project_id, gcp_bq_dataset):
-        source_configs_path = Path("tests").joinpath("resources","configs")
-        temp_clouddq_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test", "configs")
+        # Create temp directory and copy over tests/resources/configs
+        source_configs_path = Path("tests").joinpath("resources", "configs")
+        temp_clouddq_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_artifacts")
+        # Clean directory if exists
         if os.path.exists(temp_clouddq_dir):
             shutil.rmtree(temp_clouddq_dir)
-        destination = shutil.copytree(source_configs_path, temp_clouddq_dir)
-        test_data = Path(destination).joinpath("entities", "test-data.yml")
+        configs_path = Path(temp_clouddq_dir).joinpath("configs")
+        _ = shutil.copytree(source_configs_path, configs_path)
+        # Prepare test config
+        test_data = configs_path.joinpath("entities", "test-data.yml")
         with open(test_data) as source_file:
             lines = source_file.read()
         with open(test_data, "w") as source_file:
             lines = lines.replace("<your_gcp_project_id>", gcp_project_id)
             lines = lines.replace("dq_test", gcp_bq_dataset)
-            source_file.write(lines)
-        yield destination
-        shutil.rmtree(destination)
+            configs_path.write(lines)
+        yield configs_path
+        shutil.rmtree(temp_clouddq_dir)
 
     @pytest.fixture
     def test_profiles_dir(self):

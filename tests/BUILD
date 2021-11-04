@@ -46,7 +46,7 @@ DEPS = [
     "//clouddq:classes",
     "//clouddq:clouddq_lib",
     "//clouddq:dbt_runners",
-    "//clouddq:dataplex_integration",
+    "//clouddq:integration",
     requirement("py"),
     requirement("pytest"),
     requirement("click"),

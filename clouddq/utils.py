@@ -34,15 +34,15 @@ from jinja2 import Template
 from jinja2 import select_autoescape
 
 
+logger = logging.getLogger(__name__)
+
+
 def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
     with file_path.open() as f:
         yaml_configs = yaml.safe_load(f)
     if not yaml_configs:
         return dict()
     return yaml_configs.get(key, dict())
-
-
-logger = logging.getLogger(__name__)
 
 
 def get_templates_path(file_path: Path) -> Path:
