@@ -42,7 +42,7 @@ def main(args):
       verify_executable(args[1], expected_hexdigest)
    cmd = f"python3 {' '.join(args[1:])}"
    print(f"Executing commands:\n {cmd}")
-   subprocess.run(cmd, shell=True)
+   subprocess.run(cmd, shell=True, check=True)
 
 if __name__ == "__main__":
    with ZipFile('clouddq-configs.zip', 'r') as zipObject:
