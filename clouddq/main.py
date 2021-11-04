@@ -381,6 +381,18 @@ def main(  # noqa: C901
         logger.info(
             f"Writing summary results to GCP table: `{dq_summary_table_name}`. "
         )
+        # Check existence of dataset for target BQ table
+        if target_bigquery_summary_table:
+            target_table_ref = bigquery_client.table_from_string(
+                target_bigquery_summary_table
+            )
+            target_dataset_id = target_table_ref.dataset_id
+            if not bigquery_client.is_dataset_exists(target_dataset_id):
+                raise AssertionError(
+                    "Invalid argument to --target_bigquery_summary_table: "
+                    f"{target_bigquery_summary_table}. "
+                    f"Dataset {target_dataset_id} does not exist. "
+                )
         # Load metadata
         metadata = json.loads(metadata)
         # Load Rule Bindings
@@ -450,7 +462,6 @@ def main(  # noqa: C901
         if job_status == JobStatus.SUCCESS:
 
             if not dry_run:
-                if target_bigquery_summary_table:
                     invocation_id = get_dbt_invocation_id(dbt_path)
                     logger.info(
                         f"dbt invocation id for current execution "
