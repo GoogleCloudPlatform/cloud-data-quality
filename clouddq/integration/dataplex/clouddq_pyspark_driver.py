@@ -74,5 +74,5 @@ if __name__ == "__main__":
                 )
                 configs_path.joinpath(file.name).write_text(file.open().read())
     print("Configs directory contents is:")
-    print(pformat(configs_path.glob("**/*")))
+    print(pformat(list(configs_path.glob("**/*"))))
     main(sys.argv)
