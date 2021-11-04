@@ -128,7 +128,7 @@ class BigQueryClient:
     def table_from_string(self, full_table_id: str) -> bigquery.table.Table:
         return bigquery.table.Table.from_string(full_table_id)
 
-    def get_table_red(self, dataset: str) -> bool:
+    def is_dataset_exists(self, dataset: str) -> bool:
         try:
             client = self.get_connection()
             client.get_dataset(dataset)
