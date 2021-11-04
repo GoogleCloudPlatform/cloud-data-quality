@@ -13,20 +13,16 @@
 # limitations under the License.
 
 import pytest
-from clouddq.integration.dataplex.dq_dataplex import CloudDqDataplex
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplex
 from clouddq.integration.dataplex import clouddq_pyspark_driver
 from clouddq.integration.gcs import upload_blob
 from clouddq.utils import working_directory
 from pprint import pformat
-import json
 import time
 import datetime
 import logging
-import os
-import tempfile
 import shutil
 from pathlib import Path
-
 
 
 logger = logging.getLogger(__name__)
@@ -34,168 +30,104 @@ logger = logging.getLogger(__name__)
 class TestDataplexIntegration:
 
     @pytest.fixture
-    def gcp_project_id(self):
-        gcp_project_id = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
-        if not gcp_project_id:
-            logger.fatal("Required test environment variable GOOGLE_CLOUD_PROJECT cannot be found. Set this to the project_id used for integration testing.")
-        return gcp_project_id
-
-    @pytest.fixture
-    def gcp_bq_dataset(self):
-        gcp_bq_dataset = os.environ.get('CLOUDDQ_BIGQUERY_DATASET', None)
-        if not gcp_bq_dataset:
-            logger.fatal("Required test environment variable CLOUDDQ_BIGQUERY_DATASET cannot be found. Set this to the BigQuery dataset used for integration testing.")
-        return gcp_bq_dataset
-
-    @pytest.fixture
-    def gcp_bq_region(self):
-        gcp_bq_region = os.environ.get('CLOUDDQ_BIGQUERY_REGION', None)
-        if not gcp_bq_region:
-            logger.fatal("Required test environment variable CLOUDDQ_BIGQUERY_REGION cannot be found. Set this to the BigQuery region used for integration testing.")
-        return gcp_bq_region
-
-    @pytest.fixture
-    def gcp_sa_key(self):
-        sa_key_path = os.environ.get('GOOGLE_SDK_CREDENTIALS', None)
-        if not sa_key_path:
-            logger.fatal("Required test environment variable GOOGLE_SDK_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing.")
-        return sa_key_path
-
-    @pytest.fixture
-    def gcp_impersonation_credentials(self):
-        gcp_impersonation_credentials = os.environ.get('IMPERSONATION_SERVICE_ACCOUNT', None)
-        if not gcp_impersonation_credentials:
-            logger.fatal("Required test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found. Set this to the service account name for impersonation used for integration testing.")
-        return gcp_impersonation_credentials
-
-    @pytest.fixture
-    def gcp_bucket_name(self):
-        gcp_bucket_name = os.environ.get('GCS_BUCKET_NAME', None)
-        if not gcp_bucket_name:
-            logger.fatal("Required test environment variable GCS_BUCKET_NAME cannot be found. Set this to the gcp bucket name having the clouddq zip file.")
-        return gcp_bucket_name
-
-    @pytest.fixture
-    def temp_artifacts_path(self, gcp_project_id, gcp_bq_dataset):
-        # Create temp directory
-        source_configs_path = Path("tests").joinpath("resources", "configs")
-        temp_artifacts_path = Path(tempfile.gettempdir()).joinpath("clouddq_test_artifacts")
-        # Clean directory if exists
-        if os.path.exists(temp_artifacts_path):
-            shutil.rmtree(temp_artifacts_path)
-        # Copy over tests/resources/configs
-        configs_path = Path(temp_artifacts_path).joinpath("configs")
-        _ = shutil.copytree(source_configs_path, configs_path)
-        # Prepare test config
-        test_data = configs_path.joinpath("entities", "test-data.yml")
-        with open(test_data) as source_file:
-            lines = source_file.read()
-        with open(test_data, "w") as source_file:
-            lines = lines.replace("<your_gcp_project_id>", gcp_project_id)
-            lines = lines.replace("dq_test", gcp_bq_dataset)
-            source_file.write(lines)
-        with working_directory(temp_artifacts_path):
+    def temp_artifacts_path(self, temp_clouddq_dir):
+        with working_directory(temp_clouddq_dir):
             # Create standard configs zip called 'clouddq-configs.zip'
-            configs_path = Path(temp_artifacts_path).joinpath("configs")
+            configs_path = Path(temp_clouddq_dir).joinpath("configs")
             shutil.make_archive('clouddq-configs', 'zip', configs_path.parent, configs_path.name)
             # Create non-standard configs zip without top-level configs directory
             #  called 'non-standard-clouddq-configs.zip'
             shutil.make_archive('non-standard-clouddq-configs', 'zip', configs_path)
             # Create empty configs zip called 'empty-clouddq-configs.zip'
-            empty_directory = Path(temp_artifacts_path).joinpath("empty")
+            empty_directory = Path(temp_clouddq_dir).joinpath("empty")
             empty_directory.mkdir()
             shutil.make_archive('empty-clouddq-configs', 'zip', empty_directory.parent, empty_directory.name)
             # Create single YAML config called 'configs.yml'
             configs_content = []
             for file in configs_path.glob("**/*.yml"):
                 configs_content.append(file.open().read())
-            single_yaml_path = Path(temp_artifacts_path).joinpath("configs.yml")
+            for file in configs_path.glob("**/*.yaml"):
+                configs_content.append(file.open().read())
+            single_yaml_path = Path(temp_clouddq_dir).joinpath("configs.yml")
             single_yaml_path.write_text("\n".join(configs_content))
-            print(pformat(list(temp_artifacts_path.glob("**/*"))))
-        # Return path and delete when done
-        yield temp_artifacts_path
-        shutil.rmtree(temp_artifacts_path)
+            # Create single malformed YAML config called 'malformed-configs.yml'
+            single_malformed_yaml_path = Path(temp_clouddq_dir).joinpath("malformed-configs.yml")
+            single_malformed_yaml_path.write_text("\n".join([c for c in configs_content if "entities:" not in c]))
+            # Print temp configs path
+            print(pformat(list(temp_clouddq_dir.glob("**/*"))))
+            # Return path and delete when done
+            yield temp_clouddq_dir
 
     @pytest.fixture
-    def gcs_clouddq_configs_standard(self, temp_artifacts_path, gcp_bucket_name):
+    def gcs_clouddq_configs_standard(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
-        upload_blob(gcp_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
-        gcs_uri = f"gs://{gcp_bucket_name}/test-artifacts/{file_name}"
+        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
     @pytest.fixture
-    def gcs_clouddq_configs_nonstandard(self, temp_artifacts_path, gcp_bucket_name):
+    def gcs_clouddq_configs_nonstandard(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "non-standard-clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
-        upload_blob(gcp_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
-        gcs_uri = f"gs://{gcp_bucket_name}/test-artifacts/{file_name}"
+        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
     @pytest.fixture
-    def gcs_clouddq_configs_empty(self, temp_artifacts_path, gcp_bucket_name):
+    def gcs_clouddq_configs_empty(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "empty-clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
-        upload_blob(gcp_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
-        gcs_uri = f"gs://{gcp_bucket_name}/test-artifacts/{file_name}"
+        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
     @pytest.fixture
-    def gcs_clouddq_configs_single_yaml(self, temp_artifacts_path, gcp_bucket_name):
+    def gcs_clouddq_configs_single_yaml(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "configs.yml"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
-        upload_blob(gcp_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
-        gcs_uri = f"gs://{gcp_bucket_name}/test-artifacts/{file_name}"
+        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
     @pytest.fixture
-    def gcs_clouddq_pyspark_driver(self, gcp_bucket_name):
+    def gcs_clouddq_configs_single_yaml_malformed(self, temp_artifacts_path, gcs_bucket_name):
+        file_name = "malformed-configs.yml"
+        configs_file_path = temp_artifacts_path.joinpath(file_name)
+        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
+        return gcs_uri
+
+    @pytest.fixture
+    def gcs_clouddq_pyspark_driver(self, gcs_bucket_name):
         file_name = 'clouddq_pyspark_driver.py'
         driver_path = clouddq_pyspark_driver.__file__
-        upload_blob(gcp_bucket_name, driver_path, f"test-artifacts/{file_name}")
-        gcs_uri = f"gs://{gcp_bucket_name}/test-artifacts/{file_name}"
+        upload_blob(gcs_bucket_name, driver_path, f"test-artifacts/{file_name}")
+        gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
-
-    @pytest.fixture
-    def dataplex_endpoint(self):
-        return "https://dataplex.googleapis.com"
 
     @pytest.fixture
     def test_dq_dataplex_client(self,
                                 dataplex_endpoint,
-                                gcp_project_id, 
+                                gcp_dataplex_lake_name,
+                                gcp_dataplex_region,
+                                gcp_project_id,
                                 gcp_bq_dataset,
-                                gcp_bq_region, 
-                                gcp_bucket_name):
-        location_id = "us-central1"
-        lake_name = "amandeep-dev-lake"
-        # lake_name = "us-lake"
+                                gcp_bq_region,
+                                gcs_bucket_name):
         gcp_project_id = gcp_project_id
         gcp_bq_dataset = gcp_bq_dataset
         gcp_bq_region = gcp_bq_region
-        gcp_bucket_name = gcp_bucket_name
-
-        return CloudDqDataplex(dataplex_endpoint=dataplex_endpoint,
+        gcs_bucket_name = gcs_bucket_name
+        yield CloudDqDataplex(dataplex_endpoint=dataplex_endpoint,
+                               gcp_dataplex_lake_name=gcp_dataplex_lake_name,
+                               gcp_dataplex_region=gcp_dataplex_region,
                                gcp_project_id=gcp_project_id,
-                               location_id=location_id, lake_name=lake_name,
-                               gcp_bucket_name=gcp_bucket_name,
+                               gcs_bucket_name=gcs_bucket_name,
                                gcp_bq_dataset=gcp_bq_dataset,
                                gcp_bq_region=gcp_bq_region,
-                               credentials=None,
                                gcp_service_account_key_path=None,
                                gcp_impersonation_credentials=None)
-
-    @pytest.fixture
-    def target_bq_result_dataset_name(self):
-        return "clouddq_test_target_dataset"
-
-    @pytest.fixture
-    def target_bq_result_table_name(self):
-        return "target_table_dataplex"
-
-    @pytest.fixture
-    def service_account_name(self):
-        return "clouddq-runner@dataplex-clouddq.iam.gserviceaccount.com"
 
     @pytest.mark.parametrize(
         "input_configs,expected",
@@ -220,16 +152,21 @@ class TestDataplexIntegration:
                 "SUCCEEDED",
                 id="configs_single_yaml"
             ),
+            pytest.param(
+                'gcs_clouddq_configs_single_yaml_malformed',
+                "FAILED",
+                id="configs_single_yaml_malformed"
+            ),
         ],
     )
-    def test_create_bq_dataplex_task(self, 
+    def test_create_bq_dataplex_task(self,
                     test_dq_dataplex_client,
                     input_configs,
                     expected,
                     gcs_clouddq_pyspark_driver,
                     target_bq_result_dataset_name,
                     target_bq_result_table_name,
-                    service_account_name,
+                    dataplex_task_service_account_name,
                     request):
         """
         This test is for dataplex clouddq task api integration for bigquery
@@ -255,7 +192,7 @@ class TestDataplexIntegration:
                     data_quality_spec_file_path=data_quality_spec_file_path,
                     result_dataset_name=target_bq_result_dataset_name,
                     result_table_name=target_bq_result_table_name,
-                    service_account=service_account_name,
+                    service_account=dataplex_task_service_account_name,
                     labels=labels,
                     clouddq_pyspark_driver_path=clouddq_pyspark_driver_path)
         print(f"CloudDQ task creation response is {response.text}")
