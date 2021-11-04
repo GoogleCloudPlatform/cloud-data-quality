@@ -39,7 +39,6 @@ def verify_executable(fname, expected_hexdigest):
 
 
 def main(args):
-    print(f"Run configs: {args}")
     with open(f"{args[1]}.hashsum") as f:
         expected_hexdigest = f.read().replace("\n", "").replace("\t", "")
         verify_executable(args[1], expected_hexdigest)
