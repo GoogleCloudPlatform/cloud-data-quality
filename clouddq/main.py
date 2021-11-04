@@ -462,6 +462,7 @@ def main(  # noqa: C901
         if job_status == JobStatus.SUCCESS:
 
             if not dry_run:
+                if target_bigquery_summary_table:
                     invocation_id = get_dbt_invocation_id(dbt_path)
                     logger.info(
                         f"dbt invocation id for current execution "
