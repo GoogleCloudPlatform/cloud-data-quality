@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+from enum import Enum
 
 import json
 import logging
@@ -19,6 +20,7 @@ import re
 
 from requests import Response
 from typing import Optional
+from pathlib import Path
 
 from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
@@ -30,8 +32,11 @@ TARGET_SCOPES = [
     "https://www.googleapis.com/auth/cloud-platform",
 ]
 USER_AGENT_TAG = "Product_Dataplex/1.0 (GPN:Dataplex_CloudDQ)"
-DEFAULT_GCS_BUCKET_NAME = "dataplex-clouddq-api-integration"
+DEFAULT_GCS_BUCKET_NAME = "dataplex-clouddq-artifacts-{gcp_dataplex_region}"
 
+class DATAPLEX_TASK_TRIGGER_TYPE(str, Enum):
+    ON_DEMAND = 'ON_DEMAND'
+    RECURRING = 'RECURRING'
 
 class CloudDqDataplexClient:
     _client: DataplexClient
@@ -42,15 +47,14 @@ class CloudDqDataplexClient:
         gcp_project_id: str,
         gcp_dataplex_lake_name: str,
         gcp_dataplex_region: str,
-        gcs_bucket_name: str,
+        gcs_bucket_name: Optional[str] = None,
         gcp_credentials: Optional[GcpCredentials] = None,
         dataplex_endpoint: str = "https://dataplex.googleapis.com",
     ) -> None:
         if gcs_bucket_name:
             self.gcs_bucket_name = gcs_bucket_name
         else:
-            # self.gcs_bucket_name = f"{DEFAULT_GCS_BUCKET_NAME}_{location_id}"
-            self.gcs_bucket_name = DEFAULT_GCS_BUCKET_NAME
+            self.gcs_bucket_name = DEFAULT_GCS_BUCKET_NAME.format(gcp_dataplex_region=gcp_dataplex_region)
         self._client = DataplexClient(
             gcp_credentials=gcp_credentials,
             gcp_project_id=gcp_project_id,
@@ -62,61 +66,119 @@ class CloudDqDataplexClient:
     def create_clouddq_task(
         self,
         task_id: str,
-        trigger_spec_type: str,
-        task_description: str,
-        data_quality_spec_file_path: str,
-        result_dataset_name: str,
-        result_table_name: str,
-        service_account: str,
-        labels: dict | None = None,
+        clouddq_yaml_spec_file_path: str,
+        clouddq_run_project_id: str,
+        clouddq_run_bq_region: str,
+        clouddq_run_bq_dataset: str,
+        task_service_account: str,
+        target_bq_result_project_name: str,
+        target_bq_result_dataset_name: str,
+        target_bq_result_table_name: str,
+        task_trigger_spec_type: DATAPLEX_TASK_TRIGGER_TYPE = DATAPLEX_TASK_TRIGGER_TYPE.ON_DEMAND,
+        task_description: str | None = None,
+        task_labels: dict | None = None,
         clouddq_pyspark_driver_path: str | None = None,
+        clouddq_executable_path: str | None = None,
+        clouddq_executable_checksum_path: str | None = None,
     ) -> Response:
-
+        # Set default CloudDQ PySpark driver path if not manually overridden
         if not clouddq_pyspark_driver_path:
-            python_script_file = (
+            clouddq_pyspark_driver_path = (
                 f"gs://{self.gcs_bucket_name}/clouddq_pyspark_driver.py"
             )
         else:
-            python_script_file = clouddq_pyspark_driver_path
-
-        if data_quality_spec_file_path[:5] == "gs://":
-            data_quality_spec_file_path = data_quality_spec_file_path
-        else:
-            upload_blob(
-                self.gcs_bucket_name,
-                data_quality_spec_file_path,
-                data_quality_spec_file_path,
+            if not clouddq_pyspark_driver_path[:5] == "gs://":
+                raise ValueError(
+                    f"clouddq_pyspark_driver_path argument {clouddq_pyspark_driver_path} "
+                    "must be a GCS path."
+                )
+            clouddq_pyspark_driver_name = clouddq_pyspark_driver_path.split('/')[-1]
+            if clouddq_pyspark_driver_name != "clouddq_pyspark_driver.py":
+                raise ValueError(
+                    f"clouddq_pyspark_driver_path argument {clouddq_pyspark_driver_path} "
+                    "must end with 'clouddq_pyspark_driver.py'."
+                )
+        # Set default CloudDQ executable path if not manually overridden
+        if not clouddq_executable_path:
+            clouddq_executable_path = (
+                f"gs://{self.gcs_bucket_name}/clouddq-executable.zip"
             )
-            gcs_uri = f"gs://{self.gcs_bucket_name}/{data_quality_spec_file_path}"
-            data_quality_spec_file_path = gcs_uri
-
+        else:
+            if not clouddq_executable_path[:5] == "gs://":
+                raise ValueError(
+                    f"clouddq_executable_path argument {clouddq_executable_path} "
+                    "must be a GCS path."
+                )
+            clouddq_executable_name = clouddq_executable_path.split('/')[-1]
+            if clouddq_executable_name != "clouddq-executable.zip":
+                raise ValueError(
+                    f"clouddq_executable_path argument {clouddq_executable_path} "
+                    "must end with 'clouddq-executable.zip'."
+                )
+        # Set default CloudDQ executable checksum path if not manually overridden
+        if not clouddq_executable_checksum_path:
+            clouddq_executable_checksum_path = (
+                f"gs://{self.gcs_bucket_name}/clouddq-executable.zip.hashsum"
+            )
+        else:
+            if not clouddq_executable_checksum_path[:5] == "gs://":
+                raise ValueError(
+                    f"clouddq_executable_checksum_path argument {clouddq_executable_checksum_path} "
+                    "must be a GCS path."
+                )
+            clouddq_executable_checksum_name = clouddq_executable_checksum_path.split('/')[-1]
+            if clouddq_executable_checksum_name != "clouddq-executable.zip.hashsum":
+                raise ValueError(
+                    f"clouddq_executable_checksum_path argument {clouddq_executable_checksum_path} "
+                    "must end with 'clouddq-executable.zip.hashsum'."
+                )
+        # Prepare input CloudDQ YAML specs path
+        if clouddq_yaml_spec_file_path[:5] == "gs://":
+            clouddq_configs_gcs_path = clouddq_yaml_spec_file_path
+        else:
+            clouddq_yaml_spec_file_path = Path(clouddq_yaml_spec_file_path)
+            if clouddq_yaml_spec_file_path.is_file():
+                upload_blob(
+                    self.gcs_bucket_name,
+                    clouddq_yaml_spec_file_path,
+                    clouddq_yaml_spec_file_path,
+                )
+                gcs_uri = f"gs://{self.gcs_bucket_name}/{clouddq_yaml_spec_file_path}"
+                clouddq_configs_gcs_path = gcs_uri
+            else:
+                raise ValueError(
+                    f"'clouddq_yaml_spec_file_path' argument {clouddq_yaml_spec_file_path} "
+                    "must either be a single file (`.yml` or `.zip`) "
+                    "or a GCS path to the `.yml` or `.zip` configs file."
+                    )
+        # Add user-agent tag as Task label
         allowed_user_agent_label = re.sub("[^0-9a-zA-Z]+", "-", USER_AGENT_TAG.lower())
         if task_labels:
             task_labels["user-agent"] = allowed_user_agent_label
         else:
             task_labels = {"user-agent": allowed_user_agent_label}
-
+        # Prepre Dataplex Task message body for CloudDQ Job
         clouddq_post_body = {
             "spark": {
-                "python_script_file": python_script_file,
+                "python_script_file": clouddq_pyspark_driver_path,
                 "file_uris": [
-                    f"gs://{self.gcs_bucket_name}/clouddq-executable.zip",
-                    f"gs://{self.gcs_bucket_name}/clouddq-executable.zip.hashsum",
-                    f"{clouddq_configs_path}",
+                    f"{clouddq_executable_path}",
+                    f"{clouddq_executable_checksum_path}",
+                    f"{clouddq_configs_gcs_path}",
                 ],
             },
             "execution_spec": {
                 "args": {
-                    "TASK_ARGS": f"clouddq-executable.zip, "
-                    "ALL, "
-                    f"{clouddq_configs_path}, "
+                    "TASK_ARGS": f'clouddq-executable.zip, '
+                    'ALL, '
+                    f'{clouddq_configs_gcs_path}, '
                     f'--gcp_project_id="{clouddq_run_project_id}", '
-                    f'--gcp_region_id="{clouddq_bq_region}", '
-                    f'--gcp_bq_dataset_id="{clouddq_bq_dataset}", '
-                    f"--target_bigquery_summary_table="
-                    f'"{target_summary_project_id}.'
-                    f"{target_summary_dataset_name}."
-                    f'{target_summary_table_name}",'
+                    f'--gcp_region_id="{clouddq_run_bq_region}", '
+                    f'--gcp_bq_dataset_id="{clouddq_run_bq_dataset}", '
+                    f'--target_bigquery_summary_table='
+                    f'"{target_bq_result_project_name}.'
+                    f'{target_bq_result_dataset_name}.'
+                    f'{target_bq_result_table_name}",'
                 },
                 "service_account": f"{task_service_account}",
             },
@@ -124,7 +186,9 @@ class CloudDqDataplexClient:
             "description": task_description,
             "labels": task_labels,
         }
-
+        # Set trigger_spec for RECURRING trigger type
+        if task_trigger_spec_type == DATAPLEX_TASK_TRIGGER_TYPE.RECURRING:
+            raise NotImplementedError(f"task_trigger_spec_type {task_trigger_spec_type} not yet supported.")
         response = self._client.create_dataplex_task(
             task_id=task_id,
             post_body=clouddq_post_body,
@@ -139,7 +203,7 @@ class CloudDqDataplexClient:
         :param task_id: dataplex task id
         :return: Task status
         """
-        res = self._client.get_clouddq_task_jobs(task_id)
+        res = self._client.get_dataplex_task_jobs(task_id)
         logger.debug(f"Response status code is {res.status_code}")
         logger.debug(f"Response text is {res.text}")
         resp_obj = json.loads(res.text)
@@ -164,11 +228,11 @@ class CloudDqDataplexClient:
         :return: Response object
         """
 
-        get_task_response = self._client.get_task(
+        get_task_response = self._client.get_dataplex_task(
             task_id=task_id,
         )
         if get_task_response.status_code == 200:
-            delete_task_response = self._client.delete_task(
+            delete_task_response = self._client.delete_dataplex_task(
                 task_id=task_id,
             )
             return delete_task_response
@@ -178,6 +242,6 @@ class CloudDqDataplexClient:
     def get_iam_permissions(self) -> list:
 
         body = {"resource": "dataplex", "permissions": ["roles/dataproc.worker"]}
-        return self._client.get_iam_permissions(
+        return self._client.get_dataplex_iam_permissions(
             body=body,
         )

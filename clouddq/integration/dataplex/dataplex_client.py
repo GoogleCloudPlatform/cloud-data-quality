@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import logging
 
+from typing import Optional
 from pathlib import Path
 
 import google.auth
@@ -45,12 +46,12 @@ class DataplexClient:
 
     def __init__(
         self,
-        gcp_dataplex_lake_name: str,
-        gcp_dataplex_region: str,
         gcp_project_id: str,
-        gcp_credentials: GcpCredentials = None,
-        gcp_service_account_key_path: Path = None,
-        gcp_impersonation_credentials: str = None,
+        gcp_dataplex_region: str,
+        gcp_dataplex_lake_name: str,
+        gcp_credentials: Optional[GcpCredentials] = None,
+        gcp_service_account_key_path: Optional[Path] = None,
+        gcp_impersonation_credentials: Optional[str] = None,
         dataplex_endpoint: str = "https://dataplex.googleapis.com",
     ) -> None:
         if gcp_credentials:
@@ -108,6 +109,23 @@ class DataplexClient:
             session.auth = OAuth2BearerToken(self._auth_token)
         return session
 
+    def get_dataplex_lake(
+        self,
+        lake_name: str,
+        gcp_project_id: str = None,
+        location_id: str = None,
+    ) -> Response:
+        if not gcp_project_id:
+            gcp_project_id = self.gcp_project_id
+        if not location_id:
+            location_id = self.location_id
+        response = self._session.get(
+            f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
+            f"{location_id}/lakes/{lake_name}",
+            headers=self._headers,
+        )
+        return response
+
     def create_dataplex_task(
         self,
         task_id: str,
@@ -150,7 +168,7 @@ class DataplexClient:
         )
         return response
 
-    def get_task(
+    def get_dataplex_task(
         self,
         task_id: str,
         gcp_project_id: str = None,
@@ -168,10 +186,9 @@ class DataplexClient:
             f"{location_id}/lakes/{lake_name}/tasks/{task_id}",
             headers=self._headers,
         )
-
         return response
 
-    def delete_task(
+    def delete_dataplex_task(
         self,
         task_id: str,
         gcp_project_id: str = None,
@@ -189,10 +206,9 @@ class DataplexClient:
             f"{location_id}/lakes/{lake_name}/tasks/{task_id}",
             headers=self._headers,
         )
-
         return response
 
-    def get_iam_permissions(
+    def get_dataplex_iam_permissions(
         self,
         body: str,
         gcp_project_id: str = None,

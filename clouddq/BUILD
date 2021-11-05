@@ -52,6 +52,7 @@ py_binary(
     deps = [
         ":clouddq_lib",
         ":dbt_runners",
+        ":integration",
         requirement("click"),
         requirement("coloredlogs"),
         requirement("gitpython"),

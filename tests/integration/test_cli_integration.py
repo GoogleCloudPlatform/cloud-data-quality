@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import click.testing
 import pytest
 import logging
-import tempfile
-import shutil
 from pathlib import Path
 
 from google.auth.exceptions import RefreshError

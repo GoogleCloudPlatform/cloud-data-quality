@@ -18,7 +18,7 @@ from datetime import date
 
 from google.cloud import bigquery
 
-from clouddq.integration.bigquery_client import BigQueryClient
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 
 
 logger = logging.getLogger(__name__)

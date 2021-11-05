@@ -33,8 +33,8 @@ from git import InvalidGitRepositoryError
 from git import Repo
 
 from clouddq import lib
-from clouddq.classes.dq_target_table_utils import TargetTable
-from clouddq.integration.bigquery_client import BigQueryClient
+from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
@@ -347,7 +347,7 @@ def main(  # noqa: C901
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
             bigquery_client = BigQueryClient(
-                project_id=gcp_project_id,
+                gcp_project_id=gcp_project_id,
                 gcp_service_account_key_path=gcp_service_account_key_path,
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
