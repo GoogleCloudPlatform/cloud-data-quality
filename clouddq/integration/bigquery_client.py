@@ -43,8 +43,8 @@ RE_EXTRACT_TABLE_NAME = ".*Not found: Table (.+?) was not found in.*"
 
 
 class BigQueryClient:
-    __gcp_credentials: GcpCredentials
-    __client: bigquery.client.Client = None
+    _gcp_credentials: GcpCredentials
+    _client: bigquery.client.Client = None
     target_audience = "https://bigquery.googleapis.com"
 
     def __init__(
@@ -55,9 +55,9 @@ class BigQueryClient:
         gcp_impersonation_credentials: str = None,
     ) -> None:
         if gcp_credentials:
-            self.__gcp_credentials = gcp_credentials
+            self._gcp_credentials = gcp_credentials
         else:
-            self.__gcp_credentials = GcpCredentials(
+            self._gcp_credentials = GcpCredentials(
                 gcp_project_id=gcp_project_id,
                 gcp_service_account_key_path=gcp_service_account_key_path,
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
@@ -65,20 +65,20 @@ class BigQueryClient:
 
     def get_connection(self, new: bool = False) -> bigquery.client.Client:
         """Creates return new Singleton database connection"""
-        if self.__client is None or new:
+        if self._client is None or new:
             job_config = bigquery.QueryJobConfig(use_legacy_sql=False)
-            self.__client = bigquery.Client(
+            self._client = bigquery.Client(
                 default_query_job_config=job_config,
-                credentials=self.__gcp_credentials.credentials,
-                project=self.__gcp_credentials.project_id,
+                credentials=self._gcp_credentials.credentials,
+                project=self._gcp_credentials.project_id,
             )
-            return self.__client
+            return self._client
         else:
-            return self.__client
+            return self._client
 
     def close_connection(self) -> None:
-        if self.__client:
-            self.__client.close()
+        if self._client:
+            self._client.close()
 
     def assert_dataset_is_in_region(self, dataset: str, region: str) -> None:
         client = self.get_connection()

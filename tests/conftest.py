@@ -21,91 +21,91 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 @pytest.fixture
-def gcp_project_id(self):
+def gcp_project_id():
     gcp_project_id = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     if not gcp_project_id:
         logger.fatal("Required test environment variable GOOGLE_CLOUD_PROJECT cannot be found. Set this to the project_id used for integration testing.")
     return gcp_project_id
 
 @pytest.fixture
-def gcp_bq_dataset(self):
+def gcp_bq_dataset():
     gcp_bq_dataset = os.environ.get('CLOUDDQ_BIGQUERY_DATASET', None)
     if not gcp_bq_dataset:
         logger.fatal("Required test environment variable CLOUDDQ_BIGQUERY_DATASET cannot be found. Set this to the BigQuery dataset used for integration testing.")
     return gcp_bq_dataset
 
 @pytest.fixture
-def gcp_bq_region(self):
+def gcp_bq_region():
     gcp_bq_region = os.environ.get('CLOUDDQ_BIGQUERY_REGION', None)
     if not gcp_bq_region:
         logger.fatal("Required test environment variable CLOUDDQ_BIGQUERY_REGION cannot be found. Set this to the BigQuery region used for integration testing.")
     return gcp_bq_region
 
 @pytest.fixture
-def gcp_sa_key(self):
+def gcp_sa_key():
     sa_key_path = os.environ.get('GOOGLE_SDK_CREDENTIALS', None)
     if not sa_key_path:
         logger.fatal("Required test environment variable GOOGLE_SDK_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing.")
     return sa_key_path
 
 @pytest.fixture
-def gcp_impersonation_credentials(self):
+def gcp_impersonation_credentials():
     gcp_impersonation_credentials = os.environ.get('IMPERSONATION_SERVICE_ACCOUNT', None)
     if not gcp_impersonation_credentials:
         logger.fatal("Required test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found. Set this to the service account name for impersonation used for integration testing.")
     return gcp_impersonation_credentials
 
 @pytest.fixture
-def gcs_bucket_name(self):
+def gcs_bucket_name():
     gcs_bucket_name = os.environ.get('GCS_BUCKET_NAME', "dataplex-clouddq-api-integration")
     if not gcs_bucket_name:
         logger.fatal("Required test environment variable GCS_BUCKET_NAME cannot be found. Set this to the GCS bucket name for staging CloudDQ artifacts and configs.")
     return gcs_bucket_name
 
 @pytest.fixture
-def gcp_dataplex_region(self):
+def gcp_dataplex_region():
     gcp_dataplex_region = os.environ.get('DATAPLEX_REGION_ID', "us-central1")
     if not gcp_dataplex_region:
         logger.fatal("Required test environment variable DATAPLEX_REGION_ID cannot be found. Set this to the region id of the Dataplex Lake.")
     return gcp_dataplex_region
 
 @pytest.fixture
-def gcp_dataplex_lake_name(self):
+def gcp_dataplex_lake_name():
     gcp_dataplex_lake_name = os.environ.get('DATAPLEX_LAKE_NAME', "amandeep-dev-lake")
     if not gcp_dataplex_lake_name:
         logger.fatal("Required test environment variable DATAPLEX_LAKE_NAME cannot be found. Set this to the Dataplex Lake used for testing.")
     return gcp_dataplex_lake_name
 
 @pytest.fixture
-def dataplex_endpoint(self):
+def dataplex_endpoint():
     dataplex_endpoint = os.environ.get('DATAPLEX_ENDPOINT', "https://dataplex.googleapis.com")
     if not dataplex_endpoint:
         logger.fatal("Required test environment variable DATAPLEX_ENDPOINT cannot be found. Set this to the Dataplex Endpoint used for testing.")
     return dataplex_endpoint
 
 @pytest.fixture
-def target_bq_result_dataset_name(self):
+def target_bq_result_dataset_name():
     target_bq_result_dataset_name = os.environ.get('DATAPLEX_TARGET_BQ_DATASET', "clouddq_test_target_dataset")
     if not target_bq_result_dataset_name:
         logger.fatal("Required test environment variable DATAPLEX_TARGET_BQ_DATASET cannot be found. Set this to the Target BQ Dataset used for testing.")
     return target_bq_result_dataset_name
 
 @pytest.fixture
-def target_bq_result_table_name(self):
+def target_bq_result_table_name():
     target_bq_result_table_name = os.environ.get('DATAPLEX_TARGET_BQ_TABLE', "target_table_dataplex")
     if not target_bq_result_table_name:
         logger.fatal("Required test environment variable DATAPLEX_TARGET_BQ_TABLE cannot be found. Set this to the Target BQ Table used for testing.")
     return target_bq_result_table_name
 
 @pytest.fixture
-def dataplex_task_service_account_name(self):
+def dataplex_task_service_account_name():
     dataplex_task_service_account_name = os.environ.get('DATAPLEX_TASK_SA', "clouddq-runner@dataplex-clouddq.iam.gserviceaccount.com")
     if not dataplex_task_service_account_name:
         logger.fatal("Required test environment variable DATAPLEX_TASK_SA cannot be found. Set this to the service account used for running Dataplex Tasks in testing.")
     return dataplex_task_service_account_name
 
 @pytest.fixture
-def temp_clouddq_dir(self, gcp_project_id, gcp_bq_dataset):
+def temp_clouddq_dir(gcp_project_id, gcp_bq_dataset):
     # Create temp directory
     source_configs_path = Path("tests").joinpath("resources", "configs")
     temp_clouddq_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_artifacts")

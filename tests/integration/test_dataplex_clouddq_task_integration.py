@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pytest
-from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplex
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.dataplex import clouddq_pyspark_driver
 from clouddq.integration.gcs import upload_blob
 from clouddq.utils import working_directory
@@ -112,22 +112,14 @@ class TestDataplexIntegration:
                                 gcp_dataplex_lake_name,
                                 gcp_dataplex_region,
                                 gcp_project_id,
-                                gcp_bq_dataset,
-                                gcp_bq_region,
                                 gcs_bucket_name):
         gcp_project_id = gcp_project_id
-        gcp_bq_dataset = gcp_bq_dataset
-        gcp_bq_region = gcp_bq_region
         gcs_bucket_name = gcs_bucket_name
-        yield CloudDqDataplex(dataplex_endpoint=dataplex_endpoint,
+        yield CloudDqDataplexClient(dataplex_endpoint=dataplex_endpoint,
                                gcp_dataplex_lake_name=gcp_dataplex_lake_name,
                                gcp_dataplex_region=gcp_dataplex_region,
                                gcp_project_id=gcp_project_id,
-                               gcs_bucket_name=gcs_bucket_name,
-                               gcp_bq_dataset=gcp_bq_dataset,
-                               gcp_bq_region=gcp_bq_region,
-                               gcp_service_account_key_path=None,
-                               gcp_impersonation_credentials=None)
+                               gcs_bucket_name=gcs_bucket_name)
 
     @pytest.mark.parametrize(
         "input_configs,expected",

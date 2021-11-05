@@ -18,6 +18,7 @@ import logging
 import re
 
 from requests import Response
+from typing import Optional
 
 from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
@@ -33,16 +34,16 @@ DEFAULT_GCS_BUCKET_NAME = "dataplex-clouddq-api-integration"
 
 
 class CloudDqDataplexClient:
-    __client: DataplexClient
+    _client: DataplexClient
     gcs_bucket_name: str
 
     def __init__(
         self,
-        gcp_credentials: GcpCredentials,
         gcp_project_id: str,
         gcp_dataplex_lake_name: str,
         gcp_dataplex_region: str,
         gcs_bucket_name: str,
+        gcp_credentials: Optional[GcpCredentials] = None,
         dataplex_endpoint: str = "https://dataplex.googleapis.com",
     ) -> None:
         if gcs_bucket_name:
@@ -50,7 +51,7 @@ class CloudDqDataplexClient:
         else:
             # self.gcs_bucket_name = f"{DEFAULT_GCS_BUCKET_NAME}_{location_id}"
             self.gcs_bucket_name = DEFAULT_GCS_BUCKET_NAME
-        self.__client = DataplexClient(
+        self._client = DataplexClient(
             gcp_credentials=gcp_credentials,
             gcp_project_id=gcp_project_id,
             gcp_dataplex_lake_name=gcp_dataplex_lake_name,
@@ -90,10 +91,10 @@ class CloudDqDataplexClient:
             data_quality_spec_file_path = gcs_uri
 
         allowed_user_agent_label = re.sub("[^0-9a-zA-Z]+", "-", USER_AGENT_TAG.lower())
-        if labels:
-            labels["user-agent"] = allowed_user_agent_label
+        if task_labels:
+            task_labels["user-agent"] = allowed_user_agent_label
         else:
-            labels = {"user-agent": allowed_user_agent_label}
+            task_labels = {"user-agent": allowed_user_agent_label}
 
         clouddq_post_body = {
             "spark": {
@@ -101,30 +102,30 @@ class CloudDqDataplexClient:
                 "file_uris": [
                     f"gs://{self.gcs_bucket_name}/clouddq-executable.zip",
                     f"gs://{self.gcs_bucket_name}/clouddq-executable.zip.hashsum",
-                    f"{data_quality_spec_file_path}",
+                    f"{clouddq_configs_path}",
                 ],
             },
             "execution_spec": {
                 "args": {
                     "TASK_ARGS": f"clouddq-executable.zip, "
                     "ALL, "
-                    f"{data_quality_spec_file_path}, "
-                    f'--gcp_project_id="{self.gcp_project_id}", '
-                    f'--gcp_region_id="{self.gcp_bq_region}", '
-                    f'--gcp_bq_dataset_id="{self.gcp_bq_dataset}", '
+                    f"{clouddq_configs_path}, "
+                    f'--gcp_project_id="{clouddq_run_project_id}", '
+                    f'--gcp_region_id="{clouddq_bq_region}", '
+                    f'--gcp_bq_dataset_id="{clouddq_bq_dataset}", '
                     f"--target_bigquery_summary_table="
-                    f'"{self.gcp_project_id}.'
-                    f"{result_dataset_name}."
-                    f'{result_table_name}",'
+                    f'"{target_summary_project_id}.'
+                    f"{target_summary_dataset_name}."
+                    f'{target_summary_table_name}",'
                 },
-                "service_account": f"{service_account}",
+                "service_account": f"{task_service_account}",
             },
-            "trigger_spec": {"type": trigger_spec_type},
+            "trigger_spec": {"type": task_trigger_spec_type},
             "description": task_description,
-            "labels": labels,
+            "labels": task_labels,
         }
 
-        response = self.__client.create_dataplex_task(
+        response = self._client.create_dataplex_task(
             task_id=task_id,
             post_body=clouddq_post_body,
         )
@@ -138,7 +139,7 @@ class CloudDqDataplexClient:
         :param task_id: dataplex task id
         :return: Task status
         """
-        res = self.__client.get_clouddq_task_jobs(task_id)
+        res = self._client.get_clouddq_task_jobs(task_id)
         logger.debug(f"Response status code is {res.status_code}")
         logger.debug(f"Response text is {res.text}")
         resp_obj = json.loads(res.text)
@@ -163,11 +164,11 @@ class CloudDqDataplexClient:
         :return: Response object
         """
 
-        get_task_response = self.__client.get_task(
+        get_task_response = self._client.get_task(
             task_id=task_id,
         )
         if get_task_response.status_code == 200:
-            delete_task_response = self.__client.delete_task(
+            delete_task_response = self._client.delete_task(
                 task_id=task_id,
             )
             return delete_task_response
@@ -177,6 +178,6 @@ class CloudDqDataplexClient:
     def get_iam_permissions(self) -> list:
 
         body = {"resource": "dataplex", "permissions": ["roles/dataproc.worker"]}
-        return self.__client.get_iam_permissions(
+        return self._client.get_iam_permissions(
             body=body,
         )

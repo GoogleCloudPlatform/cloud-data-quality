@@ -34,10 +34,10 @@ logger = logging.getLogger(__name__)
 
 
 class DataplexClient:
-    __gcp_credentials: GcpCredentials
-    __headers: dict
-    __session: Session
-    __auth_token: str
+    _gcp_credentials: GcpCredentials
+    _headers: dict
+    _session: Session
+    _auth_token: str
     gcp_project_id: str
     location_id: str
     lake_name: str
@@ -45,10 +45,10 @@ class DataplexClient:
 
     def __init__(
         self,
-        gcp_credentials: GcpCredentials,
         gcp_dataplex_lake_name: str,
         gcp_dataplex_region: str,
         gcp_project_id: str,
+        gcp_credentials: GcpCredentials = None,
         gcp_service_account_key_path: Path = None,
         gcp_impersonation_credentials: str = None,
         dataplex_endpoint: str = "https://dataplex.googleapis.com",
@@ -57,21 +57,21 @@ class DataplexClient:
             self._gcp_credentials = gcp_credentials
         else:
             self._gcp_credentials = GcpCredentials(
-                project_id=gcp_project_id,
+                gcp_project_id=gcp_project_id,
                 gcp_service_account_key_path=gcp_service_account_key_path,
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
-        self.__auth_token = self.__get_auth_token(
-            credentials=self.__gcp_credentials.credentials
+        self._auth_token = self._get_auth_token(
+            credentials=self._gcp_credentials.credentials
         )
-        self.__headers = self.__set_headers()
-        self.__session = self.__get_session()
+        self._headers = self._set_headers()
+        self._session = self._get_session()
         self.gcp_project_id = gcp_project_id
         self.dataplex_endpoint = dataplex_endpoint
         self.lake_name = gcp_dataplex_lake_name
         self.location_id = gcp_dataplex_region
 
-    def __get_auth_token(self, credentials: Credentials) -> str:
+    def _get_auth_token(self, credentials: Credentials) -> str:
         """
         This method is used to get the authentication token.
 
@@ -88,24 +88,24 @@ class DataplexClient:
         logger.debug(auth_token)
         return auth_token
 
-    def __set_headers(self) -> dict:
+    def _set_headers(self) -> dict:
         # create request headers
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + self.__auth_token,
+            "Authorization": "Bearer " + self._auth_token,
         }
 
         return headers
 
-    def __get_session(self) -> Session:
+    def _get_session(self) -> Session:
         """
         This method create the session object for request
         :return:
         session object
         """
         with Session() as session:
-            session.auth = OAuth2BearerToken(self.__auth_token)
+            session.auth = OAuth2BearerToken(self._auth_token)
         return session
 
     def create_dataplex_task(
@@ -122,10 +122,10 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
-        response = self.__session.post(
+        response = self._session.post(
             f"{self.dataplex_endpoint}/v1/projects/{self.gcp_project_id}/locations/"
             f"{self.location_id}/lakes/{self.lake_name}/tasks?task_id={task_id}",
-            headers=self.__headers,
+            headers=self._headers,
             data=json.dumps(post_body),
         )
         return response
@@ -143,10 +143,10 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
-        response = self.__session.get(
+        response = self._session.get(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks/{task_id}/jobs",
-            headers=self.__headers,
+            headers=self._headers,
         )
         return response
 
@@ -163,10 +163,10 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
-        response = self.__session.get(
+        response = self._session.get(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks/{task_id}",
-            headers=self.__headers,
+            headers=self._headers,
         )
 
         return response
@@ -184,10 +184,10 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
-        response = self.__session.delete(
+        response = self._session.delete(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks/{task_id}",
-            headers=self.__headers,
+            headers=self._headers,
         )
 
         return response
@@ -205,10 +205,10 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
-        response = self.__session.post(
+        response = self._session.post(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks/",
-            headers=self.__headers,
+            headers=self._headers,
             data=json.dumps(body),
         )
         return response
