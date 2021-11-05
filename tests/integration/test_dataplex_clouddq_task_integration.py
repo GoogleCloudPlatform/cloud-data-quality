@@ -14,7 +14,7 @@
 
 import pytest
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
-from clouddq.integration.dataplex import clouddq_pyspark_driver
+from clouddq.integration import clouddq_pyspark_driver
 from clouddq.integration.gcs import upload_blob
 from clouddq.utils import working_directory
 from pprint import pformat
