@@ -59,7 +59,7 @@ def gcp_impersonation_credentials(self):
 def gcs_bucket_name(self):
     gcs_bucket_name = os.environ.get('GCS_BUCKET_NAME', "dataplex-clouddq-api-integration")
     if not gcs_bucket_name:
-        logger.fatal("Required test environment variable GCS_BUCKET_NAME cannot be found. Set this to the gcs bucket name for staging CloudDQ artifacts and configs.")
+        logger.fatal("Required test environment variable GCS_BUCKET_NAME cannot be found. Set this to the GCS bucket name for staging CloudDQ artifacts and configs.")
     return gcs_bucket_name
 
 @pytest.fixture
