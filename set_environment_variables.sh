@@ -25,7 +25,9 @@ export GOOGLE_CLOUD_PROJECT="<your-project-id>"
 export CLOUDDQ_BIGQUERY_DATASET="<your-bigquery-dataset-id>"
 # Set $CLOUDDQ_BIGQUERY_REGION to the BigQuery region used for integration testing.
 export CLOUDDQ_BIGQUERY_REGION="<gcp-region-for-bigquery-jobs>"
-# Set $GOOGLE_SDK_CREDENTIALS to the exported service account key path used for integration testing. If you have the environment vairable GOOGLE_APPLICATION_CREDENTIALS set, you can do `export GOOGLE_SDK_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"`.
+# Set $GOOGLE_SDK_CREDENTIALS to the exported service account key path used for integration testing.
+# If you have the environment variable GOOGLE_APPLICATION_CREDENTIALS set, you can do `export GOOGLE_SDK_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"`.
+# If using `gcloud auth application-default login`, you may also set this to `$HOME/.config/gcloud/application_default_credentials.json]`
 export GOOGLE_SDK_CREDENTIALS="<path-to-exported-service-account-key>"
 # Set $IMPERSONATION_SERVICE_ACCOUNT to the service account name for impersonation used for integration testing
 export IMPERSONATION_SERVICE_ACCOUNT="<service-account-name-for-impersonation>"
