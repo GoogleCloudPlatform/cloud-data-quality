@@ -33,8 +33,8 @@ from git import InvalidGitRepositoryError
 from git import Repo
 
 from clouddq import lib
-from clouddq.classes.bigquery_client import BigQueryClient
 from clouddq.classes.dq_target_table_utils import TargetTable
+from clouddq.integration.bigquery_client import BigQueryClient
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
@@ -381,6 +381,18 @@ def main(  # noqa: C901
         logger.info(
             f"Writing summary results to GCP table: `{dq_summary_table_name}`. "
         )
+        # Check existence of dataset for target BQ table
+        if target_bigquery_summary_table:
+            target_table_ref = bigquery_client.table_from_string(
+                target_bigquery_summary_table
+            )
+            target_dataset_id = target_table_ref.dataset_id
+            if not bigquery_client.is_dataset_exists(target_dataset_id):
+                raise AssertionError(
+                    "Invalid argument to --target_bigquery_summary_table: "
+                    f"{target_bigquery_summary_table}. "
+                    f"Dataset {target_dataset_id} does not exist. "
+                )
         # Load metadata
         metadata = json.loads(metadata)
         # Load Rule Bindings
