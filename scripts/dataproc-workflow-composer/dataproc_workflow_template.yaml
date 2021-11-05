@@ -22,6 +22,7 @@ placement:
         enableHttpPortAccess: true
       gceClusterConfig:
         zoneUri: <preferred_gcp_zone>
+        networkUri: <vpc_network>
       masterConfig:
         diskConfig:
           bootDiskSizeGb: 100
