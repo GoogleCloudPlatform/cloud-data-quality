@@ -29,6 +29,7 @@ require_env_var CLOUDDQ_BIGQUERY_DATASET "Set this to the BigQuery dataset used 
 require_env_var CLOUDDQ_BIGQUERY_REGION "Set this to the BigQuery region used for integration testing."
 require_env_var GOOGLE_SDK_CREDENTIALS "Set this to the fully-qualified exported service account key path used for integration testing."
 require_env_var IMPERSONATION_SERVICE_ACCOUNT "Set this to the service account name for impersonation used for integration testing."
+require_env_var GCS_BUCKET_NAME "Set this to the GCS bucket name used for integration testing."
 
 function bazel_test() {
   set -x
@@ -39,6 +40,7 @@ function bazel_test() {
     --test_env CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" \
     --test_env CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" \
     --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}" \
+    --test_env GCS_BUCKET_NAME="${GCS_BUCKET_NAME}" \
     //tests"${1:-/...}"
   set +x
 }

@@ -20,24 +20,14 @@ import re
 from pathlib import Path
 from string import Template
 
-import google.auth
-import google.auth.transport.requests
-
 from google.api_core.exceptions import Forbidden
 from google.api_core.exceptions import NotFound
-from google.auth import impersonated_credentials
-from google.auth.credentials import Credentials
-from google.auth.exceptions import RefreshError
 from google.cloud import bigquery
-from google.oauth2 import id_token
-from google.oauth2 import service_account
+
+from clouddq.integration.gcp_credentials import GcpCredentials
 
 
 logger = logging.getLogger(__name__)
-
-TARGET_SCOPES = [
-    "https://www.googleapis.com/auth/cloud-platform",
-]
 
 CHECK_QUERY = Template(
     """
@@ -53,101 +43,25 @@ RE_EXTRACT_TABLE_NAME = ".*Not found: Table (.+?) was not found in.*"
 
 
 class BigQueryClient:
+    __gcp_credentials: GcpCredentials
     __client: bigquery.client.Client = None
-    __credentials: Credentials = None
-    __project_id: str = None
-    __user_id: str = None
     target_audience = "https://bigquery.googleapis.com"
 
     def __init__(
         self,
-        credentials: Credentials = None,
-        project_id: str = None,
+        gcp_credentials: GcpCredentials = None,
+        gcp_project_id: str = None,
         gcp_service_account_key_path: Path = None,
         gcp_impersonation_credentials: str = None,
     ) -> None:
-        # Use Credentials object directly if provided
-        if credentials:
-            source_credentials = credentials
-        # Use service account json key if provided
-        elif gcp_service_account_key_path:
-            source_credentials = service_account.Credentials.from_service_account_file(
-                filename=gcp_service_account_key_path,
-                scopes=TARGET_SCOPES,
-                quota_project_id=project_id,
-            )
-        # Otherwise, use Application Default Credentials
+        if gcp_credentials:
+            self.__gcp_credentials = gcp_credentials
         else:
-            source_credentials, _ = google.auth.default(
-                scopes=TARGET_SCOPES, quota_project_id=project_id
+            self.__gcp_credentials = GcpCredentials(
+                gcp_project_id=gcp_project_id,
+                gcp_service_account_key_path=gcp_service_account_key_path,
+                gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
-        if not source_credentials.valid:
-            self.__refresh_credentials(source_credentials)
-        # Attempt service account impersonation if requested
-        if gcp_impersonation_credentials:
-            target_credentials = impersonated_credentials.Credentials(
-                source_credentials=source_credentials,
-                target_principal=gcp_impersonation_credentials,
-                target_scopes=TARGET_SCOPES,
-                lifetime=3600,
-            )
-            self.__credentials = target_credentials
-        else:
-            # Otherwise use source_credentials
-            self.__credentials = source_credentials
-        self.__project_id = self.__resolve_project_id(
-            credentials=self.__credentials, project_id=project_id
-        )
-        self.__user_id = self.__resolve_credentials_username(
-            credentials=self.__credentials
-        )
-        if self.__user_id:
-            logger.info("Successfully created BigQuery Client.")
-        else:
-            logger.warning(
-                "Encountered error while retrieving user from GCP credentials.",
-            )
-
-    def __refresh_credentials(self, credentials: Credentials) -> str:
-        # Attempt to refresh token if not currently valid
-        try:
-            auth_req = google.auth.transport.requests.Request()
-            credentials.refresh(auth_req)
-        except RefreshError as err:
-            logger.error("Could not get refreshed credentials for GCP.")
-            raise err
-
-    def __resolve_credentials_username(self, credentials: Credentials) -> str:
-        # Attempt to refresh token if not currently valid
-        if not credentials.valid:
-            self.__refresh_credentials(credentials=credentials)
-        # Try to get service account credentials user_id
-        if credentials.__dict__.get("_service_account_email"):
-            user_id = credentials.service_account_email
-        elif credentials.__dict__.get("_target_principal"):
-            user_id = credentials.service_account_email
-        else:
-            # Otherwise try to get ADC credentials user_id
-            request = google.auth.transport.requests.Request()
-            token = credentials.id_token
-            id_info = id_token.verify_oauth2_token(token, request)
-            user_id = id_info["email"]
-        return user_id
-
-    def __resolve_project_id(
-        self, credentials: Credentials, project_id: str = None
-    ) -> str:
-        """Get project ID from local configs"""
-        if project_id:
-            _project_id = project_id
-        elif credentials.__dict__.get("_project_id"):
-            _project_id = credentials.project_id
-        else:
-            _project_id = None
-            logger.warning(
-                "Could not retrieve project_id from GCP credentials.", exc_info=True
-            )
-        return _project_id
 
     def get_connection(self, new: bool = False) -> bigquery.client.Client:
         """Creates return new Singleton database connection"""
@@ -155,8 +69,8 @@ class BigQueryClient:
             job_config = bigquery.QueryJobConfig(use_legacy_sql=False)
             self.__client = bigquery.Client(
                 default_query_job_config=job_config,
-                credentials=self.__credentials,
-                project=self.__project_id,
+                credentials=self.__gcp_credentials.credentials,
+                project=self.__gcp_credentials.project_id,
             )
             return self.__client
         else:
@@ -207,6 +121,17 @@ class BigQueryClient:
         try:
             client = self.get_connection()
             client.get_table(table)
+            return True
+        except NotFound:
+            return False
+
+    def table_from_string(self, full_table_id: str) -> bigquery.table.Table:
+        return bigquery.table.Table.from_string(full_table_id)
+
+    def is_dataset_exists(self, dataset: str) -> bool:
+        try:
+            client = self.get_connection()
+            client.get_dataset(dataset)
             return True
         except NotFound:
             return False

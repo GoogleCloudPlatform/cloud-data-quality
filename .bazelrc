@@ -1,4 +1,4 @@
-test --test_timeout=600
+test --test_timeout=7200
 test --test_output=errors
 test --test_summary=detailed
 test --test_verbose_timeout_warnings

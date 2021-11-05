@@ -15,7 +15,7 @@
 from google.api_core.exceptions import BadRequest
 import pytest
 
-from clouddq.classes.bigquery_client import BigQueryClient
+from clouddq.integration.bigquery_client import BigQueryClient
 
 
 @pytest.mark.e2e
