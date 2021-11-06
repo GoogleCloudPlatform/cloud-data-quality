@@ -43,5 +43,5 @@ zip unzip python3-pip python3-venv
 curl -Lo  /tmp/go1.16.5.linux-amd64.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
 sudo rm -rf /usr/local/go
 sudo tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
+. "$ROOT/scripts/env.sh"
 go version
