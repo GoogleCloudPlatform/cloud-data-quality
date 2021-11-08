@@ -55,17 +55,30 @@ class TestCliIntegration:
         return gcp_bq_region
 
     @pytest.fixture
-    def gcp_sa_key(self):
+    def gcp_application_credentials():
+        gcp_application_credentials = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
+        if not gcp_application_credentials:
+            logger.warning("Test environment variable GOOGLE_APPLICATION_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing. The tests will proceed skipping all tests involving exported service-account key credentials.")
+            if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
+                del os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
+        return gcp_application_credentials
+    
+    @pytest.fixture
+    def gcp_sa_key():
         sa_key_path = os.environ.get('GOOGLE_SDK_CREDENTIALS', None)
         if not sa_key_path:
-            logger.fatal("Required test environment variable GOOGLE_SDK_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing.")
+            logger.warning("Test environment variable GOOGLE_SDK_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing. The tests will proceed skipping all tests involving exported service-account key credentials.")
+            if os.environ["GOOGLE_SDK_CREDENTIALS"]:
+                del os.environ["GOOGLE_SDK_CREDENTIALS"]
         return sa_key_path
 
     @pytest.fixture
-    def gcp_impersonation_credentials(self):
+    def gcp_impersonation_credentials():
         gcp_impersonation_credentials = os.environ.get('IMPERSONATION_SERVICE_ACCOUNT', None)
         if not gcp_impersonation_credentials:
-            logger.fatal("Required test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found. Set this to the service account name for impersonation used for integration testing.")
+            logger.warning("Test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found. Set this to the service account name for impersonation used for integration testing. The tests will proceed skipping all tests involving service-account impersonation.")
+            if os.environ["IMPERSONATION_SERVICE_ACCOUNT"]:
+                del os.environ["IMPERSONATION_SERVICE_ACCOUNT"]
         return gcp_impersonation_credentials
 
     @pytest.fixture
