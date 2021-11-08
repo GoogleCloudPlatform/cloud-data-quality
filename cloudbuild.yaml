@@ -14,17 +14,17 @@ steps:
     args:
       - '-c'
       - >
-        apt-get update
-
-        apt-get -y install make sudo curl python3.6 git-all
-
-        chmod -R +x scripts
-
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
 
         ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
+
+        apt-get update
+
+        apt-get -y install make sudo curl python3.6 git-all
+
+        chmod -R +x scripts
 
         source scripts/install_development_dependencies.sh
 
