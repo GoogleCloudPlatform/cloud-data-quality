@@ -29,9 +29,7 @@ fi
 
 # Install Python dependencies
 DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install -y \
-make build-essential libssl-dev zlib1g-dev \
-libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
+make build-essential  \
 zip unzip python3-pip python3-venv
 
 # Install sandboxfs
