@@ -67,9 +67,10 @@ class DataplexClient:
         self._headers = self._set_headers()
         self._session = self._get_session()
         self.gcp_project_id = gcp_project_id
-        self.dataplex_endpoint = dataplex_endpoint
         self.lake_name = gcp_dataplex_lake_name
         self.location_id = gcp_dataplex_region
+        self.dataplex_endpoint = dataplex_endpoint
+        assert self.dataplex_endpoint is not None
 
     def _get_auth_token(self, credentials: Credentials) -> str:
         """

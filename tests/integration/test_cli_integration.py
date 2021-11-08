@@ -43,7 +43,9 @@ class TestCliIntegration:
         runner,
         temp_configs_dir,
         test_profiles_dir,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -62,7 +64,9 @@ class TestCliIntegration:
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -84,8 +88,10 @@ class TestCliIntegration:
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
-        gcp_sa_key
+        gcp_sa_key,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -112,7 +118,9 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_sa_key,
         gcp_impersonation_credentials,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -139,7 +147,9 @@ class TestCliIntegration:
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_impersonation_credentials,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -163,7 +173,9 @@ class TestCliIntegration:
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -185,7 +197,9 @@ class TestCliIntegration:
         temp_configs_dir,
         gcp_bq_region,
         gcp_bq_dataset,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -205,7 +219,9 @@ class TestCliIntegration:
         temp_configs_dir,
         gcp_project_id,
         gcp_bq_dataset,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
