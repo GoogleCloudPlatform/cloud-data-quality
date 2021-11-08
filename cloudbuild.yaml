@@ -1,8 +1,24 @@
 steps:
-  - name: 'ubuntu:18.04'
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    args:
+      - info
+    entrypoint: gcloud
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     args:
       - '-c'
       - >
+        env
+
+        ls -la
+    entrypoint: /bin/bash
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    args:
+      - '-c'
+      - >
+        gcloud info
+
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
 
         ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
