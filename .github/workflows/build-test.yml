@@ -99,12 +99,11 @@ jobs:
       - name: tests
         run: |
           export GOOGLE_CLOUD_PROJECT=${{ secrets.GCP_PROJECT_ID }}
-          export CLOUDDQ_BIGQUERY_DATASET="dataplex_clouddq"
-          export CLOUDDQ_BIGQUERY_REGION="US"
+          export CLOUDDQ_BIGQUERY_DATASET="dq_test"
+          export CLOUDDQ_BIGQUERY_REGION="EU"
           export GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
           export GOOGLE_SDK_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
           export IMPERSONATION_SERVICE_ACCOUNT=${{ secrets.IMPERSONATION_SERVICE_ACCOUNT }}
-          export GCP_BUCKET_NAME="dataplex-clouddq-api-integration"
           gcloud config set project "${GOOGLE_CLOUD_PROJECT}"
           make test
         shell: bash
