@@ -1,20 +1,6 @@
 steps:
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     args:
-      - info
-    entrypoint: gcloud
-
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    args:
-      - '-c'
-      - >
-        env
-
-        ls -la
-    entrypoint: /bin/bash
-
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    args:
       - '-c'
       - >
         gcloud info
@@ -25,13 +11,11 @@ steps:
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
 
-        apt-get update
-
-        apt-get -y install make sudo curl python3.6 git-all
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y install make sudo curl python3.6 git-all
 
         chmod -R +x scripts
 
-        source scripts/install_development_dependencies.sh
+        DEBIAN_FRONTEND=noninteractive apt-get update && source scripts/install_development_dependencies.sh
 
         ls /usr/bin/python*
 
