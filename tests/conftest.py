@@ -43,12 +43,12 @@ def gcp_bq_region():
 
 @pytest.fixture
 def gcp_application_credentials():
-    sa_key_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
-    if not sa_key_path:
+    gcp_application_credentials = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
+    if not gcp_application_credentials:
         logger.warning("Test environment variable GOOGLE_APPLICATION_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing. The tests will proceed skipping all tests involving exported service-account key credentials.")
         if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
             del os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
-    return sa_key_path
+    return gcp_application_credentials
 
 @pytest.fixture
 def gcp_sa_key():

@@ -3,6 +3,8 @@ steps:
     args:
       - '-c'
       - >
+        set -x
+
         gcloud info
 
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
@@ -15,7 +17,7 @@ steps:
 
         chmod -R +x scripts
 
-        DEBIAN_FRONTEND=noninteractive apt-get update && source scripts/install_development_dependencies.sh
+        source scripts/install_development_dependencies.sh
 
         ls /usr/bin/python*
 
