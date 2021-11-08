@@ -7,13 +7,15 @@ steps:
 
         gcloud info
 
+        ls /usr/bin/python*
+
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
 
         ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
 
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y install make sudo curl python3.6 git-all
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y install make sudo curl git-all
 
         chmod -R +x scripts
 
