@@ -101,13 +101,12 @@ jobs:
           export GOOGLE_CLOUD_PROJECT=${{ secrets.GCP_PROJECT_ID }}
           export CLOUDDQ_BIGQUERY_DATASET="dq_test"
           export CLOUDDQ_BIGQUERY_REGION="EU"
-          export GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
           export GOOGLE_SDK_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
           export IMPERSONATION_SERVICE_ACCOUNT=${{ secrets.IMPERSONATION_SERVICE_ACCOUNT }}
           export GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}
           export DATAPLEX_LAKE_NAME=${{ secrets.DATAPLEX_LAKE_NAME }}
           export DATAPLEX_REGION_ID=${{ secrets.DATAPLEX_REGION_ID }}
-          export DATAPLEX_TARGET_BQ_DATASET="${DATAPLEX_TARGET_BQ_DATASET}"
+          export DATAPLEX_TARGET_BQ_DATASET="${{ secrets.DATAPLEX_TARGET_BQ_DATASET}}"
           export DATAPLEX_TARGET_BQ_TABLE=${{ secrets.DATAPLEX_TARGET_BQ_TABLE }}
           export DATAPLEX_TASK_SA=${{ secrets._DATAPLEX_TASK_SA }}
           gcloud config set project "${GOOGLE_CLOUD_PROJECT}"
