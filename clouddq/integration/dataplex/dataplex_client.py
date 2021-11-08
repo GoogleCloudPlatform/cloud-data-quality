@@ -17,7 +17,6 @@ from __future__ import annotations
 import json
 import logging
 
-from typing import Optional
 from pathlib import Path
 
 import google.auth
@@ -49,9 +48,9 @@ class DataplexClient:
         gcp_project_id: str,
         gcp_dataplex_region: str,
         gcp_dataplex_lake_name: str,
-        gcp_credentials: Optional[GcpCredentials] = None,
-        gcp_service_account_key_path: Optional[Path] = None,
-        gcp_impersonation_credentials: Optional[str] = None,
+        gcp_credentials: GcpCredentials | None = None,
+        gcp_service_account_key_path: Path | None = None,
+        gcp_impersonation_credentials: str | None = None,
         dataplex_endpoint: str = "https://dataplex.googleapis.com",
     ) -> None:
         if gcp_credentials:
@@ -145,7 +144,7 @@ class DataplexClient:
             f"{self.dataplex_endpoint}/v1/projects/{self.gcp_project_id}/locations/"
             f"{self.location_id}/lakes/{self.lake_name}/tasks"
         )
-        params = {"task_id":task_id}
+        params = {"task_id": task_id}
         if validate_only:
             params["validate_only"] = True
         response = self._session.post(

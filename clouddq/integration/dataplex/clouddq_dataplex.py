@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from enum import Enum
 
 import json
 import logging
 import re
 
-from requests import Response
-from typing import Optional
+from enum import Enum
 from pathlib import Path
+
+from requests import Response
 
 from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
@@ -34,9 +34,11 @@ TARGET_SCOPES = [
 USER_AGENT_TAG = "Product_Dataplex/1.0 (GPN:Dataplex_CloudDQ)"
 DEFAULT_GCS_BUCKET_NAME = "dataplex-clouddq-artifacts-{gcp_dataplex_region}"
 
+
 class DATAPLEX_TASK_TRIGGER_TYPE(str, Enum):
-    ON_DEMAND = 'ON_DEMAND'
-    RECURRING = 'RECURRING'
+    ON_DEMAND = "ON_DEMAND"
+    RECURRING = "RECURRING"
+
 
 class CloudDqDataplexClient:
     _client: DataplexClient
@@ -47,14 +49,16 @@ class CloudDqDataplexClient:
         gcp_project_id: str,
         gcp_dataplex_lake_name: str,
         gcp_dataplex_region: str,
-        gcs_bucket_name: Optional[str] = None,
-        gcp_credentials: Optional[GcpCredentials] = None,
+        gcs_bucket_name: str | None = None,
+        gcp_credentials: GcpCredentials | None = None,
         dataplex_endpoint: str = "https://dataplex.googleapis.com",
     ) -> None:
         if gcs_bucket_name:
             self.gcs_bucket_name = gcs_bucket_name
         else:
-            self.gcs_bucket_name = DEFAULT_GCS_BUCKET_NAME.format(gcp_dataplex_region=gcp_dataplex_region)
+            self.gcs_bucket_name = DEFAULT_GCS_BUCKET_NAME.format(
+                gcp_dataplex_region=gcp_dataplex_region
+            )
         self._client = DataplexClient(
             gcp_credentials=gcp_credentials,
             gcp_project_id=gcp_project_id,
@@ -63,7 +67,7 @@ class CloudDqDataplexClient:
             dataplex_endpoint=dataplex_endpoint,
         )
 
-    def create_clouddq_task(
+    def create_clouddq_task(  # noqa: C901
         self,
         task_id: str,
         clouddq_yaml_spec_file_path: str,
@@ -74,7 +78,7 @@ class CloudDqDataplexClient:
         target_bq_result_project_name: str,
         target_bq_result_dataset_name: str,
         target_bq_result_table_name: str,
-        task_trigger_spec_type: DATAPLEX_TASK_TRIGGER_TYPE = DATAPLEX_TASK_TRIGGER_TYPE.ON_DEMAND,
+        task_trigger_spec_type: DATAPLEX_TASK_TRIGGER_TYPE = DATAPLEX_TASK_TRIGGER_TYPE.ON_DEMAND,  # noqa: E501
         task_description: str | None = None,
         task_labels: dict | None = None,
         clouddq_pyspark_driver_path: str | None = None,
@@ -83,56 +87,17 @@ class CloudDqDataplexClient:
         validate_only: bool = False,
     ) -> Response:
         # Set default CloudDQ PySpark driver path if not manually overridden
-        if not clouddq_pyspark_driver_path:
-            clouddq_pyspark_driver_path = (
-                f"gs://{self.gcs_bucket_name}/clouddq_pyspark_driver.py"
-            )
-        else:
-            if not clouddq_pyspark_driver_path[:5] == "gs://":
-                raise ValueError(
-                    f"clouddq_pyspark_driver_path argument {clouddq_pyspark_driver_path} "
-                    "must be a GCS path."
-                )
-            clouddq_pyspark_driver_name = clouddq_pyspark_driver_path.split('/')[-1]
-            if clouddq_pyspark_driver_name != "clouddq_pyspark_driver.py":
-                raise ValueError(
-                    f"clouddq_pyspark_driver_path argument {clouddq_pyspark_driver_path} "
-                    "must end with 'clouddq_pyspark_driver.py'."
-                )
+        clouddq_pyspark_driver_path = self._validate_clouddq_artifact_path(
+            clouddq_pyspark_driver_path, "clouddq_pyspark_driver.py"
+        )
         # Set default CloudDQ executable path if not manually overridden
-        if not clouddq_executable_path:
-            clouddq_executable_path = (
-                f"gs://{self.gcs_bucket_name}/clouddq-executable.zip"
-            )
-        else:
-            if not clouddq_executable_path[:5] == "gs://":
-                raise ValueError(
-                    f"clouddq_executable_path argument {clouddq_executable_path} "
-                    "must be a GCS path."
-                )
-            clouddq_executable_name = clouddq_executable_path.split('/')[-1]
-            if clouddq_executable_name != "clouddq-executable.zip":
-                raise ValueError(
-                    f"clouddq_executable_path argument {clouddq_executable_path} "
-                    "must end with 'clouddq-executable.zip'."
-                )
+        clouddq_executable_path = self._validate_clouddq_artifact_path(
+            clouddq_executable_path, "clouddq-executable.zip"
+        )
         # Set default CloudDQ executable checksum path if not manually overridden
-        if not clouddq_executable_checksum_path:
-            clouddq_executable_checksum_path = (
-                f"gs://{self.gcs_bucket_name}/clouddq-executable.zip.hashsum"
-            )
-        else:
-            if not clouddq_executable_checksum_path[:5] == "gs://":
-                raise ValueError(
-                    f"clouddq_executable_checksum_path argument {clouddq_executable_checksum_path} "
-                    "must be a GCS path."
-                )
-            clouddq_executable_checksum_name = clouddq_executable_checksum_path.split('/')[-1]
-            if clouddq_executable_checksum_name != "clouddq-executable.zip.hashsum":
-                raise ValueError(
-                    f"clouddq_executable_checksum_path argument {clouddq_executable_checksum_path} "
-                    "must end with 'clouddq-executable.zip.hashsum'."
-                )
+        clouddq_executable_checksum_path = self._validate_clouddq_artifact_path(
+            clouddq_executable_checksum_path, "clouddq-executable.zip.hashsum"
+        )
         # Prepare input CloudDQ YAML specs path
         if clouddq_yaml_spec_file_path[:5] == "gs://":
             clouddq_configs_gcs_path = clouddq_yaml_spec_file_path
@@ -148,10 +113,11 @@ class CloudDqDataplexClient:
                 clouddq_configs_gcs_path = gcs_uri
             else:
                 raise ValueError(
-                    f"'clouddq_yaml_spec_file_path' argument {clouddq_yaml_spec_file_path} "
+                    "'clouddq_yaml_spec_file_path' argument "
+                    f"{clouddq_yaml_spec_file_path} "
                     "must either be a single file (`.yml` or `.zip`) "
                     "or a GCS path to the `.yml` or `.zip` configs file."
-                    )
+                )
         # Add user-agent tag as Task label
         allowed_user_agent_label = re.sub("[^0-9a-zA-Z]+", "-", USER_AGENT_TAG.lower())
         if task_labels:
@@ -170,15 +136,15 @@ class CloudDqDataplexClient:
             },
             "execution_spec": {
                 "args": {
-                    "TASK_ARGS": f'clouddq-executable.zip, '
-                    'ALL, '
-                    f'{clouddq_configs_gcs_path}, '
+                    "TASK_ARGS": f"clouddq-executable.zip, "
+                    "ALL, "
+                    f"{clouddq_configs_gcs_path}, "
                     f'--gcp_project_id="{clouddq_run_project_id}", '
                     f'--gcp_region_id="{clouddq_run_bq_region}", '
                     f'--gcp_bq_dataset_id="{clouddq_run_bq_dataset}", '
-                    f'--target_bigquery_summary_table='
+                    f"--target_bigquery_summary_table="
                     f'"{target_bq_result_project_name}.'
-                    f'{target_bq_result_dataset_name}.'
+                    f"{target_bq_result_dataset_name}."
                     f'{target_bq_result_table_name}",'
                 },
                 "service_account": f"{task_service_account}",
@@ -189,7 +155,9 @@ class CloudDqDataplexClient:
         }
         # Set trigger_spec for RECURRING trigger type
         if task_trigger_spec_type == DATAPLEX_TASK_TRIGGER_TYPE.RECURRING:
-            raise NotImplementedError(f"task_trigger_spec_type {task_trigger_spec_type} not yet supported.")
+            raise NotImplementedError(
+                f"task_trigger_spec_type {task_trigger_spec_type} not yet supported."
+            )
         response = self._client.create_dataplex_task(
             task_id=task_id,
             post_body=clouddq_post_body,
@@ -247,3 +215,24 @@ class CloudDqDataplexClient:
         return self._client.get_dataplex_iam_permissions(
             body=body,
         )
+
+    def _validate_clouddq_artifact_path(
+        self, clouddq_artifact_path: str | None, artifact_name: str
+    ) -> str:
+        if not clouddq_artifact_path:
+            clouddq_artifact_gcs_path = f"gs://{self.gcs_bucket_name}/{artifact_name}"
+        else:
+            clouddq_artifact_name = clouddq_artifact_path.split("/")[-1]
+            if not clouddq_artifact_path[:5] == "gs://":
+                raise ValueError(
+                    f"Artifact path argument for {artifact_name}: "
+                    f"{clouddq_artifact_path} must be a GCS path."
+                )
+            elif clouddq_artifact_name != artifact_name:
+                raise ValueError(
+                    f"Artifact path argument for {artifact_name}: "
+                    f"{clouddq_artifact_path} must end with '{artifact_name}'."
+                )
+            else:
+                clouddq_artifact_gcs_path = clouddq_artifact_path
+        return clouddq_artifact_gcs_path

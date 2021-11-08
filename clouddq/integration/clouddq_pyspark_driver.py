@@ -24,7 +24,7 @@ import subprocess
 import sys
 
 from pathlib import Path
-from pprint import pformat
+from pprint import pprint
 from zipfile import ZipFile
 
 
@@ -48,14 +48,14 @@ def main(args):
 
 
 if __name__ == "__main__":
-    print(f"PySpark working directory:\n {Path().absolute()}")
-    print(f"PySpark directory content:\n {pformat(os.listdir())}")
-    print(f"PySpark parent directory content:\n {pformat(list(Path('..').glob('**/*')))}")
-    print(f"PySpark parent directory tmp content:\n {pformat(list(Path('../tmp').glob('**/*')))}")
-    print(f"PySpark parent directory local-dir content:\n {pformat(list(Path('../local-dir').glob('**/*')))}")
-    print(f"Input PySpark arguments:\n {pformat(sys.argv)}")
+    print("PySpark working directory:")
+    pprint(Path().absolute())
+    print("PySpark directory content:")
+    pprint(os.listdir())
+    print("Input PySpark arguments:")
+    pprint(sys.argv)
     input_configs = sys.argv[3]
-    print(f"User-specified CloudDQ YAML configs: {pformat(input_configs)}")
+    print("User-specified CloudDQ YAML configs: {input_configs}")
     configs_path = Path("configs")
     if not configs_path.is_dir():
         print(f"Creating configs directory at: `{configs_path.absolute()}`")
@@ -75,8 +75,8 @@ if __name__ == "__main__":
                     f"Copying YAML file {file} to configs directory `{configs_path}`..."
                 )
                 configs_path.joinpath(file.name).write_text(file.open().read())
-        # else if it's a directory, 
-        # look for yaml/yml files in the path 
+        # else if it's a directory,
+        # look for yaml/yml files in the path
         # and copy them to the `configs` directory
         elif file.is_dir():
             for yaml_file in file.glob("**/*.yaml"):
@@ -84,5 +84,5 @@ if __name__ == "__main__":
             for yaml_file in file.glob("**/*.yml"):
                 configs_path.joinpath(yaml_file).write_text(yaml_file.open().read())
     print("Configs directory contents is:")
-    print(pformat(list(configs_path.glob("**/*"))))
+    pprint(configs_path.glob("**/*"))
     main(sys.argv)
