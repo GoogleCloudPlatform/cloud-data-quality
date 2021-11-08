@@ -10,8 +10,8 @@ Note the following assumes you have already met the project dependencies outline
 
 First clone the project:
 ```bash
-export CLOUDDQ_RELEASE_VERSION="0.2.1"
-git clone -b 'v0.2.1'  https://github.com/GoogleCloudPlatform/cloud-data-quality.git
+export CLOUDDQ_RELEASE_VERSION="0.3.1"
+git clone -b "v${CLOUDDQ_RELEASE_VERSION}"  https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 cd cloud-data-quality
 ```
 
@@ -81,7 +81,7 @@ Currently, we only provide the self-contained executable zip artifact for runnin
 
 Once completed you can use the CLI by passing the zip executable into any Python interpreter:
 ```
-python3 clouddq_executable_v0.2.1.zip --help
+python3 clouddq_executable_"v${CLOUDDQ_RELEASE_VERSION}".zip --help
 ```
 
 ### 5. Create test data
@@ -110,7 +110,7 @@ python3 clouddq \
 Or if you are using the pre-built zip file (only works on linux systems such as Debian/Ubuntu):
 
 ```
-python3 clouddq_executable_v0.2.1.zip \
+python3 "clouddq_executable_v${CLOUDDQ_RELEASE_VERSION}".zip \
     T2_DQ_1_EMAIL \
     configs \
     --metadata='{"test":"test"}' \
