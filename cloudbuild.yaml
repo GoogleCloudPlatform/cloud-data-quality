@@ -22,9 +22,11 @@ steps:
 
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
 
-        DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+        ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 
-        DEBIAN_FRONTEND=noninteractive source scripts/install_development_dependencies.sh
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
+
+        source scripts/install_development_dependencies.sh
 
         ls /usr/bin/python*
 
