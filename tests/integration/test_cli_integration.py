@@ -55,7 +55,7 @@ class TestCliIntegration:
         return gcp_bq_region
 
     @pytest.fixture
-    def gcp_application_credentials():
+    def gcp_application_credentials(self):
         gcp_application_credentials = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
         if not gcp_application_credentials:
             logger.warning("Test environment variable GOOGLE_APPLICATION_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing. The tests will proceed skipping all tests involving exported service-account key credentials.")
@@ -64,7 +64,7 @@ class TestCliIntegration:
         return gcp_application_credentials
     
     @pytest.fixture
-    def gcp_sa_key():
+    def gcp_sa_key(self):
         sa_key_path = os.environ.get('GOOGLE_SDK_CREDENTIALS', None)
         if not sa_key_path:
             logger.warning("Test environment variable GOOGLE_SDK_CREDENTIALS cannot be found. Set this to the exported service account key path used for integration testing. The tests will proceed skipping all tests involving exported service-account key credentials.")
@@ -73,7 +73,7 @@ class TestCliIntegration:
         return sa_key_path
 
     @pytest.fixture
-    def gcp_impersonation_credentials():
+    def gcp_impersonation_credentials(self):
         gcp_impersonation_credentials = os.environ.get('IMPERSONATION_SERVICE_ACCOUNT', None)
         if not gcp_impersonation_credentials:
             logger.warning("Test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found. Set this to the service account name for impersonation used for integration testing. The tests will proceed skipping all tests involving service-account impersonation.")
