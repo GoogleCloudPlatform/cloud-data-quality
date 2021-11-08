@@ -21,14 +21,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "$ROOT/scripts/common.sh"
 
-
 # Check that all required env var are set
 # if running locally you'd have to ensure the following are correctly set for your project/auth details
 require_env_var GOOGLE_CLOUD_PROJECT "Set $GOOGLE_CLOUD_PROJECT to the project_id used for integration testing."
 require_env_var CLOUDDQ_BIGQUERY_DATASET "Set $CLOUDDQ_BIGQUERY_DATASET to the BigQuery dataset used for integration testing."
 require_env_var CLOUDDQ_BIGQUERY_REGION "Set $CLOUDDQ_BIGQUERY_REGION to the BigQuery region used for integration testing."
-require_env_var GOOGLE_SDK_CREDENTIALS "Set $GOOGLE_SDK_CREDENTIALS to the exported service account key path used for integration testing. If you have the environment vairable GOOGLE_APPLICATION_CREDENTIALS set, you can do `export GOOGLE_SDK_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"`."
-require_env_var IMPERSONATION_SERVICE_ACCOUNT "Set $IMPERSONATION_SERVICE_ACCOUNT to the service account name for impersonation used for integration testing"
 require_env_var GCS_BUCKET_NAME "Set $GCS_BUCKET_NAME to the GCS bucket name for staging CloudDQ artifacts and configs."
 require_env_var DATAPLEX_LAKE_NAME "Set $DATAPLEX_LAKE_NAME to the Dataplex Lake used for testing."
 require_env_var DATAPLEX_REGION_ID "Set DATAPLEX_REGION_ID to the region id of the Dataplex Lake. This should be the same as $CLOUDDQ_BIGQUERY_REGION."
@@ -41,11 +38,11 @@ function bazel_test() {
   set -x
   bin/bazelisk test \
     --test_env GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
-    --test_env GOOGLE_SDK_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS}" \
+    --test_env GOOGLE_SDK_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS:-}" \
     --test_env GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS:-}" \
     --test_env CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" \
     --test_env CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" \
-    --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}" \
+    --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT:-}" \
     --test_env GCS_BUCKET_NAME="${GCS_BUCKET_NAME}" \
     --test_env DATAPLEX_LAKE_NAME="${DATAPLEX_LAKE_NAME}" \
     --test_env DATAPLEX_REGION_ID="${DATAPLEX_REGION_ID}" \

@@ -95,6 +95,8 @@ class TestCliIntegration:
             "--dry_run",
             "--debug",
             ]
+        if not gcp_sa_key:
+            pytest.skip("Skipping tests involving exported service-account key credentials because test environment variable GOOGLE_SDK_CREDENTIALS cannot be found.")
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
@@ -120,6 +122,8 @@ class TestCliIntegration:
             "--dry_run",
             "--debug",
             ]
+        if not gcp_sa_key:
+            pytest.skip("Skipping tests involving exported service-account key credentials because test environment variable GOOGLE_SDK_CREDENTIALS cannot be found.")
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
@@ -143,6 +147,8 @@ class TestCliIntegration:
             "--dry_run",
             "--debug",
             ]
+        if not gcp_impersonation_credentials:
+            pytest.skip("Skipping tests involving service-account impersonation because test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found.")
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
