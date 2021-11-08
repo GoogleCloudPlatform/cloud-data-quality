@@ -16,11 +16,13 @@ steps:
       - >
         apt-get update
 
-        apt-get -y install make
+        apt-get -y install make sudo
 
         chmod -R +x scripts
 
         scripts/install_development_dependencies.sh
+
+        ls /usr/bin/python*
 
         ln -sf /usr/bin/python3 /usr/bin/python
 
