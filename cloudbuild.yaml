@@ -11,7 +11,7 @@ steps:
 
         ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
 
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata tango-common
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y install make sudo curl python3.6 git-all
 
