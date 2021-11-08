@@ -16,6 +16,8 @@ steps:
       - >
         apt-get update
 
+        apt-get -y install make
+
         chmod -R +x scripts
 
         scripts/install_development_dependencies.sh
@@ -23,6 +25,8 @@ steps:
         ln -sf /usr/bin/python3 /usr/bin/python
 
         [[ -f /usr/bin/python ]] && echo "python found" || echo "python not found"
+
+        make -v
 
         echo "common
         --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
