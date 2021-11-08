@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import click.testing
 import pytest
 import logging
 import tempfile
 import shutil
+import os
 from pathlib import Path
 
 from google.auth.exceptions import RefreshError
@@ -107,12 +106,14 @@ class TestCliIntegration:
         runner,
         temp_configs_dir,
         test_profiles_dir,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
-            "ALL", 
-            f"{temp_configs_dir}", 
-            f"--dbt_profiles_dir={test_profiles_dir}", 
-            "--dry_run", 
+            "ALL",
+            f"{temp_configs_dir}",
+            f"--dbt_profiles_dir={test_profiles_dir}",
+            "--dry_run",
             "--debug",
             ]
         result = runner.invoke(main, args)
@@ -126,7 +127,9 @@ class TestCliIntegration:
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -140,6 +143,7 @@ class TestCliIntegration:
         print(result.output)
         assert result.exit_code == 0
 
+    @pytest.mark.xfail
     def test_cli_dry_run_sa_key_configs(
         self,
         runner,
@@ -147,8 +151,10 @@ class TestCliIntegration:
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
-        gcp_sa_key
+        gcp_sa_key,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -159,10 +165,13 @@ class TestCliIntegration:
             "--dry_run",
             "--debug",
             ]
+        if not gcp_sa_key:
+            pytest.skip("Skipping tests involving exported service-account key credentials because test environment variable GOOGLE_SDK_CREDENTIALS cannot be found.")
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
 
+    @pytest.mark.xfail
     def test_cli_dry_run_sa_key_and_impersonation(
         self,
         runner,
@@ -172,7 +181,9 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_sa_key,
         gcp_impersonation_credentials,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -184,10 +195,13 @@ class TestCliIntegration:
             "--dry_run",
             "--debug",
             ]
+        if not gcp_sa_key:
+            pytest.skip("Skipping tests involving exported service-account key credentials because test environment variable GOOGLE_SDK_CREDENTIALS cannot be found.")
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
 
+    @pytest.mark.xfail
     def test_cli_dry_run_oath_impersonation(
         self,
         runner,
@@ -196,7 +210,9 @@ class TestCliIntegration:
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_impersonation_credentials,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -207,6 +223,8 @@ class TestCliIntegration:
             "--dry_run",
             "--debug",
             ]
+        if not gcp_impersonation_credentials:
+            pytest.skip("Skipping tests involving service-account impersonation because test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found.")
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
@@ -218,7 +236,9 @@ class TestCliIntegration:
         gcp_project_id,
         gcp_bq_region,
         gcp_bq_dataset,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -240,7 +260,9 @@ class TestCliIntegration:
         temp_configs_dir,
         gcp_bq_region,
         gcp_bq_dataset,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -260,7 +282,9 @@ class TestCliIntegration:
         temp_configs_dir,
         gcp_project_id,
         gcp_bq_dataset,
+        gcp_application_credentials,
     ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
