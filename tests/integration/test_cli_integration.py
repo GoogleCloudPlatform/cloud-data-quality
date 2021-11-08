@@ -76,6 +76,7 @@ class TestCliIntegration:
         print(result.output)
         assert result.exit_code == 0
 
+    @pytest.mark.xfail
     def test_cli_dry_run_sa_key_configs(
         self,
         runner,
@@ -101,6 +102,7 @@ class TestCliIntegration:
         print(result.output)
         assert result.exit_code == 0
 
+    @pytest.mark.xfail
     def test_cli_dry_run_sa_key_and_impersonation(
         self,
         runner,
@@ -128,6 +130,7 @@ class TestCliIntegration:
         print(result.output)
         assert result.exit_code == 0
 
+    @pytest.mark.xfail
     def test_cli_dry_run_oath_impersonation(
         self,
         runner,
