@@ -16,7 +16,7 @@ steps:
       - >
         apt-get update
 
-        apt-get -y install make sudo curl python3.6
+        apt-get -y install make sudo curl python3.6 git-all
 
         chmod -R +x scripts
 
