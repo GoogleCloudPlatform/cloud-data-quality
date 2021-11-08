@@ -24,7 +24,7 @@ steps:
 
         DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 
-        scripts/install_development_dependencies.sh
+        source scripts/install_development_dependencies.sh
 
         ls /usr/bin/python*
 
