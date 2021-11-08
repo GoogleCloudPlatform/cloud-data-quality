@@ -108,7 +108,7 @@ jobs:
           export DATAPLEX_REGION_ID=${{ secrets.DATAPLEX_REGION_ID }}
           export DATAPLEX_TARGET_BQ_DATASET="${{ secrets.DATAPLEX_TARGET_BQ_DATASET}}"
           export DATAPLEX_TARGET_BQ_TABLE=${{ secrets.DATAPLEX_TARGET_BQ_TABLE }}
-          export DATAPLEX_TASK_SA=${{ secrets._DATAPLEX_TASK_SA }}
+          export DATAPLEX_TASK_SA=${{ secrets.DATAPLEX_TASK_SA }}
           gcloud config set project "${GOOGLE_CLOUD_PROJECT}"
           make test
         shell: bash
