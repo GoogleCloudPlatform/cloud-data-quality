@@ -1,15 +1,4 @@
 steps:
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    args:
-      - info
-    entrypoint: gcloud
-
-  - name: 'ubuntu:18.04'
-    args:
-      - '-c'
-      - >
-        cat cloudbuild.yaml
-    entrypoint: /bin/bash
   - name: 'ubuntu:18.04'
     args:
       - '-c'
@@ -44,7 +33,13 @@ steps:
 
         env
 
+        make test-pip-install
+
+        make check
+
         make test
+
+        make build
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
