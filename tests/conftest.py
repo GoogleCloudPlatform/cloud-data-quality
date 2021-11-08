@@ -57,21 +57,21 @@ def gcp_impersonation_credentials():
 
 @pytest.fixture
 def gcs_bucket_name():
-    gcs_bucket_name = os.environ.get('GCS_BUCKET_NAME', "dataplex-clouddq-api-integration")
+    gcs_bucket_name = os.environ.get('GCS_BUCKET_NAME', None)
     if not gcs_bucket_name:
         logger.fatal("Required test environment variable GCS_BUCKET_NAME cannot be found. Set this to the GCS bucket name for staging CloudDQ artifacts and configs.")
     return gcs_bucket_name
 
 @pytest.fixture
 def gcp_dataplex_region():
-    gcp_dataplex_region = os.environ.get('DATAPLEX_REGION_ID', "us-central1")
+    gcp_dataplex_region = os.environ.get('DATAPLEX_REGION_ID', None)
     if not gcp_dataplex_region:
         logger.fatal("Required test environment variable DATAPLEX_REGION_ID cannot be found. Set this to the region id of the Dataplex Lake.")
     return gcp_dataplex_region
 
 @pytest.fixture
 def gcp_dataplex_lake_name():
-    gcp_dataplex_lake_name = os.environ.get('DATAPLEX_LAKE_NAME', "amandeep-dev-lake")
+    gcp_dataplex_lake_name = os.environ.get('DATAPLEX_LAKE_NAME', None)
     if not gcp_dataplex_lake_name:
         logger.fatal("Required test environment variable DATAPLEX_LAKE_NAME cannot be found. Set this to the Dataplex Lake used for testing.")
     return gcp_dataplex_lake_name
@@ -80,26 +80,26 @@ def gcp_dataplex_lake_name():
 def dataplex_endpoint():
     dataplex_endpoint = os.environ.get('DATAPLEX_ENDPOINT', "https://dataplex.googleapis.com")
     if not dataplex_endpoint:
-        logger.fatal("Required test environment variable DATAPLEX_ENDPOINT cannot be found. Set this to the Dataplex Endpoint used for testing.")
+        logger.warning("Required test environment variable DATAPLEX_ENDPOINT cannot be found. Defaulting to the Dataplex Endpoint 'https://dataplex.googleapis.com'.")
     return dataplex_endpoint
 
 @pytest.fixture
 def target_bq_result_dataset_name():
-    target_bq_result_dataset_name = os.environ.get('DATAPLEX_TARGET_BQ_DATASET', "clouddq_test_target_dataset")
+    target_bq_result_dataset_name = os.environ.get('DATAPLEX_TARGET_BQ_DATASET', None)
     if not target_bq_result_dataset_name:
         logger.fatal("Required test environment variable DATAPLEX_TARGET_BQ_DATASET cannot be found. Set this to the Target BQ Dataset used for testing.")
     return target_bq_result_dataset_name
 
 @pytest.fixture
 def target_bq_result_table_name():
-    target_bq_result_table_name = os.environ.get('DATAPLEX_TARGET_BQ_TABLE', "target_table_dataplex")
+    target_bq_result_table_name = os.environ.get('DATAPLEX_TARGET_BQ_TABLE', None)
     if not target_bq_result_table_name:
         logger.fatal("Required test environment variable DATAPLEX_TARGET_BQ_TABLE cannot be found. Set this to the Target BQ Table used for testing.")
     return target_bq_result_table_name
 
 @pytest.fixture
 def dataplex_task_service_account_name():
-    dataplex_task_service_account_name = os.environ.get('DATAPLEX_TASK_SA', "clouddq-runner@dataplex-clouddq.iam.gserviceaccount.com")
+    dataplex_task_service_account_name = os.environ.get('DATAPLEX_TASK_SA', None)
     if not dataplex_task_service_account_name:
         logger.fatal("Required test environment variable DATAPLEX_TASK_SA cannot be found. Set this to the service account used for running Dataplex Tasks in testing.")
     return dataplex_task_service_account_name
