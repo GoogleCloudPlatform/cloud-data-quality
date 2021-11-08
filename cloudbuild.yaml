@@ -22,7 +22,7 @@ steps:
 
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
 
-        ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
+        ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
 
