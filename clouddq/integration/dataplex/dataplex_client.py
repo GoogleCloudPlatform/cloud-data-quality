@@ -133,6 +133,7 @@ class DataplexClient:
         gcp_project_id: str = None,
         location_id: str = None,
         lake_name: str = None,
+        validate_only: bool = False,
     ) -> Response:
         if not gcp_project_id:
             gcp_project_id = self.gcp_project_id
@@ -140,10 +141,17 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
-        response = self._session.post(
+        request_url = (
             f"{self.dataplex_endpoint}/v1/projects/{self.gcp_project_id}/locations/"
-            f"{self.location_id}/lakes/{self.lake_name}/tasks?task_id={task_id}",
+            f"{self.location_id}/lakes/{self.lake_name}/tasks"
+        )
+        params = {"task_id":task_id}
+        if validate_only:
+            params["validate_only"] = True
+        response = self._session.post(
+            request_url,
             headers=self._headers,
+            params=params,
             data=json.dumps(post_body),
         )
         return response

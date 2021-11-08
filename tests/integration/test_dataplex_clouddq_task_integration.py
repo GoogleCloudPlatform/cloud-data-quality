@@ -20,6 +20,7 @@ from clouddq.utils import working_directory
 from pprint import pformat
 import time
 import datetime
+import json
 import logging
 import shutil
 from pathlib import Path
@@ -127,36 +128,59 @@ class TestDataplexIntegration:
                                gcp_project_id=gcp_project_id,
                                gcs_bucket_name=gcs_bucket_name)
 
+    def test_get_dataplex_lake_success(self,
+                                test_dq_dataplex_client,
+                                gcp_project_id,
+                                gcp_dataplex_region,
+                                gcp_dataplex_lake_name):
+        response = test_dq_dataplex_client.get_dataplex_lake(gcp_dataplex_lake_name)
+        assert response.status_code == 200
+        resp_obj = json.loads(response.text)
+        expected_name = f"projects/{gcp_project_id}/locations/{gcp_dataplex_region}/lakes/{gcp_dataplex_lake_name}"
+        assert resp_obj["name"] == expected_name
+
     @pytest.mark.parametrize(
-        "input_configs,expected",
+        "input_configs,validate_only,expected",
         [
             pytest.param(
                 'gcs_clouddq_configs_standard',
+                True,
+                "SUCCEEDED",
+                id="validate_only"
+            ),
+            pytest.param(
+                'gcs_clouddq_configs_standard',
+                False,
                 "SUCCEEDED",
                 id="configs_standard"
             ),
             pytest.param(
                 'gcs_clouddq_configs_nonstandard',
+                False,
                 "SUCCEEDED",
                 id="configs_nonstandard"
             ),
             pytest.param(
                 'gcs_clouddq_configs_nonstandard_local',
+                False,
                 "SUCCEEDED",
                 id="configs_nonstandard_local"
             ),
             pytest.param(
                 'gcs_clouddq_configs_empty',
+                False,
                 "FAILED",
                 id="configs_empty"
             ),
             pytest.param(
                 'gcs_clouddq_configs_single_yaml',
+                False,
                 "SUCCEEDED",
                 id="configs_single_yaml"
             ),
             pytest.param(
                 'gcs_clouddq_configs_single_yaml_malformed',
+                False,
                 "FAILED",
                 id="configs_single_yaml_malformed"
             ),
@@ -165,6 +189,7 @@ class TestDataplexIntegration:
     def test_create_bq_dataplex_task(self,
                     test_dq_dataplex_client,
                     input_configs,
+                    validate_only,
                     expected,
                     gcs_clouddq_pyspark_driver,
                     gcp_project_id,
@@ -215,7 +240,8 @@ class TestDataplexIntegration:
                     task_labels=task_labels,
                     clouddq_executable_path="gs://dataplex-clouddq-api-integration/staging/clouddq-executable.zip",
                     clouddq_executable_checksum_path="gs://dataplex-clouddq-api-integration/staging/clouddq-executable.zip.hashsum",
-                    clouddq_pyspark_driver_path=clouddq_pyspark_driver_path)
+                    clouddq_pyspark_driver_path=clouddq_pyspark_driver_path,
+                    validate_only=validate_only)
         # Check that the task has been created successfully
         print(f"CloudDQ task creation response is {response.text}")
         assert response.status_code == 200

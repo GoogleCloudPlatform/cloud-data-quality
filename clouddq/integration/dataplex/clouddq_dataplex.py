@@ -80,6 +80,7 @@ class CloudDqDataplexClient:
         clouddq_pyspark_driver_path: str | None = None,
         clouddq_executable_path: str | None = None,
         clouddq_executable_checksum_path: str | None = None,
+        validate_only: bool = False,
     ) -> Response:
         # Set default CloudDQ PySpark driver path if not manually overridden
         if not clouddq_pyspark_driver_path:
@@ -192,8 +193,8 @@ class CloudDqDataplexClient:
         response = self._client.create_dataplex_task(
             task_id=task_id,
             post_body=clouddq_post_body,
+            validate_only=validate_only,
         )
-
         return response
 
     def get_clouddq_task_status(self, task_id: str) -> str:
@@ -227,7 +228,6 @@ class CloudDqDataplexClient:
         :param task_id: task id for dataplex task
         :return: Response object
         """
-
         get_task_response = self._client.get_dataplex_task(
             task_id=task_id,
         )
@@ -239,8 +239,10 @@ class CloudDqDataplexClient:
         else:
             return get_task_response
 
-    def get_iam_permissions(self) -> list:
+    def get_dataplex_lake(self, lake_name: str) -> Response:
+        return self._client.get_dataplex_lake(lake_name)
 
+    def get_iam_permissions(self) -> list:
         body = {"resource": "dataplex", "permissions": ["roles/dataproc.worker"]}
         return self._client.get_dataplex_iam_permissions(
             body=body,
