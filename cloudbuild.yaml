@@ -9,6 +9,10 @@ steps:
 
         gcloud info
 
+        gcloud auth list
+
+        gcloud auth application-default print-access-token
+
         find ~/.config/gcloud/ | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
 
         unset GOOGLE_APPLICATION_CREDENTIALS
