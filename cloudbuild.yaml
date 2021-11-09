@@ -5,11 +5,13 @@ steps:
       - >
         set -x
 
+        find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
+
         gcloud info
 
-        ls ~/.config/gcloud/application_default_credentials.json
+        find ~/.config/gcloud/ | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
 
-        export GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
+        unset GOOGLE_APPLICATION_CREDENTIALS
 
         ls /usr/bin/python*
 
