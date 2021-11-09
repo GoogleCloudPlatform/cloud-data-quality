@@ -25,7 +25,7 @@ import json
 import logging
 import shutil
 from pathlib import Path
-
+from pprint import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +122,9 @@ class TestDataplexIntegration:
             gcs_zip_executable_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip"
             gcs_zip_executable_hashsum_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip.hashsum"
         else:
-            clouddq_zip_build = Path("bazel-bin/clouddq/clouddq_patched.zip")
+            print(Path().absolute())
+            pprint(list(Path().glob("**/*/.zip")))
+            clouddq_zip_build = Path("bazel-bin/clouddq/clouddq_patched.zip").absolute()
             if not clouddq_zip_build.is_file():
                 raise RuntimeError(
                     f"Local CloudDQ Artifact Zip at {clouddq_zip_build} not found"
