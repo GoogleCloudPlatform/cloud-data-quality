@@ -142,8 +142,8 @@ class DataplexClient:
         if not lake_name:
             lake_name = self.lake_name
         request_url = (
-            f"{self.dataplex_endpoint}/v1/projects/{self.gcp_project_id}/locations/"
-            f"{self.location_id}/lakes/{self.lake_name}/tasks"
+            f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
+            f"{location_id}/lakes/{lake_name}/tasks"
         )
         params = {"task_id": task_id}
         if validate_only:
