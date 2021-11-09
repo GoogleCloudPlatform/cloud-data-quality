@@ -27,6 +27,7 @@ export CLOUDDQ_BIGQUERY_DATASET="<your-bigquery-dataset-id>"
 
 # Set $CLOUDDQ_BIGQUERY_REGION to the BigQuery region used for integration testing.
 export CLOUDDQ_BIGQUERY_REGION="<gcp-region-for-bigquery-jobs>"
+<<<<<<< Updated upstream
 
 # Set $GOOGLE_SDK_CREDENTIALS to the exported service account key path used for integration testing.
 # If you have the environment variable GOOGLE_APPLICATION_CREDENTIALS set, you can do `export GOOGLE_SDK_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"`.
@@ -42,8 +43,8 @@ export GCS_BUCKET_NAME="<gcs-bucket-for-staging->"
 
 # Set $GCS_CLOUDDQ_EXECUTABLE_PATH to the GCS bucket path for the pre-built CloudDQ files
 # `clouddq-executable.zip` and `clouddq-executable.zip.hashsum`.
-# If this is not set or empty, the test harness will look the the zip executable at 
-# `bazel-bin/clouddq/clouddq_patched.zip` and upload it to $GCS_BUCKET_NAME for testing.
+# If this is not set or empty, the test harness will look the the zip executable called
+# `clouddq_patched.zip` on local path and upload it to $GCS_BUCKET_NAME for testing.
 export GCS_CLOUDDQ_EXECUTABLE_PATH="gs://dataplex-clouddq-artifacts-us-central1/"
 
 # Set $DATAPLEX_LAKE_NAME to the Dataplex Lake used for testing.
@@ -63,3 +64,15 @@ export DATAPLEX_TARGET_BQ_TABLE="<table-name-in-DATAPLEX_TARGET_BQ_DATASET>"
 
 # Set $DATAPLEX_TASK_SA to the service account used for running Dataplex Tasks in testing.
 export DATAPLEX_TASK_SA="<service-account-used-for-running-dataplex-task>"
+=======
+export GOOGLE_SDK_CREDENTIALS="<path-to-exported-service-account-key>"
+export IMPERSONATION_SERVICE_ACCOUNT="<service-account-name-for-impersonation>"
+
+export GOOGLE_CLOUD_PROJECT=dataplex-clouddq
+export CLOUDDQ_BIGQUERY_DATASET=dataplex_clouddq
+export CLOUDDQ_BIGQUERY_REGION=US
+export GOOGLE_CLOUD_CREDENTIALS=/home/thinhha_google_com/.config/gcloud/application_default_credentials.json
+export GOOGLE_SDK_CREDENTIALS=/home/thinhha_google_com/.config/gcloud/application_default_credentials.json
+export GCS_BUCKET_NAME=dataplex-clouddq-api-integration
+export GOOGLE_APPLICATION_CREDENTIALS=/home/thinhha_google_com/.config/gcloud/application_default_credentials.json
+>>>>>>> Stashed changes
