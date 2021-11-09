@@ -88,7 +88,7 @@ class TestLib:
 
 
     # Load a config directory containing two different configs defining the same key
-    def test_load_configs_identical(self, temp_configs_dir):
+    def test_load_configs_different(self, temp_configs_dir):
         try:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib")
             config_path = Path(temp_configs_dir) 
