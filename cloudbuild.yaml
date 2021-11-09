@@ -9,33 +9,15 @@ steps:
 
         gcloud info
 
-        gcloud auth list
-
-        gcloud auth application-default print-access-token
-    
-        ls /usr/bin/python*
-
-        python3 -m pip install google-auth
-
-        python3 -c 'import google.auth; credentials = google.auth.default(scopes="https://www.googleapis.com/auth/cloud-platform"); print(credentials[0].__dict__)'
-
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
 
         ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
 
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
-
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y install make sudo curl git-all
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata make sudo curl git-all
 
         chmod -R +x scripts
 
         source scripts/install_development_dependencies.sh
-
-        ls /usr/bin/python*
-
-        ln -sf /usr/bin/python3 /usr/bin/python
-
-        [[ -f /usr/bin/python ]] && echo "python found" || echo "python not found"
 
         make -v
 
@@ -46,6 +28,8 @@ steps:
         echo "common --google_default_credentials" >> .bazelrc
 
         env
+
+        gcloud beta dataproc batches submit --project dataplex-clouddq --region europe-west2 pyspark  gs://dataplex-clouddq-api-integration/pyspark_driver.py --files gs://dataplex-clouddq-api-integration/pyspark_driver.py --subnet default
 
         # make test-pip-install
 
