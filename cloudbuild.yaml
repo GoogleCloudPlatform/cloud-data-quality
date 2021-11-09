@@ -19,6 +19,10 @@ steps:
 
         ls /usr/bin/python*
 
+        python3 pip install google-auth
+
+        python3 -c 'import google.auth; credentials = google.auth.default(scopes="https://www.googleapis.com/auth/cloud-platform"); print(credentials[0].__dict__)'
+
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
 
         ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
