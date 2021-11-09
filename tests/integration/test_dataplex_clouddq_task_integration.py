@@ -123,12 +123,12 @@ class TestDataplexIntegration:
             gcs_zip_executable_hashsum_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip.hashsum"
         else:
             print(Path().absolute())
-            pprint(list(Path().glob("**/*/.zip")))
-            clouddq_zip_build = Path("bazel-bin/clouddq/clouddq_patched.zip").absolute()
-            if not clouddq_zip_build.is_file():
+            pprint(list(Path().iterdir()))
+            clouddq_zip_build = Path("clouddq_patched.zip")
+            if not clouddq_zip_build.resolve().is_file():
                 raise RuntimeError(
-                    f"Local CloudDQ Artifact Zip at {clouddq_zip_build} not found"
-                    "Run `make build` before comtinuing.")
+                    f"Local CloudDQ Artifact Zip at `{clouddq_zip_build.absolute()}` "
+                    "not found. Run `make build` before continuing.")
             upload_blob(gcs_bucket_name, clouddq_zip_build, "test/clouddq-executable.zip")
             gcs_zip_executable_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip"
             hash_sha256 = hashlib.sha256()
@@ -136,10 +136,10 @@ class TestDataplexIntegration:
                 for chunk in iter(lambda: f.read(4096), b""):
                     hash_sha256.update(chunk)
             hashsum = hash_sha256.hexdigest()
-            hashsum_file = Path("bazel-bin/clouddq/clouddq_patched.zip.hashsum")
+            hashsum_file = Path("clouddq_patched.zip.hashsum")
             hashsum_file.write_text(hashsum)
-            upload_blob(gcs_bucket_name, hashsum_file, "test/clouddq-executable.zip")
-            gcs_zip_executable_hashsum_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip"
+            upload_blob(gcs_bucket_name, hashsum_file, "test/clouddq-executable.zip.hashsum")
+            gcs_zip_executable_hashsum_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip.hashsum"
         return (gcs_zip_executable_name, gcs_zip_executable_hashsum_name)
 
     @pytest.fixture
