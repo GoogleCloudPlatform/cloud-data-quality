@@ -142,48 +142,48 @@ class TestDataplexIntegration:
     @pytest.mark.parametrize(
         "input_configs,validate_only,expected",
         [
-            pytest.param(
-                'gcs_clouddq_configs_standard',
-                True,
-                "SUCCEEDED",
-                id="validate_only"
-            ),
+            # pytest.param(
+            #     'gcs_clouddq_configs_standard',
+            #     True,
+            #     "SUCCEEDED",
+            #     id="validate_only"
+            # ),
             pytest.param(
                 'gcs_clouddq_configs_standard',
                 False,
                 "SUCCEEDED",
                 id="configs_standard"
             ),
-            pytest.param(
-                'gcs_clouddq_configs_nonstandard',
-                False,
-                "SUCCEEDED",
-                id="configs_nonstandard"
-            ),
-            pytest.param(
-                'gcs_clouddq_configs_nonstandard_local',
-                False,
-                "SUCCEEDED",
-                id="configs_nonstandard_local"
-            ),
-            pytest.param(
-                'gcs_clouddq_configs_empty',
-                False,
-                "FAILED",
-                id="configs_empty"
-            ),
-            pytest.param(
-                'gcs_clouddq_configs_single_yaml',
-                False,
-                "SUCCEEDED",
-                id="configs_single_yaml"
-            ),
-            pytest.param(
-                'gcs_clouddq_configs_single_yaml_malformed',
-                False,
-                "FAILED",
-                id="configs_single_yaml_malformed"
-            ),
+            # pytest.param(
+            #     'gcs_clouddq_configs_nonstandard',
+            #     False,
+            #     "SUCCEEDED",
+            #     id="configs_nonstandard"
+            # ),
+            # pytest.param(
+            #     'gcs_clouddq_configs_nonstandard_local',
+            #     False,
+            #     "SUCCEEDED",
+            #     id="configs_nonstandard_local"
+            # ),
+            # pytest.param(
+            #     'gcs_clouddq_configs_empty',
+            #     False,
+            #     "FAILED",
+            #     id="configs_empty"
+            # ),
+            # pytest.param(
+            #     'gcs_clouddq_configs_single_yaml',
+            #     False,
+            #     "SUCCEEDED",
+            #     id="configs_single_yaml"
+            # ),
+            # pytest.param(
+            #     'gcs_clouddq_configs_single_yaml_malformed',
+            #     False,
+            #     "FAILED",
+            #     id="configs_single_yaml_malformed"
+            # ),
         ],
     )
     def test_create_bq_dataplex_task(self,

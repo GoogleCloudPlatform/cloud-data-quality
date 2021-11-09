@@ -41,7 +41,7 @@ def main(args):
     with open(f"{args[1]}.hashsum") as f:
         expected_hexdigest = f.read().replace("\n", "").replace("\t", "")
         verify_executable(args[1], expected_hexdigest)
-    args[3] = Path("configs").absolute()
+    args[3] = str(Path("configs").absolute())
     cmd = f"python3 {' '.join(args[1:])}"
     print(f"Executing commands:\n {cmd}")
     subprocess.run(cmd, shell=True, check=True)

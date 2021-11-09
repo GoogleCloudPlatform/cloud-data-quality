@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import os
 import logging
 
 from pathlib import Path
@@ -59,6 +60,10 @@ class GcpCredentials:
             )
         # Otherwise, use Application Default Credentials
         else:
+            if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
+                logger.info(
+                    "Using environment variable GOOGLE_APPLICATION_CREDENTIALS "
+                    f"path: {os.environ['GOOGLE_APPLICATION_CREDENTIALS']}")
             source_credentials, _ = google.auth.default(
                 scopes=TARGET_SCOPES, quota_project_id=gcp_project_id
             )
