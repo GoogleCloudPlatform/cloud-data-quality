@@ -51,7 +51,7 @@ if __name__ == "__main__":
     print("Python Version:")
     print(sys.version_info)
     print("OS Runtime Details:")
-    subprocess.run("lsb_release -a", shell=True, check=True)
+    subprocess.run("cat /etc/*-release", shell=True, check=True)
     print("PySpark working directory:")
     pprint(Path().absolute())
     print("PySpark directory content:")
