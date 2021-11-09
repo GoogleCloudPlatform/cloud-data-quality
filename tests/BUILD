@@ -86,6 +86,14 @@ py_test(
 )
 
 py_test(
+    name = "test_lib",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
     name = "test_cli_unit",
     srcs = SRCS,
     data = DATA,

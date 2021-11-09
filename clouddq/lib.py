@@ -44,13 +44,28 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
         config = load_yaml(file, configs_type.value)
         if not config:
             continue
+
         intersection = config.keys() & all_configs.keys()
+
+        # The new config defines keys that we have already loaded
         if intersection:
-            raise ValueError(
-                f"Detected Duplicated Config ID(s): {intersection} "
-                f"Config IDs must be unique."
-            )
+            # Verify that objects pointed to by duplicate keys are identical
+            config_i = {}
+            all_configs_i = {}
+            for k in intersection:
+                config_i[k] = config[k]
+                all_configs_i[k] = all_configs[k]
+
+            # == on dicts performs deep compare:
+            if not config_i == all_configs_i:
+                raise ValueError(
+                    f"Detected Duplicated Config ID(s): {intersection} "
+                    f"If a config ID is repeated, it must be for an identical "
+                    f"configuration."
+                )
+
         all_configs.update(config)
+
     assert_not_none_or_empty(
         all_configs,
         f"Failed to load {configs_type.value} from file path: {configs_path}",
