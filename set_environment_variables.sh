@@ -40,6 +40,12 @@ export CLOUDDQ_BIGQUERY_REGION="<gcp-region-for-bigquery-jobs>"
 # Set $GCS_BUCKET_NAME to the GCS bucket name for staging CloudDQ artifacts and configs.
 export GCS_BUCKET_NAME="<gcs-bucket-for-staging->"
 
+# Set $GCS_CLOUDDQ_EXECUTABLE_PATH to the GCS bucket path for the pre-built CloudDQ files
+# `clouddq-executable.zip` and `clouddq-executable.zip.hashsum`.
+# If this is not set or empty, the test harness will look the the zip executable at 
+# `bazel-bin/clouddq/clouddq_patched.zip` and upload it to $GCS_BUCKET_NAME for testing.
+export GCS_CLOUDDQ_EXECUTABLE_PATH="gs://dataplex-clouddq-artifacts-us-central1/"
+
 # Set $DATAPLEX_LAKE_NAME to the Dataplex Lake used for testing.
 export DATAPLEX_LAKE_NAME="<dataplex-lake-used-for-testing>"
 

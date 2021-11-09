@@ -47,13 +47,11 @@ def main(args):
     print(f"Executing commands:\n {cmd}")
     subprocess.run(cmd, shell=True, check=True)
 
-import os
-import distro
-
 if __name__ == "__main__":
-    pprint("OS Runtime Details:")
-    print(distro.id())
-    print(distro.linux_distribution())
+    print("Python Version:")
+    print(sys.version_info)
+    print("OS Runtime Details:")
+    subprocess.run("lsb_release -a", shell=True, check=True)
     print("PySpark working directory:")
     pprint(Path().absolute())
     print("PySpark directory content:")

@@ -76,6 +76,18 @@ def gcs_bucket_name():
     return gcs_bucket_name
 
 @pytest.fixture
+def gcs_clouddq_executable_path():
+    gcs_clouddq_executable_path = os.environ.get('GCS_CLOUDDQ_EXECUTABLE_PATH', None)
+    if not gcs_clouddq_executable_path:
+        logger.warning(
+            "Test environment variable GCS_CLOUDDQ_EXECUTABLE_PATH cannot be found. "
+            "Set this to the GCS bucket path for the pre-built CloudDQ file `clouddq-executable.zip` "
+            " and `clouddq-executable.zip.hashsum`."
+            "If this is not set or empty, the test harness will look the the zip executable at "
+            f"`bazel-bin/clouddq/clouddq_patched.zip` and upload it to $GCS_BUCKET_NAME for testing.")
+    return gcs_clouddq_executable_path
+
+@pytest.fixture
 def gcp_dataplex_region():
     gcp_dataplex_region = os.environ.get('DATAPLEX_REGION_ID', None)
     if not gcp_dataplex_region:

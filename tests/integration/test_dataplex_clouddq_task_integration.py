@@ -115,23 +115,30 @@ class TestDataplexIntegration:
         return gcs_uri
 
     @pytest.fixture
-    def test_clouddq_zip_executable_path(self,
-                                gcs_bucket_name):
-        clouddq_zip_build = Path("bazel-bin/clouddq/clouddq_patched.zip")
-        if not clouddq_zip_build.is_file():
-            raise RuntimeError(
-                f"Local CloudDQ Artifact Zip at {clouddq_zip_build} not found"
-                "Run `make build` before comtinuing.")
-        upload_blob(gcs_bucket_name, clouddq_zip_build, "staging/clouddq-executable.zip")
-        gcs_bucket_name = f"gs://{gcs_bucket_name}/staging/clouddq-executable.zip"
-        hash_sha256 = hashlib.sha256()
-        with open(clouddq_zip_build, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_sha256.update(chunk)
-        hashsum = hash_sha256.hexdigest()
-        with Path("bazel-bin/clouddq/clouddq_patched.zip.hashsum") as f:
-            f.write_text(hashsum)
-        yield gcs_bucket_name
+    def test_clouddq_zip_executable_paths(self,
+                                gcs_bucket_name,
+                                gcs_clouddq_executable_path):
+        if gcs_clouddq_executable_path:
+            gcs_zip_executable_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip"
+            gcs_zip_executable_hashsum_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip.hashsum"
+        else:
+            clouddq_zip_build = Path("bazel-bin/clouddq/clouddq_patched.zip")
+            if not clouddq_zip_build.is_file():
+                raise RuntimeError(
+                    f"Local CloudDQ Artifact Zip at {clouddq_zip_build} not found"
+                    "Run `make build` before comtinuing.")
+            upload_blob(gcs_bucket_name, clouddq_zip_build, "test/clouddq-executable.zip")
+            gcs_zip_executable_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip"
+            hash_sha256 = hashlib.sha256()
+            with open(clouddq_zip_build, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hash_sha256.update(chunk)
+            hashsum = hash_sha256.hexdigest()
+            hashsum_file = Path("bazel-bin/clouddq/clouddq_patched.zip.hashsum")
+            hashsum_file.write_text(hashsum)
+            upload_blob(gcs_bucket_name, hashsum_file, "test/clouddq-executable.zip")
+            gcs_zip_executable_hashsum_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip"
+        return (gcs_zip_executable_name, gcs_zip_executable_hashsum_name)
 
     @pytest.fixture
     def test_dq_dataplex_client(self,
@@ -209,6 +216,7 @@ class TestDataplexIntegration:
     def test_create_bq_dataplex_task(self,
                     test_dq_dataplex_client,
                     input_configs,
+                    test_clouddq_zip_executable_paths,
                     validate_only,
                     expected,
                     gcs_clouddq_pyspark_driver,
@@ -223,6 +231,14 @@ class TestDataplexIntegration:
         This test is for dataplex clouddq task api integration for bigquery
         :return:
         """
+        # Get executable path
+        print(f"Using executable paths: {test_clouddq_zip_executable_paths}")
+        clouddq_executable_path, clouddq_executable_checksum_path = test_clouddq_zip_executable_paths
+        # Prepare the test YAML configurations from fixture
+        clouddq_yaml_spec_file_path: str = request.getfixturevalue(input_configs)
+        print(f"Using test GCP configs: {clouddq_yaml_spec_file_path}")
+        # Use the most updated clouddq_pyspark_driver file from the project for testing
+        clouddq_pyspark_driver_path: str = gcs_clouddq_pyspark_driver
         # Prepare Task_ID for reference
         test_id = f"{request.node.callspec.id}".replace("_", "-")
         task_id = f"clouddq-test-create-dataplex-task-{test_id}"
@@ -233,11 +249,6 @@ class TestDataplexIntegration:
         print(f"CloudDQ task deletion response is {response.text}")
         # Continue if Task_ID is successfully deleted or not found
         assert response.status_code == 200 or response.status_code == 404
-        # Prepare the test YAML configurations from fixture
-        clouddq_yaml_spec_file_path: str = request.getfixturevalue(input_configs)
-        print(f"Using test GCP configs: {clouddq_yaml_spec_file_path}")
-        # Use the most updated clouddq_pyspark_driver file from the project for testing
-        clouddq_pyspark_driver_path: str = gcs_clouddq_pyspark_driver
         # Set other variables not in scope for testing 
         task_trigger_spec_type: str = "ON_DEMAND"
         task_description: str = f"clouddq task created at {datetime.datetime.utcnow()} for test {test_id}"
@@ -258,8 +269,8 @@ class TestDataplexIntegration:
                     task_trigger_spec_type=task_trigger_spec_type,
                     task_description=task_description,
                     task_labels=task_labels,
-                    clouddq_executable_path="gs://dataplex-clouddq-api-integration/staging/clouddq-executable.zip",
-                    clouddq_executable_checksum_path="gs://dataplex-clouddq-api-integration/staging/clouddq-executable.zip.hashsum",
+                    clouddq_executable_path=clouddq_executable_path,
+                    clouddq_executable_checksum_path=clouddq_executable_checksum_path,
                     clouddq_pyspark_driver_path=clouddq_pyspark_driver_path,
                     validate_only=validate_only)
         # Check that the task has been created successfully
