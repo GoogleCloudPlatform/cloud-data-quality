@@ -40,14 +40,20 @@ def verify_executable(fname, expected_hexdigest):
 def main(args):
     with open(f"{args[1]}.hashsum") as f:
         expected_hexdigest = f.read().replace("\n", "").replace("\t", "")
+        print(f"expected hexdigest: {expected_hexdigest}")
         verify_executable(args[1], expected_hexdigest)
     args[3] = str(Path("configs").absolute())
     cmd = f"python3 {' '.join(args[1:])}"
     print(f"Executing commands:\n {cmd}")
     subprocess.run(cmd, shell=True, check=True)
 
+import os
+import distro
 
 if __name__ == "__main__":
+    pprint("OS Runtime Details:")
+    print(distro.id())
+    print(distro.linux_distribution())
     print("PySpark working directory:")
     pprint(Path().absolute())
     print("PySpark directory content:")
@@ -55,7 +61,7 @@ if __name__ == "__main__":
     print("Input PySpark arguments:")
     pprint(sys.argv)
     input_configs = sys.argv[3]
-    print("User-specified CloudDQ YAML configs: {input_configs}")
+    print(f"User-specified CloudDQ YAML configs: {input_configs}")
     configs_path = Path("configs")
     if not configs_path.is_dir():
         print(f"Creating configs directory at: `{configs_path.absolute()}`")
@@ -84,5 +90,5 @@ if __name__ == "__main__":
             for yaml_file in file.glob("**/*.yml"):
                 configs_path.joinpath(yaml_file).write_text(yaml_file.open().read())
     print("Configs directory contents is:")
-    pprint(configs_path.glob("**/*"))
+    pprint(list(configs_path.glob("**/*")))
     main(sys.argv)

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import pytest
+import hashlib
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration import clouddq_pyspark_driver
 from clouddq.integration.gcs import upload_blob
@@ -112,6 +113,25 @@ class TestDataplexIntegration:
         upload_blob(gcs_bucket_name, driver_path, f"test-artifacts/{file_name}")
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
+
+    @pytest.fixture
+    def test_clouddq_zip_executable_path(self,
+                                gcs_bucket_name):
+        clouddq_zip_build = Path("bazel-bin/clouddq/clouddq_patched.zip")
+        if not clouddq_zip_build.is_file():
+            raise RuntimeError(
+                f"Local CloudDQ Artifact Zip at {clouddq_zip_build} not found"
+                "Run `make build` before comtinuing.")
+        upload_blob(gcs_bucket_name, clouddq_zip_build, "staging/clouddq-executable.zip")
+        gcs_bucket_name = f"gs://{gcs_bucket_name}/staging/clouddq-executable.zip"
+        hash_sha256 = hashlib.sha256()
+        with open(clouddq_zip_build, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_sha256.update(chunk)
+        hashsum = hash_sha256.hexdigest()
+        with Path("bazel-bin/clouddq/clouddq_patched.zip.hashsum") as f:
+            f.write_text(hashsum)
+        yield gcs_bucket_name
 
     @pytest.fixture
     def test_dq_dataplex_client(self,

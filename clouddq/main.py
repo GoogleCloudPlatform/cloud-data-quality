@@ -28,9 +28,9 @@ from typing import Optional
 import click
 import coloredlogs
 
-from git import GitCommandError
-from git import InvalidGitRepositoryError
-from git import Repo
+# from git import GitCommandError
+# from git import InvalidGitRepositoryError
+# from git import Repo
 
 from clouddq import lib
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
@@ -42,13 +42,13 @@ from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
 
 
-APP_VERSION = None
-try:
-    repo = Repo(search_parent_directories=True)
-    APP_VERSION = repo.git.describe()
-except (InvalidGitRepositoryError, GitCommandError):
-    pass
-
+# APP_VERSION = None
+# try:
+#     repo = Repo(search_parent_directories=True)
+#     APP_VERSION = repo.git.describe()
+# except (InvalidGitRepositoryError, GitCommandError):
+#     pass
+APP_VERSION = "0.3.1"
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
 
