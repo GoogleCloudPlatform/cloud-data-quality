@@ -7,6 +7,10 @@ steps:
 
         gcloud info
 
+        ls ~/.config/gcloud/application_default_credentials.json
+
+        export GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
+
         ls /usr/bin/python*
 
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
@@ -51,7 +55,6 @@ steps:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
     - 'CLOUDDQ_BIGQUERY_DATASET=${_CLOUDDQ_BIGQUERY_DATASET}'
     - 'CLOUDDQ_BIGQUERY_REGION=${_CLOUDDQ_BIGQUERY_REGION}'
-    - 'GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_credentials.json'
     - 'GCS_BUCKET_NAME=${_GCS_BUCKET_NAME}'
     - 'DATAPLEX_LAKE_NAME=${_DATAPLEX_LAKE_NAME}'
     - 'DATAPLEX_REGION_ID=${_DATAPLEX_REGION_ID}'
