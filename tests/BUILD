@@ -115,7 +115,9 @@ py_test(
 py_test(
     name = "test_dataplex_clouddq_task_integration",
     srcs = SRCS,
-    data = DATA,
+    data = DATA + [
+        "//:bazel_bin_clouddq_executable",
+    ],
     legacy_create_init = 0,
     deps = DEPS,
 )

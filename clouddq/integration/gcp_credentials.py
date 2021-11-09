@@ -60,10 +60,11 @@ class GcpCredentials:
             )
         # Otherwise, use Application Default Credentials
         else:
-            if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
+            application_credentials_file = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None)
+            if application_credentials_file:
                 logger.info(
                     "Using environment variable GOOGLE_APPLICATION_CREDENTIALS "
-                    f"path: {os.environ['GOOGLE_APPLICATION_CREDENTIALS']}")
+                    f"path: {application_credentials_file}")
             source_credentials, _ = google.auth.default(
                 scopes=TARGET_SCOPES, quota_project_id=gcp_project_id
             )
