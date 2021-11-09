@@ -12,11 +12,7 @@ steps:
         gcloud auth list
 
         gcloud auth application-default print-access-token
-
-        echo $GOOGLE_APPLICATION_CREDENTIALS
-
-        unset GOOGLE_APPLICATION_CREDENTIALS
-
+    
         ls /usr/bin/python*
 
         python3 -m pip install google-auth
