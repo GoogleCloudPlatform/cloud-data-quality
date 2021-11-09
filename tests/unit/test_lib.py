@@ -53,7 +53,7 @@ class TestLib:
     @pytest.fixture
     def temp_configs_dir(self, gcp_project_id, gcp_bq_dataset):
         source_configs_path = Path("tests").joinpath("resources","configs")
-        temp_clouddq_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test", "configs")
+        temp_clouddq_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "configs")
         if os.path.exists(temp_clouddq_dir):
             shutil.rmtree(temp_clouddq_dir)
         destination = shutil.copytree(source_configs_path, temp_clouddq_dir)
@@ -71,7 +71,7 @@ class TestLib:
     # Load a config directory containing two copies of the same config
     def test_load_configs_identical(self, temp_configs_dir):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test", "test_lib")
+            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib")
             config_path = Path(temp_configs_dir) 
 
             os.mkdir(temp_dir)
@@ -90,7 +90,7 @@ class TestLib:
     # Load a config directory containing two different configs defining the same key
     def test_load_configs_identical(self, temp_configs_dir):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test", "test_lib")
+            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib")
             config_path = Path(temp_configs_dir) 
 
             os.mkdir(temp_dir)
