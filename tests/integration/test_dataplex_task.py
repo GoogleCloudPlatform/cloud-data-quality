@@ -69,7 +69,6 @@ class TestDataplexIntegration:
                     for config_id, config_item in config_body.items():
                         merged_configs[config_type][config_id] = config_item
             single_yaml_path = Path(temp_clouddq_dir).joinpath("configs.yml")
-            print(pformat(merged_configs))
             single_yaml_path.write_text(yaml.safe_dump(dict(merged_configs)))
             # Print temp configs path
             print(pformat(list(temp_clouddq_dir.glob("**/*"))))
