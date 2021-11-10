@@ -31,8 +31,8 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        python-version: [3.8]
-        os: [ubuntu-18.04]
+        python-version: [3.9]
+        os: [ubuntu-18.04, debian-11]
 
     steps:
       - uses: actions/checkout@v2
