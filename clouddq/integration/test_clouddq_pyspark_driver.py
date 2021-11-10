@@ -20,10 +20,15 @@ from pathlib import Path
 from pprint import pprint
 
 if __name__ == "__main__":
-    print("Python Version:")
-    print(sys.version_info)
     print("OS Runtime Details:")
     subprocess.run("cat /etc/*-release", shell=True, check=True)
+    print("Python Version:")
+    print(sys.version_info)
+    print("Python Versions Available:")
+    subprocess.run("which python3", shell=True, check=True)
+    subprocess.run("ls -la /usr/bin/python*", shell=True, check=True)
+    subprocess.run("ls -la /opt/dataproc/opt/conda/default/lib/python*", shell=True, check=True)
+    subprocess.run("ls -la /opt/dataproc/opt/conda/default/lib/python3.9/bin/", shell=True, check=True)
     print("PySpark working directory:")
     pprint(Path().absolute())
     print("PySpark directory content:")
