@@ -35,8 +35,6 @@ steps:
 
         env
 
-        gcloud beta dataproc batches submit --project dataplex-clouddq --region europe-west2 pyspark  gs://dataplex-clouddq-api-integration/pyspark_driver.py --files gs://dataplex-clouddq-api-integration/pyspark_driver.py --subnet default
-
         # make test-pip-install
 
         # make check

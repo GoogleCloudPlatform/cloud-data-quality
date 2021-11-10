@@ -115,5 +115,5 @@ jobs:
         shell: bash
 
       - name: build
-        run: make build
+        run: make buildtest
         shell: bash
