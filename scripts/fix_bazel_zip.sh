@@ -25,13 +25,10 @@ fix_bazel_zip() {
   rm -rf /tmp/fix_bazel_zip/*
   unzip -qq "$1" -d /tmp/fix_bazel_zip
   rm /tmp/fix_bazel_zip/runfiles/"${BASE_NAME}"/__init__.py
+  sed -i "s/PYTHON_BINARY = '\/usr\/bin\/python3'/PYTHON_BINARY = sys.executable/g" /tmp/fix_bazel_zip/__main__.py
   cd /tmp/fix_bazel_zip/ && zip -qq -r "${BASE_NAME}".zip *
   cd -
-<<<<<<< HEAD
-  cp /tmp/fix_bazel_zip/"${BASE_NAME}".zip "$ROOT"/"${BASE_NAME}"_patched.zip
-=======
   cp /tmp/fix_bazel_zip/"${BASE_NAME}".zip "${BASE_NAME}"_patched.zip
->>>>>>> debian-11
 }
 
 if [[ -f "$ROOT"/bazel-bin/"${BASE_NAME}"/"${BASE_NAME}".zip ]]; then
