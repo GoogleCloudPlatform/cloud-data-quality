@@ -32,17 +32,6 @@ addlicense: bin/addlicense ## run addlicense check
 clean: bin/bazelisk ## clean build artifacts
 	bin/bazelisk clean --async --expunge
 
-.PHONY: buildtest
-buildtest: bin/bazelisk 
-	bin/bazelisk build //clouddq:clouddq --output_groups=python_zip_file --sandbox_fake_username --sandbox_fake_hostname
-	@source scripts/fix_bazel_zip.sh
-	python3 clouddq_patched.zip --help
-
-.PHONY: buildzip
-buildzip: bin/bazelisk  ## build zip executable and apply patch to fix init issue (NOTE: this fails if sandboxfs cannot be found in $PATH)
-	bin/bazelisk build //clouddq:clouddq --output_groups=python_zip_file --experimental_use_sandboxfs --sandbox_fake_username --sandbox_fake_hostname --sandbox_debug
-	@source scripts/fix_bazel_zip.sh
-
 # If the first argument is "run", "test, "check", or "lint"...
 ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),run test check lint))
   # use the rest as arguments
@@ -72,8 +61,9 @@ lint: bin/bazelisk ## apply black, buildifier, pyupgrade, and flake8
 
 .PHONY: build
 build: ## build zip executable and run it without arguments to show the help text
-	$(MAKE) buildzip
-	python bazel-bin/clouddq/clouddq_patched.zip --help
+	bin/bazelisk build //clouddq:clouddq --output_groups=python_zip_file --sandbox_fake_username --sandbox_fake_hostname
+	@source scripts/fix_bazel_zip.sh
+	python3 clouddq_patched.zip --help
 
 .PHONY: help
 help: ## show help text

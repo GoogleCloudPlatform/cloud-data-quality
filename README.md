@@ -341,7 +341,6 @@ For development or trying out CloudDQ, we recommend using either [Cloud Shell](h
 * golang (for building [bazelisk](https://github.com/bazelbuild/bazelisk)): https://golang.org/doc/install
 * Python 3: https://wiki.python.org/moin/BeginnersGuide/Download
 * gcloud SDK (for interacting with GCP): https://cloud.google.com/sdk/docs/install
-* sandboxfs: https://github.com/bazelbuild/sandboxfs/blob/master/INSTALL.md
 
 From a `Ubuntu`/`Debian` machine, install the above dependencies by running the following script:
 
@@ -462,17 +461,6 @@ If you encounter the following error when running the executable Python zip on a
 ```
 
 This suggests that the `glibc` version on your target machine is incompatible with the version on your build machine. Resolve this by rebuilding the zip on machine with identical `glibc` version (usually this means the same OS version) as on your target machine, or vice versa.
-
-### 3. Failed to initiatize sandboxfs: Failed to get sandboxfs version from sandboxfs
-
-This means you have not completed installing `sandboxfs` before running `make build`.
-
-From a `Ubuntu`/`Debian` machine, install the above dependencies by running the following script:
-
-```bash
-#!/bin/bash
-source scripts/install_development_dependencies.sh
-```
 
 ## Feedback / Questions
 

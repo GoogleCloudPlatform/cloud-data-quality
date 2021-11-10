@@ -35,15 +35,15 @@ steps:
 
         env
 
-        # make test-pip-install
+        make addlicense
 
-        # make check
+        make check
 
-        make test test_dataplex_clouddq_task_integration
+        make test-pip-install
 
-        # make test
+        make test
 
-        # make build
+        make build
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'

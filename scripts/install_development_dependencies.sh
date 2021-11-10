@@ -20,15 +20,6 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
     exit 1
 fi
 
-# Install sandboxfs
-if ! [ -x "$(command -v "sandboxfs")" ]; then
-    sudo apt install -y libfuse2
-    curl -Lo /tmp/sandboxfs-0.2.0.tgz https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
-    sudo tar xzv -C /usr/local -f /tmp/sandboxfs-0.2.0.tgz
-    rm /tmp/sandboxfs-0.2.0.tgz
-fi
-sandboxfs --help
-
 # Install Python dependencies
 sudo apt-get update
 sudo apt-get install -y make build-essential libssl-dev zlib1g-dev \
@@ -44,13 +35,6 @@ rm /tmp/sandboxfs-0.2.0.tgz
 sandboxfs --help
 
 # Install golang for building Bazelisk
-<<<<<<< HEAD
-curl -Lo  /tmp/go1.16.5.linux-amd64.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
-go version
-=======
 if ! [ -x "$(command -v "go")" ]; then
     curl -Lo  /tmp/go1.16.5.linux-amd64.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
     sudo rm -rf /usr/local/go
@@ -65,4 +49,3 @@ if ! [ -x "$(command -v "go")" ]; then
         echo '==> Start a new shell or run "source ~/.bashrc" for the changes to take effect.'
     fi
 fi
->>>>>>> debian-11
