@@ -19,7 +19,7 @@ import sys
 
 class TestPythonVersion:
     def test_version(self):
-        assert platform.python_version() == "3.8.6"
+        assert platform.python_version() == "3.9.2"
 
 
 if __name__ == "__main__":
