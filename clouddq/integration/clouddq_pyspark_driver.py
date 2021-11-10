@@ -43,7 +43,7 @@ def main(args):
         print(f"expected hexdigest: {expected_hexdigest}")
         verify_executable(args[1], expected_hexdigest)
     args[3] = str(Path("configs").absolute())
-    cmd = f"python3 {' '.join(args[1:])}"
+    cmd = f"{sys.executable} {' '.join(args[1:])}"
     print(f"Executing commands:\n {cmd}")
     subprocess.run(cmd, shell=True, check=True)
 
@@ -51,12 +51,8 @@ if __name__ == "__main__":
     print("OS Runtime Details:")
     subprocess.run("cat /etc/*-release", shell=True, check=True)
     print("Python Version:")
+    print(sys.executable)
     print(sys.version_info)
-    print("Python Versions Available:")
-    subprocess.run("which python3", shell=True, check=True)
-    subprocess.run("ls -la /usr/bin/python*", shell=True, check=True)
-    subprocess.run("ls -la /opt/dataproc/opt/conda/default/lib/python*", shell=True, check=True)
-    subprocess.run("ls -la /opt/dataproc/opt/conda/default/lib/python3.9/bin/", shell=True, check=True)
     print("OS Runtime Details:")
     subprocess.run("cat /etc/*-release", shell=True, check=True)
     print("PySpark working directory:")
