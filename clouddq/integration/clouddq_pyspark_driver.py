@@ -18,14 +18,14 @@ This is designed to be launched using a companion script such
 as `scripts/dataproc/submit-dataproc-job.sh`.
 """
 
+from pathlib import Path
+from pprint import pprint
+from zipfile import ZipFile
+
 import hashlib
 import os
 import subprocess
 import sys
-
-from pathlib import Path
-from pprint import pprint
-from zipfile import ZipFile
 
 
 def verify_executable(fname, expected_hexdigest):
@@ -46,6 +46,7 @@ def main(args):
     cmd = f"{sys.executable} {' '.join(args[1:])}"
     print(f"Executing commands:\n {cmd}")
     subprocess.run(cmd, shell=True, check=True)
+
 
 if __name__ == "__main__":
     print("OS Runtime Details:")

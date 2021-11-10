@@ -12,21 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-import hashlib
-from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
-from clouddq.integration import clouddq_pyspark_driver
-from clouddq.integration import test_clouddq_pyspark_driver
-from clouddq.integration.gcs import upload_blob
-from clouddq.utils import working_directory
+from collections import defaultdict
+from pathlib import Path
 from pprint import pformat
-import time
+from pprint import pprint
+
 import datetime
+import hashlib
 import json
 import logging
 import shutil
-from pathlib import Path
-from pprint import pprint
+import time
+
+import pytest
+import yaml
+
+from clouddq.integration import clouddq_pyspark_driver
+from clouddq.integration import test_clouddq_pyspark_driver
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
+from clouddq.integration.gcs import upload_blob
+from clouddq.utils import working_directory
+
 
 logger = logging.getLogger(__name__)
 
@@ -45,17 +51,26 @@ class TestDataplexIntegration:
             empty_directory = Path(temp_clouddq_dir).joinpath("empty")
             empty_directory.mkdir()
             shutil.make_archive('empty-clouddq-configs', 'zip', empty_directory.parent, empty_directory.name)
-            # Create single YAML config called 'configs.yml'
+            # Create single YAML config files for testing
             configs_content = []
             for file in configs_path.glob("**/*.yml"):
                 configs_content.append(file.open().read())
             for file in configs_path.glob("**/*.yaml"):
                 configs_content.append(file.open().read())
-            single_yaml_path = Path(temp_clouddq_dir).joinpath("configs.yml")
-            single_yaml_path.write_text("\n".join(configs_content))
             # Create single malformed YAML config called 'malformed-configs.yml'
+            # This breaks because there are two nodes for rules: on the same file, meaning one will be ignored
             single_malformed_yaml_path = Path(temp_clouddq_dir).joinpath("malformed-configs.yml")
-            single_malformed_yaml_path.write_text("\n".join([c for c in configs_content if "entities:" not in c]))
+            single_malformed_yaml_path.write_text("\n".join(configs_content))
+            # Fix the above issue and write to a YAML config called 'configs.yml'
+            merged_configs = defaultdict(dict)
+            for config in configs_content:
+                parsed_content = yaml.safe_load(config)
+                for config_type, config_body in parsed_content.items():
+                    for config_id, config_item in config_body.items():
+                        merged_configs[config_type][config_id] = config_item
+            single_yaml_path = Path(temp_clouddq_dir).joinpath("configs.yml")
+            print(pformat(merged_configs))
+            single_yaml_path.write_text(yaml.safe_dump(dict(merged_configs)))
             # Print temp configs path
             print(pformat(list(temp_clouddq_dir.glob("**/*"))))
             # Return path and delete when done
@@ -250,7 +265,7 @@ class TestDataplexIntegration:
             task_status = test_dq_dataplex_client.get_clouddq_task_status(task_id)
             print(f"CloudDQ task status is {task_status}")
         assert task_status == expected
-    
+
     @pytest.mark.parametrize(
         "input_configs,validate_only,expected",
         [
@@ -323,7 +338,7 @@ class TestDataplexIntegration:
         task_id = f"clouddq-test-create-dataplex-task-{test_id}"
         print(f"Dataplex batches task id is: {task_id}")
         # Clean-up old task_ids if exists
-        print(f"Delete task_id if it already exists...")
+        print("Delete task_id if it already exists...")
         response = test_dq_dataplex_client.delete_clouddq_task_if_exists(task_id)
         print(f"CloudDQ task deletion response is {response.text}")
         # Continue if Task_ID is successfully deleted or not found
@@ -364,6 +379,7 @@ class TestDataplexIntegration:
             task_status = test_dq_dataplex_client.get_clouddq_task_status(task_id)
             print(f"CloudDQ task status is {task_status}")
         assert task_status == expected
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP']))

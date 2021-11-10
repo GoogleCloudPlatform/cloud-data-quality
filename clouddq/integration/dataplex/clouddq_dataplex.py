@@ -13,12 +13,12 @@
 # limitations under the License.
 from __future__ import annotations
 
+from enum import Enum
+from pathlib import Path
+
 import json
 import logging
 import re
-
-from enum import Enum
-from pathlib import Path
 
 from requests import Response
 

@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 from pathlib import Path
+from pprint import pformat
+
+import json
 import logging
 import re
 
 import pytest
-from pprint import pformat
 
 from clouddq import lib
 from clouddq import utils
@@ -26,6 +27,7 @@ from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
+
 
 logger = logging.getLogger(__name__)
 

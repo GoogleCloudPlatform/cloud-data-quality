@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-import click.testing
-import logging
-import pytest
 from pathlib import Path
 
+import logging
+
+import click.testing
+import pytest
+
 from clouddq.main import main
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +31,11 @@ class TestCli:
 
     @pytest.fixture
     def test_configs_dir(self):
-        return Path("tests").joinpath("resources","configs")
+        return Path("tests").joinpath("resources", "configs")
 
     @pytest.fixture
     def test_profiles_dir(self):
-        return Path("tests").joinpath("resources","test_dbt_profiles_dir")
+        return Path("tests").joinpath("resources", "test_dbt_profiles_dir")
 
     def test_cli_no_args_fail(self, runner):
         result = runner.invoke(main)
@@ -48,13 +49,13 @@ class TestCli:
         assert result.exit_code == 0
 
     def test_cli_missing_dbt_profiles_dir_fail(
-        self, 
+        self,
         runner,
         test_configs_dir):
         args = [
-            "ALL", 
-            f"{test_configs_dir}", 
-            "--dry_run", 
+            "ALL",
+            f"{test_configs_dir}",
+            "--dry_run",
             "--debug",
             "--skip_sql_validation"
             ]
@@ -64,21 +65,22 @@ class TestCli:
         assert isinstance(result.exception, ValueError)
 
     def test_cli_dry_run(
-        self, 
+        self,
         runner,
         test_configs_dir,
         test_profiles_dir):
         args = [
-            "ALL", 
+            "ALL",
             f"{test_configs_dir}",
-            f"--dbt_profiles_dir={test_profiles_dir}", 
-            "--dry_run", 
+            f"--dbt_profiles_dir={test_profiles_dir}",
+            "--dry_run",
             "--debug",
             "--skip_sql_validation"
             ]
         result = runner.invoke(main, args)
         logger.info(result.output)
         assert result.exit_code == 0
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__]))

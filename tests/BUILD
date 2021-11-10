@@ -121,7 +121,7 @@ py_test(
 )
 
 py_test(
-    name = "test_dataplex_clouddq_task_integration",
+    name = "test_dataplex_task",
     srcs = SRCS,
     data = DATA + [
         "//:bazel_bin_clouddq_executable",

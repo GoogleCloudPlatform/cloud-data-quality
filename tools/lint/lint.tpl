@@ -226,12 +226,24 @@ echo "Run isort"
 if [[ "$RUN_ENTRIES" == "--" ]]; then
 ( \
     cd "$BUILD_WORKSPACE_DIRECTORY" && \
-      isort_func $mode clouddq tests tools ; \
+    for i in \
+        $( \
+            find clouddq tests tools -type f \
+                    -name '*.py'
+        ) ; do \
+        isort_func $mode "$i" ; \
+    done \
 )
 else
 ( \
     cd "$BUILD_WORKSPACE_DIRECTORY" && \
-      isort_func $mode clouddq tests tools ; \
+    for i in \
+        $( \
+            find clouddq tests tools -type f \
+                    -name '*.py'
+        ) ; do \
+        isort_func $mode "$i" ; \
+    done \
 )
 fi
 
@@ -244,12 +256,24 @@ echo "Run flake8"
 if [[ "$RUN_ENTRIES" == "--" ]]; then
 ( \
     cd "$BUILD_WORKSPACE_DIRECTORY" && \
-        flake8_func clouddq tests tools ; \
+    for i in \
+        $( \
+            find clouddq tests tools -type f \
+                    -name '*.py'
+        ) ; do \
+        flake8_func $mode "$i" ; \
+    done \
 )
 else
 ( \
     cd "$BUILD_WORKSPACE_DIRECTORY" && \
-        flake8_func $mode clouddq tests tools ; \
+    for i in \
+        $( \
+            find clouddq tests tools -type f \
+                    -name '*.py'
+        ) ; do \
+        flake8_func $mode "$i" ; \
+    done \
 )
 fi
 

@@ -19,6 +19,7 @@ py_runtime(
     interpreter_path = "/usr/bin/python3",
     python_version = "PY3",
 )
+
 py_runtime_pair(
     name = "my_py_runtime_pair",
     py3_runtime = ":my_py3_runtime",

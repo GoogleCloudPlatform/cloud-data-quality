@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+from pprint import pprint
+
 import os
 import subprocess
 import sys
 
-from pathlib import Path
-from pprint import pprint
 
 if __name__ == "__main__":
     print("OS Runtime Details:")

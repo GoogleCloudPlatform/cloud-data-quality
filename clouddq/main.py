@@ -13,17 +13,17 @@
 # limitations under the License.
 
 """Data Quality Engine for BigQuery."""
-import json
-import logging
-import logging.config
-import sys
-import traceback
-
 from datetime import date
 from datetime import datetime
 from pathlib import Path
 from pprint import pformat
 from typing import Optional
+
+import json
+import logging
+import logging.config
+import sys
+import traceback
 
 import click
 import coloredlogs
@@ -37,9 +37,11 @@ from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
 
+
 APP_VERSION = "0.3.1"
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
+
 
 class JsonEncoderStrFallback(json.JSONEncoder):
     def default(self, obj):

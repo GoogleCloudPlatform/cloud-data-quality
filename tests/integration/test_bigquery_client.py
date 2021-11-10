@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from google.api_core.exceptions import BadRequest
+
 import pytest
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient

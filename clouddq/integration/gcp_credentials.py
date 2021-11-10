@@ -14,19 +14,19 @@
 
 from __future__ import annotations
 
-import os
-import logging
-
 from pathlib import Path
 
-import google.auth
-import google.auth.transport.requests
+import logging
+import os
 
 from google.auth import impersonated_credentials
 from google.auth.credentials import Credentials
 from google.auth.exceptions import RefreshError
 from google.oauth2 import id_token
 from google.oauth2 import service_account
+
+import google.auth
+import google.auth.transport.requests
 
 
 logger = logging.getLogger(__name__)
@@ -60,11 +60,14 @@ class GcpCredentials:
             )
         # Otherwise, use Application Default Credentials
         else:
-            application_credentials_file = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None)
+            application_credentials_file = os.environ.get(
+                "GOOGLE_APPLICATION_CREDENTIALS", None
+            )
             if application_credentials_file:
                 logger.info(
                     "Using environment variable GOOGLE_APPLICATION_CREDENTIALS "
-                    f"path: {application_credentials_file}")
+                    f"path: {application_credentials_file}"
+                )
             source_credentials, _ = google.auth.default(
                 scopes=TARGET_SCOPES, quota_project_id=gcp_project_id
             )

@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
 from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -23,6 +21,8 @@ from enum import unique
 from pathlib import Path
 from typing import Dict
 from typing import Optional
+
+import logging
 
 import yaml
 

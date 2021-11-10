@@ -17,6 +17,7 @@ import sys
 
 from flakehell._cli import main
 
+
 if __name__ == "__main__":
     print("flakehell: ", sys.argv)
     main(sys.argv[1:])

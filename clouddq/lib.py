@@ -13,13 +13,13 @@
 # limitations under the License.
 
 """todo: add lib docstring."""
+from pathlib import Path
+from pprint import pformat
+
 import itertools
 import json
 import logging
 import typing
-
-from pathlib import Path
-from pprint import pformat
 
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_rule_binding import DqRuleBinding

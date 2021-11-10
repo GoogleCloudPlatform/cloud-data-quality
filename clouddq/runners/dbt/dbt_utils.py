@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-import logging
-import os
-import re
-
 from enum import Enum
 from enum import unique
 from pathlib import Path
 from pprint import pformat
 from typing import Dict
 from typing import Optional
+
+import json
+import logging
+import os
+import re
 
 from dbt.main import main as dbt
 

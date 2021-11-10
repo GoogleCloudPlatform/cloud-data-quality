@@ -21,7 +21,6 @@ clouddq = "clouddq.main:main"
 python = "^3.8.6,<4.0.0"
 click = "^7.1.2"
 coloredlogs="^15.0.1"
-gitpython="^3.1.24"
 Jinja2 = "^2.11.3"
 PyYAML = "^5.3.1"
 dbt-bigquery = "^0.20.2"
@@ -48,9 +47,9 @@ pycodestyle = ["+*"]
 pyflakes = ["+*"]
 format = "grouped"
 application_import_names = ['clouddq','tests']
-import_order_style = 'google'
+import_order_style = 'black'
 docstring_convention = 'google'
-max_line_length = 88
+max_line_length = 120
 max_complexity = 10
 show_source = true
 extended_default_ignore=[]
@@ -58,10 +57,16 @@ extended_default_ignore=[]
 [tool.flakehell.plugins]
 pyflakes = ["+*"]
 "flake8-*" = ["+*"]
-pycodestyle = ["+*"]
+pycodestyle = ["+*", "-E402", "-E123", "-E128", "-E302", "-E126", "-E125"]
 pylint = ["+F*", "+E*", "-E0611", "-E1101", "-E0401", "-E1102", "-E1123"]
 mccabe = ["+*"]
 pep8-naming = ["+*"]
+flake8-bandit = ["+*"]
+flake8-docstrings = ["+*"]
+flake8-bugbear = ["+*"]
+flake8-mutable = ["+*"]
+flake8-simplify = ["+*"]
+flake8-variables-names = ["+*"]
 
 [tool.flakehell.exceptions."clouddq/utils.py"]
 pyflakes = ['-S404','-S603']
@@ -73,9 +78,10 @@ pyflakes = ['-ANN','-S101','-D','-DAR','-S404']
 pyflakes = ['-F401']
 
 [tool.isort]
-profile = "google"
+profile = "black"
 force_single_line = true
 reverse_relative = true
+from_first = true
 atomic = true
 include_trailing_comma = true
 lines_after_imports = 2
