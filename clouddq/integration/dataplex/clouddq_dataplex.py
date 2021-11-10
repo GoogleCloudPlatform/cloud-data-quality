@@ -85,10 +85,11 @@ class CloudDqDataplexClient:
         clouddq_executable_path: str | None = None,
         clouddq_executable_checksum_path: str | None = None,
         validate_only: bool = False,
+        clouddq_pyspark_driver_filename: str = "clouddq_pyspark_driver.py",
     ) -> Response:
         # Set default CloudDQ PySpark driver path if not manually overridden
         clouddq_pyspark_driver_path = self._validate_clouddq_artifact_path(
-            clouddq_pyspark_driver_path, "clouddq_pyspark_driver.py"
+            clouddq_pyspark_driver_path, clouddq_pyspark_driver_filename
         )
         # Set default CloudDQ executable path if not manually overridden
         clouddq_executable_path = self._validate_clouddq_artifact_path(
