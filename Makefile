@@ -35,7 +35,6 @@ clean: bin/bazelisk ## clean build artifacts
 .PHONY: buildtest
 buildtest: bin/bazelisk 
 	bin/bazelisk build //clouddq:clouddq --output_groups=python_zip_file --sandbox_fake_username --sandbox_fake_hostname
-	bazel-bin/clouddq/clouddq --help
 	@source scripts/fix_bazel_zip.sh
 	python3 clouddq_patched.zip --help
 

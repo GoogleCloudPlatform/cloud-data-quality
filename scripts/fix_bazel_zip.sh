@@ -31,6 +31,11 @@ fix_bazel_zip() {
   cp /tmp/fix_bazel_zip/"${BASE_NAME}".zip "${BASE_NAME}"_patched.zip
 }
 
+create_hashsum() {
+  sha256sum "$1" | cut -d' ' -f1 > "$1".hashsum
+}
+
 if [[ -f "$ROOT"/bazel-bin/"${BASE_NAME}"/"${BASE_NAME}".zip ]]; then
   fix_bazel_zip "$ROOT"/bazel-bin/"${BASE_NAME}"/"${BASE_NAME}".zip
+  create_hashsum "${BASE_NAME}"_patched.zip
 fi
