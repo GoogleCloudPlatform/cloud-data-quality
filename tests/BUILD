@@ -51,7 +51,6 @@ DEPS = [
     requirement("pytest"),
     requirement("click"),
     requirement("coloredlogs"),
-    requirement("gitpython"),
     requirement("google-api-python-client"),
     requirement("requests-oauth2"),
 ]
