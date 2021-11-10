@@ -12,11 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""black"""
-import sys
+from google.cloud import storage
 
-from flakehell._cli import main
 
-if __name__ == "__main__":
-    print("flakehell: ", sys.argv)
-    main(sys.argv[1:])
+def upload_blob(bucket_name, source_file_name, destination_blob_name):
+    """Uploads a file to the bucket."""
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(destination_blob_name)
+
+    blob.upload_from_filename(source_file_name)
+
+    print(
+        "File {} uploaded to gs://{}/{}.".format(
+            source_file_name, bucket_name, destination_blob_name
+        )
+    )

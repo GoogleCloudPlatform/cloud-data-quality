@@ -12,11 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""black"""
+import os
+import subprocess
 import sys
 
-from flakehell._cli import main
+from pathlib import Path
+from pprint import pprint
 
 if __name__ == "__main__":
-    print("flakehell: ", sys.argv)
-    main(sys.argv[1:])
+    print("Python Version:")
+    print(sys.version_info)
+    print("OS Runtime Details:")
+    subprocess.run("cat /etc/*-release", shell=True, check=True)
+    print("PySpark working directory:")
+    pprint(Path().absolute())
+    print("PySpark directory content:")
+    pprint(os.listdir())
+    print("Input PySpark arguments:")
+    pprint(sys.argv)

@@ -38,3 +38,9 @@ filegroup(
     ]),
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "bazel_bin_clouddq_executable",
+    srcs = ["clouddq_patched.zip"],
+    visibility = ["//visibility:public"],
+)

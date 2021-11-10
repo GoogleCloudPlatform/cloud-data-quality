@@ -24,7 +24,7 @@ import subprocess
 import sys
 
 from pathlib import Path
-from pprint import pformat
+from pprint import pprint
 from zipfile import ZipFile
 
 
@@ -40,18 +40,26 @@ def verify_executable(fname, expected_hexdigest):
 def main(args):
     with open(f"{args[1]}.hashsum") as f:
         expected_hexdigest = f.read().replace("\n", "").replace("\t", "")
+        print(f"expected hexdigest: {expected_hexdigest}")
         verify_executable(args[1], expected_hexdigest)
-    args[3] = "configs"
+    args[3] = str(Path("configs").absolute())
     cmd = f"python3 {' '.join(args[1:])}"
     print(f"Executing commands:\n {cmd}")
     subprocess.run(cmd, shell=True, check=True)
 
-
 if __name__ == "__main__":
-    print(f"PySpark directory content:\n {pformat(os.listdir())}")
-    print(f"Input PySpark arguments:\n {pformat(sys.argv)}")
+    print("Python Version:")
+    print(sys.version_info)
+    print("OS Runtime Details:")
+    subprocess.run("cat /etc/*-release", shell=True, check=True)
+    print("PySpark working directory:")
+    pprint(Path().absolute())
+    print("PySpark directory content:")
+    pprint(os.listdir())
+    print("Input PySpark arguments:")
+    pprint(sys.argv)
     input_configs = sys.argv[3]
-    print(f"User-specified CloudDQ YAML configs: {pformat(input_configs)}")
+    print(f"User-specified CloudDQ YAML configs: {input_configs}")
     configs_path = Path("configs")
     if not configs_path.is_dir():
         print(f"Creating configs directory at: `{configs_path.absolute()}`")
@@ -71,6 +79,14 @@ if __name__ == "__main__":
                     f"Copying YAML file {file} to configs directory `{configs_path}`..."
                 )
                 configs_path.joinpath(file.name).write_text(file.open().read())
+        # else if it's a directory,
+        # look for yaml/yml files in the path
+        # and copy them to the `configs` directory
+        elif file.is_dir():
+            for yaml_file in file.glob("**/*.yaml"):
+                configs_path.joinpath(yaml_file).write_text(yaml_file.open().read())
+            for yaml_file in file.glob("**/*.yml"):
+                configs_path.joinpath(yaml_file).write_text(yaml_file.open().read())
     print("Configs directory contents is:")
-    print(pformat(list(configs_path.glob("**/*"))))
+    pprint(list(configs_path.glob("**/*")))
     main(sys.argv)

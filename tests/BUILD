@@ -46,11 +46,14 @@ DEPS = [
     "//clouddq:classes",
     "//clouddq:clouddq_lib",
     "//clouddq:dbt_runners",
+    "//clouddq:integration",
     requirement("py"),
     requirement("pytest"),
     requirement("click"),
     requirement("coloredlogs"),
     requirement("gitpython"),
+    requirement("google-api-python-client"),
+    requirement("requests-oauth2"),
 ]
 
 SRCS = glob([
@@ -111,6 +114,24 @@ py_test(
 
 py_test(
     name = "test_bigquery_client",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "test_dataplex_clouddq_task_integration",
+    srcs = SRCS,
+    data = DATA + [
+        "//:bazel_bin_clouddq_executable",
+    ],
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "conftest",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,
