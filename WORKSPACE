@@ -65,13 +65,6 @@ http_archive(
     url = "https://github.com/bazelbuild/buildtools/archive/master.zip",
 )
 
-http_archive(
-    name = "dpu_rules_pyenv",
-    sha256 = "d057168a757efa74e6345edd4776a1c0f38134c2d48eea4f3ef4783e1ea2cb0f",
-    strip_prefix = "rules_pyenv-0.1.4",
-    urls = ["https://github.com/digital-plumbers-union/rules_pyenv/archive/v0.1.4.tar.gz"],
-)
-
 rules_python_version = "ef4d735216a3782b7c33543d82b891fe3a86e3f3"
 
 http_archive(
@@ -87,14 +80,9 @@ load("@rules_python//python:pip.bzl", "pip_install")
 # requirements_lock.txt.
 pip_install(
     name = "py_deps",
-    python_interpreter_target = "@pyenv//:py3/python",
+    python_interpreter = "/usr/bin/python3",
     quiet = False,
     requirements = "//:requirements.txt",
 )
 
-load("@dpu_rules_pyenv//pyenv:defs.bzl", "pyenv_install")
-
-pyenv_install(
-    py2 = "2.7.16",
-    py3 = "3.8.6",
-)
+register_toolchains("//:my_toolchain")

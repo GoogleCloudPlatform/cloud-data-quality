@@ -1,0 +1,50 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+jobs:
+- pysparkJob:
+    archiveUris:
+    - gs://<gcs_bucket_name>/clouddq-configs.zip
+    args:
+    - clouddq_executable_v<clouddq_release_version>.zip
+    - <clouddq_config>
+    - configs
+    - --gcp_project_id=<your_gcp_project_id>
+    - --gcp_bq_dataset_id=<cloudd_bigquery_dataset>
+    - --gcp_region_id=<cloudd_bigquery_region>
+    mainPythonFileUri: gs://<gcs_bucket_name>/clouddq_pyspark_driver.py
+    pythonFileUris:
+    - gs://<gcs_bucket_name>/clouddq_executable_v<clouddq_release_version>.zip
+    - gs://<gcs_bucket_name>/clouddq_executable_v<clouddq_release_version>.zip.hashsum
+  stepId: clouddq-workflow
+placement:
+  managedCluster:
+    clusterName: <dataproc_cluster_name>
+    config:
+      endpointConfig:
+        enableHttpPortAccess: true
+      gceClusterConfig:
+        zoneUri: <preferred_gcp_zone>
+        networkUri: <vpc_network>
+      masterConfig:
+        diskConfig:
+          bootDiskSizeGb: 100
+        machineTypeUri: n1-standard-4
+      softwareConfig:
+        imageVersion: 2.0-ubuntu18
+        properties:
+          dataproc:dataproc.allow.zero.workers: 'true'
+          dataproc:dataproc.logging.stackdriver.enable: 'true'
+          dataproc:dataproc.logging.stackdriver.job.driver.enable: 'true'
+          dataproc:jobs.file-backed-output.enable: 'true'
