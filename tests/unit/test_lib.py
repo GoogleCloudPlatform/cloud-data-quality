@@ -31,11 +31,11 @@ logger = logging.getLogger(__name__)
 
 class TestLib:
 
-    # Load a config directory containing two copies of the same config
     def test_load_configs_identical(self, temp_configs_dir):
+        # Load a config directory containing two copies of the same config
         try:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib")
-            config_path = Path(temp_configs_dir) 
+            config_path = Path(temp_configs_dir)
 
             os.mkdir(temp_dir)
 
@@ -50,11 +50,11 @@ class TestLib:
             shutil.rmtree(temp_dir)
 
 
-    # Load a config directory containing two different configs defining the same key
     def test_load_configs_different(self, temp_configs_dir):
+        # Load a config directory containing two different configs defining the same key
         try:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib")
-            config_path = Path(temp_configs_dir) 
+            config_path = Path(temp_configs_dir)
 
             os.mkdir(temp_dir)
 
@@ -64,7 +64,7 @@ class TestLib:
             # Load the config, modify it, and save it to a different file
             with open(config_path / 'entities' / 'test-data.yml') as f:
                 testconfig = yaml.safe_load(f)
-                
+      
             assert testconfig['entities']['TEST_TABLE']['columns']['ROW_ID']['data_type'] == 'STRING'
             testconfig['entities']['TEST_TABLE']['columns']['ROW_ID']['data_type'] = 'INT64'
 
@@ -78,7 +78,7 @@ class TestLib:
             with open(temp_dir / 'test-data2.yml') as f:
                 testconfig2 = yaml.safe_load(f)
                 assert testconfig2['entities']['TEST_TABLE']['columns']['ROW_ID']['data_type'] == 'INT64'
-                
+
             # This is the actual test:
             with pytest.raises(ValueError):
                 lib.load_configs(temp_dir, DqConfigType.ENTITIES)

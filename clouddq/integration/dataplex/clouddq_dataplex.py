@@ -111,7 +111,9 @@ class CloudDqDataplexClient:
                     clouddq_yaml_spec_file_path.name,
                     str(clouddq_yaml_spec_file_path.name),
                 )
-                gcs_uri = f"gs://{self.gcs_bucket_name}/{clouddq_yaml_spec_file_path.name}"
+                gcs_uri = (
+                    f"gs://{self.gcs_bucket_name}/{clouddq_yaml_spec_file_path.name}"
+                )
                 clouddq_configs_gcs_path = gcs_uri
             else:
                 raise ValueError(

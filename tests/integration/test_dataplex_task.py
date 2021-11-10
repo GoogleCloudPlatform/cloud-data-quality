@@ -213,7 +213,6 @@ class TestDataplexIntegration:
                             target_bq_result_table_name,
                             dataplex_task_service_account_name,
                             request):
-
         # Prepare the test YAML configurations from fixture
         clouddq_yaml_spec_file_path: str = request.getfixturevalue(input_configs)
         # Use the test clouddq_pyspark_driver
@@ -222,8 +221,8 @@ class TestDataplexIntegration:
         test_id = f"{request.node.callspec.id}".replace("_", "-")
         task_id = f"clouddq-test-create-dataplex-task-{test_id}"
         print(f"Dataplex batches task id is: {task_id}")
-        #     # Clean-up old task_ids if exists
-        print(f"Delete task_id if it already exists...")
+        # Clean-up old task_ids if exists
+        print("Delete task_id if it already exists...")
         response = test_dq_dataplex_client.delete_clouddq_task_if_exists(task_id)
         print(f"CloudDQ task deletion response is {response.text}")
         # Continue if Task_ID is successfully deleted or not found
@@ -234,7 +233,6 @@ class TestDataplexIntegration:
         task_labels: dict = {"test_id": test_id}
         # Assumes target bq result dataset exists in the same project as the test fixture `gcp_project_id`
         target_bq_result_project_name = gcp_project_id
-
         # Create Dataplex Task with test arguments
         response = test_dq_dataplex_client.create_clouddq_task(
                         task_id=task_id,

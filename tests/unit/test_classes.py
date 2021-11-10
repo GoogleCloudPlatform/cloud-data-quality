@@ -173,7 +173,7 @@ class TestClasses:
                 }},
         }
         dataplex_entity_configs = DqEntity.from_dict(
-            entity_id="test_dataplex_entity", 
+            entity_id="test_dataplex_entity",
             kwargs=dataplex_entity_input_dict
         )
         dataplex_entity_configs_expected = {
