@@ -27,7 +27,7 @@ fix_bazel_zip() {
   rm /tmp/fix_bazel_zip/runfiles/"${BASE_NAME}"/__init__.py
   cd /tmp/fix_bazel_zip/ && zip -qq -r "${BASE_NAME}".zip *
   cd -
-  cp /tmp/fix_bazel_zip/"${BASE_NAME}".zip "$ROOT"/bazel-bin/"${BASE_NAME}"/"${BASE_NAME}"_patched.zip
+  cp /tmp/fix_bazel_zip/"${BASE_NAME}".zip "${BASE_NAME}"_patched.zip
 }
 
 if [[ -f "$ROOT"/bazel-bin/"${BASE_NAME}"/"${BASE_NAME}".zip ]]; then
