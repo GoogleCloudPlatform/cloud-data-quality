@@ -27,6 +27,7 @@ fix_bazel_zip() {
   rm /tmp/fix_bazel_zip/runfiles/"${BASE_NAME}"/__init__.py
   sed -i "s/PYTHON_BINARY = '\/usr\/bin\/python3'/PYTHON_BINARY = sys.executable/g" /tmp/fix_bazel_zip/__main__.py
   sed -i "s/from .dbt_extractor import \*/from dbt_extractor.dbt_extractor import ExtractionError, py_extract_from_source/g" /tmp/fix_bazel_zip/runfiles/py_deps/pypi__dbt_extractor/dbt_extractor/__init__.py
+  cd /tmp/fix_bazel_zip/runfiles/py_deps/pypi__dbt_extractor && python3 -c "import dbt_extractor;print(dir(dbt_extractor))"
   cd /tmp/fix_bazel_zip/ && zip -qq -r "${BASE_NAME}".zip *
   cd -
   cp /tmp/fix_bazel_zip/"${BASE_NAME}".zip "${BASE_NAME}"_patched.zip
