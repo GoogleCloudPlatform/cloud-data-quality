@@ -17,9 +17,9 @@ steps:
 
         cd google-cloud-sdk && ./install.sh
 
-        gcloud config set project ${GOOGLE_CLOUD_PROJECT}
+        gcloud config set project ${_GOOGLE_CLOUD_PROJECT}
 
-        gcloud config set compute/region ${CLOUDDQ_BIGQUERY_REGION}
+        gcloud config set compute/region ${_CLOUDDQ_BIGQUERY_DATASET}
 
         gcloud config set disable_prompts true
 

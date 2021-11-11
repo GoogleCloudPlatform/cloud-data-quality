@@ -53,9 +53,6 @@ jobs:
       - name: Get gcloud CLI info
         run: gcloud info
 
-      - name: check addlicense
-        run: make addlicense
-
       - name: test pip install
         run: |
           export GOOGLE_CLOUD_PROJECT=${{ secrets.GCP_PROJECT_ID }}
@@ -85,6 +82,9 @@ jobs:
         with:
           path: "/home/runner/.cache/bazel"
           key: bazel
+
+      - name: check addlicense
+        run: make addlicense
 
       - name: lint check
         run: make check

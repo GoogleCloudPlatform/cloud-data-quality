@@ -26,7 +26,7 @@ install: ## create python virtualen and install clouddq
 
 .PHONY: addlicense
 addlicense: bin/addlicense ## run addlicense check
-	bin/addlicense -check clouddq tests tools scripts dbt
+	bin/addlicense -check clouddq tests tools scripts
 
 .PHONY: clean
 clean: bin/bazelisk ## clean build artifacts
