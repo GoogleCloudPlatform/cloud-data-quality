@@ -53,7 +53,6 @@ class TestLib:
         finally:
             shutil.rmtree(temp_dir)
 
-
     def test_load_configs_different(self, temp_configs_dir):
         # Load a config directory containing two different configs defining the same key
         try:
@@ -68,7 +67,7 @@ class TestLib:
             # Load the config, modify it, and save it to a different file
             with open(config_path / 'entities' / 'test-data.yml') as f:
                 testconfig = yaml.safe_load(f)
-      
+
             assert testconfig['entities']['TEST_TABLE']['columns']['ROW_ID']['data_type'] == 'STRING'
             testconfig['entities']['TEST_TABLE']['columns']['ROW_ID']['data_type'] = 'INT64'
 
