@@ -31,13 +31,17 @@ logger = logging.getLogger(__name__)
 
 class TestLib:
 
+    @pytest.fixture
+    def temp_configs_dir(self, temp_clouddq_dir):
+        return Path(temp_clouddq_dir).joinpath("configs")
+
     def test_load_configs_identical(self, temp_configs_dir):
         # Load a config directory containing two copies of the same config
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib")
+            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_1")
             config_path = Path(temp_configs_dir)
 
-            os.mkdir(temp_dir)
+            temp_dir.mkdir(parents=True)
 
             assert os.path.isfile(config_path / 'entities' / 'test-data.yml')
             shutil.copy(config_path / 'entities' / 'test-data.yml', temp_dir / 'test-data1.yml')
@@ -53,10 +57,10 @@ class TestLib:
     def test_load_configs_different(self, temp_configs_dir):
         # Load a config directory containing two different configs defining the same key
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib")
+            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_2")
             config_path = Path(temp_configs_dir)
 
-            os.mkdir(temp_dir)
+            temp_dir.mkdir(parents=True)
 
             assert os.path.isfile(config_path / 'entities' / 'test-data.yml')
             shutil.copy(config_path / 'entities' / 'test-data.yml', temp_dir / 'test-data1.yml')

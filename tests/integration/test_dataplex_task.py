@@ -36,6 +36,7 @@ from clouddq.utils import working_directory
 
 logger = logging.getLogger(__name__)
 
+@pytest.mark.e2e
 class TestDataplexIntegration:
 
     @pytest.fixture

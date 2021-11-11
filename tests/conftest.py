@@ -182,7 +182,8 @@ def temp_clouddq_dir(gcp_project_id, gcp_bq_dataset):
         lines = lines.replace("<your_bigquery_dataset_id>", gcp_bq_dataset)
         source_file.write(lines)
     yield temp_clouddq_dir
-    shutil.rmtree(temp_clouddq_dir)
+    if os.path.exists(temp_clouddq_dir):
+        shutil.rmtree(temp_clouddq_dir)
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "e2e: mark as end-to-end test.")

@@ -13,16 +13,16 @@
 # limitations under the License.
 
 import platform
+import pytest
 
 
 class TestPythonVersion:
-    
+
     @pytest.mark.xfail
     def test_version(self):
         assert platform.python_version().split(".")[:2] == ["3", "9"]
 
 
 if __name__ == "__main__":
-    import pytest
 
     raise SystemExit(pytest.main([__file__]))
