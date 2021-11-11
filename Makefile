@@ -60,7 +60,7 @@ lint: bin/bazelisk ## apply black, buildifier, pyupgrade, and flake8
 	bin/bazelisk run //tools/lint:lint $(RUN_ARGS)
 
 .PHONY: build
-build: ## build zip executable and run it without arguments to show the help text
+build: bin/bazelisk ## build zip executable and run it without arguments to show the help text
 	bin/bazelisk build //clouddq:clouddq --output_groups=python_zip_file --sandbox_fake_username --sandbox_fake_hostname
 	@source scripts/fix_bazel_zip.sh
 	python3 clouddq_patched.zip --help
