@@ -76,8 +76,7 @@ jobs:
       - name: install development dependencies for building project
         run: |
           chmod -R +x scripts
-          source scripts/install_development_dependencies.sh
-          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+          source scripts/install_development_dependencies.sh --yes
         shell: bash
 
       - name: Use GCS Bazel Cache

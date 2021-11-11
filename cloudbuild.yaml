@@ -11,7 +11,7 @@ steps:
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl python-is-python3
 
-        source scripts/install_development_dependencies.sh
+        source scripts/install_development_dependencies.sh --yes
 
         echo "common
         --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
