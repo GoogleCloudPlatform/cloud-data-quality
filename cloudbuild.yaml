@@ -13,6 +13,10 @@ steps:
 
         source scripts/install_development_dependencies.sh --yes
 
+        ls /usr/bin/python*
+
+        which python3
+
         echo "common
         --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
         >> .bazelrc
