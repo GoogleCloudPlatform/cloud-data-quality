@@ -17,7 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-PYTHON_VERSION="3.8.6"
+PYTHON_VERSION="3.9.7"
 LOCAL_VERSION="$(python --version 2>&1)"
 echo "Python version in current shell: $LOCAL_VERSION"
 
