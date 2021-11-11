@@ -64,7 +64,7 @@ else
   done
 fi
 
-echo "Selected: Bazel=$RUN_BAZEL Black=$RUN_BLACK Pyupgrade=$RUN_PYUPGRADE isort=$RUN_ISORT flake8=$FLAKE8_PATH [Entries]: $RUN_ENTRIES"
+echo "Selected: Bazel=$RUN_BAZEL Black=$RUN_BLACK Pyupgrade=$RUN_PYUPGRADE isort=$RUN_ISORT flake8=$RUN_FLAKE8 [Entries]: $RUN_ENTRIES"
 
 BLACK_PATH=@@BLACK_PATH@@
 BUILDIFIER_PATH=@@BUILDIFIER_PATH@@

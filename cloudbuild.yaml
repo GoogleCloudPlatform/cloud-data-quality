@@ -6,34 +6,10 @@ steps:
         set -x
 
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-
-        getconf LONG_BIT
-
+        
         cat /etc/*-release
 
-        curl -o gcloud-sdk.tar.gz -L https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-364.0.0-linux-x86_64.tar.gz
-
-        tar -xzvf gcloud-sdk.tar.gz
-
-        cd google-cloud-sdk && ./install.sh
-
-        gcloud config set project ${_GOOGLE_CLOUD_PROJECT}
-
-        gcloud config set compute/region ${_CLOUDDQ_BIGQUERY_DATASET}
-
-        gcloud config set disable_prompts true
-
-        gcloud init
-
-        gcloud info
-
-        ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
-
-        ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
-
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata make sudo curl git-all
-
-        chmod -R +x scripts
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl python-is-python3
 
         source scripts/install_development_dependencies.sh
 
@@ -51,9 +27,9 @@ steps:
 
         make test-pip-install
 
-        make test
-
         make build
+
+        make test
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
@@ -73,3 +49,4 @@ options:
   pool:
     name: >-
       projects/dataplex-clouddq/locations/europe-west6/workerPools/cloud-build-private-pool
+serviceAccount: 'projects/dataplex-clouddq/serviceAccounts/github-action@dataplex-clouddq.iam.gserviceaccount.com'

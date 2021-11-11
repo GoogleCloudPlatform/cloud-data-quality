@@ -18,7 +18,7 @@ data AS (
       *,
       COUNT(1) OVER () as num_rows_validated,
     FROM
-      `<your_gcp_project_id>.dq_test.contact_details` d
+      `<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details` d
     WHERE
       contact_type = 'email'
 ),
@@ -28,7 +28,7 @@ SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     'T3_DQ_1_EMAIL_DUPLICATE' AS rule_binding_id,
     'NO_DUPLICATES_IN_COLUMN_GROUPS' AS rule_id,
-    '<your_gcp_project_id>.dq_test.contact_details' AS table_id,
+    '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
     NULL AS column_value,
     (select distinct num_rows_validated from data) as num_rows_validated,
@@ -52,7 +52,7 @@ SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     'T3_DQ_1_EMAIL_DUPLICATE' AS rule_binding_id,
     'NOT_NULL_SIMPLE' AS rule_id,
-    '<your_gcp_project_id>.dq_test.contact_details' AS table_id,
+    '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
     value AS column_value,
     num_rows_validated AS num_rows_validated,

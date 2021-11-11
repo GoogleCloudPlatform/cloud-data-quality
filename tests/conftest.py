@@ -59,7 +59,7 @@ def gcp_application_credentials():
         "cannot be found. Set this to the exported service account key path used "
         "for integration testing. The tests will proceed skipping all tests "
         "involving exported service-account key credentials.")
-        if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
+        if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None) == "":
             del os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
     return gcp_application_credentials
 
@@ -179,7 +179,7 @@ def temp_clouddq_dir(gcp_project_id, gcp_bq_dataset):
         lines = source_file.read()
     with open(test_data, "w") as source_file:
         lines = lines.replace("<your_gcp_project_id>", gcp_project_id)
-        lines = lines.replace("dq_test", gcp_bq_dataset)
+        lines = lines.replace("<your_bigquery_dataset_id>", gcp_bq_dataset)
         source_file.write(lines)
     yield temp_clouddq_dir
     shutil.rmtree(temp_clouddq_dir)

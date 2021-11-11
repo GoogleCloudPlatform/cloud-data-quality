@@ -55,12 +55,14 @@ python3 clouddq --help
 TEST_DIR=/tmp/clouddq-test-pip
 rm -rf "$TEST_DIR"
 mkdir "$TEST_DIR"
-cp -r configs "$TEST_DIR"
+cp -r tests/resources/configs "$TEST_DIR"
 cp tests/resources/test_dbt_profiles_dir/profiles.yml "$TEST_DIR"
 cd "$TEST_DIR"
-sed -i s/\<your_gcp_project_id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/profiles.yml
 sed -i s/clouddq/"${CLOUDDQ_BIGQUERY_DATASET}"/g "$TEST_DIR"/profiles.yml
+sed -i s/\<your_gcp_project_id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/profiles.yml
 sed -i s/EU/"${CLOUDDQ_BIGQUERY_REGION}"/g "$TEST_DIR"/profiles.yml
+sed -i s/\<your_gcp_project_id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/configs/entities/test-data.yml
+sed -i s/\<your_bigquery_dataset_id\>/"${CLOUDDQ_BIGQUERY_DATASET}"/g "$TEST_DIR"/configs/entities/test-data.yml
 python3 -m clouddq ALL configs --dbt_profiles_dir="$TEST_DIR" --debug --dry_run
 python3 -m clouddq ALL configs --dbt_profiles_dir="$TEST_DIR" --dbt_path="$TEST_DIR" --debug --dry_run
 

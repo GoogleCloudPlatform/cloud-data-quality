@@ -220,7 +220,7 @@ class TestJinjaTemplates:
             configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -261,7 +261,7 @@ class TestJinjaTemplates:
             configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -269,7 +269,7 @@ class TestJinjaTemplates:
             debug=True,
         )
         expected = expected.replace(
-            "<your_gcp_project_id>.dq_test", "<your_gcp_project_id_2>.<your_bigquery_dataset_id>"
+            "<your_gcp_project_id>.<your_bigquery_dataset_id>", "<your_gcp_project_id_2>.<your_bigquery_dataset_id>"
         )
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
@@ -307,7 +307,7 @@ class TestJinjaTemplates:
             configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -350,7 +350,7 @@ class TestJinjaTemplates:
             configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -376,7 +376,7 @@ class TestJinjaTemplates:
         configs = lib.prepare_configs_from_rule_binding_id(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             environment=env,
             metadata=metadata,
             configs_path=Path("tests/resources/configs"),

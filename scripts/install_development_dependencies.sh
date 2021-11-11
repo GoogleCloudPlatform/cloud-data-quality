@@ -20,19 +20,15 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
     exit 1
 fi
 
+
 # Install Python dependencies
 sudo apt-get update
-DEBIAN_FRONTEND=noninteractive sudo apt-get install -y make build-essential libssl-dev zlib1g-dev \
-libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
+DEBIAN_FRONTEND=noninteractive sudo apt-get install -y make build-essential \
 zip unzip python3-pip python3-venv git
+# libssl-dev zlib1g-dev \
+# libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+# libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev 
 
-# Install sandboxfs
-DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt install -y libfuse2
-curl -Lo /tmp/sandboxfs-0.2.0.tgz https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
-sudo tar xzv -C /usr/local -f /tmp/sandboxfs-0.2.0.tgz
-rm /tmp/sandboxfs-0.2.0.tgz
-sandboxfs --help
 
 # Install golang for building Bazelisk
 if ! [ -x "$(command -v "go")" ]; then

@@ -69,6 +69,7 @@ jobs:
         run: |
           chmod -R +x scripts
           source scripts/install_development_dependencies.sh
+          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
         shell: bash
 
       - name: Use GCS Bazel Cache
@@ -90,6 +91,10 @@ jobs:
         run: make check
         shell: bash
 
+      - name: build
+        run: make build
+        shell: bash
+
       - name: tests
         run: |
           export GOOGLE_CLOUD_PROJECT=${{ secrets.GCP_PROJECT_ID }}
@@ -106,8 +111,4 @@ jobs:
           export DATAPLEX_TASK_SA=${{ secrets.DATAPLEX_TASK_SA }}
           gcloud config set project "${GOOGLE_CLOUD_PROJECT}"
           make test
-        shell: bash
-
-      - name: build
-        run: make build
         shell: bash
