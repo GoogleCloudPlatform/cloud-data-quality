@@ -6,16 +6,16 @@ steps:
         set -x
 
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
+
+        ls /usr/bin/python*
+
+        which python3
         
         cat /etc/*-release
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl python-is-python3
 
         source scripts/install_development_dependencies.sh --yes
-
-        ls /usr/bin/python*
-
-        which python3
 
         echo "common
         --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
