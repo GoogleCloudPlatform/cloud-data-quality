@@ -1,11 +1,29 @@
 steps:
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  - name: debian:11-slim
     args:
       - '-c'
       - >
         set -x
 
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
+
+        getconf LONG_BIT
+
+        cat /etc/*-release
+
+        curl -o gcloud-sdk.tar.gz -L https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-364.0.0-linux-x86_64.tar.gz
+
+        tar -xzvf gcloud-sdk.tar.gz
+
+        cd google-cloud-sdk && ./install.sh
+
+        gcloud config set project ${GOOGLE_CLOUD_PROJECT}
+
+        gcloud config set compute/region ${CLOUDDQ_BIGQUERY_REGION}
+
+        gcloud config set disable_prompts true
+
+        gcloud init
 
         gcloud info
 
@@ -18,14 +36,6 @@ steps:
         chmod -R +x scripts
 
         source scripts/install_development_dependencies.sh
-
-        dpkg -l | grep libffi
-
-        curl -LO http://archive.ubuntu.com/ubuntu/pool/main/libf/libffi/libffi6_3.2.1-8_amd64.deb
-
-        dpkg -i libffi6_3.2.1-8_amd64.deb
-
-        make -v
 
         echo "common
         --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
@@ -63,4 +73,3 @@ options:
   pool:
     name: >-
       projects/dataplex-clouddq/locations/europe-west6/workerPools/cloud-build-private-pool
-serviceAccount: 'projects/dataplex-clouddq/serviceAccounts/github-action@dataplex-clouddq.iam.gserviceaccount.com'

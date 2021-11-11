@@ -37,14 +37,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.16
-
-      - name: check addlicense
-        run: make addlicense
-
       - name: Setup python
         uses: actions/setup-python@v2
         with:
@@ -61,6 +53,9 @@ jobs:
       - name: Get gcloud CLI info
         run: gcloud info
 
+      - name: check addlicense
+        run: make addlicense
+
       - name: test pip install
         run: |
           export GOOGLE_CLOUD_PROJECT=${{ secrets.GCP_PROJECT_ID }}
@@ -73,17 +68,16 @@ jobs:
           make test-pip-install
         shell: bash
 
+      - name: install development dependencies for building project
+        run: |
+          chmod -R +x scripts
+          source scripts/install_development_dependencies.sh
+        shell: bash
+
       - name: Use GCS Bazel Cache
         run: |
           echo "common --remote_cache=https://storage.googleapis.com/${{ secrets.BAZEL_CACHE_BUCKET }}" >> .bazelrc
           echo "common --google_default_credentials" >> .bazelrc
-        shell: bash
-
-      - name: install sandboxfs
-        run: |
-          sudo apt-get install libfuse-dev pkg-config -y
-          wget https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
-          sudo tar xzv -C /usr/local -f sandboxfs-0.2.0-20200420-linux-x86_64.tgz
         shell: bash
 
       - name: Cache bazel
