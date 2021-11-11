@@ -2,43 +2,27 @@ steps:
   - name: debian:11-slim
     args:
       - '-c'
-      - >
+      - |
         set -x
-
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-
         ls /usr/bin/python*
-
         which python3
-        
         cat /etc/*-release
-
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl python-is-python3
-
         source scripts/install_development_dependencies.sh --yes
-
         echo "common
         --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
         >> .bazelrc
-
         echo "common --google_default_credentials" >> .bazelrc
-
         env
-
         make addlicense
-
         make check
-
         make test-pip-install
-
         make build
-
         make test
-
         source scripts/install_gcloud.sh
-
-        gsutil cp clouddq_patched.zip gs://$GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/`date -Iseconds`/$SHORT_SHA/clouddq-executable.zip
-        gsutil cp clouddq_patched.zip.hashsum gs://$GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/`date -Iseconds`/$SHORT_SHA/clouddq-executable.zip.hashsum
+        echo gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}_`date -Iseconds`/clouddq-executable.zip
+        echo gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}_`date -Iseconds`/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
