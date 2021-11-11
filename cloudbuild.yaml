@@ -34,6 +34,11 @@ steps:
         make build
 
         make test
+
+        source scripts/install_gcloud.sh
+
+        gsutil cp clouddq_patched.zip gs://$GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/`date -Iseconds`/$SHORT_SHA/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://$GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/`date -Iseconds`/$SHORT_SHA/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
