@@ -32,6 +32,7 @@ require_env_var DATAPLEX_REGION_ID "Set DATAPLEX_REGION_ID to the region id of t
 require_env_var DATAPLEX_TARGET_BQ_DATASET "Set $DATAPLEX_TARGET_BQ_DATASET to the Target BQ Dataset used for testing. CloudDQ run fails if the dataset does not exist."
 require_env_var DATAPLEX_TARGET_BQ_TABLE "Set $DATAPLEX_TARGET_BQ_TABLE to the Target BQ Table used for testing. The table will be created in $DATAPLEX_TARGET_BQ_DATASET if not already exist."
 require_env_var DATAPLEX_TASK_SA "Set $DATAPLEX_TASK_SA to the service account used for running Dataplex Tasks in testing."
+require_env_var DATAPLEX_ZONE_ID "Set $DATAPLEX_ZONE_ID to the Dataplex Zone id for testing."
 
 function bazel_test() {
   set -x
@@ -51,6 +52,7 @@ function bazel_test() {
       --test_env DATAPLEX_TARGET_BQ_DATASET="${DATAPLEX_TARGET_BQ_DATASET}" \
       --test_env DATAPLEX_TARGET_BQ_TABLE="${DATAPLEX_TARGET_BQ_TABLE}" \
       --test_env DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA}" \
+      --test_env DATAPLEX_ZONE_ID="${DATAPLEX_ZONE_ID}" \
       //tests"${1:-/...}"
   else
     bin/bazelisk test \
@@ -66,6 +68,7 @@ function bazel_test() {
       --test_env DATAPLEX_TARGET_BQ_DATASET="${DATAPLEX_TARGET_BQ_DATASET}" \
       --test_env DATAPLEX_TARGET_BQ_TABLE="${DATAPLEX_TARGET_BQ_TABLE}" \
       --test_env DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA}" \
+      --test_env DATAPLEX_ZONE_ID="${DATAPLEX_ZONE_ID}" \
       //tests"${1:-/...}"
   fi
   set +x

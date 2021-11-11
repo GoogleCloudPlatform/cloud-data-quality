@@ -152,5 +152,12 @@ def temp_clouddq_dir(gcp_project_id, gcp_bq_dataset):
     yield temp_clouddq_dir
     shutil.rmtree(temp_clouddq_dir)
 
+@pytest.fixture
+def gcp_dataplex_zone_id():
+    gcp_dataplex_zone_id = os.environ.get('DATAPLEX_ZONE_ID', None)
+    if not gcp_dataplex_zone_id:
+        logger.fatal("Required test environment variable DATAPLEX_ZONE_ID cannot be found. Set this to the Dataplex Zone used for testing.")
+    return gcp_dataplex_zone_id
+
 def pytest_configure(config):
     config.addinivalue_line("markers", "e2e: mark as end-to-end test.")

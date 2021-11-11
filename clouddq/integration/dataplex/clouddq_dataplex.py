@@ -237,3 +237,15 @@ class CloudDqDataplexClient:
             else:
                 clouddq_artifact_gcs_path = clouddq_artifact_path
         return clouddq_artifact_gcs_path
+
+    def get_entity(self,
+                   zone_id: str,
+                   entity_id: str,
+                   params: dict = None,
+                   ) -> Response:
+        return self._client.get_entity(zone_id=zone_id,
+                                       entity_id=entity_id,
+                                       params=params)
+
+    def list_entities(self, zone_id: str) -> Response:
+        return self._client.list_entities(zone_id=zone_id)
