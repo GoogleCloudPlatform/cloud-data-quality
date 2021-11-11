@@ -92,7 +92,9 @@ jobs:
           key: bazel
 
       - name: lint check
-        run: make check
+        run: | 
+          cat /home/runner/work/cloud-data-quality/cloud-data-quality/clouddq/classes/dq_config_type.py
+          make check
         shell: bash
 
       - name: build
