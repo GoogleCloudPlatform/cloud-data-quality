@@ -29,14 +29,13 @@ else
 fi
 
 # Install Python dependencies
-sudo apt-get update
-DEBIAN_FRONTEND=noninteractive sudo apt-get install -y make build-essential \
-zip unzip python-is-python3 python3-pip python3-venv git \
+sudo apt update 
+sudo apt-get install -y make build-essential \
+zip unzip git \
+libc-bin \
 libssl-dev zlib1g-dev \
 libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
 libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev 
-pip uninstall dataclasses -y
-pip3 uninstall dataclasses -y
 
 # Install golang for building Bazelisk
 if ! [ -x "$(command -v "go")" ]; then

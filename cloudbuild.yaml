@@ -9,9 +9,10 @@ steps:
         set -o pipefail
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
         cat /etc/*-release
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl
-        source scripts/install_development_dependencies.sh --silent
-        which python3
+        whereis python3
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl  > /dev/null
+        source scripts/install_python3.9.sh
+        source scripts/install_development_dependencies.sh --silent > /dev/null
         echo "common
         --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}"
         >> .bazelrc
@@ -37,7 +38,7 @@ steps:
     - 'DATAPLEX_TARGET_BQ_DATASET=${_DATAPLEX_TARGET_BQ_DATASET}'
     - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
     - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
-  - name: ubuntu:18.04-slim
+  - name: ubuntu:18.04
     args:
       - '-c'
       - |
@@ -46,11 +47,11 @@ steps:
         set -o nounset
         set -o pipefail
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-        which python3
         cat /etc/*-release
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl python-is-python3
-        source scripts/install_development_dependencies.sh --silent
-        which python3
+        whereis python3
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl  > /dev/null
+        source scripts/install_python3.9.sh
+        source scripts/install_development_dependencies.sh --silent > /dev/null
         echo "common
         --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}"
         >> .bazelrc
@@ -77,6 +78,6 @@ steps:
     - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
     - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
 timeout: 7200s
-logsBucket: gs://dataplex-clouddq-github-cloud-build
+logsBucket: gs://	kthxbayes-bazel-cache
 options:
   logStreamingOption: STREAM_ON
