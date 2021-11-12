@@ -440,6 +440,7 @@ By default, running integration tests with Dataplex are skipped. To enable these
 
 ```bash
 #!/bin/bash
+make build  # create the relevant zip artifacts to be used in tests
 make test -- --run-dataplex
 ```
 

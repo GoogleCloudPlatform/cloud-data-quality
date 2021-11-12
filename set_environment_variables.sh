@@ -47,7 +47,7 @@ export GCS_BAZEL_CACHE="<gcs-bucket-for-bazel-cache>"
 # `clouddq-executable.zip` and `clouddq-executable.zip.hashsum`.
 # If this is not set or empty, the test harness will look the the zip executable called
 # `clouddq_patched.zip` on local path and upload it to $GCS_BUCKET_NAME for testing.
-export GCS_CLOUDDQ_EXECUTABLE_PATH="gs://dataplex-clouddq-artifacts-us-central1/"
+# export GCS_CLOUDDQ_EXECUTABLE_PATH="gs://dataplex-clouddq-artifacts-us-central1/"
 
 # Set $DATAPLEX_LAKE_NAME to the Dataplex Lake used for testing.
 export DATAPLEX_LAKE_NAME="<dataplex-lake-used-for-testing>"
