@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "$ROOT/scripts/common.sh"
@@ -36,7 +40,7 @@ require_env_var DATAPLEX_TASK_SA "Set $DATAPLEX_TASK_SA to the service account u
 GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS:-}"
 IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT:-}"
 DATAPLEX_ENDPOINT="${DATAPLEX_ENDPOINT:-}"
-
+GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE:-}"
 
 DRY_RUN=false
 if [[ $# -eq 0 ]]; then
@@ -65,5 +69,6 @@ _DATAPLEX_REGION_ID="${DATAPLEX_REGION_ID}",\
 _DATAPLEX_ENDPOINT="${DATAPLEX_ENDPOINT}",\
 _DATAPLEX_TARGET_BQ_DATASET="${DATAPLEX_TARGET_BQ_DATASET}",\
 _DATAPLEX_TARGET_BQ_TABLE="${DATAPLEX_TARGET_BQ_TABLE}",\
-_DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA}" \
+_DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA}",\
+_GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE}" \
 .

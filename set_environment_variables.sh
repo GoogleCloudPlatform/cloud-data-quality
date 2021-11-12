@@ -38,7 +38,10 @@ export CLOUDDQ_BIGQUERY_REGION="<gcp-region-for-bigquery-jobs>"
 # export IMPERSONATION_SERVICE_ACCOUNT="<service-account-name-for-impersonation>"
 
 # Set $GCS_BUCKET_NAME to the GCS bucket name for staging CloudDQ artifacts and configs.
-export GCS_BUCKET_NAME="<gcs-bucket-for-staging->"
+export GCS_BUCKET_NAME="<gcs-bucket-for-staging-clouddq-artifacts-and-configs>"
+
+# Set $GCS_BAZEL_CACHE to the GCS bucket name for caching bazel builds.
+export GCS_BAZEL_CACHE="<gcs-bucket-for-bazel-cache>"
 
 # Set $GCS_CLOUDDQ_EXECUTABLE_PATH to the GCS bucket path for the pre-built CloudDQ files
 # `clouddq-executable.zip` and `clouddq-executable.zip.hashsum`.
@@ -59,7 +62,7 @@ export DATAPLEX_ENDPOINT="https://dataplex.googleapis.com"
 export DATAPLEX_TARGET_BQ_DATASET="<different-bq-dataset-for-storing-summary-results>"
 
 # Set $DATAPLEX_TARGET_BQ_TABLE to the Target BQ Table used for testing. The table will be created in $DATAPLEX_TARGET_BQ_DATASET if not already exist.
-export DATAPLEX_TARGET_BQ_TABLE="<table-name-in-DATAPLEX_TARGET_BQ_DATASET>"
+export DATAPLEX_TARGET_BQ_TABLE="<table-name-in-$DATAPLEX_TARGET_BQ_DATASET>"
 
 # Set $DATAPLEX_TASK_SA to the service account used for running Dataplex Tasks in testing.
 export DATAPLEX_TASK_SA="<service-account-used-for-running-dataplex-task>"

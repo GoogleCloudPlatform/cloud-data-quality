@@ -18,13 +18,13 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
     exit 1
 fi
 
-YES=false
+SILENT=false
 if [[ $# -eq 0 ]]; then
-  echo "YES: ${YES}"
+  echo "SILENT: ${SILENT}"
 else
-  if [[ "$1" == "--yes" ]]; then
-      YES=true
-      echo "YES: $YES"
+  if [[ "$1" == "--silent" ]]; then
+      SILENT=true
+      echo "SILENT: ${SILENT}"
   fi
 fi
 
@@ -42,13 +42,15 @@ if ! [ -x "$(command -v "go")" ]; then
     sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
-    echo "Modify profile to update your \$PATH in ~/.bashrc with golang binary?"
-    read -n1 -p "Do you want to continue (Y/n)?" user_input
-    if [[ $user_input == "Y" || $user_input == "y" || $YES = true ]]; then
-        echo '' >> ~/.bashrc
-        echo '# set path to golang binary' >> ~/.bashrc
-        echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-        echo '~/.bashrc has been updated.'
-        echo '==> Start a new shell or run "source ~/.bashrc" for the changes to take effect.'
+    if [[ $SILENT = false ]]; then
+      echo "Modify profile to update your \$PATH in ~/.bashrc with golang binary?"
+      read -n1 -p "Do you want to continue (Y/n)?" user_input
+      if [[ $user_input == "Y" || $user_input == "y" ]]; then
+          echo '' >> ~/.bashrc
+          echo '# set path to golang binary' >> ~/.bashrc
+          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+          echo '~/.bashrc has been updated.'
+          echo '==> Start a new shell or run "source ~/.bashrc" for the changes to take effect.'
+      fi
     fi
 fi

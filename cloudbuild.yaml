@@ -4,14 +4,16 @@ steps:
       - '-c'
       - |
         set -x
+        set -o errexit
+        set -o nounset
+        set -o pipefail
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-        ls /usr/bin/python*
-        which python3
         cat /etc/*-release
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl python-is-python3
-        source scripts/install_development_dependencies.sh --yes
+        source scripts/install_development_dependencies.sh --silent
+        which python3
         echo "common
-        --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
+        --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}"
         >> .bazelrc
         echo "common --google_default_credentials" >> .bazelrc
         env
@@ -21,8 +23,8 @@ steps:
         make build
         make test -- --run-dataplex
         source scripts/install_gcloud.sh
-        echo gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}_`date -Iseconds`/clouddq-executable.zip
-        echo gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}_`date -Iseconds`/clouddq-executable.zip.hashsum
+        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
@@ -35,19 +37,22 @@ steps:
     - 'DATAPLEX_TARGET_BQ_DATASET=${_DATAPLEX_TARGET_BQ_DATASET}'
     - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
     - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
-  - name: ubuntu:18.04
+  - name: ubuntu:18.04-slim
     args:
       - '-c'
       - |
         set -x
+        set -o errexit
+        set -o nounset
+        set -o pipefail
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-        ls /usr/bin/python*
         which python3
         cat /etc/*-release
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl python-is-python3
-        source scripts/install_development_dependencies.sh --yes
+        source scripts/install_development_dependencies.sh --silent
+        which python3
         echo "common
-        --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
+        --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}"
         >> .bazelrc
         echo "common --google_default_credentials" >> .bazelrc
         env
@@ -57,8 +62,8 @@ steps:
         make build
         make test -- --run-dataplex
         source scripts/install_gcloud.sh
-        echo gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.8/`date -I`/${SHORT_SHA}_`date -Iseconds`/clouddq-executable.zip
-        echo gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.8/`date -I`/${SHORT_SHA}_`date -Iseconds`/clouddq-executable.zip.hashsum
+        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.8/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.8/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
@@ -72,6 +77,5 @@ steps:
     - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
     - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
 timeout: 7200s
-logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
 options:
   logStreamingOption: STREAM_ON
