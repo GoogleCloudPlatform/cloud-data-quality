@@ -9,7 +9,7 @@ steps:
         set -o pipefail
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
         cat /etc/*-release
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl python-is-python3
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl
         source scripts/install_development_dependencies.sh --silent
         which python3
         echo "common
@@ -19,8 +19,8 @@ steps:
         env
         make addlicense
         make check
-        make test-pip-install
         make build
+        make test-pip-install
         make test -- --run-dataplex
         source scripts/install_gcloud.sh
         gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
@@ -58,8 +58,8 @@ steps:
         env
         make addlicense
         make check
-        make test-pip-install
         make build
+        make test-pip-install
         make test -- --run-dataplex
         source scripts/install_gcloud.sh
         gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.8/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip

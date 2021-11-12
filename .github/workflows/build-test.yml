@@ -76,7 +76,7 @@ jobs:
       - name: install development dependencies for building project
         run: |
           chmod -R +x scripts
-          source scripts/install_development_dependencies.sh --yes
+          source scripts/install_development_dependencies.sh --silent
         shell: bash
 
       - name: Use GCS Bazel Cache

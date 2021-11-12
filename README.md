@@ -444,10 +444,15 @@ make build  # create the relevant zip artifacts to be used in tests
 make test -- --run-dataplex
 ```
 
-To run end-to-end integration tests on clean OS images, install [cloud-build-local](https://cloud.google.com/build/docs/build-debug-locally) and run:
+To test whether the project builds successfullys on clean OS images, install [cloud-build-local](https://cloud.google.com/build/docs/build-debug-locally) and run:
 
 ```bash
 #!/bin/bash
+# comment out sections requiring authenticating to GCP resources as they will fail in cloud-build-local
+sed -i "s/make test/# make test/g" cloudbuild.yaml
+sed -i "s/source scripts\/install_gcloud.sh/# source scripts\/install_gcloud.sh/g" cloudbuild.yaml
+sed -i "s/gsutil /# gsutil /g" cloudbuild.yaml
+# Run utility script for cloud-build-local
 bash scripts/cloud-build-local.sh
 ```
 
