@@ -31,10 +31,10 @@ fi
 # Install Python dependencies
 sudo apt-get update
 DEBIAN_FRONTEND=noninteractive sudo apt-get install -y make build-essential \
-zip unzip python3-pip python3-venv git
-# libssl-dev zlib1g-dev \
-# libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-# libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev 
+zip unzip python3-pip python3-venv git \
+libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev 
 
 # Install golang for building Bazelisk
 if ! [ -x "$(command -v "go")" ]; then

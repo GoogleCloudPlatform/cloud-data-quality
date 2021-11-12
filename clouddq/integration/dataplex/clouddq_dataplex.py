@@ -177,8 +177,8 @@ class CloudDqDataplexClient:
         :return: Task status
         """
         res = self._client.get_dataplex_task_jobs(task_id)
-        logger.debug(f"Response status code is {res.status_code}")
-        logger.debug(f"Response text is {res.text}")
+        logger.info(f"Response status code is {res.status_code}")
+        logger.info(f"Response text is {res.text}")
         resp_obj = json.loads(res.text)
 
         if res.status_code == 200:

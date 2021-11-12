@@ -186,4 +186,17 @@ def temp_clouddq_dir(gcp_project_id, gcp_bq_dataset):
         shutil.rmtree(temp_clouddq_dir)
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "e2e: mark as end-to-end test.")
+    config.addinivalue_line("markers", "dataplex: mark as tests for dataplex integration test.")
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-dataplex", action="store_true", default=False, help="run dataplex integraiton tests"
+    )
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--run-dataplex"):
+        return
+    skip_dataplex = pytest.mark.skip(reason="need --run_dataplex option to run")
+    for item in items:
+        if "dataplex" in item.keywords:
+            item.add_marker(skip_dataplex)

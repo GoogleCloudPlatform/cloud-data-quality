@@ -103,7 +103,7 @@ class GcpCredentials:
             credentials.refresh(auth_req)
         except RefreshError as err:
             logger.error(
-                "Could not get refreshed credentials for GCP."
+                "Could not get refreshed credentials for GCP. "
                 "Reauthentication Required."
             )
             raise err

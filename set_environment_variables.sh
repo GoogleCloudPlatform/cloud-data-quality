@@ -27,7 +27,6 @@ export CLOUDDQ_BIGQUERY_DATASET="<your-bigquery-dataset-id>"
 
 # Set $CLOUDDQ_BIGQUERY_REGION to the BigQuery region used for integration testing.
 export CLOUDDQ_BIGQUERY_REGION="<gcp-region-for-bigquery-jobs>"
-<<<<<<< Updated upstream
 
 # Set $GOOGLE_SDK_CREDENTIALS to the exported service account key path used for integration testing.
 # If you have the environment variable GOOGLE_APPLICATION_CREDENTIALS set, you can do `export GOOGLE_SDK_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"`.
@@ -64,15 +63,3 @@ export DATAPLEX_TARGET_BQ_TABLE="<table-name-in-DATAPLEX_TARGET_BQ_DATASET>"
 
 # Set $DATAPLEX_TASK_SA to the service account used for running Dataplex Tasks in testing.
 export DATAPLEX_TASK_SA="<service-account-used-for-running-dataplex-task>"
-=======
-export GOOGLE_SDK_CREDENTIALS="<path-to-exported-service-account-key>"
-export IMPERSONATION_SERVICE_ACCOUNT="<service-account-name-for-impersonation>"
-
-export GOOGLE_CLOUD_PROJECT=dataplex-clouddq
-export CLOUDDQ_BIGQUERY_DATASET=dataplex_clouddq
-export CLOUDDQ_BIGQUERY_REGION=US
-export GOOGLE_CLOUD_CREDENTIALS=/home/thinhha_google_com/.config/gcloud/application_default_credentials.json
-export GOOGLE_SDK_CREDENTIALS=/home/thinhha_google_com/.config/gcloud/application_default_credentials.json
-export GCS_BUCKET_NAME=dataplex-clouddq-api-integration
-export GOOGLE_APPLICATION_CREDENTIALS=/home/thinhha_google_com/.config/gcloud/application_default_credentials.json
->>>>>>> Stashed changes

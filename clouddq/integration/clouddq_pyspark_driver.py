@@ -49,13 +49,12 @@ def main(args):
 
 
 if __name__ == "__main__":
-    print("OS Runtime Details:")
+    print("OS runtime details:")
     subprocess.run("cat /etc/*-release", shell=True, check=True)
-    print("Python Version:")
+    print("Python executable path:")
     print(sys.executable)
+    print("Python Version:")
     print(sys.version_info)
-    print("OS Runtime Details:")
-    subprocess.run("cat /etc/*-release", shell=True, check=True)
     print("PySpark working directory:")
     pprint(Path().absolute())
     print("PySpark directory content:")

@@ -21,10 +21,11 @@ import sys
 
 
 if __name__ == "__main__":
-    print("OS Runtime Details:")
+    print("OS runtime details:")
     subprocess.run("cat /etc/*-release", shell=True, check=True)
-    print("Python Version:")
+    print("Python executable path:")
     print(sys.executable)
+    print("Python Version:")
     print(sys.version_info)
     print("PySpark working directory:")
     pprint(Path().absolute())

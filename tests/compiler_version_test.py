@@ -23,7 +23,6 @@ class TestPythonVersion:
     def test_version(self):
         assert platform.python_version().split(".")[:2] == ["3", "9"]
 
-
 if __name__ == "__main__":
-
-    raise SystemExit(pytest.main([__file__]))
+    import sys
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP'] + sys.argv[1:]))

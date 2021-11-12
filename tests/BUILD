@@ -17,7 +17,10 @@ load("@py_deps//:requirements.bzl", "requirement")
 
 py_test(
     name = "compiler_version_test",
-    srcs = ["compiler_version_test.py"],
+    srcs = [
+        "compiler_version_test.py", 
+        "conftest.py"
+    ],
     legacy_create_init = 0,
     deps = [
         requirement("pytest"),
@@ -56,6 +59,7 @@ DEPS = [
 ]
 
 SRCS = glob([
+    "test_*.py",
     "unit/test_*.py",
     "integration/test_*.py",
 ]) + ["conftest.py"]

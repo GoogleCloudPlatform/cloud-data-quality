@@ -416,28 +416,51 @@ Note that `bazel run` execute the code in a sandbox, therefore non-absolute path
 
 To run all tests:
 
-```
+```bash
+#!/bin/bash
 make test
 ```
 
 For integration testing, you must first set the environment variables outlined in `set_environment_variables.sh` before running  `make test`. For example:
 
-```
-source set_environment_variables.sh && make test
-```
-
-You may want to ask git to ignore changes to `set_environment_variables.sh` to avoid accidentally committing secrets into git.
-```
-git update-index --assume-unchanged set_environment_variables.sh
+```bash
+#!/bin/bash
+cp set_environment_variables.sh envs.sh
+source envs.sh && make test
 ```
 
 To run a particular test:
-```
+
+```bash
+#!/bin/bash
 make test test_templates
 ```
 
-To apply linting:
+By default, running integration tests with Dataplex are skipped. To enable these tests, ensure the correct environments are set and run:
+
+```bash
+#!/bin/bash
+make test -- --run-dataplex
 ```
+
+To run end-to-end integration tests on clean OS images, install [cloud-build-local](https://cloud.google.com/build/docs/build-debug-locally) and run:
+
+```bash
+#!/bin/bash
+bash scripts/cloud-build-local.sh
+```
+
+To run cloud-build-local in dry-run mode:
+
+```bash
+#!/bin/bash
+bash scripts/cloud-build-local.sh --dry-run
+```
+
+To apply linting:
+
+```bash
+#!/bin/bash
 make lint
 ```
 
