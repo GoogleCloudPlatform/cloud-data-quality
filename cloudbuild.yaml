@@ -78,6 +78,6 @@ steps:
     - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
     - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
 timeout: 7200s
-logsBucket: gs://	kthxbayes-bazel-cache
+logsBucket: gs://kthxbayes-bazel-cache
 options:
   logStreamingOption: STREAM_ON
