@@ -6,7 +6,6 @@ steps:
         set -x
         set -o errexit
         set -o nounset
-        set -o pipefail
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
         cat /etc/*-release
         whereis python3
@@ -45,7 +44,6 @@ steps:
         set -x
         set -o errexit
         set -o nounset
-        set -o pipefail
         find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
         cat /etc/*-release
         whereis python3
