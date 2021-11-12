@@ -18,8 +18,8 @@ load("@py_deps//:requirements.bzl", "requirement")
 py_test(
     name = "compiler_version_test",
     srcs = [
-        "compiler_version_test.py", 
-        "conftest.py"
+        "compiler_version_test.py",
+        "conftest.py",
     ],
     legacy_create_init = 0,
     deps = [

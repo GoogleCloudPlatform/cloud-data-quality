@@ -30,6 +30,7 @@ fix_bazel_zip() {
   cd -
   cp /tmp/fix_bazel_zip/"${BASE_NAME}".zip "${BASE_NAME}"_patched.zip
 }
+
 create_hashsum() {
   sha256sum "$1" | cut -d' ' -f1 > "$1".hashsum
 }
