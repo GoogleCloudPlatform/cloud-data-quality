@@ -63,8 +63,8 @@ steps:
         make test-pip-install
         make test -- --run-dataplex
         source scripts/install_gcloud.sh
-        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.8/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
-        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.8/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
+        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.9/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.9/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
