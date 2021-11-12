@@ -54,6 +54,13 @@ jobs:
       - name: Get gcloud CLI info
         run: gcloud info
 
+      - name: install development dependencies for building project
+        run: |
+          chmod -R +x scripts
+          source scripts/install_development_dependencies.sh --silent
+          source scripts/install_python3.9.sh
+        shell: bash
+
       - name: test pip install
         run: |
           export GOOGLE_CLOUD_PROJECT=${{ secrets.GCP_PROJECT_ID }}
@@ -64,13 +71,6 @@ jobs:
           gcloud config set project "${GOOGLE_CLOUD_PROJECT}"
           sed -i s/\<your_gcp_project_id\>/${GOOGLE_CLOUD_PROJECT}/g configs/entities/test-data.yml
           make test-pip-install
-        shell: bash
-
-      - name: install development dependencies for building project
-        run: |
-          chmod -R +x scripts
-          source scripts/install_development_dependencies.sh --silent
-          source scripts/install_python3.9.sh
         shell: bash
 
       - name: Use GCS Bazel Cache
