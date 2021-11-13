@@ -15,7 +15,6 @@
 from collections import defaultdict
 from pathlib import Path
 from pprint import pformat
-from pprint import pprint
 
 import datetime
 import hashlib
@@ -24,8 +23,6 @@ import logging
 import shutil
 import sys
 import time
-
-from filelock import FileLock
 
 import pytest
 import yaml
@@ -182,125 +179,125 @@ class TestDataplexIntegration:
                                gcp_project_id=gcp_project_id,
                                gcs_bucket_name=gcs_bucket_name)
 
-    # def test_get_dataplex_lake_success(self,
-    #                             test_dq_dataplex_client,
-    #                             gcp_project_id,
-    #                             gcp_dataplex_region,
-    #                             gcp_dataplex_lake_name,
-    #                             request):
-    #     print(f"Running Dataplex integration test: {request.config.getoption('--run-dataplex')}")
-    #     response = test_dq_dataplex_client.get_dataplex_lake(gcp_dataplex_lake_name)
-    #     assert response.status_code == 200
-    #     resp_obj = json.loads(response.text)
-    #     expected_name = f"projects/{gcp_project_id}/locations/{gcp_dataplex_region}/lakes/{gcp_dataplex_lake_name}"
-    #     assert resp_obj["name"] == expected_name
-
-    # @pytest.mark.parametrize(
-    #     "input_configs,expected",
-    #     [
-    #         pytest.param(
-    #             'gcs_clouddq_configs_standard',
-    #             "SUCCEEDED",
-    #             id="without_clouddq_executable"
-    #         ),
-    #     ]
-    # )
-    # def test_create_clouddq_task_no_executable(self,
-    #                         test_dq_dataplex_client,
-    #                         input_configs,
-    #                         expected,
-    #                         test_gcs_clouddq_pyspark_driver,
-    #                         gcp_project_id,
-    #                         gcp_bq_dataset,
-    #                         gcp_bq_region,
-    #                         target_bq_result_dataset_name,
-    #                         target_bq_result_table_name,
-    #                         dataplex_task_service_account_name,
-    #                         request):
-    #     print(f"Running Dataplex integration test: {request.config.getoption('--run-dataplex')}")
-    #     # Prepare the test YAML configurations from fixture
-    #     clouddq_yaml_spec_file_path: str = request.getfixturevalue(input_configs)
-    #     # Use the test clouddq_pyspark_driver
-    #     clouddq_pyspark_driver_path: str = test_gcs_clouddq_pyspark_driver
-    #     # Prepare Task_ID for reference
-    #     test_id = f"{request.node.callspec.id}".replace("_", "-")
-    #     task_id = f"clouddq-test-create-dataplex-task-{test_id}"
-    #     print(f"Dataplex batches task id is: {task_id}")
-    #     # Clean-up old task_ids if exists
-    #     print("Delete task_id if it already exists...")
-    #     response = test_dq_dataplex_client.delete_clouddq_task_if_exists(task_id)
-    #     print(f"CloudDQ task deletion response is {response.text}")
-    #     # Continue if Task_ID is successfully deleted or not found
-    #     assert response.status_code == 200 or response.status_code == 404
-    #     # Set other variables not in scope for testing
-    #     task_trigger_spec_type: str = "ON_DEMAND"
-    #     task_description: str = f"clouddq task created at {datetime.datetime.utcnow()} for test {test_id}"
-    #     task_labels: dict = {"test_id": test_id}
-    #     # Assumes target bq result dataset exists in the same project as the test fixture `gcp_project_id`
-    #     target_bq_result_project_name = gcp_project_id
-    #     # Create Dataplex Task with test arguments
-    #     response = test_dq_dataplex_client.create_clouddq_task(
-    #                     task_id=task_id,
-    #                     clouddq_yaml_spec_file_path=clouddq_yaml_spec_file_path,
-    #                     clouddq_run_project_id=gcp_project_id,
-    #                     clouddq_run_bq_region=gcp_bq_region,
-    #                     clouddq_run_bq_dataset=gcp_bq_dataset,
-    #                     target_bq_result_project_name=target_bq_result_project_name,
-    #                     target_bq_result_dataset_name=target_bq_result_dataset_name,
-    #                     target_bq_result_table_name=target_bq_result_table_name,
-    #                     task_service_account=dataplex_task_service_account_name,
-    #                     task_trigger_spec_type=task_trigger_spec_type,
-    #                     task_description=task_description,
-    #                     task_labels=task_labels,
-    #                     clouddq_pyspark_driver_path=clouddq_pyspark_driver_path,
-    #                     clouddq_pyspark_driver_filename="test_clouddq_pyspark_driver.py",
-    #                     clouddq_executable_path=None,
-    #                     clouddq_executable_checksum_path=None,)
-    #     print(response.text)
-    #     assert response.status_code == 200
-    #     # Poll task status until it has either succeeded or failed
-    #     # Tests will timeout if exceeding the duration `--test_timeout` set in `.bazelrc`
-    #     task_status = test_dq_dataplex_client.get_clouddq_task_status(task_id)
-    #     while (task_status != 'SUCCEEDED' and task_status != 'FAILED'):
-    #         print(time.ctime())
-    #         time.sleep(30)
-    #         task_status = test_dq_dataplex_client.get_clouddq_task_status(task_id)
-    #         print(f"CloudDQ task status is {task_status}")
-    #     assert task_status == expected
+    def test_get_dataplex_lake_success(self,
+                                test_dq_dataplex_client,
+                                gcp_project_id,
+                                gcp_dataplex_region,
+                                gcp_dataplex_lake_name,
+                                request):
+        print(f"Running Dataplex integration test: {request.config.getoption('--run-dataplex')}")
+        response = test_dq_dataplex_client.get_dataplex_lake(gcp_dataplex_lake_name)
+        assert response.status_code == 200
+        resp_obj = json.loads(response.text)
+        expected_name = f"projects/{gcp_project_id}/locations/{gcp_dataplex_region}/lakes/{gcp_dataplex_lake_name}"
+        assert resp_obj["name"] == expected_name
 
     @pytest.mark.parametrize(
         "input_configs,expected",
         [
-            # pytest.param(
-            #     'gcs_clouddq_configs_standard',
-            #     "SUCCEEDED",
-            #     id="configs_standard"
-            # ),
-            # pytest.param(
-            #     'gcs_clouddq_configs_nonstandard',
-            #     "SUCCEEDED",
-            #     id="configs_nonstandard"
-            # ),
-            # pytest.param(
-            #     'gcs_clouddq_configs_nonstandard_local',
-            #     "SUCCEEDED",
-            #     id="configs_nonstandard_local"
-            # ),
+            pytest.param(
+                'gcs_clouddq_configs_standard',
+                "SUCCEEDED",
+                id="without_clouddq_executable"
+            ),
+        ]
+    )
+    def test_create_clouddq_task_no_executable(self,
+                            test_dq_dataplex_client,
+                            input_configs,
+                            expected,
+                            test_gcs_clouddq_pyspark_driver,
+                            gcp_project_id,
+                            gcp_bq_dataset,
+                            gcp_bq_region,
+                            target_bq_result_dataset_name,
+                            target_bq_result_table_name,
+                            dataplex_task_service_account_name,
+                            request):
+        print(f"Running Dataplex integration test: {request.config.getoption('--run-dataplex')}")
+        # Prepare the test YAML configurations from fixture
+        clouddq_yaml_spec_file_path: str = request.getfixturevalue(input_configs)
+        # Use the test clouddq_pyspark_driver
+        clouddq_pyspark_driver_path: str = test_gcs_clouddq_pyspark_driver
+        # Prepare Task_ID for reference
+        test_id = f"{request.node.callspec.id}".replace("_", "-")
+        task_id = f"clouddq-test-create-dataplex-task-{test_id}"
+        print(f"Dataplex batches task id is: {task_id}")
+        # Clean-up old task_ids if exists
+        print("Delete task_id if it already exists...")
+        response = test_dq_dataplex_client.delete_clouddq_task_if_exists(task_id)
+        print(f"CloudDQ task deletion response is {response.text}")
+        # Continue if Task_ID is successfully deleted or not found
+        assert response.status_code == 200 or response.status_code == 404
+        # Set other variables not in scope for testing
+        task_trigger_spec_type: str = "ON_DEMAND"
+        task_description: str = f"clouddq task created at {datetime.datetime.utcnow()} for test {test_id}"
+        task_labels: dict = {"test_id": test_id}
+        # Assumes target bq result dataset exists in the same project as the test fixture `gcp_project_id`
+        target_bq_result_project_name = gcp_project_id
+        # Create Dataplex Task with test arguments
+        response = test_dq_dataplex_client.create_clouddq_task(
+                        task_id=task_id,
+                        clouddq_yaml_spec_file_path=clouddq_yaml_spec_file_path,
+                        clouddq_run_project_id=gcp_project_id,
+                        clouddq_run_bq_region=gcp_bq_region,
+                        clouddq_run_bq_dataset=gcp_bq_dataset,
+                        target_bq_result_project_name=target_bq_result_project_name,
+                        target_bq_result_dataset_name=target_bq_result_dataset_name,
+                        target_bq_result_table_name=target_bq_result_table_name,
+                        task_service_account=dataplex_task_service_account_name,
+                        task_trigger_spec_type=task_trigger_spec_type,
+                        task_description=task_description,
+                        task_labels=task_labels,
+                        clouddq_pyspark_driver_path=clouddq_pyspark_driver_path,
+                        clouddq_pyspark_driver_filename="test_clouddq_pyspark_driver.py",
+                        clouddq_executable_path=None,
+                        clouddq_executable_checksum_path=None,)
+        print(response.text)
+        assert response.status_code == 200
+        # Poll task status until it has either succeeded or failed
+        # Tests will timeout if exceeding the duration `--test_timeout` set in `.bazelrc`
+        task_status = test_dq_dataplex_client.get_clouddq_task_status(task_id)
+        while (task_status != 'SUCCEEDED' and task_status != 'FAILED'):
+            print(time.ctime())
+            time.sleep(30)
+            task_status = test_dq_dataplex_client.get_clouddq_task_status(task_id)
+            print(f"CloudDQ task status is {task_status}")
+        assert task_status == expected
+
+    @pytest.mark.parametrize(
+        "input_configs,expected",
+        [
+            pytest.param(
+                'gcs_clouddq_configs_standard',
+                "SUCCEEDED",
+                id="configs_standard"
+            ),
+            pytest.param(
+                'gcs_clouddq_configs_nonstandard',
+                "SUCCEEDED",
+                id="configs_nonstandard"
+            ),
+            pytest.param(
+                'gcs_clouddq_configs_nonstandard_local',
+                "SUCCEEDED",
+                id="configs_nonstandard_local"
+            ),
             pytest.param(
                 'gcs_clouddq_configs_empty',
                 "FAILED",
                 id="configs_empty"
             ),
-            # pytest.param(
-            #     'gcs_clouddq_configs_single_yaml',
-            #     "SUCCEEDED",
-            #     id="configs_single_yaml"
-            # ),
-            # pytest.param(
-            #     'gcs_clouddq_configs_single_yaml_malformed',
-            #     "FAILED",
-            #     id="configs_single_yaml_malformed"
-            # ),
+            pytest.param(
+                'gcs_clouddq_configs_single_yaml',
+                "SUCCEEDED",
+                id="configs_single_yaml"
+            ),
+            pytest.param(
+                'gcs_clouddq_configs_single_yaml_malformed',
+                "FAILED",
+                id="configs_single_yaml_malformed"
+            ),
         ],
     )
     def test_create_bq_dataplex_task(self,
