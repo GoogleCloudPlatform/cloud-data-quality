@@ -24,7 +24,7 @@ import pytest
 logger = logging.getLogger(__name__)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcp_project_id():
     gcp_project_id = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     if not gcp_project_id:
@@ -33,7 +33,7 @@ def gcp_project_id():
     return gcp_project_id
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcp_bq_dataset():
     gcp_bq_dataset = os.environ.get('CLOUDDQ_BIGQUERY_DATASET', None)
     if not gcp_bq_dataset:
@@ -42,7 +42,7 @@ def gcp_bq_dataset():
     return gcp_bq_dataset
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcp_bq_region():
     gcp_bq_region = os.environ.get('CLOUDDQ_BIGQUERY_REGION', None)
     if not gcp_bq_region:
@@ -51,7 +51,7 @@ def gcp_bq_region():
     return gcp_bq_region
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcp_application_credentials():
     gcp_application_credentials = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
     if not gcp_application_credentials:
@@ -64,7 +64,7 @@ def gcp_application_credentials():
     return gcp_application_credentials
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcp_sa_key():
     sa_key_path = os.environ.get('GOOGLE_SDK_CREDENTIALS', None)
     if not sa_key_path:
@@ -77,7 +77,7 @@ def gcp_sa_key():
     return sa_key_path
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcp_impersonation_credentials():
     gcp_impersonation_credentials = os.environ.get('IMPERSONATION_SERVICE_ACCOUNT', None)
     if not gcp_impersonation_credentials:
@@ -90,7 +90,7 @@ def gcp_impersonation_credentials():
     return gcp_impersonation_credentials
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcs_bucket_name():
     gcs_bucket_name = os.environ.get('GCS_BUCKET_NAME', None)
     if not gcs_bucket_name:
@@ -99,7 +99,7 @@ def gcs_bucket_name():
         "CloudDQ artifacts and configs.")
     return gcs_bucket_name
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcs_clouddq_executable_path():
     gcs_clouddq_executable_path = os.environ.get('GCS_CLOUDDQ_EXECUTABLE_PATH', None)
     if not gcs_clouddq_executable_path:
@@ -111,7 +111,7 @@ def gcs_clouddq_executable_path():
             "`clouddq_patched.zip` on local path and upload it to $GCS_BUCKET_NAME for testing.")
     return gcs_clouddq_executable_path
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcp_dataplex_region():
     gcp_dataplex_region = os.environ.get('DATAPLEX_REGION_ID', None)
     if not gcp_dataplex_region:
@@ -119,7 +119,7 @@ def gcp_dataplex_region():
         "cannot be found. Set this to the region id of the Dataplex Lake.")
     return gcp_dataplex_region
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def gcp_dataplex_lake_name():
     gcp_dataplex_lake_name = os.environ.get('DATAPLEX_LAKE_NAME', None)
     if not gcp_dataplex_lake_name:
@@ -127,7 +127,7 @@ def gcp_dataplex_lake_name():
         "cannot be found. Set this to the Dataplex Lake used for testing.")
     return gcp_dataplex_lake_name
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def dataplex_endpoint():
     dataplex_endpoint = os.environ.get('DATAPLEX_ENDPOINT', None)
     if not dataplex_endpoint:
@@ -137,7 +137,7 @@ def dataplex_endpoint():
         dataplex_endpoint = "https://dataplex.googleapis.com"
     return dataplex_endpoint
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def target_bq_result_dataset_name():
     target_bq_result_dataset_name = os.environ.get('DATAPLEX_TARGET_BQ_DATASET', None)
     if not target_bq_result_dataset_name:
@@ -145,7 +145,7 @@ def target_bq_result_dataset_name():
         "cannot be found. Set this to the Target BQ Dataset used for testing.")
     return target_bq_result_dataset_name
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def target_bq_result_table_name():
     target_bq_result_table_name = os.environ.get('DATAPLEX_TARGET_BQ_TABLE', None)
     if not target_bq_result_table_name:
@@ -153,7 +153,7 @@ def target_bq_result_table_name():
         "cannot be found. Set this to the Target BQ Table used for testing.")
     return target_bq_result_table_name
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def dataplex_task_service_account_name():
     dataplex_task_service_account_name = os.environ.get('DATAPLEX_TASK_SA', None)
     if not dataplex_task_service_account_name:
@@ -162,7 +162,7 @@ def dataplex_task_service_account_name():
         "running Dataplex Tasks in testing.")
     return dataplex_task_service_account_name
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def temp_clouddq_dir(gcp_project_id, gcp_bq_dataset):
     # Create temp directory
     source_configs_path = Path("tests").joinpath("resources", "configs")

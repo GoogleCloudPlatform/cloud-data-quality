@@ -26,7 +26,6 @@ function main() {
     ls -la
     find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
     cat /etc/*-release
-    DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl  > /dev/null
     source scripts/install_development_dependencies.sh --silent > /dev/null
     source scripts/install_python3.sh "3.9.7" > /dev/null
     pyenv virtualenv "3.9.7" clouddq -f

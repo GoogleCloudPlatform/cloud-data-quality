@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 class TestLib:
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def temp_configs_dir(self, temp_clouddq_dir):
         return Path(temp_clouddq_dir).joinpath("configs")
 
@@ -91,4 +91,4 @@ class TestLib:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))

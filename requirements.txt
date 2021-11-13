@@ -12,3 +12,5 @@ flake8==3.9.2
 google-api-python-client==2.27.0
 google-cloud-storage==1.42.3
 requests-oauth2==0.3.0
+pytest-xdist==2.4.0
+filelock==3.3.2

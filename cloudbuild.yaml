@@ -3,6 +3,7 @@ steps:
     args:
       - '-c'
       - |
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo  > /dev/null
         source scripts/cloud_build_ubuntu18.sh
         source scripts/install_gcloud.sh
         gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8.6/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
@@ -24,6 +25,7 @@ steps:
     args:
       - '-c'
       - |
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo  > /dev/null
         source scripts/cloud_build_debian11.sh
         source scripts/install_gcloud.sh
         gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9.2/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip

@@ -91,8 +91,9 @@ if __name__ == "__main__":
                 try:
                     content = yaml_file.open().read()
                     configs_path.joinpath(yaml_file.name).write_text(content)
-                except:
-                    print(f"Failed to parse config file: {yaml_file}")
+                except Exception as e:
+                    print(f"Failed to parse config file: {yaml_file}\n{e}")
+                    continue
     print("Configs directory contents is:")
     pprint(list(configs_path.glob("**/*")))
     main(sys.argv)

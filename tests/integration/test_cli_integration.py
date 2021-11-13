@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.e2e
 class TestCliIntegration:
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def runner(self):
         return click.testing.CliRunner()
 
@@ -246,4 +246,4 @@ class TestCliIntegration:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__]))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))

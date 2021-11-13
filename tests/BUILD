@@ -24,6 +24,7 @@ py_test(
     legacy_create_init = 0,
     deps = [
         requirement("pytest"),
+        requirement("filelock"),
     ],
 )
 
@@ -52,10 +53,12 @@ DEPS = [
     "//clouddq:integration",
     requirement("py"),
     requirement("pytest"),
+    requirement("pytest-xdist"),
     requirement("click"),
     requirement("coloredlogs"),
     requirement("google-api-python-client"),
     requirement("requests-oauth2"),
+    requirement("filelock"),
 ]
 
 SRCS = glob([

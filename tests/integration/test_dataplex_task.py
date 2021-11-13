@@ -25,6 +25,8 @@ import shutil
 import sys
 import time
 
+from filelock import FileLock
+
 import pytest
 import yaml
 
@@ -40,7 +42,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.dataplex
 class TestDataplexIntegration:
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def temp_artifacts_path(self, temp_clouddq_dir):
         with working_directory(temp_clouddq_dir):
             # Create standard configs zip called 'clouddq-configs.zip'
@@ -62,7 +64,8 @@ class TestDataplexIntegration:
             # Create single malformed YAML config called 'malformed-configs.yml'
             # This breaks because there are two nodes for rules: on the same file, meaning one will be ignored
             single_malformed_yaml_path = Path(temp_clouddq_dir).joinpath("malformed-configs.yml")
-            single_malformed_yaml_path.write_text("\n".join(configs_content))
+            with FileLock(str(single_malformed_yaml_path) + ".lock"):
+                single_malformed_yaml_path.write_text("\n".join(configs_content))
             # Fix the above issue and write to a YAML config called 'configs.yml'
             merged_configs = defaultdict(dict)
             for config in configs_content:
@@ -71,13 +74,14 @@ class TestDataplexIntegration:
                     for config_id, config_item in config_body.items():
                         merged_configs[config_type][config_id] = config_item
             single_yaml_path = Path(temp_clouddq_dir).joinpath("configs.yml")
-            single_yaml_path.write_text(yaml.safe_dump(dict(merged_configs)))
+            with FileLock(str(single_yaml_path) + ".lock"):
+                single_yaml_path.write_text(yaml.safe_dump(dict(merged_configs)))
             # Print temp configs path
             print(pformat(list(temp_clouddq_dir.glob("**/*"))))
             # Return path and delete when done
             yield temp_clouddq_dir
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def gcs_clouddq_configs_standard(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
@@ -85,7 +89,7 @@ class TestDataplexIntegration:
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def gcs_clouddq_configs_nonstandard(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "non-standard-clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
@@ -93,13 +97,13 @@ class TestDataplexIntegration:
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def gcs_clouddq_configs_nonstandard_local(self, temp_artifacts_path):
         file_name = "non-standard-clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
         return configs_file_path.absolute()
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def gcs_clouddq_configs_empty(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "empty-clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
@@ -107,7 +111,7 @@ class TestDataplexIntegration:
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def gcs_clouddq_configs_single_yaml(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "configs.yml"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
@@ -115,7 +119,7 @@ class TestDataplexIntegration:
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def gcs_clouddq_configs_single_yaml_malformed(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "malformed-configs.yml"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
@@ -123,7 +127,7 @@ class TestDataplexIntegration:
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def gcs_clouddq_pyspark_driver(self, gcs_bucket_name):
         file_name = 'clouddq_pyspark_driver.py'
         driver_path = clouddq_pyspark_driver.__file__
@@ -131,7 +135,7 @@ class TestDataplexIntegration:
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_gcs_clouddq_pyspark_driver(self, gcs_bucket_name):
         file_name = 'test_clouddq_pyspark_driver.py'
         driver_path = test_clouddq_pyspark_driver.__file__
@@ -139,35 +143,36 @@ class TestDataplexIntegration:
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_clouddq_zip_executable_paths(self,
                                 gcs_bucket_name,
                                 gcs_clouddq_executable_path):
-        if gcs_clouddq_executable_path:
-            gcs_zip_executable_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip"
-            gcs_zip_executable_hashsum_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip.hashsum"
-        else:
-            print(Path().absolute())
-            pprint(list(Path().iterdir()))
-            clouddq_zip_build = Path("clouddq_patched.zip")
-            if not clouddq_zip_build.resolve().is_file():
-                raise RuntimeError(
-                    f"Local CloudDQ Artifact Zip at `{clouddq_zip_build.absolute()}` "
-                    "not found. Run `make build` before continuing.")
-            upload_blob(gcs_bucket_name, clouddq_zip_build, "test/clouddq-executable.zip")
-            gcs_zip_executable_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip"
-            hash_sha256 = hashlib.sha256()
-            with open(clouddq_zip_build, "rb") as f:
-                for chunk in iter(lambda: f.read(4096), b""):
-                    hash_sha256.update(chunk)
-            hashsum = hash_sha256.hexdigest()
-            hashsum_file = Path("clouddq_patched.zip.hashsum")
-            hashsum_file.write_text(hashsum)
-            upload_blob(gcs_bucket_name, hashsum_file, "test/clouddq-executable.zip.hashsum")
-            gcs_zip_executable_hashsum_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip.hashsum"
-        return (gcs_zip_executable_name, gcs_zip_executable_hashsum_name)
+        with FileLock(str(gcs_clouddq_executable_path) + ".lock"):
+            if gcs_clouddq_executable_path:
+                gcs_zip_executable_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip"
+                gcs_zip_executable_hashsum_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip.hashsum"
+            else:
+                print(Path().absolute())
+                pprint(list(Path().iterdir()))
+                clouddq_zip_build = Path("clouddq_patched.zip")
+                if not clouddq_zip_build.resolve().is_file():
+                    raise RuntimeError(
+                        f"Local CloudDQ Artifact Zip at `{clouddq_zip_build.absolute()}` "
+                        "not found. Run `make build` before continuing.")
+                upload_blob(gcs_bucket_name, clouddq_zip_build, "test/clouddq-executable.zip")
+                gcs_zip_executable_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip"
+                hash_sha256 = hashlib.sha256()
+                with open(clouddq_zip_build, "rb") as f:
+                    for chunk in iter(lambda: f.read(4096), b""):
+                        hash_sha256.update(chunk)
+                hashsum = hash_sha256.hexdigest()
+                hashsum_file = Path("clouddq_patched.zip.hashsum")
+                hashsum_file.write_text(hashsum)
+                upload_blob(gcs_bucket_name, hashsum_file, "test/clouddq-executable.zip.hashsum")
+                gcs_zip_executable_hashsum_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip.hashsum"
+            return (gcs_zip_executable_name, gcs_zip_executable_hashsum_name)
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_dq_dataplex_client(self,
                                 dataplex_endpoint,
                                 gcp_dataplex_lake_name,
@@ -377,4 +382,4 @@ class TestDataplexIntegration:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP'] + sys.argv[1:]))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 4'] + sys.argv[1:]))

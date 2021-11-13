@@ -40,12 +40,12 @@ CONFIGS_HASHSUM_REP = "'' AS configs_hashsum,"
 class TestJinjaTemplates:
     """ """
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_entities_collection(self):
         """ """
         return lib.load_entities_config(configs_path=Path("tests/resources/configs"))
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_rules_collection(self):
         """ """
         return lib.load_rules_config(configs_path=Path("tests/resources/configs"))
@@ -69,7 +69,7 @@ class TestJinjaTemplates:
                 value.update({"params": {}})
             assert dict(rule.dict_values()) == dict(value)
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_row_filters_collection(self):
         """ """
         return lib.load_row_filters_config(configs_path=Path("tests/resources/configs"))
@@ -88,21 +88,21 @@ class TestJinjaTemplates:
             assert key in dq_filter.to_dict()
             assert dict(dq_filter.dict_values()) == dict(value)
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_rule_bindings_collection_team_1(self):
         """ """
         return lib.load_rule_bindings_config(
             Path("tests/resources/configs/rule_bindings/team-1-rule-bindings.yml")
         )
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_rule_bindings_collection_team_2(self):
         """ """
         return lib.load_rule_bindings_config(
             Path("tests/resources/configs/rule_bindings/team-2-rule-bindings.yml")
         )
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_rule_bindings_collection_team_3(self):
         """ """
         return lib.load_rule_bindings_config(
@@ -175,7 +175,7 @@ class TestJinjaTemplates:
                 row_filters_collection=test_row_filters_collection,
             )
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_all_rule_bindings_collections(self):
         """ """
         return lib.load_rule_bindings_config(configs_path=Path("tests/resources/configs"))
@@ -402,4 +402,4 @@ class TestJinjaTemplates:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))

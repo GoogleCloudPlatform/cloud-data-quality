@@ -25,15 +25,15 @@ from clouddq.main import main
 logger = logging.getLogger(__name__)
 
 class TestCli:
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def runner(self):
         return click.testing.CliRunner()
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_configs_dir(self):
         return Path("tests").joinpath("resources", "configs")
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_profiles_dir(self):
         return Path("tests").joinpath("resources", "test_dbt_profiles_dir")
 
@@ -83,4 +83,4 @@ class TestCli:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__]))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 2']))
