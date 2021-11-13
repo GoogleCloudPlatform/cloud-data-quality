@@ -84,5 +84,5 @@ jobs:
           find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
           cat /etc/*-release
           DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install -y tzdata curl  > /dev/null
-          source source scripts/cloud_build_ubuntu18.sh
+          . ./scripts/cloud_build_ubuntu18.sh
         shell: bash
