@@ -37,6 +37,7 @@ function main() {
     python3 --version
     python --version
     pip3 --version
+    python3 -m pip --version
     python3 -c 'import sys; print(sys.version_info)'
     python -c 'import sys; print(sys.version_info)'
     echo "common --remote_cache=https://storage.googleapis.com/${GCS_BAZEL_CACHE}" >> .bazelrc
