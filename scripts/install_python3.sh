@@ -23,7 +23,6 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
 fi
 
 function main() {
-    set -x
     local PYTHON_VERSION=3.8.12
     if ! [[ "${1}" == "3.8"* || "${1}" == "3.9"* ]]; then
         err "This project is only tested to install python version 3.8. or 3.9. Exiting..."
@@ -40,13 +39,10 @@ function main() {
     eval "$(pyenv init --path)"
     eval "$(pyenv init -)"
     pyenv install "$PYTHON_VERSION"
-    pyenv local "$PYTHON_VERSION"
+    pyenv global "$PYTHON_VERSION"
     pyenv shell "$PYTHON_VERSION"
-    sudo update-alternatives --install /usr/bin/python3 python3 "${PYENV_ROOT}"/versions/"${PYTHON_VERSION}"/ 2
-    sudo update-alternatives --auto python3
+    pyenv version
     python3 --version
-    pip3 --version
-    set +x
 }
 
 main "$1"
