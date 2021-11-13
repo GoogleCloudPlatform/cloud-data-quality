@@ -78,7 +78,7 @@ jobs:
           sudo ln -sf ~/.pyenv/shims/python3.8 /usr/bin/python
           pyenv shell "3.8.6"
           python3 --version
-          python --verion
+          python --version
           pip3 --version
           python3 -c 'import sys; print(sys.version_info)'
           python -c 'import sys; print(sys.version_info)'
