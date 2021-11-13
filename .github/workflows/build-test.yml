@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        os: ['ubuntu-18.04', 'ubuntu-20.04']
+        os: ['ubuntu-18.04']
 
     steps:
       - uses: actions/checkout@v2
@@ -66,7 +66,7 @@ jobs:
           path: "/home/runner/.cache/bazel"
           key: bazel
 
-      - name: build-test
+      - name: test
         run: |
           set -x
           export GOOGLE_CLOUD_PROJECT=${{ secrets.GCP_PROJECT_ID }}
@@ -83,10 +83,22 @@ jobs:
           export DATAPLEX_TASK_SA=${{ secrets.DATAPLEX_TASK_SA }}
           gcloud config set project "${GOOGLE_CLOUD_PROJECT}"
           chmod -R +x scripts
-          source scripts/install_development_dependencies.sh --silent > /dev/null
+          source scripts/install_development_dependencies.sh --silent
+          sudo apt-get install -y build-essential
           source scripts/install_python3.sh "3.8.6"
           make test-pip-install
-          make check
-          make build
           make test
+        shell: bash
+
+      - name: build
+        run: |
+          ls -la /usr/bin/python3
+          which python3
+          make build
+        shell: bash
+
+      - name: check
+        run: |
+          make clean
+          make check
         shell: bash

@@ -18,6 +18,7 @@ steps:
         which python3
         ls -la $(which python3)
         ls -la /usr/bin/python3
+        sudo chmod 777 /usr/bin/python
         which pip3
         echo "common
         --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}"
@@ -27,11 +28,11 @@ steps:
         make addlicense
         make build
         make check
-        make test-pip-install
-        make test -- --run-dataplex
-        source scripts/install_gcloud.sh
-        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8.6/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
-        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8.6/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
+        # make test-pip-install
+        # make test -- --run-dataplex
+        # source scripts/install_gcloud.sh
+        # gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8.6/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
+        # gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8.6/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
@@ -63,6 +64,7 @@ steps:
         which python3
         ls -la $(which python3)
         ls -la /usr/bin/python3
+        sudo chmod 777 /usr/bin/python
         which pip3
         echo "common
         --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}"
@@ -72,11 +74,11 @@ steps:
         make addlicense
         make build
         make check
-        make test-pip-install
-        make test -- --run-dataplex
-        source scripts/install_gcloud.sh
-        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9.2/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
-        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9.2/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
+        # make test-pip-install
+        # make test -- --run-dataplex
+        # source scripts/install_gcloud.sh
+        # gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9.2/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
+        # gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9.2/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
