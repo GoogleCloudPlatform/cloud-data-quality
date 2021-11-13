@@ -44,7 +44,7 @@ function main() {
     make build
     make check
     make test-pip-install
-    make test -- --run-dataplex
+    make test
 }
 
 main

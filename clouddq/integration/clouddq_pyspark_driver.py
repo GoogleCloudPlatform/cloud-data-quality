@@ -18,6 +18,7 @@ This is designed to be launched using a companion script such
 as `scripts/dataproc/submit-dataproc-job.sh`.
 """
 
+from itertools import chain
 from pathlib import Path
 from pprint import pprint
 from zipfile import ZipFile
@@ -86,10 +87,12 @@ if __name__ == "__main__":
         # look for yaml/yml files in the path
         # and copy them to the `configs` directory
         elif file.is_dir():
-            for yaml_file in file.glob("**/*.yaml"):
-                configs_path.joinpath(yaml_file).write_text(yaml_file.open().read())
-            for yaml_file in file.glob("**/*.yml"):
-                configs_path.joinpath(yaml_file).write_text(yaml_file.open().read())
+            for yaml_file in chain(file.glob("**/*.yaml"), file.glob("**/*.yml")):
+                try:
+                    content = yaml_file.open().read()
+                    configs_path.joinpath(yaml_file.name).write_text(content)
+                except:
+                    print(f"Failed to parse config file: {yaml_file}")
     print("Configs directory contents is:")
     pprint(list(configs_path.glob("**/*")))
     main(sys.argv)
