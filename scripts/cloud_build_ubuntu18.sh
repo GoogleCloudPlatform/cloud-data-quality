@@ -23,8 +23,8 @@ function main() {
     ls -la
     find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
     cat /etc/*-release
-    source scripts/install_development_dependencies.sh --silent > /dev/null
-    source scripts/install_python3.sh "3.8.6" > /dev/null
+    . ./scripts/install_development_dependencies.sh --silent > /dev/null
+    . ./scripts/install_python3.sh "3.8.6" > /dev/null
     pyenv virtualenv "3.8.6" clouddq -f
     pyenv shell
     ls -la ~/.pyenv/shims/python3.8
