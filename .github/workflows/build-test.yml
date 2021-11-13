@@ -72,10 +72,10 @@ jobs:
           chmod -R +x scripts
           source scripts/install_development_dependencies.sh --silent > /dev/null
           source scripts/install_python3.sh "3.8.6" > /dev/null
-          sudo chmod +x /home/thinhha_google_com/.pyenv/shims/python3.8
-          ls -la /home/thinhha_google_com/.pyenv/shims/python3.8
-          sudo ln -sf /home/thinhha_google_com/.pyenv/shims/python3.8 /usr/bin/python3
-          sudo ln -sf /home/thinhha_google_com/.pyenv/shims/python3.8 /usr/bin/python
+          sudo chmod +x ~/.pyenv/shims/python3.8
+          ls -la ~/.pyenv/shims/python3.8
+          sudo ln -sf ~/.pyenv/shims/python3.8 /usr/bin/python3
+          sudo ln -sf ~/.pyenv/shims/python3.8 /usr/bin/python
           pyenv shell "3.8.6"
           python3 --version
           python --verion
