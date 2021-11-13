@@ -17,6 +17,8 @@ set -x
 set -o errexit
 set -o nounset
 
+GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE}"
+
 function main() {
     ls -la
     find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
@@ -34,7 +36,7 @@ function main() {
     pip3 --version
     python3 -c 'import sys; print(sys.version_info)'
     python -c 'import sys; print(sys.version_info)'
-    echo "common --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}" >> .bazelrc
+    echo "common --remote_cache=https://storage.googleapis.com/${GCS_BAZEL_CACHE}" >> .bazelrc
     echo "common --google_default_credentials" >> .bazelrc
     env
     make addlicense
