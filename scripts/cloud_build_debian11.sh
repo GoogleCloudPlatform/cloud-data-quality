@@ -37,7 +37,6 @@ function main() {
     pip3 --version
     python3 -c 'import sys; print(sys.version_info)'
     python -c 'import sys; print(sys.version_info)'
-    python3 -m venv --help
     echo "common --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}" >> .bazelrc
     echo "common --google_default_credentials" >> .bazelrc
     env
