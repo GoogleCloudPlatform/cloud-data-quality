@@ -71,7 +71,6 @@ jobs:
           find . -not -path '*/\.*' | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
           cat /etc/*-release
           DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install -yq tzdata curl lsb-core lsb-release # > /dev/null
-          lsb_release -a
-          which lsb_release
+          rm -rf ~/.cache/bazel/*
           . ./scripts/cloud_build_test_debian_ubuntu.sh
         shell: bash
