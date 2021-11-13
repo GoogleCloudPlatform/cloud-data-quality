@@ -51,12 +51,6 @@ jobs:
       - name: Get gcloud CLI info
         run: gcloud info
 
-      - name: Cache bazel
-        uses: actions/cache@v2
-        with:
-          path: "/home/runner/.cache/bazel"
-          key: bazel
-
       - name: tests
         run: |
           set -x
