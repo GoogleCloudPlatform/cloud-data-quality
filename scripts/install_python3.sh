@@ -25,7 +25,7 @@ fi
 function main() {
     local PYTHON_VERSION=3.8
     if ! [[ "${1}" == "3.8" || "${1}" == "3.9" ]]; then
-        err "This script is only tested to install python version 3.8 or 3.9. Exiting..."
+        err "This script is only tested to install python version 3.8. or 3.9. Exiting..."
         exit 1
     else
         local PYTHON_VERSION="${1}"
@@ -33,8 +33,8 @@ function main() {
     if ! [[ $(uname -v) == *"Debian"* ]]; then
         sudo apt-get install -y software-properties-common > /dev/null
         sudo add-apt-repository -y 'ppa:deadsnakes' > /dev/null || true
-        sudo apt-get update > /dev/null
     fi
+    sudo apt-get update > /dev/null
     sudo apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-dev \
         python${PYTHON_VERSION}-venv python${PYTHON_VERSION}-distutils > /dev/null
     sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 2
