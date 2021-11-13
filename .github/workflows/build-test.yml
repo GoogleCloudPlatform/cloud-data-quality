@@ -87,14 +87,10 @@ jobs:
           sudo apt-get install -y build-essential
           source scripts/install_python3.sh "3.8.6"
           make test-pip-install
-          make test
-        shell: bash
-
-      - name: build
-        run: |
           ls -la /usr/bin/python3
           which python3
           make build
+          make test
         shell: bash
 
       - name: check
