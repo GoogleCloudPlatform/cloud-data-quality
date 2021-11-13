@@ -1,15 +1,15 @@
 steps:
-  - name: ubuntu:18.04
+  - name: debian:11-slim
     args:
       - '-c'
       - |
         set -x
-        ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
-        ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-core lsb-release apt-utils #  > /dev/null
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
         source scripts/cloud_build_test_debian_ubuntu.sh
-        mv clouddq-executable.zip ubuntu18_python3.9.7_clouddq-executable.zip
-        mv clouddq-executable.zip.hashsum ubuntu18_python3.9.7_clouddq-executable.zip.hashsum
+        make test test_dataplex_task
+        source scripts/install_gcloud.sh
+        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
@@ -23,16 +23,18 @@ steps:
     - 'DATAPLEX_TARGET_BQ_DATASET=${_DATAPLEX_TARGET_BQ_DATASET}'
     - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
     - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
-  - name: debian:11-slim
+  - name: ubuntu:18.04
     args:
       - '-c'
       - |
         set -x
+        ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
+        ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
         source scripts/cloud_build_test_debian_ubuntu.sh
-        make test test_dataplex_task
-        mv clouddq-executable.zip debian11_python3.9.7_clouddq-executable.zip
-        mv clouddq-executable.zip.hashsum debian11_python3.9.7_clouddq-executable.zip.hashsum
+        source scripts/install_gcloud.sh
+        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
@@ -50,7 +52,3 @@ timeout: 3600s
 options:
   machineType: 'E2_HIGHCPU_8'
 logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
-# artifacts:
-#   objects:
-#     location: 'gs://dataplex-clouddq-api-integration/build-artifacts/'
-#     paths: ['debian11_python3.9.7_clouddq-executable.zip', 'debian11_python3.9.7_clouddq-executable.zip.hashsum']
