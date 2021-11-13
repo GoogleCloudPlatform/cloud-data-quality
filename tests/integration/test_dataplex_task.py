@@ -64,8 +64,7 @@ class TestDataplexIntegration:
             # Create single malformed YAML config called 'malformed-configs.yml'
             # This breaks because there are two nodes for rules: on the same file, meaning one will be ignored
             single_malformed_yaml_path = Path(temp_clouddq_dir).joinpath("malformed-configs.yml")
-            with FileLock(str(single_malformed_yaml_path) + ".lock"):
-                single_malformed_yaml_path.write_text("\n".join(configs_content))
+            single_malformed_yaml_path.write_text("\n".join(configs_content))
             # Fix the above issue and write to a YAML config called 'configs.yml'
             merged_configs = defaultdict(dict)
             for config in configs_content:
@@ -74,8 +73,7 @@ class TestDataplexIntegration:
                     for config_id, config_item in config_body.items():
                         merged_configs[config_type][config_id] = config_item
             single_yaml_path = Path(temp_clouddq_dir).joinpath("configs.yml")
-            with FileLock(str(single_yaml_path) + ".lock"):
-                single_yaml_path.write_text(yaml.safe_dump(dict(merged_configs)))
+            single_yaml_path.write_text(yaml.safe_dump(dict(merged_configs)))
             # Print temp configs path
             print(pformat(list(temp_clouddq_dir.glob("**/*"))))
             # Return path and delete when done
@@ -147,30 +145,29 @@ class TestDataplexIntegration:
     def test_clouddq_zip_executable_paths(self,
                                 gcs_bucket_name,
                                 gcs_clouddq_executable_path):
-        with FileLock(str(gcs_clouddq_executable_path) + ".lock"):
-            if gcs_clouddq_executable_path:
-                gcs_zip_executable_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip"
-                gcs_zip_executable_hashsum_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip.hashsum"
-            else:
-                print(Path().absolute())
-                pprint(list(Path().iterdir()))
-                clouddq_zip_build = Path("clouddq_patched.zip")
-                if not clouddq_zip_build.resolve().is_file():
-                    raise RuntimeError(
-                        f"Local CloudDQ Artifact Zip at `{clouddq_zip_build.absolute()}` "
-                        "not found. Run `make build` before continuing.")
-                upload_blob(gcs_bucket_name, clouddq_zip_build, "test/clouddq-executable.zip")
-                gcs_zip_executable_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip"
-                hash_sha256 = hashlib.sha256()
-                with open(clouddq_zip_build, "rb") as f:
-                    for chunk in iter(lambda: f.read(4096), b""):
-                        hash_sha256.update(chunk)
-                hashsum = hash_sha256.hexdigest()
-                hashsum_file = Path("clouddq_patched.zip.hashsum")
-                hashsum_file.write_text(hashsum)
-                upload_blob(gcs_bucket_name, hashsum_file, "test/clouddq-executable.zip.hashsum")
-                gcs_zip_executable_hashsum_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip.hashsum"
-            return (gcs_zip_executable_name, gcs_zip_executable_hashsum_name)
+        if gcs_clouddq_executable_path:
+            gcs_zip_executable_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip"
+            gcs_zip_executable_hashsum_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip.hashsum"
+        else:
+            print(Path().absolute())
+            pprint(list(Path().iterdir()))
+            clouddq_zip_build = Path("clouddq_patched.zip")
+            if not clouddq_zip_build.resolve().is_file():
+                raise RuntimeError(
+                    f"Local CloudDQ Artifact Zip at `{clouddq_zip_build.absolute()}` "
+                    "not found. Run `make build` before continuing.")
+            upload_blob(gcs_bucket_name, clouddq_zip_build, "test/clouddq-executable.zip")
+            gcs_zip_executable_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip"
+            hash_sha256 = hashlib.sha256()
+            with open(clouddq_zip_build, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hash_sha256.update(chunk)
+            hashsum = hash_sha256.hexdigest()
+            hashsum_file = Path("clouddq_patched.zip.hashsum")
+            hashsum_file.write_text(hashsum)
+            upload_blob(gcs_bucket_name, hashsum_file, "test/clouddq-executable.zip.hashsum")
+            gcs_zip_executable_hashsum_name = f"gs://{gcs_bucket_name}/test/clouddq-executable.zip.hashsum"
+        return (gcs_zip_executable_name, gcs_zip_executable_hashsum_name)
 
     @pytest.fixture(scope="session")
     def test_dq_dataplex_client(self,
