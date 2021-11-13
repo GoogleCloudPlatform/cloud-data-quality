@@ -19,7 +19,7 @@ set -o pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
-source "$ROOT/scripts/common.sh"
+. "$ROOT/scripts/common.sh"
 
 # Check that all required env var are set
 require_binary cloud-build-local "Install cloud-build-local before continuing."

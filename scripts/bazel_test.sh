@@ -19,7 +19,7 @@ set -o pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
-source "$ROOT/scripts/common.sh"
+. "$ROOT/scripts/common.sh"
 
 RUN_DATAPLEX=false
 if [[ $# -eq 0 ]]; then

@@ -21,7 +21,7 @@ set -x
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
-source "$ROOT/scripts/common.sh"
+. "$ROOT/scripts/common.sh"
 
 # Check that all required env var are set
 require_env_var GOOGLE_CLOUD_PROJECT "Set this to the project_id used for integration testing."
