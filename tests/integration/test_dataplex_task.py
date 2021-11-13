@@ -98,7 +98,7 @@ class TestDataplexIntegration:
         configs_file_path = temp_artifacts_path.joinpath(file_name)
         return configs_file_path.absolute()
 
-    @pytest.fixture(scope="session")
+    @pytest.fixture
     def gcs_clouddq_configs_empty(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "empty-clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
@@ -106,7 +106,7 @@ class TestDataplexIntegration:
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture(scope="session")
+    @pytest.fixture
     def gcs_clouddq_configs_single_yaml(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "configs.yml"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
@@ -114,7 +114,7 @@ class TestDataplexIntegration:
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture(scope="session")
+    @pytest.fixture
     def gcs_clouddq_configs_single_yaml_malformed(self, temp_artifacts_path, gcs_bucket_name):
         file_name = "malformed-configs.yml"
         configs_file_path = temp_artifacts_path.joinpath(file_name)

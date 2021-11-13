@@ -18,21 +18,21 @@ set -o errexit
 set -o nounset
 
 GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE}"
+PYTHON_VERSION="3.9.7"
+PYTHON_VERSION_MINOR="${PYTHON_VERSION:0:-2}"
 
 function main() {
-    set -x
-    set -o errexit
-    set -o nounset
-    ls -la
-    find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
+    env 
     cat /etc/*-release
-    . ./scripts/install_development_dependencies.sh --silent > /dev/null
-    . ./scripts/install_python3.sh "3.9.7" > /dev/null
-    pyenv virtualenv "3.9.7" clouddq -f
-    pyenv shell
-    ls -la ~/.pyenv/shims/python3.9
-    sudo ln -sf ~/.pyenv/shims/python3.9 /usr/bin/python3
-    sudo ln -sf ~m/.pyenv/shims/python3.9 /usr/bin/python
+    sudo rm -f /usr/bin/lsb_release || true
+    . ./scripts/install_development_dependencies.sh --silent # > /dev/null
+    . ./scripts/install_python3.sh "${PYTHON_VERSION}" # > /dev/null
+    pyenv virtualenv "${PYTHON_VERSION}" clouddq -f
+    pyenv shell clouddq
+    ls -la ~/.pyenv/shims/python"${PYTHON_VERSION_MINOR}"
+    sudo ln -sf ~/.pyenv/shims/python"${PYTHON_VERSION_MINOR}" /usr/bin/python3
+    sudo ln -sf ~/.pyenv/shims/python"${PYTHON_VERSION_MINOR}" /usr/bin/python
+    which /usr/bin/python3
     python3 --version
     python --version
     pip3 --version
@@ -41,12 +41,11 @@ function main() {
     python -c 'import sys; print(sys.version_info)'
     echo "common --remote_cache=https://storage.googleapis.com/${GCS_BAZEL_CACHE}" >> .bazelrc
     echo "common --google_default_credentials" >> .bazelrc
-    env
     make addlicense
-    make build
     make check
     make test-pip-install
-    make test -- --run-dataplex
+    make build
+    make test
 }
 
 main

@@ -444,30 +444,29 @@ make build  # create the relevant zip artifacts to be used in tests
 make test -- --run-dataplex
 ```
 
-To test whether the project builds successfullys on clean OS images, install [cloud-build-local](https://cloud.google.com/build/docs/build-debug-locally) and run:
+To apply linting:
 
 ```bash
 #!/bin/bash
-# comment out sections requiring authenticating to GCP resources as they will fail in cloud-build-local
-sed -i "s/make test/# make test/g" cloudbuild.yaml
-sed -i "s/source scripts\/install_gcloud.sh/# source scripts\/install_gcloud.sh/g" cloudbuild.yaml
-sed -i "s/gsutil /# gsutil /g" cloudbuild.yaml
-# Run utility script for cloud-build-local
-bash scripts/cloud-build-local.sh
+make lint
 ```
+
+To run build and tests on clean OS images, install [cloud-build-local](https://cloud.google.com/build/docs/build-debug-locally) and run:
+
+```bash
+#!/bin/bash
+set_environment_variables.sh && ./scripts/cloud-build-local.sh  2>&1 | tee build.log
+```
+
+This will set the environment variables required for the run and pipe the run logs to a file called `build.log`.
+
+This will run as your machine credentials. If you are running on a GCE VM, ensure the Compute Engine service account has the access scope to use all GCP APIs.
 
 To run cloud-build-local in dry-run mode:
 
 ```bash
 #!/bin/bash
 bash scripts/cloud-build-local.sh --dry-run
-```
-
-To apply linting:
-
-```bash
-#!/bin/bash
-make lint
 ```
 
 ## Troubleshooting
