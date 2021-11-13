@@ -23,6 +23,7 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
 fi
 
 function main() {
+    set -x
     local PYTHON_VERSION=3.8.12
     if ! [[ "${1}" == "3.8"* || "${1}" == "3.9"* ]]; then
         err "This project is only tested to install python version 3.8. or 3.9. Exiting..."
@@ -45,6 +46,7 @@ function main() {
     sudo update-alternatives --auto python3
     python3 --version
     pip3 --version
+    set +x
 }
 
 main "$1"
