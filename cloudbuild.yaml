@@ -11,24 +11,27 @@ steps:
         cat /etc/*-release
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl  > /dev/null
         source scripts/install_development_dependencies.sh --silent > /dev/null
-        source scripts/install_python3.sh "3.8" --silent > /dev/null
+        source scripts/install_python3.sh "3.8.6" --silent > /dev/null
         sudo ln -s /usr/bin/python3 /usr/bin/python
-        python3 --version
         python --version
         whereis python3
+        which python3
+        ls -la $(which python3)
+        ls -la /usr/bin/python3
+        which pip3
         echo "common
         --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}"
         >> .bazelrc
         echo "common --google_default_credentials" >> .bazelrc
         env
         make addlicense
+        make build
         make check
         make test-pip-install
-        make build
         make test -- --run-dataplex
         source scripts/install_gcloud.sh
-        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.8/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
-        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu1804/python3.8/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
+        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8.6/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8.6/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
@@ -53,24 +56,27 @@ steps:
         cat /etc/*-release
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata sudo curl  > /dev/null
         source scripts/install_development_dependencies.sh --silent > /dev/null
-        source scripts/install_python3.sh "3.9" --silent > /dev/null
+        source scripts/install_python3.sh "3.9.7" --silent > /dev/null
         sudo ln -s /usr/bin/python3 /usr/bin/python
-        python3 --version
         python --version
         whereis python3
+        which python3
+        ls -la $(which python3)
+        ls -la /usr/bin/python3
+        which pip3
         echo "common
         --remote_cache=https://storage.googleapis.com/${_GCS_BAZEL_CACHE}"
         >> .bazelrc
         echo "common --google_default_credentials" >> .bazelrc
         env
         make addlicense
+        make build
         make check
         make test-pip-install
-        make build
         make test -- --run-dataplex
         source scripts/install_gcloud.sh
-        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
-        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
+        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9.7/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9.7/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'

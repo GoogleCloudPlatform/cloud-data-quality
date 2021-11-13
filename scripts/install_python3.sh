@@ -23,23 +23,28 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
 fi
 
 function main() {
-    local PYTHON_VERSION=3.8
-    if ! [[ "${1}" == "3.8" || "${1}" == "3.9" ]]; then
-        err "This script is only tested to install python version 3.8. or 3.9. Exiting..."
+    local PYTHON_VERSION=3.8.12
+    if ! [[ "${1}" == "3.8"* || "${1}" == "3.9"* ]]; then
+        err "This project is only tested to install python version 3.8. or 3.9. Exiting..."
         exit 1
     else
         local PYTHON_VERSION="${1}"
     fi
-    if ! [[ $(uname -v) == *"Debian"* ]]; then
-        sudo apt-get install -y software-properties-common > /dev/null
-        sudo add-apt-repository -y 'ppa:deadsnakes' > /dev/null || true
+    if [ ! -x "$(command -v pyenv)" ]; then
+        rm -rf $HOME/.pyenv
+        curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
     fi
-    sudo apt-get update > /dev/null
-    sudo apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-dev \
-        python${PYTHON_VERSION}-venv python${PYTHON_VERSION}-distutils > /dev/null
-    sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 2
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init --path)"
+    eval "$(pyenv init -)"
+    pyenv install "$PYTHON_VERSION"
+    pyenv local "$PYTHON_VERSION"
+    pyenv shell "$PYTHON_VERSION"
+    sudo update-alternatives --install /usr/bin/python3 python3 "${PYENV_ROOT}"/versions/"${PYTHON_VERSION}"/ 2
     sudo update-alternatives --auto python3
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py | python3
+    python3 --version
+    pip3 --version
 }
 
 main "$1"

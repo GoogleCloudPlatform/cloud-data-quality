@@ -33,13 +33,11 @@ else
 fi
 
 # Install Python dependencies
-sudo apt update > /dev/null
-sudo apt-get install -y make build-essential \
-zip unzip git \
-libc-bin \
-libssl-dev zlib1g-dev \
+sudo apt-get update > /dev/null
+sudo apt-get install -y make build-essential libssl-dev zlib1g-dev \
 libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev 
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev  \
+zip unzip git libc-bin > /dev/null
 
 # Install golang for building Bazelisk
 if ! [ -x "$(command -v "go")" ]; then

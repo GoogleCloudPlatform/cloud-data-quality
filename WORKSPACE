@@ -80,7 +80,7 @@ load("@rules_python//python:pip.bzl", "pip_install")
 # requirements_lock.txt.
 pip_install(
     name = "py_deps",
-    python_interpreter = "/usr/bin/python3",
+    python_interpreter = "python3",
     quiet = False,
     requirements = "//:requirements.txt",
 )
