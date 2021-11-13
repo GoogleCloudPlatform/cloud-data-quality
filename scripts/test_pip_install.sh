@@ -41,8 +41,8 @@ which python3
 python3 --version
 
 # create temporary virtualenv
-pyenv virtualenv "3.8.6" test-pip
-pyenv shell test-pip
+pyenv virtualenv clouddq || true
+pyenv shell clouddq
 pip3 --version
 
 # install clouddq wheel into temporary env
