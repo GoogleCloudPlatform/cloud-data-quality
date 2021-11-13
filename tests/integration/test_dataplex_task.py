@@ -76,30 +76,34 @@ class TestDataplexIntegration:
             # Return path and delete when done
             yield temp_clouddq_dir
 
-    @pytest.fixture(scope="session")
+    @pytest.fixture
     def gcs_clouddq_configs_standard(self, temp_artifacts_path, gcs_bucket_name):
+        print(list(temp_artifacts_path.glob("**/*.zip")))
         file_name = "clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
         upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture(scope="session")
+    @pytest.fixture
     def gcs_clouddq_configs_nonstandard(self, temp_artifacts_path, gcs_bucket_name):
+        print(list(temp_artifacts_path.glob("**/*.zip")))
         file_name = "non-standard-clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
         upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
-    @pytest.fixture(scope="session")
+    @pytest.fixture
     def gcs_clouddq_configs_nonstandard_local(self, temp_artifacts_path):
+        print(list(temp_artifacts_path.glob("**/*.zip")))
         file_name = "non-standard-clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
         return configs_file_path.absolute()
 
     @pytest.fixture
     def gcs_clouddq_configs_empty(self, temp_artifacts_path, gcs_bucket_name):
+        print(list(temp_artifacts_path.glob("**/*.zip")))
         file_name = "empty-clouddq-configs.zip"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
         upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
@@ -108,6 +112,7 @@ class TestDataplexIntegration:
 
     @pytest.fixture
     def gcs_clouddq_configs_single_yaml(self, temp_artifacts_path, gcs_bucket_name):
+        print(list(temp_artifacts_path.glob("**/*.yml")))
         file_name = "configs.yml"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
         upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
@@ -116,6 +121,7 @@ class TestDataplexIntegration:
 
     @pytest.fixture
     def gcs_clouddq_configs_single_yaml_malformed(self, temp_artifacts_path, gcs_bucket_name):
+        print(list(temp_artifacts_path.glob("**/*.yml")))
         file_name = "malformed-configs.yml"
         configs_file_path = temp_artifacts_path.joinpath(file_name)
         upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
