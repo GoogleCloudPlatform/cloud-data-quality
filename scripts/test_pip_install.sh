@@ -39,14 +39,14 @@ IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT:-}"
 # get diagnostic info
 which python3
 python3 --version
-python3 -m pip --version
+pip --version
 
 # create temporary virtualenv
 python3 -m venv /tmp/clouddq_test_env
 source /tmp/clouddq_test_env/bin/activate
 
 # install clouddq wheel into temporary env
-python3 -m pip install .
+pip install .
 
 # test clouddq help
 python3 clouddq --help
