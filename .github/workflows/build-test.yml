@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        os: ['ubuntu-18.04', 'ubuntu-20.04']
+        os: ['ubuntu-18.04']
 
     steps:
       - uses: actions/checkout@v2
@@ -57,8 +57,8 @@ jobs:
       - name: install development dependencies for building project
         run: |
           chmod -R +x scripts
-          source scripts/install_development_dependencies.sh --silent
-          source scripts/install_python3.9.sh
+          source scripts/install_development_dependencies.sh --silent > /dev/null
+          source scripts/install_python3.sh "3.8" > dev/null
         shell: bash
 
       - name: test pip install

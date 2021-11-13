@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=/dev/null
+source "$ROOT/scripts/common.sh"
+
 if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
     err "This script is only tested to work on Debian/Ubuntu. Developing CloudDQ on OS type '${OSTYPE}' is not currently supported. Exiting..."
     exit 1
@@ -29,7 +33,7 @@ else
 fi
 
 # Install Python dependencies
-sudo apt update 
+sudo apt update > /dev/null
 sudo apt-get install -y make build-essential \
 zip unzip git \
 libc-bin \

@@ -59,7 +59,6 @@ function main() {
   set -x
   cloud-build-local \
   --config=cloudbuild.yaml \
-  --write-workspace=cloudbuild-workspace \
   --dryrun=${DRY_RUN} \
   --substitutions \
 _GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}",\
@@ -74,7 +73,6 @@ _DATAPLEX_TARGET_BQ_TABLE="${DATAPLEX_TARGET_BQ_TABLE}",\
 _DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA}",\
 _GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE}" \
   .
-
   set +x
 }
 
