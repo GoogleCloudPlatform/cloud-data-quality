@@ -45,9 +45,6 @@ function main() {
     make check
     make test-pip-install
     make test -- --run-dataplex
-    source scripts/install_gcloud.sh
-    gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9.2/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip
-    gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9.2/`date -I`/`date -Iseconds`_${SHORT_SHA}/clouddq-executable.zip.hashsum
 }
 
 main
