@@ -15,6 +15,7 @@
 
 curl https://sdk.cloud.google.com > install.sh
 bash install.sh --disable-prompts > /dev/null
-. ./builder/home/google-cloud-sdk/completion.bash.inc
-. ./builder/home/google-cloud-sdk/path.bash.inc
+ls -la ~/google-cloud-sdk
+. ~/google-cloud-sdk/completion.bash.inc
+. ~/google-cloud-sdk/path.bash.inc
 gcloud info

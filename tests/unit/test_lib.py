@@ -31,10 +31,6 @@ logger = logging.getLogger(__name__)
 
 class TestLib:
 
-    @pytest.fixture(scope="session")
-    def temp_configs_dir(self, temp_clouddq_dir):
-        return Path(temp_clouddq_dir).joinpath("configs")
-
     def test_load_configs_identical(self, temp_configs_dir):
         # Load a config directory containing two copies of the same config
         try:

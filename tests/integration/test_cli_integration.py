@@ -34,10 +34,6 @@ class TestCliIntegration:
         return click.testing.CliRunner()
 
     @pytest.fixture
-    def temp_configs_dir(self, temp_clouddq_dir):
-        return Path(temp_clouddq_dir).joinpath("configs")
-
-    @pytest.fixture
     def test_profiles_dir(self):
         return Path("tests").joinpath("resources", "test_dbt_profiles_dir")
 

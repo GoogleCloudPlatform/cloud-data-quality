@@ -19,9 +19,16 @@ set -o nounset
 
 GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE}"
 PYTHON_VERSION="3.9.7"
-PYTHON_VERSION_MINOR="${PYTHON_VERSION:0:-2}"
+PYTHON_VERSION_MINOR="${PYTHON_VERSION%.*}"
 
 function main() {
+    if ! [[ "${1}" == "3.8"* || "${1}" == "3.9"* ]]; then
+        err "This project is only tested to install python version 3.8. or 3.9. Exiting..."
+        exit 1
+    else
+        local PYTHON_VERSION="${1}"
+        local PYTHON_VERSION_MINOR="${PYTHON_VERSION%.*}"
+    fi
     env 
     cat /etc/*-release
     sudo rm -f /usr/bin/lsb_release || true
@@ -41,11 +48,12 @@ function main() {
     python -c 'import sys; print(sys.version_info)'
     echo "common --remote_cache=https://storage.googleapis.com/${GCS_BAZEL_CACHE}" >> .bazelrc
     echo "common --google_default_credentials" >> .bazelrc
-    make addlicense
-    make check
-    make test-pip-install
+    # make addlicense
+    # make check
+    # make test-pip-install
     make build
+    ls -la
     make test
 }
 
-main
+main "$1"

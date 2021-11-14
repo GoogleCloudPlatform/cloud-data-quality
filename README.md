@@ -460,7 +460,7 @@ set_environment_variables.sh && ./scripts/cloud-build-local.sh  2>&1 | tee build
 
 This will set the environment variables required for the run and pipe the run logs to a file called `build.log`.
 
-This will run as your machine credentials. If you are running on a GCE VM, ensure the Compute Engine service account has the access scope to use all GCP APIs.
+This will run as your gcloud ADC credentials. If you are running on a GCE VM, ensure the Compute Engine service account has the access scope to use all GCP APIs.
 
 To run cloud-build-local in dry-run mode:
 

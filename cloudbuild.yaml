@@ -5,11 +5,12 @@ steps:
       - |
         set -x
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
-        source scripts/cloud_build_test_debian_ubuntu.sh
+        source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
         make test test_dataplex_task
-        source scripts/install_gcloud.sh
-        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip
-        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip.hashsum
+        # source scripts/install_gcloud.sh
+        # gsutil ls gs://$_GCS_BUCKET_NAME
+        # gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip
+        # gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
@@ -31,10 +32,11 @@ steps:
         ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
         ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
-        source scripts/cloud_build_test_debian_ubuntu.sh
-        source scripts/install_gcloud.sh
-        gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip
-        gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.9/`date -I`/${SHORT_SHA}/clouddq-executable.zip.hashsum
+        source scripts/cloud_build_test_debian_ubuntu.sh "3.8.12"
+        # source scripts/install_gcloud.sh
+        # gsutil ls gs://$_GCS_BUCKET_NAME
+        # gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8/`date -I`/${SHORT_SHA}/clouddq-executable.zip
+        # gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8/`date -I`/${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
