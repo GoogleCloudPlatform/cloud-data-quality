@@ -72,4 +72,6 @@ jobs:
           cat /etc/*-release
           DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install -yq tzdata curl lsb-core lsb-release # > /dev/null
           . ./scripts/cloud_build_test_debian_ubuntu.sh "3.8.12"
+          make clean
+          make check
         shell: bash
