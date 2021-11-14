@@ -45,3 +45,4 @@ sudo rm -rf /usr/local/go
 sudo tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 go version
+
