@@ -40,18 +40,32 @@ logger = logging.getLogger(__name__)
 class TestDataplexIntegration:
 
     @pytest.fixture(scope="session")
-    def temp_artifacts_path(self, temp_clouddq_dir):
-        with working_directory(temp_clouddq_dir):
+    def temp_configs_archives_path(self, temp_clouddq_dir):
+        configs_path = Path(temp_clouddq_dir).joinpath("configs").absolute()
+        configs_archive_path = Path(temp_clouddq_dir).joinpath("archives").absolute()
+        configs_archive_path.mkdir()
+        with working_directory(configs_archive_path):
             # Create standard configs zip called 'clouddq-configs.zip'
-            configs_path = Path(temp_clouddq_dir).joinpath("configs")
             shutil.make_archive('clouddq-configs', 'zip', configs_path.parent, configs_path.name)
             # Create non-standard configs zip without top-level configs directory
             #  called 'non-standard-clouddq-configs.zip'
             shutil.make_archive('non-standard-clouddq-configs', 'zip', configs_path)
             # Create empty configs zip called 'empty-clouddq-configs.zip'
-            empty_directory = Path(temp_clouddq_dir).joinpath("empty")
+            empty_directory = Path(configs_archive_path).joinpath("empty").absolute()
             empty_directory.mkdir()
             shutil.make_archive('empty-clouddq-configs', 'zip', empty_directory.parent, empty_directory.name)
+            # Print temp configs path
+            print(f"Content of configs archive path: {configs_archive_path}:")
+            print(pformat(list(configs_archive_path.glob("**/*.zip"))))
+            # Return path and delete when done
+            yield configs_archive_path.absolute()
+
+    @pytest.fixture(scope="session")
+    def temp_configs_files_path(self, temp_clouddq_dir):
+        configs_path = Path(temp_clouddq_dir).joinpath("configs").absolute()
+        configs_files_path = Path(temp_clouddq_dir).joinpath("files").absolute()
+        configs_files_path.mkdir()
+        with working_directory(configs_files_path):
             # Create single YAML config files for testing
             configs_content = []
             for file in configs_path.glob("**/*.yml"):
@@ -60,7 +74,7 @@ class TestDataplexIntegration:
                 configs_content.append(file.open().read())
             # Create single malformed YAML config called 'malformed-configs.yml'
             # This breaks because there are two nodes for rules: on the same file, meaning one will be ignored
-            single_malformed_yaml_path = Path(temp_clouddq_dir).joinpath("malformed-configs.yml")
+            single_malformed_yaml_path = Path(configs_files_path).joinpath("malformed-configs.yml")
             single_malformed_yaml_path.write_text("\n".join(configs_content))
             # Fix the above issue and write to a YAML config called 'configs.yml'
             merged_configs = defaultdict(dict)
@@ -69,62 +83,65 @@ class TestDataplexIntegration:
                 for config_type, config_body in parsed_content.items():
                     for config_id, config_item in config_body.items():
                         merged_configs[config_type][config_id] = config_item
-            single_yaml_path = Path(temp_clouddq_dir).joinpath("configs.yml")
+            single_yaml_path = Path(configs_files_path).joinpath("configs.yml")
             single_yaml_path.write_text(yaml.safe_dump(dict(merged_configs)))
             # Print temp configs path
-            print(pformat(list(temp_clouddq_dir.glob("**/*"))))
+            print(f"Content of configs file path: {configs_files_path}:")
+            print(pformat(list(configs_files_path.glob("**/*.yml"))))
             # Return path and delete when done
-            yield temp_clouddq_dir
+            yield configs_files_path.absolute()
 
     @pytest.fixture
-    def gcs_clouddq_configs_standard(self, temp_artifacts_path, gcs_bucket_name):
-        print(list(temp_artifacts_path.glob("**/*.zip")))
+    def gcs_clouddq_configs_standard(self, temp_configs_archives_path, gcs_bucket_name):
         file_name = "clouddq-configs.zip"
-        configs_file_path = temp_artifacts_path.joinpath(file_name)
+        configs_file_path = temp_configs_archives_path.joinpath(file_name)
         upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
     @pytest.fixture
-    def gcs_clouddq_configs_nonstandard(self, temp_artifacts_path, gcs_bucket_name):
-        print(list(temp_artifacts_path.glob("**/*.zip")))
+    def gcs_clouddq_configs_nonstandard(self, temp_configs_archives_path, gcs_bucket_name):
         file_name = "non-standard-clouddq-configs.zip"
-        configs_file_path = temp_artifacts_path.joinpath(file_name)
+        configs_file_path = temp_configs_archives_path.joinpath(file_name)
         upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
     @pytest.fixture
-    def gcs_clouddq_configs_nonstandard_local(self, temp_artifacts_path):
-        print(list(temp_artifacts_path.glob("**/*.zip")))
+    def gcs_clouddq_configs_nonstandard_local(self, temp_configs_archives_path):
         file_name = "non-standard-clouddq-configs.zip"
-        configs_file_path = temp_artifacts_path.joinpath(file_name)
+        configs_file_path = temp_configs_archives_path.joinpath(file_name)
         return configs_file_path.absolute()
 
     @pytest.fixture
-    def gcs_clouddq_configs_empty(self, temp_artifacts_path, gcs_bucket_name):
-        print(list(temp_artifacts_path.glob("**/*.zip")))
+    def gcs_clouddq_configs_empty(self, temp_configs_archives_path, gcs_bucket_name):
         file_name = "empty-clouddq-configs.zip"
-        configs_file_path = temp_artifacts_path.joinpath(file_name)
+        configs_file_path = temp_configs_archives_path.joinpath(file_name)
         upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
     @pytest.fixture
-    def gcs_clouddq_configs_single_yaml(self, temp_artifacts_path, gcs_bucket_name):
-        print(list(temp_artifacts_path.glob("**/*.yml")))
+    def gcs_clouddq_configs_single_yaml(self, temp_configs_files_path, gcs_bucket_name):
+        # Print temp configs path
+        print(f"Content of configs file path: {temp_configs_files_path}:")
+        print(pformat(list(temp_configs_files_path.glob("**/*.yml"))))
+        # Load to GCS and return GCS path
         file_name = "configs.yml"
-        configs_file_path = temp_artifacts_path.joinpath(file_name)
-        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        single_yaml_path = temp_configs_files_path.joinpath(file_name)
+        upload_blob(gcs_bucket_name, single_yaml_path, f"test-artifacts/{file_name}")
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
     @pytest.fixture
-    def gcs_clouddq_configs_single_yaml_malformed(self, temp_artifacts_path, gcs_bucket_name):
-        print(list(temp_artifacts_path.glob("**/*.yml")))
+    def gcs_clouddq_configs_single_yaml_malformed(self, temp_configs_files_path, gcs_bucket_name):
+        # Print temp configs path
+        print(f"Content of configs file path: {temp_configs_files_path}:")
+        print(pformat(list(temp_configs_files_path.glob("**/*.yml"))))
+        # Load to GCS and return GCS path
         file_name = "malformed-configs.yml"
-        configs_file_path = temp_artifacts_path.joinpath(file_name)
-        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        single_yaml_malformed_path = temp_configs_files_path.joinpath(file_name)
+        upload_blob(gcs_bucket_name, single_yaml_malformed_path, f"test-artifacts/{file_name}")
         gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
         return gcs_uri
 
@@ -153,7 +170,7 @@ class TestDataplexIntegration:
             gcs_zip_executable_hashsum_name = f"{gcs_clouddq_executable_path}/clouddq-executable.zip.hashsum"
         else:
             clouddq_zip_build = Path("clouddq_patched.zip")
-            if not clouddq_zip_build.resolve().is_file():
+            if not clouddq_zip_build.is_file():
                 raise RuntimeError(
                     f"Local CloudDQ Artifact Zip at `{clouddq_zip_build.absolute()}` "
                     "not found. Run `make build` before continuing.")
@@ -195,6 +212,7 @@ class TestDataplexIntegration:
         response = test_dq_dataplex_client.get_dataplex_lake(gcp_dataplex_lake_name)
         assert response.status_code == 200
         resp_obj = json.loads(response.text)
+        print(resp_obj)
         expected_name = f"projects/{gcp_project_id}/locations/{gcp_dataplex_region}/lakes/{gcp_dataplex_lake_name}"
         assert resp_obj["name"] == expected_name
 
@@ -324,6 +342,8 @@ class TestDataplexIntegration:
         :return:
         """
         print(f"Running Dataplex integration test: {request.config.getoption('--run-dataplex')}")
+        test_id = f"{request.node.callspec.id}".replace("_", "-")
+        print(f"Test_ID: {test_id}")
         # Get executable path
         print(f"Using executable paths: {test_clouddq_zip_executable_paths}")
         clouddq_executable_path, clouddq_executable_checksum_path = test_clouddq_zip_executable_paths
@@ -333,7 +353,6 @@ class TestDataplexIntegration:
         # Use the most updated clouddq_pyspark_driver file from the project for testing
         clouddq_pyspark_driver_path: str = gcs_clouddq_pyspark_driver
         # Prepare Task_ID for reference
-        test_id = f"{request.node.callspec.id}".replace("_", "-")
         task_id = f"clouddq-test-create-dataplex-task-{test_id}"
         print(f"Dataplex batches task id is: {task_id}")
         # Clean-up old task_ids if exists
@@ -380,4 +399,4 @@ class TestDataplexIntegration:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 4'] + sys.argv[1:]))
+    raise SystemExit(pytest.main([__file__, '-v', '-rP', '-n 4'] + sys.argv[1:]))
