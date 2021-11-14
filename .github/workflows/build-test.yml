@@ -79,6 +79,6 @@ jobs:
           cat /etc/*-release
           DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install -yq tzdata curl lsb-core lsb-release # > /dev/null
           . ./scripts/cloud_build_test_debian_ubuntu.sh "3.8.12"
-          gsutil cp clouddq_patched.zip gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8/`date -I`/${{ steps.vars.outputs.sha_short }}_${{ steps.vars.outputs.branch }}/clouddq-executable.zip
-          gsutil cp clouddq_patched.zip.hashsum gs://$_GCS_BUCKET_NAME/build-artifacts/ubuntu18.04/python3.8/`date -I`/${{ steps.vars.outputs.sha_short }}_${{ steps.vars.outputs.branch }}/clouddq-executable.zip.hashsum
+          gsutil cp clouddq_patched.zip gs://${{ secrets.GCS_BUCKET_NAME }}/build-artifacts/ubuntu18.04/python3.8/`date -I`/${{ steps.vars.outputs.sha_short }}_${{ steps.vars.outputs.branch }}/clouddq-executable.zip
+          gsutil cp clouddq_patched.zip.hashsum gs://${{ secrets.GCS_BUCKET_NAME }}/build-artifacts/ubuntu18.04/python3.8/`date -I`/${{ steps.vars.outputs.sha_short }}_${{ steps.vars.outputs.branch }}/clouddq-executable.zip.hashsum
         shell: bash
