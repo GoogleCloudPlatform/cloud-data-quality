@@ -46,23 +46,30 @@ http_archive(
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 # If you use WORKSPACE.bazel, use the following line instead of the bare gazelle_dependencies():
-# gazelle_dependencies(go_repository_default_config = "@//:WORKSPACE.bazel")
+gazelle_dependencies(go_repository_default_config = "@//:WORKSPACE.bazel")
+
 gazelle_dependencies()
+
+protobuf_version = "3.19.1"
 
 http_archive(
     name = "com_google_protobuf",
-    strip_prefix = "protobuf-master",
-    urls = ["https://github.com/protocolbuffers/protobuf/archive/master.zip"],
+    sha256 = "25f1292d4ea6666f460a2a30038eef121e6c3937ae0f61d610611dfb14b0bd32",
+    strip_prefix = "protobuf-{}".format(protobuf_version),
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/refs/tags/v{}.zip".format(protobuf_version)],
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
 
+buildtools_version = "4.2.3"
+
 http_archive(
     name = "com_github_bazelbuild_buildtools",
-    strip_prefix = "buildtools-master",
-    url = "https://github.com/bazelbuild/buildtools/archive/master.zip",
+    sha256 = "c1d5de8802be326300f7a481c2530cf7bfa911e52f46252c71351f9dd305535d",
+    strip_prefix = "buildtools-{}".format(buildtools_version),
+    url = "https://github.com/bazelbuild/buildtools/archive/refs/tags/{}.zip".format(buildtools_version),
 )
 
 rules_python_version = "ef4d735216a3782b7c33543d82b891fe3a86e3f3"
