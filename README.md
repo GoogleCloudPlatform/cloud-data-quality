@@ -181,9 +181,9 @@ CloudDQ is a Command-Line Interface (CLI) application. It takes as input YAML Da
 
 CloudDQ is currently only tested to run on `Ubuntu`/`Debian` linux distributions. It may not work properly on other OS such as `MacOS`, `Windows`/`cygwin`, or `CentOS`/`Fedora`/`FreeBSD`, etc...
 
-For development or trying out CloudDQ, we recommend using either [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor) or a [Google Cloud Compute Engine VM](https://cloud.google.com/compute) with the [Ubuntu 18.04 OS distribution](https://cloud.google.com/compute/docs/images/os-details#ubuntu_lts).
+For development or trying out CloudDQ, we recommend using either [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor) or a [Google Cloud Compute Engine VM](https://cloud.google.com/compute) with the [Debian 11 OS distribution](https://cloud.google.com/compute/docs/images/os-details#debian).
 
-CloudDQ requires a Python 3.8 interpreter. If you are using the pre-built artifact, the Python interpreter is bundled into the zip so it can be executed using any Python version.
+CloudDQ requires the command `python3` to point to a Python Interterpreter version 3.8.x or 3.9.x. To install the correct Python version, please refer to the script `scripts/poetry_install.sh` for an interactive installation or `scripts/install_python3.sh` for a non-interactive installation intended for automated build/test processes. 
 
 #### Using Pre-Built Executable
 
@@ -333,13 +333,13 @@ CloudDQ supports the follow methods for authenticating to GCP:
 
 CloudDQ is currently only tested to run on `Ubuntu`/`Debian` linux distributions. It may not work properly on other OS such as `MacOS`, `Windows`/`cygwin`, or `CentOS`/`Fedora`/`FreeBSD`, etc...
 
-For development or trying out CloudDQ, we recommend using either [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor) or a [Google Cloud Compute Engine VM](https://cloud.google.com/compute) with the [Ubuntu 18.04 OS distribution](https://cloud.google.com/compute/docs/images/os-details#ubuntu_lts).
+For development or trying out CloudDQ, we recommend using either [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor) or a [Google Cloud Compute Engine VM](https://cloud.google.com/compute) with the [Debian 11 OS distribution](https://cloud.google.com/compute/docs/images/os-details#debian).
 
 ### Dependencies
 
 * make: https://www.gnu.org/software/make/manual/make.html
 * golang (for building [bazelisk](https://github.com/bazelbuild/bazelisk)): https://golang.org/doc/install
-* Python 3: https://wiki.python.org/moin/BeginnersGuide/Download
+* Python 3.8.x or 3.9.x: https://wiki.python.org/moin/BeginnersGuide/Download
 * gcloud SDK (for interacting with GCP): https://cloud.google.com/sdk/docs/install
 
 From a `Ubuntu`/`Debian` machine, install the above dependencies by running the following script:
@@ -349,6 +349,8 @@ From a `Ubuntu`/`Debian` machine, install the above dependencies by running the 
 git clone https://github.com/GoogleCloudPlatform/cloud-data-quality
 source scripts/install_development_dependencies.sh
 ```
+
+Building CloudDQ requires the command `python3` to point to a Python Interterpreter version 3.8.x or 3.9.x. To install the correct Python version, please refer to the script `scripts/poetry_install.sh` for an interactive installation or `scripts/install_python3.sh` for a non-interactive installation intended for automated build/test processes. 
 
 ### Building a self-contained executable from source
 
@@ -374,9 +376,7 @@ python bazel-bin/clouddq/clouddq_patched.zip --help
 
 As Bazel will fetch the Python interpreter as well as all of its dependencies, this step will take a few minutes to complete. Once completed for the first time, the artifacts will be cached and subsequent builds will be much faster.
 
-The Python zip have been tested with Python versions `>=2.7.17` and `>=3.8.6`. As the zip contains a bundled python interpreter as well as all of `clouddq`'s dependencies, there is no need to ensure the python interpreter used to execute the zip has the project's Python dependencies installed.
-
-The executable Python zip is not cross-platform compatible. You will need to build the executable separately for each of your target platforms.
+The executable Python zip is not cross-platform compatible. You will need to build the executable separately for each of your target platforms. e.g. an artifact built using a machine running Ubuntu-18 and Python version 3.9.x will not work when transfered to another machine with Ubuntu-18 and Python version 3.8.x or another machine with Debian-11 and Python version 3.9.x.
 
 To speed up builds, you may want to update the [bazel cache](https://docs.bazel.build/versions/master/remote-caching.html#google-cloud-storage) in `.bazelrc` to a GCS bucket you have access to.
 ```
@@ -425,8 +425,8 @@ For integration testing, you must first set the environment variables outlined i
 
 ```bash
 #!/bin/bash
-cp set_environment_variables.sh envs.sh
-source envs.sh && make test
+cp set_environment_variables.sh setenvs.sh
+source setenvs.sh && make test
 ```
 
 To run a particular test:
@@ -455,7 +455,7 @@ To run build and tests on clean OS images, install [cloud-build-local](https://c
 
 ```bash
 #!/bin/bash
-set_environment_variables.sh && ./scripts/cloud-build-local.sh  2>&1 | tee build.log
+./setenvs.sh && ./scripts/cloud-build-local.sh  2>&1 | tee build.log
 ```
 
 This will set the environment variables required for the run and pipe the run logs to a file called `build.log`.

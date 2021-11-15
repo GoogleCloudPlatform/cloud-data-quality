@@ -17,6 +17,11 @@ set -x
 set -o errexit
 set -o nounset
 
+if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
+    echo "This script is only tested to work on Debian/Ubuntu. Developing CloudDQ on OS type '${OSTYPE}' is not currently supported. Exiting..."
+    exit 1
+fi
+
 GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE}"
 PYTHON_VERSION="3.9.7"
 PYTHON_VERSION_MINOR="${PYTHON_VERSION%.*}"

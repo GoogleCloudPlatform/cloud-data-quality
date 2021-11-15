@@ -87,16 +87,17 @@ if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
         --gcp_service_account_key_path="${GOOGLE_APPLICATION_CREDENTIALS}" \
         --debug \
         --dry_run
-
-    # test clouddq with exported service account key
-    python3 -m clouddq ALL configs \
-        --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
-        --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
-        --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
-        --gcp_service_account_key_path="${GOOGLE_APPLICATION_CREDENTIALS}" \
-        --gcp_impersonation_credentials="${IMPERSONATION_SERVICE_ACCOUNT}" \
-        --debug \
-        --dry_run
+    if [[ -f "${IMPERSONATION_SERVICE_ACCOUNT:-}" ]]; then
+        # test clouddq with exported service account key
+        python3 -m clouddq ALL configs \
+            --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
+            --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
+            --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
+            --gcp_service_account_key_path="${GOOGLE_APPLICATION_CREDENTIALS}" \
+            --gcp_impersonation_credentials="${IMPERSONATION_SERVICE_ACCOUNT}" \
+            --debug \
+            --dry_run
+    fi
 fi
 
 if [[ -f "${IMPERSONATION_SERVICE_ACCOUNT:-}" ]]; then

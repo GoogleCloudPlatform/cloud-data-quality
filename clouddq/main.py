@@ -38,7 +38,7 @@ from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
 
 
-APP_VERSION = "0.3.1"
+APP_VERSION = "0.4.0-rc1"
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
 

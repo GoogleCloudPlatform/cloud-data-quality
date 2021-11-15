@@ -215,24 +215,3 @@ class DataplexClient:
             headers=self._headers,
         )
         return response
-
-    def get_dataplex_iam_permissions(
-        self,
-        body: str,
-        gcp_project_id: str = None,
-        location_id: str = None,
-        lake_name: str = None,
-    ) -> Response:
-        if not gcp_project_id:
-            gcp_project_id = self.gcp_project_id
-        if not location_id:
-            location_id = self.location_id
-        if not lake_name:
-            lake_name = self.lake_name
-        response = self._session.post(
-            f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
-            f"{location_id}/lakes/{lake_name}/tasks/",
-            headers=self._headers,
-            data=json.dumps(body),
-        )
-        return response
