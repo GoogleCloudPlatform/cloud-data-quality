@@ -26,6 +26,6 @@ steps:
     - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
     - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
 timeout: 3600s
-# options:
-#   machineType: 'E2_HIGHCPU_8'
-# logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
+options:
+  machineType: 'E2_HIGHCPU_8'
+logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
