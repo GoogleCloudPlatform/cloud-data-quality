@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import platform
-
-import pytest
-
-
-class TestPythonVersion:
-
-    @pytest.mark.xfail
-    def test_version(self):
-        assert platform.python_version().split(".")[:2] == ["3", "9"]
-
-
-if __name__ == "__main__":
-    import sys
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP'] + sys.argv[1:]))
+curl https://sdk.cloud.google.com > install.sh
+bash install.sh --disable-prompts > /dev/null
+ls -la ~/google-cloud-sdk
+. ~/google-cloud-sdk/completion.bash.inc
+. ~/google-cloud-sdk/path.bash.inc
+gcloud info

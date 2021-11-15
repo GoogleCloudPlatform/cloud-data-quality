@@ -16,13 +16,13 @@ entities:
   TEST_TABLE:
     source_database: BIGQUERY
     table_name: contact_details
-    dataset_name: dq_test
+    dataset_name: <your_bigquery_dataset_id>
     project_name: <your_gcp_project_id>
     environment_override:
       TEST:
         environment: test
         override:
-          dataset_name: <your_bigquery_dataset_id>
+          dataset_name: <your_bigquery_dataset_id_2>
           project_name: <your_gcp_project_id_2>
     columns:
       ROW_ID:

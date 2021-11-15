@@ -12,6 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
+
+py_runtime(
+    name = "my_py3_runtime",
+    interpreter_path = "/usr/bin/python3",
+    python_version = "PY3",
+)
+
+py_runtime_pair(
+    name = "my_py_runtime_pair",
+    py3_runtime = ":my_py3_runtime",
+)
+
+toolchain(
+    name = "my_toolchain",
+    toolchain = ":my_py_runtime_pair",
+    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
+)
+
 filegroup(
     name = "pyproject_toml",
     srcs = ["pyproject.toml"],
@@ -36,5 +55,11 @@ filegroup(
         "configs/**/*.yaml",
         "configs/**/*.yml",
     ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "bazel_bin_clouddq_executable",
+    srcs = ["clouddq_patched.zip"],
     visibility = ["//visibility:public"],
 )

@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
 from pathlib import Path
 from typing import Dict
 from typing import Optional
+
+import logging
 
 from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_DBT_ENVIRONMENT_TARGET
 from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig
@@ -56,16 +56,16 @@ class DbtRunner:
         create_paths_if_not_exists: bool = True,
     ):
         # Prepare local dbt environment
-        self.dbt_path = self.__resolve_dbt_path(
+        self.dbt_path = self._resolve_dbt_path(
             dbt_path=dbt_path,
             create_paths_if_not_exists=create_paths_if_not_exists,
             write_log=True,
         )
-        self.__prepare_dbt_project_path()
-        self.__prepare_dbt_main_path()
-        self.__prepare_rule_binding_view_path(write_log=True)
+        self._prepare_dbt_project_path()
+        self._prepare_dbt_main_path()
+        self._prepare_rule_binding_view_path(write_log=True)
         # Prepare connection configurations
-        self.__resolve_connection_configs(
+        self._resolve_connection_configs(
             dbt_profiles_dir=dbt_profiles_dir,
             environment_target=environment_target,
             gcp_project_id=gcp_project_id,
@@ -102,28 +102,28 @@ class DbtRunner:
         )
 
     def get_dbt_path(self) -> Path:
-        self.__resolve_dbt_path(self.dbt_path)
+        self._resolve_dbt_path(self.dbt_path)
         return Path(self.dbt_path)
 
     def get_rule_binding_view_path(self) -> Path:
-        self.__prepare_rule_binding_view_path()
+        self._prepare_rule_binding_view_path()
         return Path(self.dbt_rule_binding_views_path)
 
     def get_dbt_profiles_dir(self) -> Path:
-        self.__resolve_connection_configs(
+        self._resolve_connection_configs(
             dbt_profiles_dir=self.dbt_profiles_dir,
             environment_target=self.environment_target,
         )
         return Path(self.dbt_profiles_dir)
 
     def get_dbt_environment_target(self) -> str:
-        self.__resolve_connection_configs(
+        self._resolve_connection_configs(
             dbt_profiles_dir=self.dbt_profiles_dir,
             environment_target=self.environment_target,
         )
         return self.environment_target
 
-    def __resolve_connection_configs(
+    def _resolve_connection_configs(
         self,
         dbt_profiles_dir: Optional[str],
         environment_target: Optional[str],
@@ -170,7 +170,7 @@ class DbtRunner:
                     target_directory=self.dbt_profiles_dir
                 )
 
-    def __resolve_dbt_path(
+    def _resolve_dbt_path(
         self,
         dbt_path: str,
         create_paths_if_not_exists: bool = False,
@@ -197,7 +197,7 @@ class DbtRunner:
             logger.debug(f"Using 'dbt_path': {dbt_path}")
         return dbt_path
 
-    def __prepare_dbt_project_path(self) -> None:
+    def _prepare_dbt_project_path(self) -> None:
         dbt_project_path = self.dbt_path.absolute().joinpath("dbt_project.yml")
         if not dbt_project_path.is_file():
             logger.debug(
@@ -207,7 +207,7 @@ class DbtRunner:
             write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
         logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
 
-    def __prepare_dbt_main_path(self) -> None:
+    def _prepare_dbt_main_path(self) -> None:
         assert self.dbt_path.is_dir()
         dbt_main_path = self.dbt_path / "models" / "data_quality_engine"
         dbt_main_path.mkdir(parents=True, exist_ok=True)
@@ -220,7 +220,7 @@ class DbtRunner:
                 dbt_main_path.joinpath("dq_summary.sql"), DBT_TEMPLATED_FILE_LOCATIONS
             )
 
-    def __prepare_rule_binding_view_path(self, write_log: bool = False) -> None:
+    def _prepare_rule_binding_view_path(self, write_log: bool = False) -> None:
         assert self.dbt_path.is_dir()
         self.dbt_rule_binding_views_path = (
             self.dbt_path / "models" / "rule_binding_views"

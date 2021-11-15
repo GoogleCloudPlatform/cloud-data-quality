@@ -13,28 +13,24 @@
 # limitations under the License.
 
 """Data Quality Engine for BigQuery."""
-import json
-import logging
-import logging.config
-import sys
-import traceback
-
 from datetime import date
 from datetime import datetime
 from pathlib import Path
 from pprint import pformat
 from typing import Optional
 
+import json
+import logging
+import logging.config
+import sys
+import traceback
+
 import click
 import coloredlogs
 
-from git import GitCommandError
-from git import InvalidGitRepositoryError
-from git import Repo
-
 from clouddq import lib
-from clouddq.classes.bigquery_client import BigQueryClient
-from clouddq.classes.dq_target_table_utils import TargetTable
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
+from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
@@ -42,13 +38,7 @@ from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
 
 
-APP_VERSION = None
-try:
-    repo = Repo(search_parent_directories=True)
-    APP_VERSION = repo.git.describe()
-except (InvalidGitRepositoryError, GitCommandError):
-    pass
-
+APP_VERSION = "0.4.0-rc1"
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
 
@@ -347,7 +337,7 @@ def main(  # noqa: C901
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
             bigquery_client = BigQueryClient(
-                project_id=gcp_project_id,
+                gcp_project_id=gcp_project_id,
                 gcp_service_account_key_path=gcp_service_account_key_path,
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
@@ -381,6 +371,18 @@ def main(  # noqa: C901
         logger.info(
             f"Writing summary results to GCP table: `{dq_summary_table_name}`. "
         )
+        # Check existence of dataset for target BQ table
+        if target_bigquery_summary_table:
+            target_table_ref = bigquery_client.table_from_string(
+                target_bigquery_summary_table
+            )
+            target_dataset_id = target_table_ref.dataset_id
+            if not bigquery_client.is_dataset_exists(target_dataset_id):
+                raise AssertionError(
+                    "Invalid argument to --target_bigquery_summary_table: "
+                    f"{target_bigquery_summary_table}. "
+                    f"Dataset {target_dataset_id} does not exist. "
+                )
         # Load metadata
         metadata = json.loads(metadata)
         # Load Rule Bindings

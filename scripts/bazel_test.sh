@@ -19,29 +19,85 @@ set -o pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
-source "$ROOT/scripts/common.sh"
+. "$ROOT/scripts/common.sh"
+
+RUN_DATAPLEX=false
+if [[ $# -eq 0 ]]; then
+  echo "RUN_DATAPLEX: ${RUN_DATAPLEX}"
+else
+  if [[ "$1" == "--run-dataplex" || "$1" == "test_dataplex"* ]]; then
+    RUN_DATAPLEX=true
+    echo "Running Dataplex integration tests..."
+  else
+    echo "Skipping Dataplex integration tests..."
+  fi
+fi
 
 # Check that all required env var are set
 # if running locally you'd have to ensure the following are correctly set for your project/auth details
 require_env_var GOOGLE_CLOUD_PROJECT "Set $GOOGLE_CLOUD_PROJECT to the project_id used for integration testing."
 require_env_var CLOUDDQ_BIGQUERY_DATASET "Set $CLOUDDQ_BIGQUERY_DATASET to the BigQuery dataset used for integration testing."
 require_env_var CLOUDDQ_BIGQUERY_REGION "Set $CLOUDDQ_BIGQUERY_REGION to the BigQuery region used for integration testing."
+if [[ $RUN_DATAPLEX = true ]]; then
+  RUN_DATAPLEX=true
+  echo "Checking for environment variables required for Dataplex integration tests..."
+  require_env_var GCS_BUCKET_NAME "Set $GCS_BUCKET_NAME to the GCS bucket name for staging CloudDQ artifacts and configs."
+  require_env_var DATAPLEX_LAKE_NAME "Set $DATAPLEX_LAKE_NAME to the Dataplex Lake used for testing."
+  require_env_var DATAPLEX_REGION_ID "Set DATAPLEX_REGION_ID to the region id of the Dataplex Lake. This should be the same as $CLOUDDQ_BIGQUERY_REGION."
+  require_env_var DATAPLEX_TARGET_BQ_DATASET "Set $DATAPLEX_TARGET_BQ_DATASET to the Target BQ Dataset used for testing. CloudDQ run fails if the dataset does not exist."
+  require_env_var DATAPLEX_TARGET_BQ_TABLE "Set $DATAPLEX_TARGET_BQ_TABLE to the Target BQ Table used for testing. The table will be created in $DATAPLEX_TARGET_BQ_DATASET if not already exist."
+  require_env_var DATAPLEX_TASK_SA "Set $DATAPLEX_TASK_SA to the service account used for running Dataplex Tasks in testing."
+fi
 
 function bazel_test() {
   set -x
-  bin/bazelisk test \
-    --test_env GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS:-}" \
-    --test_env GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
-    --test_env GOOGLE_SDK_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS:-}" \
-    --test_env CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" \
-    --test_env CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" \
-    --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT:-}" \
-    //tests"${1:-/...}"
+  if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+    bin/bazelisk test \
+      --test_env GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS:-}" \
+      --test_env GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
+      --test_env GOOGLE_SDK_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS:-}" \
+      --test_env CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" \
+      --test_env CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" \
+      --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT:-}" \
+      --test_env GCS_BUCKET_NAME="${GCS_BUCKET_NAME:-}" \
+      --test_env GCS_CLOUDDQ_EXECUTABLE_PATH="${GCS_CLOUDDQ_EXECUTABLE_PATH:-}" \
+      --test_env DATAPLEX_LAKE_NAME="${DATAPLEX_LAKE_NAME:-}" \
+      --test_env DATAPLEX_REGION_ID="${DATAPLEX_REGION_ID:-}" \
+      --test_env DATAPLEX_ENDPOINT="${DATAPLEX_ENDPOINT:-}" \
+      --test_env DATAPLEX_TARGET_BQ_DATASET="${DATAPLEX_TARGET_BQ_DATASET:-}" \
+      --test_env DATAPLEX_TARGET_BQ_TABLE="${DATAPLEX_TARGET_BQ_TABLE:-}" \
+      --test_env DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA:-}" \
+      //tests"${1:-/...}" ${2+"$2"}
+  else
+    bin/bazelisk test \
+      --test_env GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
+      --test_env GOOGLE_SDK_CREDENTIALS="${GOOGLE_SDK_CREDENTIALS:-}" \
+      --test_env CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" \
+      --test_env CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}" \
+      --test_env IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT:-}" \
+      --test_env GCS_BUCKET_NAME="${GCS_BUCKET_NAME:-}" \
+      --test_env GCS_CLOUDDQ_EXECUTABLE_PATH="${GCS_CLOUDDQ_EXECUTABLE_PATH:-}" \
+      --test_env DATAPLEX_LAKE_NAME="${DATAPLEX_LAKE_NAME:-}" \
+      --test_env DATAPLEX_REGION_ID="${DATAPLEX_REGION_ID:-}" \
+      --test_env DATAPLEX_ENDPOINT="${DATAPLEX_ENDPOINT:-}" \
+      --test_env DATAPLEX_TARGET_BQ_DATASET="${DATAPLEX_TARGET_BQ_DATASET:-}" \
+      --test_env DATAPLEX_TARGET_BQ_TABLE="${DATAPLEX_TARGET_BQ_TABLE:-}" \
+      --test_env DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA:-}" \
+      //tests"${1:-/...}" ${2+"$2"}
+  fi
   set +x
 }
 
-if [[ -n "${1:-}" ]]; then
-  bazel_test ":$1"
-else
-  bazel_test
-fi
+function main() {
+  if [[ $RUN_DATAPLEX = false && -n "${1:-}" ]]; then
+    bazel_test ":$1"
+  elif [[ "${1:-}" == "--run-dataplex" ]]; then
+    bazel_test "/..." "--test_arg=--run-dataplex"
+  elif [[ "${1:-}" == "test_dataplex"* ]]; then
+    bazel_test ":$1" "--test_arg=--run-dataplex"
+  else
+    bazel_test
+  fi
+}
+
+main "$@"

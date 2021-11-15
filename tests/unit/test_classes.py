@@ -14,13 +14,11 @@
 
 import pytest
 
-from clouddq.classes.dq_entity import get_custom_entity_configs
-
 from clouddq.classes.dq_entity import DqEntity
+from clouddq.classes.dq_entity import get_custom_entity_configs
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
-
 from clouddq.classes.rule_type import RuleType
 
 
@@ -68,25 +66,25 @@ class TestClasses:
         "configs_map,source_database,expected",
         [
             pytest.param(
-                {"table_name": "table", "lake_name": "lake", "zone_name": "zone", "project_name": "project"}, 
+                {"table_name": "table", "lake_name": "lake", "zone_name": "zone", "project_name": "project"},
                 "DATAPLEX",
                 "lake_zone",
                 id="dataplex_native"
             ),
             pytest.param(
-                {"table_name": "table", "database_name": "lake_zone", "project_name": "project"}, 
+                {"table_name": "table", "database_name": "lake_zone", "project_name": "project"},
                 "DATAPLEX",
                 "lake_zone",
                 id="dataplex_backwards_compatible"
             ),
             pytest.param(
-                {"table_name": "table", "dataset_name": "dataset", "project_name": "project"}, 
+                {"table_name": "table", "dataset_name": "dataset", "project_name": "project"},
                 "BIGQUERY",
                 "dataset",
                 id="bigquery_native"
             ),
             pytest.param(
-                {"table_name": "table", "database_name": "dataset", "project_name": "project"}, 
+                {"table_name": "table", "database_name": "dataset", "project_name": "project"},
                 "BIGQUERY",
                 "dataset",
                 id="bigquery_backwards_compatible"
@@ -174,7 +172,10 @@ class TestClasses:
                     "data_type": "STRING"
                 }},
         }
-        dataplex_entity_configs = DqEntity.from_dict(entity_id="test_dataplex_entity", kwargs=dataplex_entity_input_dict)
+        dataplex_entity_configs = DqEntity.from_dict(
+            entity_id="test_dataplex_entity",
+            kwargs=dataplex_entity_input_dict
+        )
         dataplex_entity_configs_expected = {
             "test_dataplex_entity": {
                 "source_database": "DATAPLEX",
@@ -284,5 +285,6 @@ class TestClasses:
         expected = "REGEXP_CONTAINS( CAST( column_name  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
         assert sql == expected
 
+
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 2']))

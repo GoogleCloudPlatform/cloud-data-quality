@@ -12,18 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import platform
-
-import pytest
+from google.cloud import storage
 
 
-class TestPythonVersion:
-
-    @pytest.mark.xfail
-    def test_version(self):
-        assert platform.python_version().split(".")[:2] == ["3", "9"]
-
-
-if __name__ == "__main__":
-    import sys
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP'] + sys.argv[1:]))
+def upload_blob(
+    bucket_name: str, source_file_name: str, destination_blob_name: str
+) -> None:
+    """Uploads a file to the bucket."""
+    destination_blob_name = str(destination_blob_name)
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(destination_blob_name)
+    blob.upload_from_filename(source_file_name)
+    print(
+        "File '{}' uploaded to 'gs://{}/{}'.".format(
+            source_file_name, bucket_name, destination_blob_name
+        )
+    )

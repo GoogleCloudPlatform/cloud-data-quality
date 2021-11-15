@@ -13,6 +13,9 @@
 # limitations under the License.
 
 """todo: add utils docstring."""
+from inspect import getsourcefile
+from pathlib import Path
+
 import contextlib
 import hashlib
 import logging
@@ -21,17 +24,17 @@ import re
 import string
 import typing
 
-from inspect import getsourcefile
-from pathlib import Path
-
-import yaml
-
 from jinja2 import ChainableUndefined  # type: ignore
 from jinja2 import DebugUndefined
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 from jinja2 import Template
 from jinja2 import select_autoescape
+
+import yaml
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
@@ -40,9 +43,6 @@ def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
     if not yaml_configs:
         return dict()
     return yaml_configs.get(key, dict())
-
-
-logger = logging.getLogger(__name__)
 
 
 def get_templates_path(file_path: Path) -> Path:

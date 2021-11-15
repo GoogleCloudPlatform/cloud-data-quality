@@ -11,19 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import platform
-
-import pytest
-
-
-class TestPythonVersion:
-
-    @pytest.mark.xfail
-    def test_version(self):
-        assert platform.python_version().split(".")[:2] == ["3", "9"]
-
-
-if __name__ == "__main__":
-    import sys
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP'] + sys.argv[1:]))

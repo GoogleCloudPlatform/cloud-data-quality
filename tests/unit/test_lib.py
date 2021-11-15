@@ -13,68 +13,31 @@
 # limitations under the License.
 
 
-from clouddq.main import lib
+from pathlib import Path
 
-import os
 import logging
-import pytest
-import tempfile
+import os
 import shutil
+import tempfile
+
+import pytest
 import yaml
 
-from pathlib import Path
 from clouddq.classes.dq_config_type import DqConfigType
+from clouddq.main import lib
 
 
 logger = logging.getLogger(__name__)
 
 class TestLib:
 
-
-    # TODO Clean up and reuse from inherited code when it becomes available
-    @pytest.fixture
-    def gcp_project_id(self):
-        gcp_project_id = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
-        if not gcp_project_id:
-            logger.fatal("Required test environment variable GOOGLE_CLOUD_PROJECT cannot be found. Set this to the project_id used for integration testing.")
-        return gcp_project_id
-
-
-    # TODO Clean up and reuse from inherited code when it becomes available
-    @pytest.fixture
-    def gcp_bq_dataset(self):
-        gcp_bq_dataset = os.environ.get('CLOUDDQ_BIGQUERY_DATASET', None)
-        if not gcp_bq_dataset:
-            logger.fatal("Required test environment variable CLOUDDQ_BIGQUERY_DATASET cannot be found. Set this to the BigQuery dataset used for integration testing.")
-        return gcp_bq_dataset
-
-
-    # TODO Clean up and reuse from inherited code when it becomes available
-    @pytest.fixture
-    def temp_configs_dir(self, gcp_project_id, gcp_bq_dataset):
-        source_configs_path = Path("tests").joinpath("resources","configs")
-        temp_clouddq_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "configs")
-        if os.path.exists(temp_clouddq_dir):
-            shutil.rmtree(temp_clouddq_dir)
-        destination = shutil.copytree(source_configs_path, temp_clouddq_dir)
-        test_data = Path(destination).joinpath("entities", "test-data.yml")
-        with open(test_data) as source_file:
-            lines = source_file.read()
-        with open(test_data, "w") as source_file:
-            lines = lines.replace("<your_gcp_project_id>", gcp_project_id)
-            lines = lines.replace("dq_test", gcp_bq_dataset)
-            source_file.write(lines)
-        yield destination
-        shutil.rmtree(destination)
-
-
-    # Load a config directory containing two copies of the same config
     def test_load_configs_identical(self, temp_configs_dir):
+        # Load a config directory containing two copies of the same config
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib")
-            config_path = Path(temp_configs_dir) 
+            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_1")
+            config_path = Path(temp_configs_dir)
 
-            os.mkdir(temp_dir)
+            temp_dir.mkdir(parents=True)
 
             assert os.path.isfile(config_path / 'entities' / 'test-data.yml')
             shutil.copy(config_path / 'entities' / 'test-data.yml', temp_dir / 'test-data1.yml')
@@ -86,14 +49,13 @@ class TestLib:
         finally:
             shutil.rmtree(temp_dir)
 
-
-    # Load a config directory containing two different configs defining the same key
     def test_load_configs_different(self, temp_configs_dir):
+        # Load a config directory containing two different configs defining the same key
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib")
-            config_path = Path(temp_configs_dir) 
+            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_2")
+            config_path = Path(temp_configs_dir)
 
-            os.mkdir(temp_dir)
+            temp_dir.mkdir(parents=True)
 
             assert os.path.isfile(config_path / 'entities' / 'test-data.yml')
             shutil.copy(config_path / 'entities' / 'test-data.yml', temp_dir / 'test-data1.yml')
@@ -101,7 +63,7 @@ class TestLib:
             # Load the config, modify it, and save it to a different file
             with open(config_path / 'entities' / 'test-data.yml') as f:
                 testconfig = yaml.safe_load(f)
-                
+
             assert testconfig['entities']['TEST_TABLE']['columns']['ROW_ID']['data_type'] == 'STRING'
             testconfig['entities']['TEST_TABLE']['columns']['ROW_ID']['data_type'] = 'INT64'
 
@@ -109,13 +71,13 @@ class TestLib:
                 yaml.safe_dump(testconfig, f)
 
             # Check that I wrote that correctly
-            with  open(temp_dir / 'test-data1.yml') as f:
+            with open(temp_dir / 'test-data1.yml') as f:
                 testconfig1 = yaml.safe_load(f)
                 assert testconfig1['entities']['TEST_TABLE']['columns']['ROW_ID']['data_type'] == 'STRING'
-            with  open(temp_dir / 'test-data2.yml') as f:
+            with open(temp_dir / 'test-data2.yml') as f:
                 testconfig2 = yaml.safe_load(f)
                 assert testconfig2['entities']['TEST_TABLE']['columns']['ROW_ID']['data_type'] == 'INT64'
-                
+
             # This is the actual test:
             with pytest.raises(ValueError):
                 lib.load_configs(temp_dir, DqConfigType.ENTITIES)
@@ -125,4 +87,4 @@ class TestLib:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))

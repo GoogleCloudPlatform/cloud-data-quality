@@ -17,10 +17,14 @@ load("@py_deps//:requirements.bzl", "requirement")
 
 py_test(
     name = "compiler_version_test",
-    srcs = ["compiler_version_test.py"],
+    srcs = [
+        "compiler_version_test.py",
+        "conftest.py",
+    ],
     legacy_create_init = 0,
     deps = [
         requirement("pytest"),
+        requirement("filelock"),
     ],
 )
 
@@ -46,14 +50,19 @@ DEPS = [
     "//clouddq:classes",
     "//clouddq:clouddq_lib",
     "//clouddq:dbt_runners",
+    "//clouddq:integration",
     requirement("py"),
     requirement("pytest"),
+    requirement("pytest-xdist"),
     requirement("click"),
     requirement("coloredlogs"),
-    requirement("gitpython"),
+    requirement("google-api-python-client"),
+    requirement("requests-oauth2"),
+    requirement("filelock"),
 ]
 
 SRCS = glob([
+    "test_*.py",
     "unit/test_*.py",
     "integration/test_*.py",
 ]) + ["conftest.py"]
@@ -111,6 +120,24 @@ py_test(
 
 py_test(
     name = "test_bigquery_client",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "test_dataplex_task",
+    srcs = SRCS,
+    data = DATA + [
+        "//:bazel_bin_clouddq_executable",
+    ],
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "conftest",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,

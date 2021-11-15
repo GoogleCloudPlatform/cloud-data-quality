@@ -12,18 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import platform
+from pathlib import Path
+from pprint import pprint
 
-import pytest
-
-
-class TestPythonVersion:
-
-    @pytest.mark.xfail
-    def test_version(self):
-        assert platform.python_version().split(".")[:2] == ["3", "9"]
+import os
+import subprocess
+import sys
 
 
 if __name__ == "__main__":
-    import sys
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP'] + sys.argv[1:]))
+    print("OS runtime details:")
+    subprocess.run("cat /etc/*-release", shell=True, check=True)
+    print("Python executable path:")
+    print(sys.executable)
+    print("Python Version:")
+    print(sys.version_info)
+    print("PySpark working directory:")
+    pprint(Path().absolute())
+    print("PySpark directory content:")
+    pprint(os.listdir())
+    print("Input PySpark arguments:")
+    pprint(sys.argv)

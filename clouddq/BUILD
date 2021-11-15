@@ -52,9 +52,9 @@ py_binary(
     deps = [
         ":clouddq_lib",
         ":dbt_runners",
+        ":integration",
         requirement("click"),
         requirement("coloredlogs"),
-        requirement("gitpython"),
     ],
 )
 
@@ -88,6 +88,19 @@ py_library(
         ":clouddq_lib",
         requirement("dbt-bigquery"),
         requirement("pyyaml"),
+    ],
+)
+
+py_library(
+    name = "integration",
+    srcs = glob(["integration/**/*.py"]),
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        requirement("requests"),
+        requirement("requests-oauth2"),
+        requirement("google-cloud-storage"),
+        requirement("google-cloud-bigquery"),
+        requirement("google-api-python-client"),
     ],
 )
 
