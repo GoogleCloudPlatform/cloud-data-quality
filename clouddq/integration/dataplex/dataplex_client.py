@@ -267,6 +267,7 @@ class DataplexClient:
 
     def list_entities(self,
                       zone_id: str,
+                      params: dict = None,
                       gcp_project_id: str = None,
                       location_id: str = None,
                       lake_name: str = None,
@@ -284,6 +285,7 @@ class DataplexClient:
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/zones/{zone_id}/entities/",
             headers=self._headers,
+            params=params,
         )
 
         return response

@@ -155,3 +155,15 @@ def strip_margin(text: str) -> str:
 
 def sha256_digest(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def update_dict(dict1: dict, dict2: dict) -> dict:
+    output_dict = {}
+    for key in dict1.keys():
+        output_dict.update({key: []})
+        for value in dict1[key]:
+            output_dict[key].append(value)
+        for value in dict2[key]:
+            output_dict[key].append(value)
+
+    return output_dict

@@ -18,6 +18,8 @@ import tempfile
 import shutil
 from pathlib import Path
 
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
+
 logger = logging.getLogger(__name__)
 
 @pytest.fixture
@@ -158,6 +160,20 @@ def gcp_dataplex_zone_id():
     if not gcp_dataplex_zone_id:
         logger.fatal("Required test environment variable DATAPLEX_ZONE_ID cannot be found. Set this to the Dataplex Zone used for testing.")
     return gcp_dataplex_zone_id
+
+@pytest.fixture
+def test_dq_dataplex_client(dataplex_endpoint,
+                            gcp_dataplex_lake_name,
+                            gcp_dataplex_region,
+                            gcp_project_id,
+                            gcs_bucket_name):
+    gcp_project_id = gcp_project_id
+    gcs_bucket_name = gcs_bucket_name
+    yield CloudDqDataplexClient(dataplex_endpoint=dataplex_endpoint,
+                                gcp_dataplex_lake_name=gcp_dataplex_lake_name,
+                                gcp_dataplex_region=gcp_dataplex_region,
+                                gcp_project_id=gcp_project_id,
+                                gcs_bucket_name=gcs_bucket_name)
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "e2e: mark as end-to-end test.")
