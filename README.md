@@ -365,16 +365,16 @@ make build
 
 We provide a `Makefile` with common development steps such as `make build` to create the artifact, `make test` to run tests, and `make lint` to apply linting over the project code.
 
-The `make build` command will fetch `bazel` and build the project into a self-contained Python zip executable located in `bazel-bin/clouddq/clouddq_patched.zip`.
+The `make build` command will fetch `bazel` and build the project into a self-contained Python zip executable called `clouddq_patched.zip` located in the current path.
 
-You can then run the resulting zip artifact by passing it into any Python interpreter (this will show the help text):
+You can then run the resulting zip artifact by passing it into the same Python interpreter version used to build the executable (this will show the help text):
 
 ```bash
 #!/bin/bash
-python bazel-bin/clouddq/clouddq_patched.zip --help
+python3 clouddq_patched.zip --help
 ```
 
-As Bazel will fetch the Python interpreter as well as all of its dependencies, this step will take a few minutes to complete. Once completed for the first time, the artifacts will be cached and subsequent builds will be much faster.
+This step will take a few minutes to complete. Once completed for the first time, the artifacts will be cached and subsequent builds will be much faster.
 
 The executable Python zip is not cross-platform compatible. You will need to build the executable separately for each of your target platforms. e.g. an artifact built using a machine running Ubuntu-18 and Python version 3.9.x will not work when transfered to another machine with Ubuntu-18 and Python version 3.8.x or another machine with Debian-11 and Python version 3.9.x.
 
@@ -409,7 +409,7 @@ bin/bazelisk run //clouddq:clouddq -- \
   --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}"
 ```
 
-Note that `bazel run` execute the code in a sandbox, therefore non-absolute paths will be relative to the sandbox path not the current path. Ensure you are passing absolute paths to the command line arguments such as `$(pwd)/configs`, `--gcp_service_account_key_path`, etc...
+Note that `bazel run` execute the code in a sandbox, therefore non-absolute paths will be relative to the sandbox path not the current path. Ensure you are passing absolute paths to the command line arguments, e.g. pass in `$(pwd)/configs` instead of 'configs'.
 
 
 ### Run tests and linting
@@ -426,6 +426,7 @@ For integration testing, you must first set the environment variables outlined i
 ```bash
 #!/bin/bash
 cp set_environment_variables.sh setenvs.sh
+# Manually edit `setenvs.sh` to use your project configurations.
 source setenvs.sh && make test
 ```
 
