@@ -59,8 +59,6 @@ DEPS = [
     requirement("google-api-python-client"),
     requirement("requests-oauth2"),
     requirement("filelock"),
-    requirement("google-api-python-client"),
-    requirement("requests-oauth2"),
 ]
 
 SRCS = glob([
