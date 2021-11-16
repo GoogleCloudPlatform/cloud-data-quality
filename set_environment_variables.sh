@@ -66,3 +66,6 @@ export DATAPLEX_TARGET_BQ_TABLE="<table-name-in-$DATAPLEX_TARGET_BQ_DATASET>"
 
 # Set $DATAPLEX_TASK_SA to the service account used for running Dataplex Tasks in testing.
 export DATAPLEX_TASK_SA="<service-account-used-for-running-dataplex-task>"
+
+# Set $DATAPLEX_ZONE_ID to the zone id in Dataplex Lake used for testing.
+export DATAPLEX_ZONE_ID="<zone-id-in-$DATAPLEX_LAKE_NAME>"
