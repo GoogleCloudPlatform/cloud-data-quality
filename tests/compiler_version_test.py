@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import platform
-import sys
+
+import pytest
 
 
 class TestPythonVersion:
+
+    @pytest.mark.xfail
     def test_version(self):
-        assert platform.python_version() == "3.8.6"
+        assert platform.python_version().split(".")[:2] == ["3", "9"]
 
 
 if __name__ == "__main__":
-    import pytest
-
-    raise SystemExit(pytest.main([__file__]))
+    import sys
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP'] + sys.argv[1:]))

@@ -55,7 +55,6 @@ py_binary(
         ":integration",
         requirement("click"),
         requirement("coloredlogs"),
-        requirement("gitpython"),
     ],
 )
 

@@ -12,31 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click.testing
-import pytest
-import logging
 from pathlib import Path
+
+import logging
 
 from google.auth.exceptions import RefreshError
 
+import click.testing
+import pytest
+
 from clouddq.main import main
+
 
 logger = logging.getLogger(__name__)
 
 @pytest.mark.e2e
 class TestCliIntegration:
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def runner(self):
         return click.testing.CliRunner()
 
     @pytest.fixture
-    def temp_configs_dir(self, temp_clouddq_dir):
-        return Path(temp_clouddq_dir).joinpath("configs")
-
-    @pytest.fixture
     def test_profiles_dir(self):
-        return Path("tests").joinpath("resources","test_dbt_profiles_dir")
+        return Path("tests").joinpath("resources", "test_dbt_profiles_dir")
 
     def test_cli_dry_run_dbt_path(
         self,
@@ -103,7 +102,9 @@ class TestCliIntegration:
             "--debug",
             ]
         if not gcp_sa_key:
-            pytest.skip("Skipping tests involving exported service-account key credentials because test environment variable GOOGLE_SDK_CREDENTIALS cannot be found.")
+            pytest.skip("Skipping tests involving exported service-account key "
+            "credentials because test environment variable GOOGLE_SDK_CREDENTIALS "
+            "cannot be found.")
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
@@ -133,7 +134,9 @@ class TestCliIntegration:
             "--debug",
             ]
         if not gcp_sa_key:
-            pytest.skip("Skipping tests involving exported service-account key credentials because test environment variable GOOGLE_SDK_CREDENTIALS cannot be found.")
+            pytest.skip("Skipping tests involving exported service-account key "
+            "credentials because test environment variable GOOGLE_SDK_CREDENTIALS"
+            " cannot be found.")
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
@@ -161,7 +164,8 @@ class TestCliIntegration:
             "--debug",
             ]
         if not gcp_impersonation_credentials:
-            pytest.skip("Skipping tests involving service-account impersonation because test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found.")
+            pytest.skip("Skipping tests involving service-account impersonation because "
+            "test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found.")
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
@@ -182,7 +186,7 @@ class TestCliIntegration:
             f"--gcp_project_id={gcp_project_id}",
             f"--gcp_bq_dataset_id={gcp_bq_dataset}",
             f"--gcp_region_id={gcp_bq_region}",
-            f"--gcp_impersonation_credentials=non-existent-svc@non-existent-project.com",
+            "--gcp_impersonation_credentials=non-existent-svc@non-existent-project.com",
             "--dry_run",
             "--debug",
             ]
@@ -236,5 +240,6 @@ class TestCliIntegration:
         assert result.exit_code == 1
         assert isinstance(result.exception, AssertionError)
 
+
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__]))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))

@@ -46,30 +46,30 @@ http_archive(
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 # If you use WORKSPACE.bazel, use the following line instead of the bare gazelle_dependencies():
-# gazelle_dependencies(go_repository_default_config = "@//:WORKSPACE.bazel")
+gazelle_dependencies(go_repository_default_config = "@//:WORKSPACE.bazel")
+
 gazelle_dependencies()
+
+protobuf_version = "3.19.1"
 
 http_archive(
     name = "com_google_protobuf",
-    strip_prefix = "protobuf-master",
-    urls = ["https://github.com/protocolbuffers/protobuf/archive/master.zip"],
+    sha256 = "25f1292d4ea6666f460a2a30038eef121e6c3937ae0f61d610611dfb14b0bd32",
+    strip_prefix = "protobuf-{}".format(protobuf_version),
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/refs/tags/v{}.zip".format(protobuf_version)],
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
 
-http_archive(
-    name = "com_github_bazelbuild_buildtools",
-    strip_prefix = "buildtools-master",
-    url = "https://github.com/bazelbuild/buildtools/archive/master.zip",
-)
+buildtools_version = "4.2.3"
 
 http_archive(
-    name = "dpu_rules_pyenv",
-    sha256 = "d057168a757efa74e6345edd4776a1c0f38134c2d48eea4f3ef4783e1ea2cb0f",
-    strip_prefix = "rules_pyenv-0.1.4",
-    urls = ["https://github.com/digital-plumbers-union/rules_pyenv/archive/v0.1.4.tar.gz"],
+    name = "com_github_bazelbuild_buildtools",
+    sha256 = "c1d5de8802be326300f7a481c2530cf7bfa911e52f46252c71351f9dd305535d",
+    strip_prefix = "buildtools-{}".format(buildtools_version),
+    url = "https://github.com/bazelbuild/buildtools/archive/refs/tags/{}.zip".format(buildtools_version),
 )
 
 rules_python_version = "ef4d735216a3782b7c33543d82b891fe3a86e3f3"
@@ -87,14 +87,9 @@ load("@rules_python//python:pip.bzl", "pip_install")
 # requirements_lock.txt.
 pip_install(
     name = "py_deps",
-    python_interpreter_target = "@pyenv//:py3/python",
+    python_interpreter = "python3",
     quiet = False,
     requirements = "//:requirements.txt",
 )
 
-load("@dpu_rules_pyenv//pyenv:defs.bzl", "pyenv_install")
-
-pyenv_install(
-    py2 = "2.7.16",
-    py3 = "3.8.6",
-)
+register_toolchains("//:my_toolchain")

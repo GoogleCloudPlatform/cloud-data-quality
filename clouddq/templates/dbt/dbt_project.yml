@@ -13,7 +13,7 @@
 # limitations under the License.
 
 name: "data_quality"
-version: "0.3.1"
+version: "0.4.0"
 
 config-version: 2
 
@@ -45,11 +45,6 @@ models:
       materialized: table
     rule_binding_views:
       materialized: view
-
-seeds:
-  data_quality:
-    contact_details:
-      +enable: true
 
 vars:
   target_rule_binding_ids: ""

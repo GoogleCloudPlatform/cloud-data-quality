@@ -1,68 +1,31 @@
 steps:
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  - name: debian:11-slim
     args:
       - '-c'
-      - >
+      - |
         set -x
-
-        find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-
-        gcloud info
-
-        ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
-
-        ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && echo "Europe/London" > /etc/timezone
-
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata make sudo curl git-all
-
-        chmod -R +x scripts
-
-        source scripts/install_development_dependencies.sh
-
-        dpkg -l | grep libffi
-
-        curl -LO http://archive.ubuntu.com/ubuntu/pool/main/libf/libffi/libffi6_3.2.1-8_amd64.deb
-
-        dpkg -i libffi6_3.2.1-8_amd64.deb
-
-        make -v
-
-        echo "common
-        --remote_cache=https://storage.googleapis.com/dataplex-clouddq-bazel-cache"
-        >> .bazelrc
-
-        echo "common --google_default_credentials" >> .bazelrc
-
-        env
-
-        gcloud beta dataproc batches submit --project dataplex-clouddq --region europe-west2 pyspark  gs://dataplex-clouddq-api-integration/pyspark_driver.py --files gs://dataplex-clouddq-api-integration/pyspark_driver.py --subnet default
-
-        # make test-pip-install
-
-        # make check
-
-        make test test_dataplex_clouddq_task_integration
-
-        # make test
-
-        # make build
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
+        source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
+        make test test_dataplex_task
+        make check
+        source scripts/install_gcloud.sh
+        gsutil ls gs://$_GCS_BUCKET_NAME
+        gsutil cp clouddq_patched.zip gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}_${BRANCH_NAME}/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}_${BRANCH_NAME}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
     - 'CLOUDDQ_BIGQUERY_DATASET=${_CLOUDDQ_BIGQUERY_DATASET}'
     - 'CLOUDDQ_BIGQUERY_REGION=${_CLOUDDQ_BIGQUERY_REGION}'
     - 'GCS_BUCKET_NAME=${_GCS_BUCKET_NAME}'
+    - 'GCS_BAZEL_CACHE=${_GCS_BAZEL_CACHE}'
     - 'DATAPLEX_LAKE_NAME=${_DATAPLEX_LAKE_NAME}'
     - 'DATAPLEX_REGION_ID=${_DATAPLEX_REGION_ID}'
     - 'DATAPLEX_ENDPOINT=${_DATAPLEX_ENDPOINT}'
     - 'DATAPLEX_TARGET_BQ_DATASET=${_DATAPLEX_TARGET_BQ_DATASET}'
     - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
     - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
-timeout: 7200s
-logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
+timeout: 3600s
 options:
-  logStreamingOption: STREAM_ON
-  pool:
-    name: >-
-      projects/dataplex-clouddq/locations/europe-west6/workerPools/cloud-build-private-pool
-serviceAccount: 'projects/dataplex-clouddq/serviceAccounts/github-action@dataplex-clouddq.iam.gserviceaccount.com'
+  machineType: 'E2_HIGHCPU_8'
+logsBucket: 'gs://dataplex-clouddq-github-cloud-build'

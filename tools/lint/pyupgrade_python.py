@@ -17,6 +17,7 @@ import sys
 
 from pyupgrade._main import main
 
+
 if __name__ == "__main__":
     print("pyupgrade: ", sys.argv)
     sys.exit(main(sys.argv[1:]))

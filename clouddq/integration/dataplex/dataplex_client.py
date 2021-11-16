@@ -14,18 +14,18 @@
 
 from __future__ import annotations
 
-import json
-import logging
-
 from pathlib import Path
 
-import google.auth
-import google.auth.transport.requests
+import json
+import logging
 
 from google.auth.credentials import Credentials
 from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
+
+import google.auth
+import google.auth.transport.requests
 
 from clouddq.integration.gcp_credentials import GcpCredentials
 

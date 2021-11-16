@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+from pprint import pprint
+
 import os
 import subprocess
 import sys
 
-from pathlib import Path
-from pprint import pprint
 
 if __name__ == "__main__":
+    print("OS runtime details:")
+    subprocess.run("cat /etc/*-release", shell=True, check=True)
+    print("Python executable path:")
+    print(sys.executable)
     print("Python Version:")
     print(sys.version_info)
-    print("OS Runtime Details:")
-    subprocess.run("cat /etc/*-release", shell=True, check=True)
     print("PySpark working directory:")
     pprint(Path().absolute())
     print("PySpark directory content:")

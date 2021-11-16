@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from google.api_core.exceptions import BadRequest
+
 import pytest
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
@@ -21,7 +22,7 @@ from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 @pytest.mark.e2e
 class TestBigQueryClient:
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def client(self):
         """Get BigQuery Client using discovered ADC"""
         client = BigQueryClient()
@@ -50,4 +51,4 @@ class TestBigQueryClient:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__]))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 2']))

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from google.cloud import storage
-
-
-def upload_blob(
-    bucket_name: str, source_file_name: str, destination_blob_name: str
-) -> None:
-    """Uploads a file to the bucket."""
-    destination_blob_name = str(destination_blob_name)
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-    blob.upload_from_filename(source_file_name)
-    print(
-        "File '{}' uploaded to 'gs://{}/{}'.".format(
-            source_file_name, bucket_name, destination_blob_name
-        )
-    )
+curl https://sdk.cloud.google.com > install.sh
+bash install.sh --disable-prompts > /dev/null
+ls -la ~/google-cloud-sdk
+. ~/google-cloud-sdk/completion.bash.inc
+. ~/google-cloud-sdk/path.bash.inc
+gcloud info

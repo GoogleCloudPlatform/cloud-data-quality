@@ -28,10 +28,10 @@
         "data_type": "STRING"
       }
     },
-    "database_name": "dq_test",
+    "database_name": "<your_bigquery_dataset_id>",
     "environment_override": {
       "test": {
-        "database_name": "<your_bigquery_dataset_id>",
+        "database_name": "<your_bigquery_dataset_id_2>",
         "instance_name": "<your_gcp_project_id_2>",
         "table_name": "contact_details"
       }

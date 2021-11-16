@@ -15,9 +15,9 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
-import logging
-
 from dataclasses import dataclass
+
+import logging
 
 from clouddq.classes.dq_entity_column import DqEntityColumn
 from clouddq.utils import assert_not_none_or_empty

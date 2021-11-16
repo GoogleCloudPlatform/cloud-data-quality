@@ -17,6 +17,7 @@ import sys
 
 import black
 
+
 if __name__ == "__main__":
     print("black: ", sys.argv)
     black.main(sys.argv[1:])

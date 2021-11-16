@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 from pathlib import Path
+from pprint import pformat
+
+import json
 import logging
 import re
 
 import pytest
-from pprint import pformat
 
 from clouddq import lib
 from clouddq import utils
@@ -26,6 +27,7 @@ from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,12 +40,12 @@ CONFIGS_HASHSUM_REP = "'' AS configs_hashsum,"
 class TestJinjaTemplates:
     """ """
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_entities_collection(self):
         """ """
         return lib.load_entities_config(configs_path=Path("tests/resources/configs"))
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_rules_collection(self):
         """ """
         return lib.load_rules_config(configs_path=Path("tests/resources/configs"))
@@ -67,7 +69,7 @@ class TestJinjaTemplates:
                 value.update({"params": {}})
             assert dict(rule.dict_values()) == dict(value)
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_row_filters_collection(self):
         """ """
         return lib.load_row_filters_config(configs_path=Path("tests/resources/configs"))
@@ -86,21 +88,21 @@ class TestJinjaTemplates:
             assert key in dq_filter.to_dict()
             assert dict(dq_filter.dict_values()) == dict(value)
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_rule_bindings_collection_team_1(self):
         """ """
         return lib.load_rule_bindings_config(
             Path("tests/resources/configs/rule_bindings/team-1-rule-bindings.yml")
         )
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_rule_bindings_collection_team_2(self):
         """ """
         return lib.load_rule_bindings_config(
             Path("tests/resources/configs/rule_bindings/team-2-rule-bindings.yml")
         )
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_rule_bindings_collection_team_3(self):
         """ """
         return lib.load_rule_bindings_config(
@@ -173,7 +175,7 @@ class TestJinjaTemplates:
                 row_filters_collection=test_row_filters_collection,
             )
 
-    @pytest.fixture
+    @pytest.fixture(scope="session")
     def test_all_rule_bindings_collections(self):
         """ """
         return lib.load_rule_bindings_config(configs_path=Path("tests/resources/configs"))
@@ -218,7 +220,7 @@ class TestJinjaTemplates:
             configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -259,7 +261,7 @@ class TestJinjaTemplates:
             configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -267,7 +269,7 @@ class TestJinjaTemplates:
             debug=True,
         )
         expected = expected.replace(
-            "<your_gcp_project_id>.dq_test", "<your_gcp_project_id_2>.<your_bigquery_dataset_id>"
+            "<your_gcp_project_id>.<your_bigquery_dataset_id>", "<your_gcp_project_id_2>.<your_bigquery_dataset_id_2>"
         )
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
@@ -305,7 +307,7 @@ class TestJinjaTemplates:
             configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -348,7 +350,7 @@ class TestJinjaTemplates:
             configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             entities_collection=test_entities_collection,
             rules_collection=test_rules_collection,
             row_filters_collection=test_row_filters_collection,
@@ -374,7 +376,7 @@ class TestJinjaTemplates:
         configs = lib.prepare_configs_from_rule_binding_id(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.dq_test.dq_summary",
+            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             environment=env,
             metadata=metadata,
             configs_path=Path("tests/resources/configs"),
@@ -400,4 +402,4 @@ class TestJinjaTemplates:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))

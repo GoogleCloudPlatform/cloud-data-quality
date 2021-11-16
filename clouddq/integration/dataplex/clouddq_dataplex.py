@@ -13,13 +13,13 @@
 # limitations under the License.
 from __future__ import annotations
 
+from enum import Enum
+from pathlib import Path
+
 import json
 import logging
 import re
 import time
-
-from enum import Enum
-from pathlib import Path
 
 from requests import Response
 
@@ -102,6 +102,7 @@ class CloudDqDataplexClient:
             clouddq_executable_checksum_path, "clouddq-executable.zip.hashsum"
         )
         # Prepare input CloudDQ YAML specs path
+        clouddq_yaml_spec_file_path = str(clouddq_yaml_spec_file_path)
         if clouddq_yaml_spec_file_path[:5] == "gs://":
             clouddq_configs_gcs_path = clouddq_yaml_spec_file_path
         else:
@@ -109,10 +110,12 @@ class CloudDqDataplexClient:
             if clouddq_yaml_spec_file_path.is_file():
                 upload_blob(
                     self.gcs_bucket_name,
-                    clouddq_yaml_spec_file_path,
-                    clouddq_yaml_spec_file_path,
+                    clouddq_yaml_spec_file_path.name,
+                    str(clouddq_yaml_spec_file_path.name),
                 )
-                gcs_uri = f"gs://{self.gcs_bucket_name}/{clouddq_yaml_spec_file_path}"
+                gcs_uri = (
+                    f"gs://{self.gcs_bucket_name}/{clouddq_yaml_spec_file_path.name}"
+                )
                 clouddq_configs_gcs_path = gcs_uri
             else:
                 raise ValueError(
@@ -176,8 +179,8 @@ class CloudDqDataplexClient:
         :return: Task status
         """
         res = self._client.get_dataplex_task_jobs(task_id)
-        logger.debug(f"Response status code is {res.status_code}")
-        logger.debug(f"Response text is {res.text}")
+        logger.info(f"Response status code is {res.status_code}")
+        logger.info(f"Response text is {res.text}")
         resp_obj = json.loads(res.text)
 
         if res.status_code == 200:
@@ -225,6 +228,7 @@ class CloudDqDataplexClient:
         if not clouddq_artifact_path:
             clouddq_artifact_gcs_path = f"gs://{self.gcs_bucket_name}/{artifact_name}"
         else:
+            clouddq_artifact_path = str(clouddq_artifact_path)
             clouddq_artifact_name = clouddq_artifact_path.split("/")[-1]
             if not clouddq_artifact_path[:5] == "gs://":
                 raise ValueError(

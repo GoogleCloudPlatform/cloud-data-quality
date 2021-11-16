@@ -13,37 +13,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
-source "$ROOT/scripts/common.sh"
+. "$ROOT/scripts/common.sh"
 
 if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
     err "This script is only tested to work on Debian/Ubuntu. Developing CloudDQ on OS type '${OSTYPE}' is not currently supported. Exiting..."
     exit 1
 fi
 
+SILENT=false
+if [[ $# -eq 0 ]]; then
+  echo "SILENT: ${SILENT}"
+else
+  if [[ "$1" == "--silent" ]]; then
+      SILENT=true
+      echo "SILENT: ${SILENT}"
+  fi
+fi
 
 # Install Python dependencies
-DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install -y \
-make build-essential libssl-dev zlib1g-dev \
+DEBIAN_FRONTEND=noninteractive sudo apt-get update > /dev/null
+DEBIAN_FRONTEND=noninteractive sudo apt-get install -yq make build-essential libssl-dev zlib1g-dev \
 libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
-zip unzip python3-pip python3-venv
-
-# Install sandboxfs
-DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt install -y libfuse2
-curl -Lo /tmp/sandboxfs-0.2.0.tgz https://github.com/bazelbuild/sandboxfs/releases/download/sandboxfs-0.2.0/sandboxfs-0.2.0-20200420-linux-x86_64.tgz
-sudo tar xzv -C /usr/local -f /tmp/sandboxfs-0.2.0.tgz
-rm /tmp/sandboxfs-0.2.0.tgz
-sandboxfs --help
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev  \
+zip unzip git
 
 # Install golang for building Bazelisk
-curl -Lo  /tmp/go1.16.5.linux-amd64.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
-go version
+if ! [ -x "$(command -v "go")" ]; then
+    curl -Lo  /tmp/go1.16.5.linux-amd64.tar.gz https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf /tmp/go1.16.5.linux-amd64.tar.gz
+    export PATH=$PATH:/usr/local/go/bin
+    if [[ $SILENT = false ]]; then
+      echo "Modify profile to update your \$PATH in ~/.bashrc with golang binary?"
+      read -n1 -p "Do you want to continue (Y/n)?" user_input
+      if [[ $user_input == "Y" || $user_input == "y" ]]; then
+          echo '' >> ~/.bashrc
+          echo '# set path to golang binary' >> ~/.bashrc
+          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+          echo '~/.bashrc has been updated.'
+          echo '==> Start a new shell or run "source ~/.bashrc" for the changes to take effect.'
+      fi
+    fi
+fi

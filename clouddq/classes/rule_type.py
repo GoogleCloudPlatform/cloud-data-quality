@@ -15,11 +15,11 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
-import re
-
 from enum import Enum
 from enum import unique
 from string import Template
+
+import re
 
 from clouddq.utils import assert_not_none_or_empty
 

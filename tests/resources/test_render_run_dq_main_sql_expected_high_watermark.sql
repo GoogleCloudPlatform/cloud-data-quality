@@ -16,8 +16,8 @@ WITH
 high_watermark_filter AS (
     SELECT
         IFNULL(MAX(execution_ts), TIMESTAMP("1970-01-01 00:00:00")) as high_watermark
-    FROM `<your_gcp_project_id>.dq_test.dq_summary`
-    WHERE table_id = '<your_gcp_project_id>.dq_test.contact_details'
+    FROM `<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary`
+    WHERE table_id = '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details'
       AND column_id = 'value'
       AND rule_binding_id = 'T1_DQ_1_VALUE_NOT_NULL'
       AND progress_watermark IS TRUE
@@ -28,7 +28,7 @@ data AS (
       *,
       COUNT(1) OVER () as num_rows_validated,
     FROM
-      `<your_gcp_project_id>.dq_test.contact_details` d
+      `<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details` d
       ,high_watermark_filter
     WHERE
       CAST(d.ts AS TIMESTAMP)
@@ -42,7 +42,7 @@ SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
     'NOT_NULL_SIMPLE' AS rule_id,
-    '<your_gcp_project_id>.dq_test.contact_details' AS table_id,
+    '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
     value AS column_value,
     num_rows_validated AS num_rows_validated,
