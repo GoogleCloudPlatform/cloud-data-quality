@@ -77,7 +77,6 @@ py_library(
     visibility = ["//tests:__subpackages__"],
     deps = [
         requirement("jinja2"),
-        requirement("pyyaml"),
     ],
 )
 
