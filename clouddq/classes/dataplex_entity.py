@@ -130,15 +130,3 @@ class DataplexEntity:
         """
 
         return asdict(self)
-
-    def dict_values(self: DataplexEntity) -> dict:
-        """
-
-        Args:
-          self: DataplexEntity:
-
-        Returns:
-
-        """
-
-        return dict(self.to_dict().get(self.id))
