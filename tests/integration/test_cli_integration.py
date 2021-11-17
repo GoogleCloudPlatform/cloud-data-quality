@@ -22,6 +22,7 @@ import click.testing
 import pytest
 
 from clouddq.main import main
+from clouddq.classes.bigquery_client import BigQueryClient
 
 
 logger = logging.getLogger(__name__)
@@ -78,6 +79,59 @@ class TestCliIntegration:
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
+
+    def test_cli_oauth_configs(
+        self,
+        runner,
+        temp_configs_dir,
+        gcp_project_id,
+        gcp_bq_region,
+        gcp_bq_dataset,
+        gcp_application_credentials,
+    ):
+        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        args = [
+            "ALL",
+            f"{temp_configs_dir}",
+            f"--gcp_project_id={gcp_project_id}",
+            f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+            f"--gcp_region_id={gcp_bq_region}",
+            "--debug" #, "--dry_run"
+            ]
+        result = runner.invoke(main, args)
+        print(result.output)
+        assert result.exit_code == 0
+
+        # Test the last modified column in the summary
+        try:
+            client = BigQueryClient()
+            sql = f"""
+                WITH last_mod AS (
+                    SELECT
+                        project_id || '.' || dataset_id || '.' || table_id AS full_table_id,
+                        TIMESTAMP_MILLIS(last_modified_time) AS last_modified
+                    FROM {gcp_project_id}.{gcp_bq_dataset}.__TABLES__
+                )
+
+                SELECT count(*) as errors
+                FROM {gcp_project_id}.{gcp_bq_dataset}.dq_summary 
+                JOIN last_mod ON last_mod.full_table_id = dq_summary.table_id
+                WHERE dq_summary.last_modified IS NOT NULL AND NOT dq_summary.last_modified = last_mod.last_modified
+            """
+            query_job = client.execute_query(sql)
+            results = query_job.result()
+            logger.info("Query done")
+            row = results.next()
+            errors = row.errors
+            logger.info(f"Got {errors} errors")
+            assert errors == 0
+        except Exception as exc:
+            logger.fatal(f'Exception in query: {exc}')
+            assert False
+        finally:
+            client.close_connection()
+            print("testing this")
+
 
     @pytest.mark.xfail
     def test_cli_dry_run_sa_key_configs(
