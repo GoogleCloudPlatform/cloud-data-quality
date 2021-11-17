@@ -143,3 +143,19 @@ py_test(
     legacy_create_init = 0,
     deps = DEPS,
 )
+
+py_test(
+    name = "test_dataplex_metadata",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "test_dataplex_entity",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)

@@ -43,6 +43,9 @@ MAXIMUM_EXPONENTIAL_BACKOFF = 32
 logger = logging.getLogger(__name__)
 
 
+logger = logging.getLogger(__name__)
+
+
 def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
     with file_path.open() as f:
         yaml_configs = yaml.safe_load(f)
@@ -186,3 +189,19 @@ def make_archive(source, destination, keep_top_level_folder=True):
     else:
         shutil.make_archive(name, format, source)
     shutil.move("{}.{}".format(name, format), destination)
+def update_dict(dict1: dict, dict2: dict) -> dict:
+    output_dict = {}
+    for key in dict1.keys():
+        output_dict.update({key: []})
+        if type(dict1[key]) != str:
+            for value in dict1[key]:
+                output_dict[key].append(value)
+        else:
+            output_dict[key].append(dict1[key])
+        if type(dict2[key]) != str:
+            for value in dict2[key]:
+                output_dict[key].append(value)
+        else:
+            output_dict[key].append(dict2[key])
+
+    return output_dict

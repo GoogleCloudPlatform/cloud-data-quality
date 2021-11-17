@@ -14,18 +14,18 @@
 from __future__ import annotations
 
 from enum import Enum
-from pathlib import Path
 
 import json
 import logging
 import re
+import time
 
 from requests import Response
 
 from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
-from clouddq.integration.gcs import upload_blob
 from clouddq.utils import exponential_backoff
+from clouddq.utils import update_dict
 
 
 logger = logging.getLogger(__name__)
@@ -249,3 +249,42 @@ class CloudDqDataplexClient:
             else:
                 clouddq_artifact_gcs_path = clouddq_artifact_path
         return clouddq_artifact_gcs_path
+
+    def get_dataplex_entity(self,
+                            zone_id: str,
+                            entity_id: str,
+                            ) -> Response:
+        params = {"view": "FULL"}
+        return self._client.get_entity(zone_id=zone_id,
+                                       entity_id=entity_id,
+                                       params=params)
+
+    def list_dataplex_entities(self, zone_id: str, prefix: str = None) -> dict:
+        params = dict()
+        logger.info(f"Prefix value for filter is {prefix}")
+        if prefix:
+            params.update({"page_size": 1000, "filter": f"id=starts_with({prefix})"})
+        else:
+            params.update({"page_size": 1000})
+
+        logger.info(f"Initial params are {params}")
+        response = self._client.list_entities(zone_id=zone_id, params=params).json()
+
+        while "nextPageToken" in response:
+            time.sleep(3)  # to avoid api limit exceed error of 4 calls per 10 sec
+            next_page_token = response["nextPageToken"]
+            logger.info(f"Next Page Token {next_page_token}")
+            page_token = {"page_token": f"{next_page_token}"}
+            params.update(page_token)
+            logger.info(f"Updated Params are {params}")
+            next_page_response = self._client.list_entities(zone_id, params=params).json()
+            logger.info(f"Next page response {next_page_response}")
+
+            if "nextPageToken" not in next_page_response:
+                 del response["nextPageToken"]
+                 response = update_dict(response, next_page_response)
+            else:
+                response = update_dict(response, next_page_response)
+                response["nextPageToken"] = next_page_response["nextPageToken"]
+
+        return response

@@ -215,3 +215,77 @@ class DataplexClient:
             headers=self._headers,
         )
         return response
+
+    def get_dataplex_iam_permissions(
+        self,
+        body: str,
+        gcp_project_id: str = None,
+        location_id: str = None,
+        lake_name: str = None,
+    ) -> Response:
+        if not gcp_project_id:
+            gcp_project_id = self.gcp_project_id
+        if not location_id:
+            location_id = self.location_id
+        if not lake_name:
+            lake_name = self.lake_name
+        response = self._session.post(
+            f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
+            f"{location_id}/lakes/{lake_name}/tasks/",
+            headers=self._headers,
+            data=json.dumps(body),
+        )
+        return response
+
+    def get_entity(self,
+                   zone_id: str,
+                   entity_id: str,
+                   params: dict = None,
+                   gcp_project_id: str = None,
+                   location_id: str = None,
+                   lake_name: str = None,
+                   ) -> Response:
+        if not zone_id:
+            raise ValueError(f"zone_id is the required argument.")
+        if not entity_id:
+            raise ValueError(f"entity_id is the required argument.")
+        if not gcp_project_id:
+            gcp_project_id = self.gcp_project_id
+        if not location_id:
+            location_id = self.location_id
+        if not lake_name:
+            lake_name = self.lake_name
+
+        response = self._session.get(
+            f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
+            f"{location_id}/lakes/{lake_name}/zones/{zone_id}/entities/{entity_id}",
+            headers=self._headers,
+            params=params,
+        )
+
+        return response
+
+    def list_entities(self,
+                      zone_id: str,
+                      params: dict = None,
+                      gcp_project_id: str = None,
+                      location_id: str = None,
+                      lake_name: str = None,
+                      ) -> Response:
+        if not zone_id:
+            raise ValueError(f"zone_id is the required argument.")
+        if not gcp_project_id:
+            gcp_project_id = self.gcp_project_id
+        if not location_id:
+            location_id = self.location_id
+        if not lake_name:
+            lake_name = self.lake_name
+
+        response = self._session.get(
+            f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
+            f"{location_id}/lakes/{lake_name}/zones/{zone_id}/entities/",
+            headers=self._headers,
+            params=params,
+        )
+
+        return response

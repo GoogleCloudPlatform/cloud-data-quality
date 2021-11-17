@@ -20,6 +20,7 @@ import tempfile
 
 import pytest
 
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +183,44 @@ def temp_configs_dir(gcp_project_id, gcp_bq_dataset):
         lines = lines.replace("<your_bigquery_dataset_id>", gcp_bq_dataset)
         source_file.write(lines)
     yield configs_path.absolute()
+
+@pytest.fixture(scope="session")
+def gcp_dataplex_zone_id():
+    gcp_dataplex_zone_id = os.environ.get('DATAPLEX_ZONE_ID', None)
+    if not gcp_dataplex_zone_id:
+        logger.fatal("Required test environment variable DATAPLEX_ZONE_ID cannot be found. "
+                     "Set this to the Dataplex Zone used for testing.")
+    return gcp_dataplex_zone_id
+
+@pytest.fixture(scope="session")
+def gcp_dataplex_bucket_name():
+    gcp_dataplex_bucket_name = os.environ.get('DATAPLEX_BUCKET_NAME', None)
+    if not gcp_dataplex_bucket_name:
+        logger.fatal("Required test environment variable DATAPLEX_BUCKET_NAME cannot be found. "
+                     "Set this to the Dataplex gcs assets bucket name used for testing.")
+    return gcp_dataplex_bucket_name
+
+@pytest.fixture(scope="session")
+def gcp_dataplex_bigquery_dataset_id():
+    gcp_dataplex_bigquery_dataset_id = os.environ.get('DATAPLEX_BIGQUERY_DATASET_ID', None)
+    if not gcp_dataplex_bigquery_dataset_id:
+        logger.fatal("Required test environment variable DATAPLEX_BIGQUERY_DATASET_ID cannot be found. "
+                     "Set this to the Dataplex bigquery assets dataset id used for testing.")
+    return gcp_dataplex_bigquery_dataset_id
+
+@pytest.fixture(scope="session")
+def test_dq_dataplex_client(dataplex_endpoint,
+                            gcp_dataplex_lake_name,
+                            gcp_dataplex_region,
+                            gcp_project_id,
+                            gcs_bucket_name):
+    gcp_project_id = gcp_project_id
+    gcs_bucket_name = gcs_bucket_name
+    yield CloudDqDataplexClient(dataplex_endpoint=dataplex_endpoint,
+                                gcp_dataplex_lake_name=gcp_dataplex_lake_name,
+                                gcp_dataplex_region=gcp_dataplex_region,
+                                gcp_project_id=gcp_project_id,
+                                gcs_bucket_name=gcs_bucket_name)
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "dataplex: mark as tests for dataplex integration test.")

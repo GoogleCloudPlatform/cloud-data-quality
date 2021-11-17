@@ -1,0 +1,31 @@
+{
+  "createTime": "createTimestamp",
+  "updateTime": "updateTimestamp",
+  "asset": "asset-id",
+  "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
+  "system": "BIGQUERY",
+  "schema": {
+    "fields": [
+      {
+        "name": "column1",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "column2",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "column3",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "column4",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED"
+      }
+    ]
+  }
+}
