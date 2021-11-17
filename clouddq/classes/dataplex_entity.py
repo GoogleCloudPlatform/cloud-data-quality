@@ -36,19 +36,19 @@ class DataplexEntity:
 
     @property
     def project_id(self):
-        return self.name.split("/")[1:2][0]
+        return self.name.split("/")[1]
 
     @property
     def location(self):
-        return self.name.split("/")[3:4][0]
+        return self.name.split("/")[3]
 
     @property
     def lake(self):
-        return self.name.split("/")[5:6][0]
+        return self.name.split("/")[5]
 
     @property
     def zone(self):
-        return self.name.split("/")[7:8][0]
+        return self.name.split("/")[7]
 
     @classmethod
     def from_dict(cls: DataplexEntity, kwargs: dict) -> DataplexEntity:
