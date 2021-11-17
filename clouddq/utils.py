@@ -168,7 +168,7 @@ def exponential_backoff(
 ):
     retry_duration = 2 ** retry_iteration + random.random()
     if retry_duration <= max_retry_duration:
-        time.wait(retry_duration)
+        time.sleep(retry_duration)
     else:
         raise RuntimeError("Maximum exponential backoff duration exceeded.")
 
