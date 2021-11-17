@@ -259,14 +259,14 @@ class CloudDqDataplexClient:
         if prefix:
             params.update({"page_size": 1000, "filter": f"id=starts_with({prefix})"})
         else:
-            params.update({"page_size": 10})
+            params.update({"page_size": 1000})
 
         logger.info(f"Initial params are {params}")
         response = self._client.list_entities(zone_id=zone_id, params=params).json()
 
         while "nextPageToken" in response:
-            time.sleep(4)
-            next_page_token = ''.join(map(str, response["nextPageToken"]))
+            time.sleep(3)  # to avoid api limit exceed error of 4 calls per 10 sec
+            next_page_token = response["nextPageToken"]
             logger.info(f"Next Page Token {next_page_token}")
             page_token = {"page_token": f"{next_page_token}"}
             params.update(page_token)

@@ -188,8 +188,25 @@ def temp_configs_dir(gcp_project_id, gcp_bq_dataset):
 def gcp_dataplex_zone_id():
     gcp_dataplex_zone_id = os.environ.get('DATAPLEX_ZONE_ID', None)
     if not gcp_dataplex_zone_id:
-        logger.fatal("Required test environment variable DATAPLEX_ZONE_ID cannot be found. Set this to the Dataplex Zone used for testing.")
+        logger.fatal("Required test environment variable DATAPLEX_ZONE_ID cannot be found. "
+                     "Set this to the Dataplex Zone used for testing.")
     return gcp_dataplex_zone_id
+
+@pytest.fixture(scope="session")
+def gcp_dataplex_bucket_name():
+    gcp_dataplex_bucket_name = os.environ.get('DATAPLEX_BUCKET_NAME', None)
+    if not gcp_dataplex_bucket_name:
+        logger.fatal("Required test environment variable DATAPLEX_BUCKET_NAME cannot be found. "
+                     "Set this to the Dataplex bucket name used for testing.")
+    return gcp_dataplex_bucket_name
+
+@pytest.fixture(scope="session")
+def gcp_dataplex_bigquery_dataset_id():
+    gcp_dataplex_bigquery_dataset_id = os.environ.get('DATAPLEX_BIGQUERY_DATASET_ID', None)
+    if not gcp_dataplex_bigquery_dataset_id:
+        logger.fatal("Required test environment variable DATAPLEX_BIGQUERY_DATASET_ID cannot be found. "
+                     "Set this to the Dataplex bigquery dataset id used for testing.")
+    return gcp_dataplex_bigquery_dataset_id
 
 @pytest.fixture(scope="session")
 def test_dq_dataplex_client(dataplex_endpoint,

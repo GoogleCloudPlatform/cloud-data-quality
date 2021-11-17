@@ -164,9 +164,15 @@ def update_dict(dict1: dict, dict2: dict) -> dict:
     output_dict = {}
     for key in dict1.keys():
         output_dict.update({key: []})
-        for value in dict1[key]:
-            output_dict[key].append(value)
-        for value in dict2[key]:
-            output_dict[key].append(value)
+        if type(dict1[key]) != str:
+            for value in dict1[key]:
+                output_dict[key].append(value)
+        else:
+            output_dict[key].append(dict1[key])
+        if type(dict2[key]) != str:
+            for value in dict2[key]:
+                output_dict[key].append(value)
+        else:
+            output_dict[key].append(dict2[key])
 
     return output_dict
