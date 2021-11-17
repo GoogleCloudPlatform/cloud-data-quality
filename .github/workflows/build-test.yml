@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        os: ['ubuntu-18.04']
+        os: ['ubuntu-18.04', 'ubuntu-20.04']
 
     steps:
       - uses: actions/checkout@v2
@@ -40,13 +40,19 @@ jobs:
         id: vars
         shell: bash
         run: |
-          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "##[set-output name=branch;]$(TMP=${GITHUB_REF#refs/heads/}; echo ${TMP//\//-})"
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
+
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: 10
+          platform: x64
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@master
@@ -79,6 +85,7 @@ jobs:
           cat /etc/*-release
           DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install -yq tzdata curl lsb-core lsb-release # > /dev/null
           . ./scripts/cloud_build_test_debian_ubuntu.sh "3.8.12"
-          gsutil cp clouddq_patched.zip gs://${{ secrets.GCS_BUCKET_NAME }}/build-artifacts/ubuntu18.04/python3.8/`date -I`/${{ steps.vars.outputs.sha_short }}_${{ steps.vars.outputs.branch }}/clouddq-executable.zip
-          gsutil cp clouddq_patched.zip.hashsum gs://${{ secrets.GCS_BUCKET_NAME }}/build-artifacts/ubuntu18.04/python3.8/`date -I`/${{ steps.vars.outputs.sha_short }}_${{ steps.vars.outputs.branch }}/clouddq-executable.zip.hashsum
+          gsutil cp clouddq_patched.zip gs://${{ secrets.GCS_BUCKET_NAME }}/build-artifacts/${{matrix.os}}/python3.8/`date -I`/${{ steps.vars.outputs.sha_short }}/${{ steps.vars.outputs.branch }}/clouddq-executable.zip
+          gsutil cp clouddq_patched.zip.hashsum gs://${{ secrets.GCS_BUCKET_NAME }}/build-artifacts/${{matrix.os}}/python3.8/`date -I`/${{ steps.vars.outputs.sha_short }}/${{ steps.vars.outputs.branch }}/clouddq-executable.zip.hashsum
+          gsutil cp clouddq/integration/clouddq_pyspark_driver.py gs://${{ secrets.GCS_BUCKET_NAME }}/build-artifacts/${{matrix.os}}/python3.8/`date -I`/${{ steps.vars.outputs.sha_short }}/${{ steps.vars.outputs.branch }}/clouddq_pyspark_driver.py
         shell: bash

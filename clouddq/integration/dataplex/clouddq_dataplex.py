@@ -25,6 +25,7 @@ from requests import Response
 from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
 from clouddq.integration.gcs import upload_blob
+from clouddq.utils import exponential_backoff
 
 
 logger = logging.getLogger(__name__)
@@ -100,28 +101,15 @@ class CloudDqDataplexClient:
             clouddq_executable_checksum_path, "clouddq-executable.zip.hashsum"
         )
         # Prepare input CloudDQ YAML specs path
-        clouddq_yaml_spec_file_path = str(clouddq_yaml_spec_file_path)
-        if clouddq_yaml_spec_file_path[:5] == "gs://":
+        if str(clouddq_yaml_spec_file_path)[:5] == "gs://":
             clouddq_configs_gcs_path = clouddq_yaml_spec_file_path
         else:
-            clouddq_yaml_spec_file_path = Path(clouddq_yaml_spec_file_path)
-            if clouddq_yaml_spec_file_path.is_file():
-                upload_blob(
-                    self.gcs_bucket_name,
-                    clouddq_yaml_spec_file_path.name,
-                    str(clouddq_yaml_spec_file_path.name),
-                )
-                gcs_uri = (
-                    f"gs://{self.gcs_bucket_name}/{clouddq_yaml_spec_file_path.name}"
-                )
-                clouddq_configs_gcs_path = gcs_uri
-            else:
-                raise ValueError(
-                    "'clouddq_yaml_spec_file_path' argument "
-                    f"{clouddq_yaml_spec_file_path} "
-                    "must either be a single file (`.yml` or `.zip`) "
-                    "or a GCS path to the `.yml` or `.zip` configs file."
-                )
+            raise ValueError(
+                "'clouddq_yaml_spec_file_path' argument "
+                f"{clouddq_yaml_spec_file_path} "
+                "must either be GCS path containing the "
+                "`.yml` or `.zip` CloudDQ YAML configs."
+            )
         # Add user-agent tag as Task label
         allowed_user_agent_label = re.sub("[^0-9a-zA-Z]+", "-", USER_AGENT_TAG.lower())
         if task_labels:
@@ -207,7 +195,27 @@ class CloudDqDataplexClient:
             delete_task_response = self._client.delete_dataplex_task(
                 task_id=task_id,
             )
-            return delete_task_response
+            if delete_task_response.status_code == 200:
+                retry_iteration = 0
+                get_task_response = self._client.get_dataplex_task(
+                    task_id=task_id,
+                )
+                try:
+                    while get_task_response.status_code != 404:
+                        exponential_backoff(retry_iteration)
+                        retry_iteration += 1
+                        get_task_response = self._client.get_dataplex_task(
+                            task_id=task_id,
+                        )
+                    logger.info(f"Successfully deleted Task ID: {task_id}")
+                    return delete_task_response
+                except RuntimeError as e:
+                    logger.error(
+                        f"Failed to delete Task ID: {task_id} with error: {e}",
+                        exc_info=True,
+                    )
+            else:
+                return delete_task_response
         else:
             return get_task_response
 
