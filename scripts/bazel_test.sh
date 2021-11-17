@@ -48,8 +48,8 @@ if [[ $RUN_DATAPLEX = true ]]; then
   require_env_var DATAPLEX_TARGET_BQ_TABLE "Set $DATAPLEX_TARGET_BQ_TABLE to the Target BQ Table used for testing. The table will be created in $DATAPLEX_TARGET_BQ_DATASET if not already exist."
   require_env_var DATAPLEX_TASK_SA "Set $DATAPLEX_TASK_SA to the service account used for running Dataplex Tasks in testing."
   require_env_var DATAPLEX_ZONE_ID "Set $DATAPLEX_ZONE_ID to the Dataplex Zone id for testing."
-  require_env_var DATAPLEX_BUCKET_NAME "Set $DATAPLEX_BUCKET_NAME to the Dataplex Zone id for testing."
-  require_env_var DATAPLEX_BIGQUERY_DATASET_ID "Set $DATAPLEX_BIGQUERY_DATASET_ID to the Dataplex Zone id for testing."
+  require_env_var DATAPLEX_BUCKET_NAME "Set $DATAPLEX_BUCKET_NAME to the bucket name for GCS assets in Dataplex Lake used for testing."
+  require_env_var DATAPLEX_BIGQUERY_DATASET_ID "Set $DATAPLEX_BIGQUERY_DATASET_ID to the bigquery assets dataset id in Dataplex Lake used for testing."
 fi
 
 function bazel_test() {

@@ -197,7 +197,7 @@ def gcp_dataplex_bucket_name():
     gcp_dataplex_bucket_name = os.environ.get('DATAPLEX_BUCKET_NAME', None)
     if not gcp_dataplex_bucket_name:
         logger.fatal("Required test environment variable DATAPLEX_BUCKET_NAME cannot be found. "
-                     "Set this to the Dataplex bucket name used for testing.")
+                     "Set this to the Dataplex gcs assets bucket name used for testing.")
     return gcp_dataplex_bucket_name
 
 @pytest.fixture(scope="session")
@@ -205,7 +205,7 @@ def gcp_dataplex_bigquery_dataset_id():
     gcp_dataplex_bigquery_dataset_id = os.environ.get('DATAPLEX_BIGQUERY_DATASET_ID', None)
     if not gcp_dataplex_bigquery_dataset_id:
         logger.fatal("Required test environment variable DATAPLEX_BIGQUERY_DATASET_ID cannot be found. "
-                     "Set this to the Dataplex bigquery dataset id used for testing.")
+                     "Set this to the Dataplex bigquery assets dataset id used for testing.")
     return gcp_dataplex_bigquery_dataset_id
 
 @pytest.fixture(scope="session")

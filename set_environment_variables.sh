@@ -69,3 +69,9 @@ export DATAPLEX_TASK_SA="<service-account-used-for-running-dataplex-task>"
 
 # Set $DATAPLEX_ZONE_ID to the zone id in Dataplex Lake used for testing.
 export DATAPLEX_ZONE_ID="<zone-id-in-$DATAPLEX_LAKE_NAME>"
+
+# Set $DATAPLEX_BUCKET_NAME to the bucket name for GCS assets in Dataplex Lake used for testing.
+export DATAPLEX_BUCKET_NAME="<zone-id-in-$DATAPLEX_BUCKET_NAME>"
+
+# Set $DATAPLEX_BIGQUERY_DATASET_ID to the bigquery assets dataset id in Dataplex Lake used for testing.
+export DATAPLEX_BIGQUERY_DATASET_ID="<zone-id-in-$DATAPLEX_BIGQUERY_DATASET_ID>"
