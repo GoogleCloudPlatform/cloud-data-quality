@@ -20,7 +20,6 @@ import datetime
 import hashlib
 import json
 import logging
-import shutil
 import sys
 import tempfile
 import time
@@ -32,6 +31,7 @@ from clouddq.integration import clouddq_pyspark_driver
 from clouddq.integration import test_clouddq_pyspark_driver
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.gcs import upload_blob
+from clouddq.utils import make_archive
 from clouddq.utils import working_directory
 
 
@@ -41,82 +41,75 @@ logger = logging.getLogger(__name__)
 class TestDataplexIntegration:
 
     @pytest.fixture(scope="session")
-    def configs_archive_path(self):
-        configs_archive_path = Path(tempfile.gettempdir()).joinpath("clouddq_test_artifacts", "archives").absolute()
-        configs_archive_path.mkdir(parents=True, exist_ok=True)
-        return configs_archive_path
-
-    @pytest.fixture
-    def gcs_clouddq_configs_standard(self, temp_configs_dir, configs_archive_path, gcs_bucket_name):
+    def gcs_clouddq_configs_standard(self, temp_configs_dir, gcs_bucket_name):
         print("Invoked 'gcs_clouddq_configs_standard' fixture.")
+        configs_archive_path = Path(tempfile.gettempdir()).joinpath(
+            "pytest-gcs_clouddq_configs_standard").absolute()
+        configs_archive_path.mkdir(parents=True, exist_ok=True)
+        assert configs_archive_path.is_dir()
+        print(f"Current content of {configs_archive_path}:")
+        print(list(configs_archive_path.glob("**/*")))
         file_name = "clouddq-configs.zip"
-        with working_directory(configs_archive_path):
-            # Create standard configs zip called 'clouddq-configs.zip'
-            shutil.make_archive('clouddq-configs', 'zip', temp_configs_dir.parent, temp_configs_dir.name)
-            configs_file_path = configs_archive_path.joinpath(file_name).absolute()
-            print(configs_file_path)
-            assert configs_file_path.is_file()
-            upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
-            gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
-            print(gcs_uri)
-            yield gcs_uri
-            if configs_file_path.is_file():
-                configs_file_path.unlink()
+        # Create standard configs zip called 'clouddq-configs.zip'
+        configs_file_path = configs_archive_path.joinpath(file_name).absolute()
+        make_archive(temp_configs_dir, configs_file_path)
+        assert configs_file_path.is_file()
+        print(f"Current content of {configs_archive_path}:")
+        print(list(configs_archive_path.glob("**/*")))
+        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
+        print(gcs_uri)
+        return gcs_uri
 
-    @pytest.fixture
-    def gcs_clouddq_configs_nonstandard_local(self, temp_configs_dir, configs_archive_path):
-        print("Invoked 'gcs_clouddq_configs_nonstandard_local' fixture.")
-        file_name = "non-standard-clouddq-configs-local.zip"
-        with working_directory(configs_archive_path):
-            # Create non-standard configs zip called 'non-standard-clouddq-configs-local.zip'
-            shutil.make_archive('non-standard-clouddq-configs-local', 'zip', temp_configs_dir)
-            configs_file_path = configs_archive_path.joinpath(file_name).absolute()
-            print(configs_file_path)
-            assert configs_file_path.is_file()
-            yield configs_file_path.absolute()
-            if configs_file_path.is_file():
-                configs_file_path.unlink()
-
-    @pytest.fixture
-    def gcs_clouddq_configs_nonstandard(self, temp_configs_dir, configs_archive_path, gcs_bucket_name):
+    @pytest.fixture(scope="session")
+    def gcs_clouddq_configs_nonstandard(self, temp_configs_dir, gcs_bucket_name):
         print("Invoked 'gcs_clouddq_configs_nonstandard' fixture.")
+        configs_archive_path = Path(tempfile.gettempdir()).joinpath(
+            "pytest-gcs_clouddq_configs_nonstandard").absolute()
+        configs_archive_path.mkdir(parents=True, exist_ok=True)
+        assert configs_archive_path.is_dir()
+        print(f"Current content of {configs_archive_path}:")
+        print(list(configs_archive_path.glob("**/*")))
         file_name = "non-standard-clouddq-configs.zip"
-        with working_directory(configs_archive_path):
-            # Create non-standard configs zip called 'non-standard-clouddq-configs.zip'
-            shutil.make_archive('non-standard-clouddq-configs', 'zip', temp_configs_dir)
-            configs_file_path = configs_archive_path.joinpath(file_name).absolute()
-            print(configs_file_path)
-            assert configs_file_path.is_file()
-            upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
-            gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
-            print(gcs_uri)
-            yield gcs_uri
-            if configs_file_path.is_file():
-                configs_file_path.unlink()
+        # Create non-standard configs zip called 'non-standard-clouddq-configs.zip'
+        configs_file_path = configs_archive_path.joinpath(file_name).absolute()
+        make_archive(temp_configs_dir, configs_file_path, False)
+        assert configs_file_path.is_file()
+        print(f"Current content of {configs_archive_path}:")
+        print(list(configs_archive_path.glob("**/*")))
+        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
+        print(gcs_uri)
+        return gcs_uri
 
-    @pytest.fixture
-    def gcs_clouddq_configs_empty(self, configs_archive_path, gcs_bucket_name):
+    @pytest.fixture(scope="session")
+    def gcs_clouddq_configs_empty(self, gcs_bucket_name):
         print("Invoked 'gcs_clouddq_configs_empty' fixture.")
+        configs_archive_path = Path(tempfile.gettempdir()).joinpath(
+            "pytest-gcs_clouddq_configs_empty").absolute()
+        configs_archive_path.mkdir(parents=True, exist_ok=True)
+        assert configs_archive_path.is_dir()
+        print(f"Current content of {configs_archive_path}:")
+        print(list(configs_archive_path.glob("**/*")))
         file_name = "empty-clouddq-configs.zip"
-        with working_directory(configs_archive_path):
-            # Create empty configs zip called 'empty-clouddq-configs.zip'
-            empty_directory = Path(configs_archive_path).joinpath("empty").absolute()
-            empty_directory.mkdir(parents=True, exist_ok=True)
-            shutil.make_archive('empty-clouddq-configs', 'zip', empty_directory.parent, empty_directory.name)
-            configs_file_path = configs_archive_path.joinpath(file_name).absolute()
-            print(configs_file_path)
-            assert configs_file_path.is_file()
-            upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
-            gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
-            print(gcs_uri)
-            yield gcs_uri
-            if configs_file_path.joinpath(file_name).is_file():
-                configs_file_path.unlink()
+        # Create empty configs zip called 'empty-clouddq-configs.zip'
+        empty_directory = Path(configs_archive_path).joinpath("empty").absolute()
+        empty_directory.mkdir(parents=True, exist_ok=True)
+        configs_file_path = configs_archive_path.joinpath(file_name).absolute()
+        make_archive(empty_directory, configs_file_path)
+        assert configs_file_path.is_file()
+        print(f"Current content of {configs_archive_path}:")
+        print(list(configs_archive_path.glob("**/*")))
+        upload_blob(gcs_bucket_name, configs_file_path, f"test-artifacts/{file_name}")
+        gcs_uri = f"gs://{gcs_bucket_name}/test-artifacts/{file_name}"
+        print(gcs_uri)
+        return gcs_uri
 
     @pytest.fixture(scope="session")
     def temp_configs_files_path(self, temp_configs_dir):
         print("Invoked 'temp_configs_files_path' fixture.")
-        configs_files_path = Path(tempfile.gettempdir()).joinpath("clouddq_test_artifacts", "files").absolute()
+        configs_files_path = Path(tempfile.gettempdir()).joinpath(
+            "pytest-clouddq_test_files").absolute()
         configs_files_path.mkdir(parents=True, exist_ok=True)
         with working_directory(configs_files_path):
             # Create single YAML config files for testing
@@ -144,7 +137,7 @@ class TestDataplexIntegration:
             print(f"Content of configs file path: {configs_files_path}:")
             print(pformat(list(configs_files_path.glob("**/*.yml"))))
             # Return path and delete when done
-            yield configs_files_path.absolute()
+            return configs_files_path.absolute()
 
     @pytest.fixture
     def gcs_clouddq_configs_single_yaml(self, temp_configs_files_path, gcs_bucket_name):
@@ -233,7 +226,7 @@ class TestDataplexIntegration:
                                 gcs_bucket_name):
         gcp_project_id = gcp_project_id
         gcs_bucket_name = gcs_bucket_name
-        yield CloudDqDataplexClient(dataplex_endpoint=dataplex_endpoint,
+        return CloudDqDataplexClient(dataplex_endpoint=dataplex_endpoint,
                                gcp_dataplex_lake_name=gcp_dataplex_lake_name,
                                gcp_dataplex_region=gcp_dataplex_region,
                                gcp_project_id=gcp_project_id,
@@ -263,6 +256,18 @@ class TestDataplexIntegration:
                 id="without_clouddq_executable"
             ),
             pytest.param(
+                'gcs_clouddq_configs_single_yaml',
+                "SUCCEEDED",
+                False,
+                id="configs_single_yaml"
+            ),
+            pytest.param(
+                'gcs_clouddq_configs_single_yaml_malformed',
+                "FAILED",
+                False,
+                id="configs_single_yaml_malformed"
+            ),
+            pytest.param(
                 'gcs_clouddq_configs_standard',
                 "SUCCEEDED",
                 False,
@@ -275,28 +280,10 @@ class TestDataplexIntegration:
                 id="configs_nonstandard"
             ),
             pytest.param(
-                'gcs_clouddq_configs_nonstandard_local',
-                "SUCCEEDED",
-                False,
-                id="configs_nonstandard_local"
-            ),
-            pytest.param(
                 'gcs_clouddq_configs_empty',
                 "FAILED",
                 False,
                 id="configs_empty"
-            ),
-            pytest.param(
-                'gcs_clouddq_configs_single_yaml',
-                "SUCCEEDED",
-                False,
-                id="configs_single_yaml"
-            ),
-            pytest.param(
-                'gcs_clouddq_configs_single_yaml_malformed',
-                "FAILED",
-                False,
-                id="configs_single_yaml_malformed"
             ),
         ],
     )
@@ -336,7 +323,7 @@ class TestDataplexIntegration:
             clouddq_pyspark_driver_path: str = gcs_clouddq_pyspark_driver
             clouddq_pyspark_driver_filename: str = "clouddq_pyspark_driver.py"
             # Prepare the test YAML configurations from fixture
-            clouddq_yaml_spec_file_path: str = request.getfixturevalue(input_configs)
+            clouddq_yaml_spec_file_path: str = str(request.getfixturevalue(input_configs))
             print(f"Using test GCP configs: {clouddq_yaml_spec_file_path}")
         # Prepare Task_ID for reference
         task_id = f"clouddq-test-create-dataplex-task-{test_id}"
@@ -386,4 +373,4 @@ class TestDataplexIntegration:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-v', '-rP', '-n 4'] + sys.argv[1:]))
+    raise SystemExit(pytest.main([__file__, '-v', '-rP', '-n', 'auto'] + sys.argv[1:]))
