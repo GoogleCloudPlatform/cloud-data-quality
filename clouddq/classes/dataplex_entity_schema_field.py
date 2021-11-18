@@ -35,7 +35,13 @@ class DataplexEntitySchemaField:
 
         """
 
-        return asdict(self)
+        output = {
+            "name":  self.name,
+            "data_type": self.data_type,
+            "mode": self.mode,
+        }
+
+        return dict(output)
 
 
     @classmethod

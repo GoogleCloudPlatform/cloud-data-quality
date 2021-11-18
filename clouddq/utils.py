@@ -176,3 +176,97 @@ def update_dict(dict1: dict, dict2: dict) -> dict:
             output_dict[key].append(dict2[key])
 
     return output_dict
+
+
+def validate_uri_and_assert(entity_uri: str) -> typing.Any:
+
+    scheme = entity_uri.split("//")[0] + "//"
+    entity_uri_without_scheme = entity_uri.split("//")[1]
+
+    if scheme in ["bigquery://", "local://", "gs://", ]:
+
+        raise NotImplementedError(
+            f"{scheme} scheme is not implemented."
+        )
+
+    if scheme not in ["dataplex://"]:
+        raise ValueError(
+            f"{scheme} scheme is invalid."
+        )
+
+    else:
+
+        if "projects" not in entity_uri:
+            raise ValueError(
+                f"Invalid Entity URI : {entity_uri}"
+            )
+
+        if "locations" not in entity_uri:
+            raise ValueError(
+                f"Invalid Entity URI : {entity_uri}"
+            )
+
+        if "lakes" not in entity_uri:
+            raise ValueError(
+                f"Invalid Entity URI : {entity_uri}"
+            )
+
+        if "zones" not in entity_uri:
+            raise ValueError(
+                f"Invalid Entity URI : {entity_uri}"
+            )
+
+        if "entities" not in entity_uri:
+            raise ValueError(
+                f"Invalid Entity URI : {entity_uri}"
+            )
+
+        project_id = entity_uri.split("/")[3]
+        if not project_id:
+            raise ValueError(
+                f"Required argument project_id is missing in the URI : {entity_uri}"
+            )
+
+        location_id = entity_uri.split("/")[5]
+        if not location_id:
+            raise ValueError(
+                f"Required argument location_id is missing in the URI : {entity_uri}"
+            )
+
+        lake_id = entity_uri.split("/")[7]
+        if not lake_id:
+            raise ValueError(
+                f"Required argument lake_id is missing in the URI : {entity_uri}"
+            )
+        zone_id = entity_uri.split("/")[9]
+        if not zone_id:
+            raise ValueError(
+                f"Required argument zone_id is missing in the URI : {entity_uri}"
+            )
+
+        try:
+            entity_id = entity_uri.split("/")[11]
+        except IndexError:
+            raise ValueError(
+                f"Required argument entity_id is missing in the URI : {entity_uri}"
+            )
+
+        if "@" in entity_uri_without_scheme:
+            raise ValueError(
+                f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
+            )
+
+        if "#" in entity_uri_without_scheme:
+            raise ValueError(
+                f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
+            )
+
+        if "?" in entity_uri_without_scheme:
+            raise ValueError(
+                f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
+            )
+
+        if ":" in entity_uri_without_scheme:
+            raise ValueError(
+                f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
+            )

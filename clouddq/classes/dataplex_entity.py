@@ -17,7 +17,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, asdict
 from clouddq.classes.dataplex_entity_schema import DataplexEntitySchema
-from clouddq.utils import assert_not_none_or_empty
+from clouddq.classes.dq_entity_uri import EntityUri
+from clouddq.utils import assert_not_none_or_empty, validate_uri_and_assert
+
 
 @dataclass
 class DataplexEntity:
@@ -119,6 +121,29 @@ class DataplexEntity:
             schema=schema,
         )
 
+    @classmethod
+    def from_uri(cls: DataplexEntity, entity_uri: EntityUri) -> DataplexEntity:
+
+        entity_uri_dict = entity_uri.to_dict()
+        uri = entity_uri_dict.get("uri")
+        print("URI", uri)
+        validate_uri_and_assert(entity_uri=uri)
+        entity_name = uri.split("//")[1]
+        entity_id = entity_uri_dict.get("entity_id")
+
+        return DataplexEntity(
+            name=entity_name,
+            createTime=None,
+            updateTime=None,
+            id=entity_id,
+            type=None,
+            asset=None,
+            dataPath=None,
+            system=None,
+            format=None,
+            schema=None,
+        )
+
     def to_dict(self: DataplexEntity) -> dict:
         """
         Serialize dataplex entity to dictionary
@@ -128,5 +153,22 @@ class DataplexEntity:
         Returns:
 
         """
+        
+        output = {
+            "name": self.name,
+            "createTime": self.createTime,
+            "updateTime": self.updateTime,
+            "id": self.id,
+            "type": self.type,
+            "asset": self.asset,
+            "dataPath": self.dataPath,
+            "system": self.system,
+            "format": self.format,
+            "schema": self.schema,
+            "project_id": self.project_id,
+            "location": self.location,
+            "lake": self.lake,
+            "zone": self.zone,
+        }
 
-        return asdict(self)
+        return dict(output)
