@@ -22,6 +22,7 @@ import logging
 import typing
 
 from clouddq.classes.dq_config_type import DqConfigType
+from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import load_jinja_template
@@ -92,12 +93,13 @@ def load_row_filters_config(configs_path: Path) -> typing.Dict:
 def create_rule_binding_view_model(
     rule_binding_id: str,
     rule_binding_configs: typing.Dict,
-    dq_summary_table_name: str,
+    configs_cache: DqConfigsCache,
     environment: str,
-    configs_path: Path,
-    entities_collection: typing.Optional[typing.Dict] = None,
-    row_filters_collection: typing.Optional[typing.Dict] = None,
-    rules_collection: typing.Optional[typing.Dict] = None,
+    # configs_path: Path,
+    dq_summary_table_name: str,
+    # entities_collection: typing.Optional[typing.Dict] = None,
+    # row_filters_collection: typing.Optional[typing.Dict] = None,
+    # rules_collection: typing.Optional[typing.Dict] = None,
     metadata: typing.Optional[typing.Dict] = None,
     debug: bool = False,
     progress_watermark: bool = True,
@@ -110,10 +112,10 @@ def create_rule_binding_view_model(
         rule_binding_configs=rule_binding_configs,
         dq_summary_table_name=dq_summary_table_name,
         environment=environment,
-        configs_path=configs_path,
-        entities_collection=entities_collection,
-        row_filters_collection=row_filters_collection,
-        rules_collection=rules_collection,
+        configs_cache=configs_cache,
+        # entities_collection=entities_collection,
+        # row_filters_collection=row_filters_collection,
+        # rules_collection=rules_collection,
         metadata=metadata,
         progress_watermark=progress_watermark,
     )
@@ -134,30 +136,32 @@ def write_sql_string_as_dbt_model(
 def prepare_configs_from_rule_binding_id(
     rule_binding_id: str,
     rule_binding_configs: typing.Dict,
+    configs_cache: DqConfigsCache,
     dq_summary_table_name: str,
     environment: typing.Optional[str],
-    configs_path: typing.Optional[Path],
-    entities_collection: typing.Optional[typing.Dict] = None,
-    row_filters_collection: typing.Optional[typing.Dict] = None,
-    rules_collection: typing.Optional[typing.Dict] = None,
+    # configs_path: typing.Optional[Path],
+    # entities_collection: typing.Optional[typing.Dict] = None,
+    # row_filters_collection: typing.Optional[typing.Dict] = None,
+    # rules_collection: typing.Optional[typing.Dict] = None,
     metadata: typing.Optional[typing.Dict] = None,
     progress_watermark: bool = True,
 ) -> typing.Dict:
-    (
-        entities_collection,
-        row_filters_collection,
-        rules_collection,
-    ) = load_configs_if_not_defined(
-        configs_path=configs_path,
-        entities_collection=entities_collection,
-        row_filters_collection=row_filters_collection,
-        rules_collection=rules_collection,
-    )
+    # (
+    #     entities_collection,
+    #     row_filters_collection,
+    #     rules_collection,
+    # ) = load_configs_if_not_defined(
+    #     configs_path=configs_path,
+    #     entities_collection=entities_collection,
+    #     row_filters_collection=row_filters_collection,
+    #     rules_collection=rules_collection,
+    # )
     rule_binding = DqRuleBinding.from_dict(rule_binding_id, rule_binding_configs)
     resolved_rule_binding_configs = rule_binding.resolve_all_configs_to_dict(
-        entities_collection=entities_collection,
-        row_filters_collection=row_filters_collection,
-        rules_collection=rules_collection,
+        # entities_collection=entities_collection,
+        # row_filters_collection=row_filters_collection,
+        # rules_collection=rules_collection,
+        configs_cache=configs_cache,
     )
     configs: typing.Dict[typing.Any, typing.Any] = {
         "configs": dict(resolved_rule_binding_configs)
@@ -175,16 +179,29 @@ def prepare_configs_from_rule_binding_id(
     return configs
 
 
-def load_configs_if_not_defined(
-    configs_path: Path,
-    entities_collection: typing.Dict = None,
-    row_filters_collection: typing.Dict = None,
-    rules_collection: typing.Dict = None,
-) -> typing.Tuple[typing.Dict, typing.Dict, typing.Dict]:
-    if not entities_collection:
-        entities_collection = load_entities_config(configs_path)
-    if not row_filters_collection:
-        row_filters_collection = load_row_filters_config(configs_path)
-    if not rules_collection:
-        rules_collection = load_rules_config(configs_path)
-    return entities_collection, row_filters_collection, rules_collection
+# def load_configs_if_not_defined(
+#     configs_path: Path,
+#     entities_collection: typing.Dict = None,
+#     row_filters_collection: typing.Dict = None,
+#     rules_collection: typing.Dict = None,
+# ) -> typing.Tuple[typing.Dict, typing.Dict, typing.Dict]:
+#     if not entities_collection:
+#         entities_collection = load_entities_config(configs_path)
+#     if not row_filters_collection:
+#         row_filters_collection = load_row_filters_config(configs_path)
+#     if not rules_collection:
+#         rules_collection = load_rules_config(configs_path)
+#     return entities_collection, row_filters_collection, rules_collection
+
+def prepare_configs_cache(
+            configs_path: Path) -> DqConfigsCache:
+    configs_cache = DqConfigsCache()
+    rule_binding_collection = load_rule_bindings_config(configs_path)
+    configs_cache.load_all_rule_bindings_collection(rule_binding_collection)
+    entities_collection = load_entities_config(configs_path)
+    configs_cache.load_all_entities_collection(entities_collection)
+    row_filters_collection = load_row_filters_config(configs_path)
+    configs_cache.load_all_row_filters_collection(row_filters_collection)
+    rules_collection = load_rules_config(configs_path)
+    configs_cache.load_all_rules_collection(rules_collection)
+    return configs_cache

@@ -24,7 +24,7 @@ import pytest
 import yaml
 
 from clouddq.classes.dq_config_type import DqConfigType
-from clouddq.main import lib
+from clouddq import lib
 
 
 logger = logging.getLogger(__name__)

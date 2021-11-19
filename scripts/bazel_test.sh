@@ -70,9 +70,9 @@ function bazel_test() {
       --test_env DATAPLEX_TARGET_BQ_DATASET="${DATAPLEX_TARGET_BQ_DATASET:-}" \
       --test_env DATAPLEX_TARGET_BQ_TABLE="${DATAPLEX_TARGET_BQ_TABLE:-}" \
       --test_env DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA:-}" \
-      --test_env DATAPLEX_ZONE_ID="${DATAPLEX_ZONE_ID}" \
-      --test_env DATAPLEX_BUCKET_NAME="${DATAPLEX_BUCKET_NAME}" \
-      --test_env DATAPLEX_BIGQUERY_DATASET_ID="${DATAPLEX_BIGQUERY_DATASET_ID}" \
+      --test_env DATAPLEX_ZONE_ID="${DATAPLEX_ZONE_ID:-}}" \
+      --test_env DATAPLEX_BUCKET_NAME="${DATAPLEX_BUCKET_NAME:-}}" \
+      --test_env DATAPLEX_BIGQUERY_DATASET_ID="${DATAPLEX_BIGQUERY_DATASET_ID:-}}" \
       //tests"${1:-/...}" ${2+"$2"}
   else
     bin/bazelisk test \
@@ -89,9 +89,9 @@ function bazel_test() {
       --test_env DATAPLEX_TARGET_BQ_DATASET="${DATAPLEX_TARGET_BQ_DATASET:-}" \
       --test_env DATAPLEX_TARGET_BQ_TABLE="${DATAPLEX_TARGET_BQ_TABLE:-}" \
       --test_env DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA:-}" \
-      --test_env DATAPLEX_ZONE_ID="${DATAPLEX_ZONE_ID}" \
-      --test_env DATAPLEX_BUCKET_NAME="${DATAPLEX_BUCKET_NAME}" \
-      --test_env DATAPLEX_BIGQUERY_DATASET_ID="${DATAPLEX_BIGQUERY_DATASET_ID}" \
+      --test_env DATAPLEX_ZONE_ID="${DATAPLEX_ZONE_ID:-}}" \
+      --test_env DATAPLEX_BUCKET_NAME="${DATAPLEX_BUCKET_NAME:-}}" \
+      --test_env DATAPLEX_BIGQUERY_DATASET_ID="${DATAPLEX_BIGQUERY_DATASET_ID:-}}" \
       //tests"${1:-/...}" ${2+"$2"}
   fi
   set +x

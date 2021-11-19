@@ -393,14 +393,19 @@ def main(  # noqa: C901
         target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
         if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
             target_rule_binding_ids = list(all_rule_bindings.keys())
-        # Load all other configs
-        (
-            entities_collection,
-            row_filters_collection,
-            rules_collection,
-        ) = lib.load_configs_if_not_defined(
-            configs_path=configs_path,
-        )
+        # Load all configs into a local cache
+        configs_cache = lib.prepare_configs_cache(
+            configs_path=Path(configs_path))
+        # Resolve all config URIs from remote or local metadata registries
+        configs_cache.resolve_all_remote_configs()
+        # # Load all other configs
+        # (
+        #     entities_collection,
+        #     row_filters_collection,
+        #     rules_collection,
+        # ) = lib.load_configs_if_not_defined(
+        #     configs_path=configs_path,
+        # )
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
@@ -418,11 +423,12 @@ def main(  # noqa: C901
             sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
+                configs_cache=configs_cache,
+                # entities_collection=entities_collection,
+                # rules_collection=rules_collection,
+                # row_filters_collection=row_filters_collection,
                 dq_summary_table_name=dq_summary_table_name,
-                entities_collection=entities_collection,
-                rules_collection=rules_collection,
-                row_filters_collection=row_filters_collection,
-                configs_path=configs_path,
+                # configs_path=configs_path,
                 environment=environment_target,
                 metadata=metadata,
                 debug=print_sql_queries,

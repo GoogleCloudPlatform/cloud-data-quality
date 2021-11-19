@@ -121,6 +121,25 @@ def get_from_dict_and_assert(
     return value
 
 
+def get_keys_from_dict_and_assert_oneof(
+    config_id: str,
+    kwargs: typing.Dict,
+    keys: typing.List[str],
+    assertion: typing.Callable[[typing.Any], bool] = None,
+    error_msg: str = None,
+) -> typing.Any:
+    value = {key:kwargs.get(key) for key in keys if kwargs.get(key, None) is not None}
+    if len(value) != 1:
+        raise ValueError(f"Config ID: {config_id} must define exactly one key from: {keys}.")
+    if assertion and not assertion(value):
+        raise ValueError(
+            f"Assertion failed on value {value}.\n"
+            f"Config ID: {config_id}, kwargs: {kwargs}.\n"
+            f"Error: {error_msg}"
+        )
+    return value
+
+
 class DebugChainableUndefined(ChainableUndefined, DebugUndefined):
     pass
 
