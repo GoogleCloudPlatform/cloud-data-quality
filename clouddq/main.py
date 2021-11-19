@@ -29,6 +29,7 @@ import click
 import coloredlogs
 
 from clouddq import lib
+from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.runners.dbt.dbt_runner import DbtRunner
@@ -333,6 +334,7 @@ def main(  # noqa: C901
             "specifying connection configs instead."
         )
     bigquery_client = None
+    dataplex_client = None
     try:
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
@@ -341,6 +343,11 @@ def main(  # noqa: C901
                 gcp_service_account_key_path=gcp_service_account_key_path,
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
+        dataplex_client = DataplexClient(
+            gcp_project_id=gcp_project_id,
+            gcp_service_account_key_path=gcp_service_account_key_path,
+            gcp_impersonation_credentials=gcp_impersonation_credentials,
+        )
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -394,10 +401,8 @@ def main(  # noqa: C901
         if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
             target_rule_binding_ids = list(all_rule_bindings.keys())
         # Load all configs into a local cache
-        configs_cache = lib.prepare_configs_cache(
-            configs_path=Path(configs_path))
-        # Resolve all config URIs from remote or local metadata registries
-        configs_cache.resolve_all_remote_configs()
+        configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
+        configs_cache.resolve_dataplex_entity_uris(dataplex_client)
         # # Load all other configs
         # (
         #     entities_collection,
@@ -423,11 +428,11 @@ def main(  # noqa: C901
             sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name=dq_summary_table_name,
                 configs_cache=configs_cache,
                 # entities_collection=entities_collection,
                 # rules_collection=rules_collection,
                 # row_filters_collection=row_filters_collection,
-                dq_summary_table_name=dq_summary_table_name,
                 # configs_path=configs_path,
                 environment=environment_target,
                 metadata=metadata,
@@ -489,11 +494,14 @@ def main(  # noqa: C901
         else:
             raise RuntimeError("Job failed with unknown status.")
     except Exception as error:
+        logger.debug("got to error")
+        logger.error(error)
         json_logger.error(error, exc_info=True)
-        raise error
+        sys.exit(1)
     finally:
         if bigquery_client:
             bigquery_client.close_connection()
+        logger.debug("got to finally.")
 
 
 if __name__ == "__main__":

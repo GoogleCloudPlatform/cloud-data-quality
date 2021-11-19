@@ -14,17 +14,22 @@
 from __future__ import annotations
 
 from enum import Enum
+from pathlib import Path
 
 import json
 import logging
 import re
 import time
+import typing
+
+from pprint import pformat
 
 from requests import Response
 
+from clouddq.classes.dataplex_entity import DataplexEntity
 from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
-from clouddq.utils import exponential_backoff
+from clouddq.integration.gcs import upload_blob
 from clouddq.utils import update_dict
 
 
@@ -101,15 +106,28 @@ class CloudDqDataplexClient:
             clouddq_executable_checksum_path, "clouddq-executable.zip.hashsum"
         )
         # Prepare input CloudDQ YAML specs path
-        if str(clouddq_yaml_spec_file_path)[:5] == "gs://":
+        clouddq_yaml_spec_file_path = str(clouddq_yaml_spec_file_path)
+        if clouddq_yaml_spec_file_path[:5] == "gs://":
             clouddq_configs_gcs_path = clouddq_yaml_spec_file_path
         else:
-            raise ValueError(
-                "'clouddq_yaml_spec_file_path' argument "
-                f"{clouddq_yaml_spec_file_path} "
-                "must either be GCS path containing the "
-                "`.yml` or `.zip` CloudDQ YAML configs."
-            )
+            clouddq_yaml_spec_file_path = Path(clouddq_yaml_spec_file_path)
+            if clouddq_yaml_spec_file_path.is_file():
+                upload_blob(
+                    self.gcs_bucket_name,
+                    clouddq_yaml_spec_file_path.name,
+                    str(clouddq_yaml_spec_file_path.name),
+                )
+                gcs_uri = (
+                    f"gs://{self.gcs_bucket_name}/{clouddq_yaml_spec_file_path.name}"
+                )
+                clouddq_configs_gcs_path = gcs_uri
+            else:
+                raise ValueError(
+                    "'clouddq_yaml_spec_file_path' argument "
+                    f"{clouddq_yaml_spec_file_path} "
+                    "must either be a single file (`.yml` or `.zip`) "
+                    "or a GCS path to the `.yml` or `.zip` configs file."
+                )
         # Add user-agent tag as Task label
         allowed_user_agent_label = re.sub("[^0-9a-zA-Z]+", "-", USER_AGENT_TAG.lower())
         if task_labels:
@@ -195,27 +213,7 @@ class CloudDqDataplexClient:
             delete_task_response = self._client.delete_dataplex_task(
                 task_id=task_id,
             )
-            if delete_task_response.status_code == 200:
-                retry_iteration = 0
-                get_task_response = self._client.get_dataplex_task(
-                    task_id=task_id,
-                )
-                try:
-                    while get_task_response.status_code != 404:
-                        exponential_backoff(retry_iteration)
-                        retry_iteration += 1
-                        get_task_response = self._client.get_dataplex_task(
-                            task_id=task_id,
-                        )
-                    logger.info(f"Successfully deleted Task ID: {task_id}")
-                    return delete_task_response
-                except RuntimeError as e:
-                    logger.error(
-                        f"Failed to delete Task ID: {task_id} with error: {e}",
-                        exc_info=True,
-                    )
-            else:
-                return delete_task_response
+            return delete_task_response
         else:
             return get_task_response
 
@@ -250,22 +248,26 @@ class CloudDqDataplexClient:
                 clouddq_artifact_gcs_path = clouddq_artifact_path
         return clouddq_artifact_gcs_path
 
-    def get_dataplex_entity(self,
-                            zone_id: str,
-                            entity_id: str,
-                            ) -> Response:
+    def get_dataplex_entity(
+        self,
+        zone_id: str,
+        entity_id: str,
+    ) -> DataplexEntity:
         params = {"view": "FULL"}
-        return self._client.get_entity(zone_id=zone_id,
-                                       entity_id=entity_id,
-                                       params=params)
+        response = self._client.get_entity(
+            zone_id=zone_id, entity_id=entity_id, params=params
+        )
+        if response.status_code == 200:
+            entity = DataplexEntity.from_dict(json.loads(response.text))
+            return entity
+        else:
+            raise RuntimeError(f"Failed to retrieve Dataplex entity: '/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}/lakes/{self._client.lake_name}/zones/{zone_id}/entities/{entity_id}':\n {response.text}")
 
-    def list_dataplex_entities(self, zone_id: str, prefix: str = None) -> dict:
-        params = dict()
+    def list_dataplex_entities(self, zone_id: str, prefix: str = None) -> typing.List[DataplexEntity]:
+        params = {"page_size": 1000}
         logger.info(f"Prefix value for filter is {prefix}")
         if prefix:
-            params.update({"page_size": 1000, "filter": f"id=starts_with({prefix})"})
-        else:
-            params.update({"page_size": 1000})
+            params.update({"filter": f"id=starts_with({prefix})"})
 
         logger.info(f"Initial params are {params}")
         response = self._client.list_entities(zone_id=zone_id, params=params).json()
@@ -277,14 +279,26 @@ class CloudDqDataplexClient:
             page_token = {"page_token": f"{next_page_token}"}
             params.update(page_token)
             logger.info(f"Updated Params are {params}")
-            next_page_response = self._client.list_entities(zone_id, params=params).json()
+            next_page_response = self._client.list_entities(
+                zone_id, params=params
+            ).json()
             logger.info(f"Next page response {next_page_response}")
 
             if "nextPageToken" not in next_page_response:
-                 del response["nextPageToken"]
-                 response = update_dict(response, next_page_response)
+                del response["nextPageToken"]
+                response = update_dict(response, next_page_response)
             else:
                 response = update_dict(response, next_page_response)
                 response["nextPageToken"] = next_page_response["nextPageToken"]
 
-        return response
+        if 'entities' not in response:
+            raise RuntimeError(f"Failed to list Dataplex zone '/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}/lakes/{self._client.lake_name}/zones/{zone_id}':\n {pformat(response)}")
+        
+        dataplex_entities = []
+        for entity in response['entities']:
+            print(f"Parsing entity: {entity}")
+            entity_with_schema = self.get_dataplex_entity(
+                zone_id=zone_id, 
+                entity_id=entity['id'])
+            dataplex_entities.append(entity_with_schema)
+        return dataplex_entities

@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import logging
+
 import pytest
 
 from clouddq.classes.dataplex_entity import DataplexEntity
-import logging
-import json
+
 
 logger = logging.getLogger(__name__)
 
@@ -70,10 +72,8 @@ class TestMetadataIntegration:
                                                 expected_status,
                                                 request, ):
 
-        response = test_dq_dataplex_client.get_dataplex_entity(zone_id=gcp_dataplex_zone_id,
+        actual_entity = test_dq_dataplex_client.get_dataplex_entity(zone_id=gcp_dataplex_zone_id,
                                                       entity_id=entity_id,)
-        assert response.status_code == 200
-        print(response.text)
 
         expected_obj["name"] = expected_obj["name"].replace("<gcp_project_id>",
                                                             request.getfixturevalue("gcp_project_id")) \
@@ -87,8 +87,6 @@ class TestMetadataIntegration:
             .replace("<gcp_dataplex_bucket_name>", request.getfixturevalue("gcp_dataplex_bucket_name"))
 
         expected_entity = DataplexEntity.from_dict(kwargs=expected_obj)
-
-        actual_entity: DataplexEntity = DataplexEntity.from_dict(kwargs=json.loads(response.text))
 
         print(f"Response Object is \n {actual_entity}")
 
@@ -106,8 +104,8 @@ class TestMetadataIntegration:
         print(f"zone id is {gcp_dataplex_zone_id}")
         response = test_dq_dataplex_client.list_dataplex_entities(zone_id=gcp_dataplex_zone_id)
         print(f"Response is \n {response}")
-        print(f"Total Entities are {len(response['entities'])}")
-        assert len(response['entities']) > 0
+        print(f"Total Entities are {len(response)}")
+        assert len(response) > 0
 
     def test_dataplex_metadata_list_entities_with_prefix(self,
                                                          test_dq_dataplex_client,
@@ -117,8 +115,8 @@ class TestMetadataIntegration:
         response = test_dq_dataplex_client.list_dataplex_entities(zone_id=gcp_dataplex_zone_id, prefix=prefix)
         print(f"Response is \n {response}")
         if "entities" in response:
-            print(f"Total Entities are {len(response['entities'])}")
-        assert len(response['entities']) > 0
+            print(f"Total Entities are {len(response)}")
+        assert len(response) > 0
 
 
 if __name__ == "__main__":

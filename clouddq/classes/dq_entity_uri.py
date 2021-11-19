@@ -14,7 +14,9 @@
 
 """todo: add classes docstring."""
 from __future__ import annotations
+
 from dataclasses import dataclass
+
 from clouddq.utils import validate_uri_and_assert
 
 
@@ -57,7 +59,6 @@ class EntityUri:
             "entities": self.entity_id,
         }
 
-
     @classmethod
     def from_uri(cls: EntityUri, entity_uri: str) -> EntityUri:
 
@@ -85,4 +86,3 @@ class EntityUri:
         }
 
         return dict(output)
-

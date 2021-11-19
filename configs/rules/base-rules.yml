@@ -28,5 +28,11 @@ rules:
       custom_sql_expr: |-
         LENGTH( $column ) <= 30
 
+  IN_REF_SET:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (select distinct value from dq_test.contact_details)
+
   NOT_BLANK:
     rule_type: NOT_BLANK

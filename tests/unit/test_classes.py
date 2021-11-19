@@ -22,6 +22,9 @@ from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
 
 
+logger = logging.getLogger(__name__)
+
+
 class TestClasses:
 
     def test_dq_rule_parse_failure(self):

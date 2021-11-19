@@ -18,6 +18,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import logging
+from clouddq.classes import dataplex_entity
+from clouddq.classes.dataplex_entity import DataplexEntity
 
 from clouddq.classes.dq_entity_column import DqEntityColumn
 from clouddq.utils import assert_not_none_or_empty
@@ -31,7 +33,7 @@ ENTITY_CUSTOM_CONFIG_MAPPING = {
         "database_name": "{dataset_name}",
         "instance_name": "{project_name}",
     },
-    "DATAPLEX": {
+    "DATAPLEX_BQ_EXTERNAL_TABLE": {
         "table_name": "{table_name}",
         "database_name": "{lake_name}_{zone_name}",
         "instance_name": "{project_name}",
@@ -98,6 +100,13 @@ class DqEntity:
     instance_name: str
     columns: dict[str, DqEntityColumn]
     environment_override: dict
+    dataplex_name: str
+    dataplex_lake: str
+    dataplex_zone: str
+    dataplex_location: str
+    dataplex_asset_id: str
+    dataplex_createTime: str
+    dataplex_updateTime: str
 
     def resolve_column_config(self: DqEntity, column_id: str) -> DqEntityColumn:
         """
@@ -207,6 +216,13 @@ class DqEntity:
             instance_name=instance_name,
             columns=columns,
             environment_override=environment_override,
+            dataplex_name=kwargs.get('dataplex_name', None),
+            dataplex_lake=kwargs.get('dataplex_lake', None),
+            dataplex_zone=kwargs.get('dataplex_zone', None),
+            dataplex_location=kwargs.get('dataplex_location', None),
+            dataplex_asset_id=kwargs.get('dataplex_asset_id', None),
+            dataplex_createTime=kwargs.get('dataplex_createTime', None),
+            dataplex_updateTime=kwargs.get('dataplex_updateTime', None),
         )
 
     def to_dict(self: DqEntity) -> dict:
@@ -231,16 +247,44 @@ class DqEntity:
         }
         if self.environment_override:
             output["environment_override"] = self.environment_override
+        if self.dataplex_name:
+            output.update({
+                "dataplex_name": self.dataplex_name,
+                "dataplex_lake": self.dataplex_lake,
+                "dataplex_zone": self.dataplex_zone,
+                "dataplex_location": self.dataplex_location,
+                "dataplex_asset_id": self.dataplex_asset_id,
+                "dataplex_createTime": self.dataplex_createTime,
+                "dataplex_updateTime": self.dataplex_updateTime,
+            })
         return dict({f"{self.entity_id}": output})
 
-    def dict_values(self: DqEntity) -> dict:
-        """
-
-        Args:
-          self: DqEntity:
-
-        Returns:
-
-        """
-
+    def dict_values(self) -> dict:
         return dict(self.to_dict().get(self.entity_id))
+
+    def from_dataplex_entity(self, dataplex_entity: DataplexEntity) -> DqEntity:
+        if dataplex_entity.system == "BIGQUERY" or dataplex_entity.type == "TABLE"
+            data_path = dataplex_entity.dataPath.split("/")
+            bigquery_configs = dict(zip(data_path[::2], data_path[1::2]))
+            entity_configs = {
+                "source_database": dataplex_entity.system,
+                "table_name": bigquery_configs.get('tables'),
+                "database_name": bigquery_configs.get('datasets'),
+                "instance_name": bigquery_configs.get('projects'),
+                "columns": dataplex_entity.schema.to_dict()['fields'],
+                "environment_override": None,
+                "entity_id": dataplex_entity.id,
+                "dataplex_name": dataplex_entity.name,
+                "dataplex_lake": dataplex_entity.lake,
+                "dataplex_zone": dataplex_entity.zone,
+                "dataplex_location": dataplex_entity.location,
+                "dataplex_asset_id": dataplex_entity.asset,
+                "dataplex_createTime": dataplex_entity.createTime,
+                "dataplex_updateTime": dataplex_entity.updateTime,
+            }
+            return DqEntity.from_dict(entity_configs)
+        else:
+            raise NotImplementedError(
+                f"Dataplex entity system {dataplex_entity.system}"
+                f" unsupported for entity:\n {dataplex_entity.to_dict()}"
+                )

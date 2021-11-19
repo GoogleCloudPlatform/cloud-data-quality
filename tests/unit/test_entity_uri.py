@@ -14,8 +14,8 @@
 
 import pytest
 
-from clouddq.classes.dq_entity_uri import EntityUri
 from clouddq.classes.dataplex_entity import DataplexEntity
+from clouddq.classes.dq_entity_uri import EntityUri
 
 
 class TestEntityURI:

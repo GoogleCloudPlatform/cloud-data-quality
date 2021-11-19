@@ -21,5 +21,19 @@ rule_bindings:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type,value"
       - NOT_NULL_SIMPLE
+      - IN_REF_SET
+    metadata:
+      brand: one
+
+
+  T4_URI_EMAIL_DUPLICATE:
+    entity_uri: dataplex://projects/dataplex-clouddq/locations/us-central1/lakes/amandeep-dev-lake/zones/raw/entities/contact_details
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: "contact_type,value"
+      - NOT_NULL_SIMPLE
+      - IN_REF_SET
     metadata:
       brand: one

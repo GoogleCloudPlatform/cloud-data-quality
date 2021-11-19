@@ -15,15 +15,19 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
+from dataclasses import dataclass
+
 from clouddq.classes.dataplex_entity_schema import DataplexEntitySchema
 from clouddq.classes.dq_entity_uri import EntityUri
-from clouddq.utils import assert_not_none_or_empty, validate_uri_and_assert
+from clouddq.utils import assert_not_none_or_empty
+from clouddq.utils import validate_uri_and_assert
 
 
 @dataclass
 class DataplexEntity:
     """ """
+
     name: str
     createTime: str
     updateTime: str
@@ -34,7 +38,6 @@ class DataplexEntity:
     system: str
     format: dict
     schema: DataplexEntitySchema
-
 
     @property
     def project_id(self):
@@ -65,50 +68,64 @@ class DataplexEntity:
         """
 
         entity_name = kwargs.get("name")
-        assert_not_none_or_empty(value=entity_name,
-                error_msg=f"Name: must define non-empty value: 'name'.")
+        assert_not_none_or_empty(
+            value=entity_name, error_msg=f"Name: must define non-empty value: 'name'."
+        )
 
         create_time = kwargs.get("createTime")
-        assert_not_none_or_empty(value=create_time,
-                error_msg=f"Create Time: must define non-empty value: 'create_time'.")
+        assert_not_none_or_empty(
+            value=create_time,
+            error_msg=f"Create Time: must define non-empty value: 'create_time'.",
+        )
 
         update_time = kwargs.get("updateTime")
-        assert_not_none_or_empty(value=update_time,
-                error_msg=f"Update Time: must define non-empty value: 'update_time'.")
+        assert_not_none_or_empty(
+            value=update_time,
+            error_msg=f"Update Time: must define non-empty value: 'update_time'.",
+        )
 
         entity_id = kwargs.get("id")
-        assert_not_none_or_empty(value=entity_id,
-                error_msg=f"Id: must define non-empty value: 'id'.")
+        assert_not_none_or_empty(
+            value=entity_id, error_msg=f"Id: must define non-empty value: 'id'."
+        )
 
         entity_type = kwargs.get("type")
-        assert_not_none_or_empty(value=entity_type,
-                error_msg=f"Entity type: must define non-empty value: 'entity_type'.")
+        assert_not_none_or_empty(
+            value=entity_type,
+            error_msg=f"Entity type: must define non-empty value: 'entity_type'.",
+        )
 
         asset = kwargs.get("asset")
-        assert_not_none_or_empty(value=asset,
-                error_msg=f"Asset: must define non-empty value: 'asset'.")
+        assert_not_none_or_empty(
+            value=asset, error_msg=f"Asset: must define non-empty value: 'asset'."
+        )
 
         data_path = kwargs.get("dataPath")
-        assert_not_none_or_empty(value=data_path,
-                error_msg=f"Data Path: must define non-empty value: 'data_path'.")
+        assert_not_none_or_empty(
+            value=data_path,
+            error_msg=f"Data Path: must define non-empty value: 'data_path'.",
+        )
 
         system = kwargs.get("system")
-        assert_not_none_or_empty(value=system,
-                error_msg=f"System: must define non-empty value: 'system'.")
+        assert_not_none_or_empty(
+            value=system, error_msg=f"System: must define non-empty value: 'system'."
+        )
 
         entity_format = kwargs.get("format")
-        assert_not_none_or_empty(value=entity_format,
-                error_msg=f"Format: must define non-empty value: 'format'.")
+        assert_not_none_or_empty(
+            value=entity_format,
+            error_msg=f"Format: must define non-empty value: 'format'.",
+        )
 
         schema_dict = kwargs.get("schema")
-        assert_not_none_or_empty(value=schema_dict,
-                error_msg=f"Schema: must define non-empty value: 'schema'.")
+        assert_not_none_or_empty(
+            value=schema_dict,
+            error_msg=f"Schema: must define non-empty value: 'schema'.",
+        )
 
         schema = DataplexEntitySchema.from_dict(kwargs=schema_dict)
 
-
         return DataplexEntity(
-
             name=entity_name,
             createTime=create_time,
             updateTime=update_time,
@@ -153,7 +170,7 @@ class DataplexEntity:
         Returns:
 
         """
-        
+
         output = {
             "name": self.name,
             "createTime": self.createTime,

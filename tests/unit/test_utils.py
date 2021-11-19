@@ -14,6 +14,7 @@
 
 
 import logging
+
 import pytest
 
 from clouddq import utils

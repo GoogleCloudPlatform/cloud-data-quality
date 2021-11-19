@@ -15,8 +15,11 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
+from dataclasses import dataclass
+
 from clouddq.utils import assert_not_none_or_empty
+
 
 @dataclass
 class DataplexEntitySchemaField:
@@ -36,32 +39,36 @@ class DataplexEntitySchemaField:
         """
 
         output = {
-            "name":  self.name,
+            "name": self.name,
             "data_type": self.data_type,
             "mode": self.mode,
         }
 
         return dict(output)
 
-
     @classmethod
-    def from_dict(cls: DataplexEntitySchemaField, kwargs: dict) -> DataplexEntitySchemaField:
+    def from_dict(
+        cls: DataplexEntitySchemaField, kwargs: dict
+    ) -> DataplexEntitySchemaField:
 
         name = kwargs.get("name")
-        assert_not_none_or_empty(value=name,
-                 error_msg=f"Name: must define non-empty value: 'name'.")
+        assert_not_none_or_empty(
+            value=name, error_msg=f"Name: must define non-empty value: 'name'."
+        )
 
         data_type = kwargs.get("data_type")
-        assert_not_none_or_empty(value=data_type,
-                 error_msg=f"DataType: must define non-empty value: 'data_type'.")
+        assert_not_none_or_empty(
+            value=data_type,
+            error_msg=f"DataType: must define non-empty value: 'data_type'.",
+        )
 
         mode = kwargs.get("mode")
-        assert_not_none_or_empty(value=mode,
-                 error_msg=f"Mode: must define non-empty value: 'mode'.")
+        assert_not_none_or_empty(
+            value=mode, error_msg=f"Mode: must define non-empty value: 'mode'."
+        )
 
         return DataplexEntitySchemaField(
             name=name,
             data_type=data_type,
             mode=mode,
         )
-

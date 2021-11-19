@@ -22,6 +22,7 @@ import pytest
 
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 
+
 logger = logging.getLogger(__name__)
 
 

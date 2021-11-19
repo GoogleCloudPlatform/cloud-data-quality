@@ -166,6 +166,9 @@ py_test(
     data = DATA,
     legacy_create_init = 0,
     deps = DEPS,
+<<<<<<< Updated upstream
+)
+=======
 )
 
 py_test(
@@ -175,3 +178,4 @@ py_test(
     legacy_create_init = 0,
     deps = DEPS,
 )
+>>>>>>> Stashed changes

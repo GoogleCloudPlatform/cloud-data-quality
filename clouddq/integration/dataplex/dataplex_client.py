@@ -237,14 +237,15 @@ class DataplexClient:
         )
         return response
 
-    def get_entity(self,
-                   zone_id: str,
-                   entity_id: str,
-                   params: dict = None,
-                   gcp_project_id: str = None,
-                   location_id: str = None,
-                   lake_name: str = None,
-                   ) -> Response:
+    def get_entity(
+        self,
+        zone_id: str,
+        entity_id: str,
+        params: dict = None,
+        gcp_project_id: str = None,
+        location_id: str = None,
+        lake_name: str = None,
+    ) -> Response:
         if not zone_id:
             raise ValueError(f"zone_id is the required argument.")
         if not entity_id:
@@ -265,13 +266,14 @@ class DataplexClient:
 
         return response
 
-    def list_entities(self,
-                      zone_id: str,
-                      params: dict = None,
-                      gcp_project_id: str = None,
-                      location_id: str = None,
-                      lake_name: str = None,
-                      ) -> Response:
+    def list_entities(
+        self,
+        zone_id: str,
+        params: dict = None,
+        gcp_project_id: str = None,
+        location_id: str = None,
+        lake_name: str = None,
+    ) -> Response:
         if not zone_id:
             raise ValueError(f"zone_id is the required argument.")
         if not gcp_project_id:
