@@ -46,5 +46,9 @@ class DataplexEntitySchema:
 
         """
 
-        return asdict(self)
+        output = {
+            "fields": self.fields,
+        }
+
+        return dict(output)
 

@@ -55,6 +55,7 @@ class TestDataplexEntity:
         assert dataplex_entity_actual == DataplexEntity.from_dict(dataplex_entity_expected_dict)
 
     def test_validate_dataplex_entity(self, mock_valid_dataplex_input):
+        """ """
         dataplex_entity = DataplexEntity.from_dict(mock_valid_dataplex_input)
 
         schema = {"fields": [{"name": "column1", "type": "STRING", "mode": "REQUIRED"},
@@ -79,7 +80,13 @@ class TestDataplexEntity:
         assert dataplex_entity.zone == "zone-id"
 
     def test_validate_dataplex_entity_to_dict(self, mock_valid_dataplex_input):
+        """ """
         dataplex_entity = DataplexEntity.from_dict(mock_valid_dataplex_input)
+
+        schema = {"fields": [{"name": "column1", "type": "STRING", "mode": "REQUIRED"},
+                              {"name": "column2", "type": "STRING", "mode": "REQUIRED"},
+                              {"name": "column3", "type": "STRING", "mode": "REQUIRED"},
+                              {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}]}
 
         dataplex_entity_expected = {
             "name": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
@@ -91,10 +98,11 @@ class TestDataplexEntity:
             "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
             "system": "BIGQUERY",
             "format": {"format": "OTHER"},
-            "schema": {"fields": [{"name": "column1", "type": "STRING", "mode": "REQUIRED"},
-                              {"name": "column2", "type": "STRING", "mode": "REQUIRED"},
-                              {"name": "column3", "type": "STRING", "mode": "REQUIRED"},
-                              {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}]}
+            "schema": DataplexEntitySchema.from_dict(kwargs=schema),
+            "project_id": "project-id",
+            "location": "location-id",
+            "lake": "lake_name",
+            "zone": "zone-id",
         }
 
         assert dataplex_entity.to_dict() == dataplex_entity_expected

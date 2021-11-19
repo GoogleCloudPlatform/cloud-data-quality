@@ -14,20 +14,75 @@
 
 """todo: add classes docstring."""
 from __future__ import annotations
-
 from dataclasses import dataclass
-from enum import Enum
-from enum import unique
-
-import logging
-
-logger = logging.getLogger(__name__)
+from clouddq.utils import validate_uri_and_assert
 
 
 @dataclass
-class DqEntityUri:
+class EntityUri:
+
+    uri: str
+
+    @property
+    def scheme(self):
+        return self.uri.split("/")[0].replace(":", "")
+
+    @property
+    def entity_id(self):
+        return self.uri.split("/")[11]
+
+    @property
+    def project_id(self):
+        return self.uri.split("/")[3]
+
+    @property
+    def location(self):
+        return self.uri.split("/")[5]
+
+    @property
+    def lake(self):
+        return self.uri.split("/")[7]
+
+    @property
+    def zone(self):
+        return self.uri.split("/")[9]
+
+    @property
+    def configs(self):
+        return {
+            "projects": self.project_id,
+            "locations": self.location,
+            "lakes": self.lake,
+            "zones": self.zone,
+            "entities": self.entity_id,
+        }
+
+
     @classmethod
-    def from_uri(cls: DqEntityUri) -> DqEntityUri:
-        raise NotImplementedError
-    def to_dict(self: DqEntityUri) -> dict:
-        raise NotImplementedError
+    def from_uri(cls: EntityUri, entity_uri: str) -> EntityUri:
+
+        validate_uri_and_assert(entity_uri=entity_uri)
+
+        return EntityUri(
+            uri=entity_uri,
+        )
+
+    def to_dict(self: EntityUri) -> dict:
+        """
+        Serialize Entity URI to dictionary
+        Args:
+          self: EntityUri:
+
+        Returns:
+
+        """
+
+        output = {
+            "uri": self.uri,
+            "scheme": self.scheme,
+            "entity_id": self.entity_id,
+            "configs": self.configs,
+        }
+
+        return dict(output)
+
