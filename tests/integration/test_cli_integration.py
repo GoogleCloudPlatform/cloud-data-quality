@@ -21,8 +21,8 @@ from google.auth.exceptions import RefreshError
 import click.testing
 import pytest
 
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.main import main
-from clouddq.classes.bigquery_client import BigQueryClient
 
 
 logger = logging.getLogger(__name__)
