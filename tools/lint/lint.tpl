@@ -66,6 +66,16 @@ fi
 
 echo "Selected: Bazel=$RUN_BAZEL Black=$RUN_BLACK Pyupgrade=$RUN_PYUPGRADE isort=$RUN_ISORT flake8=$RUN_FLAKE8 [Entries]: $RUN_ENTRIES"
 
+echo "python binary: $(which python)"
+echo "python version: $(python --version)"
+echo "python3 binary: $(which python3)"
+echo "python3 version: $(python3 --version)"
+IMPORT_REGEX='import regex._regex as r'
+echo "$IMPORT_REGEX w python:"
+python -c "$IMPORT_REGEX"
+echo "$IMPORT_REGEX w python3:"
+python3 -c "$IMPORT_REGEX"
+
 BLACK_PATH=@@BLACK_PATH@@
 BUILDIFIER_PATH=@@BUILDIFIER_PATH@@
 PYUPGRADE_PATH=@@PYUPGRADE_PATH@@
@@ -89,7 +99,7 @@ echo "isort:" $isort_path
 echo "flake8:" $flake8_path
 
 black_func() {
-  echo $1 $2
+  echo black_func with args: $1 $2
   if [[ "$1" == "lint" ]]; then
     $black_path $2
   else
@@ -226,24 +236,12 @@ echo "Run isort"
 if [[ "$RUN_ENTRIES" == "--" ]]; then
 ( \
     cd "$BUILD_WORKSPACE_DIRECTORY" && \
-    for i in \
-        $( \
-            find clouddq tests tools -type f \
-                    -name '*.py'
-        ) ; do \
-        isort_func $mode "$i" ; \
-    done \
+      isort_func $mode clouddq tests tools ; \
 )
 else
 ( \
     cd "$BUILD_WORKSPACE_DIRECTORY" && \
-    for i in \
-        $( \
-            find clouddq tests tools -type f \
-                    -name '*.py'
-        ) ; do \
-        isort_func $mode "$i" ; \
-    done \
+      isort_func $mode clouddq tests tools ; \
 )
 fi
 
@@ -256,24 +254,12 @@ echo "Run flake8"
 if [[ "$RUN_ENTRIES" == "--" ]]; then
 ( \
     cd "$BUILD_WORKSPACE_DIRECTORY" && \
-    for i in \
-        $( \
-            find clouddq tests tools -type f \
-                    -name '*.py'
-        ) ; do \
-        flake8_func $mode "$i" ; \
-    done \
+        flake8_func clouddq tests tools ; \
 )
 else
 ( \
     cd "$BUILD_WORKSPACE_DIRECTORY" && \
-    for i in \
-        $( \
-            find clouddq tests tools -type f \
-                    -name '*.py'
-        ) ; do \
-        flake8_func $mode "$i" ; \
-    done \
+        flake8_func $mode clouddq tests tools ; \
 )
 fi
 
