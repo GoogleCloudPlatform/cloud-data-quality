@@ -47,6 +47,8 @@ function main() {
     which /usr/bin/python3
     python3 --version
     python --version
+    echo "Some scripts for system-default python3 at /usr/bin:"
+    /usr/bin/python3 --version
     pip3 --version
     python3 -m pip --version
     python3 -c 'import sys; print(sys.version_info)'
