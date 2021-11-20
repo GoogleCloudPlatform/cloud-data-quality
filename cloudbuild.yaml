@@ -4,7 +4,7 @@ steps:
       - '-c'
       - |
         set -x
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils curl
         source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
         make test test_dataplex_task
         make check
