@@ -269,6 +269,9 @@ class TestJinjaTemplates:
         expected = expected.replace(
             "<your_gcp_project_id>.dq_test", "<your_gcp_project_id_2>.<your_bigquery_dataset_id>"
         )
+        expected = expected.replace(
+            "dq_test.INFORMATION_SCHEMA", "<your_bigquery_dataset_id>.INFORMATION_SCHEMA"
+        )
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
