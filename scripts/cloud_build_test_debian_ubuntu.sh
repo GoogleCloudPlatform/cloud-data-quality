@@ -55,7 +55,8 @@ function main() {
     echo "common --google_default_credentials" >> .bazelrc
     make addlicense
     make check
-    make test-pip-install
+    #make test-pip-install
+    make test
     make build
     ls -la
     make test
