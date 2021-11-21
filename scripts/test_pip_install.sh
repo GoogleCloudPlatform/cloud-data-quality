@@ -27,16 +27,16 @@ source "$ROOT/scripts/common.sh"
 require_env_var GOOGLE_CLOUD_PROJECT "Set this to the project_id used for integration testing."
 require_env_var CLOUDDQ_BIGQUERY_DATASET "Set this to the BigQuery dataset used for integration testing."
 require_env_var CLOUDDQ_BIGQUERY_REGION "Set this to the BigQuery region used for integration testing."
-#require_env_var GOOGLE_APPLICATION_CREDENTIALS "Set this to the exported service account key path used for integration testing."
-#require_env_var IMPERSONATION_SERVICE_ACCOUNT "Set this to the service account name for impersonation used for integration testing."
+require_env_var GOOGLE_APPLICATION_CREDENTIALS "Set this to the exported service account key path used for integration testing."
+require_env_var IMPERSONATION_SERVICE_ACCOUNT "Set this to the service account name for impersonation used for integration testing."
 
 # set variables
 # if running locally you'd have to ensure the following are correctly set for your project/auth details
 GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}"
 CLOUDDQ_BIGQUERY_DATASET="${CLOUDDQ_BIGQUERY_DATASET}" 
 CLOUDDQ_BIGQUERY_REGION="${CLOUDDQ_BIGQUERY_REGION}"
-#GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"
-#IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}"
+GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}"
+IMPERSONATION_SERVICE_ACCOUNT="${IMPERSONATION_SERVICE_ACCOUNT}"
 
 # get diagnostic info
 which python3
@@ -78,29 +78,29 @@ python3 -m clouddq ALL configs \
     --dry_run
 
 # test clouddq with exported service account key
-#python3 -m clouddq ALL configs \
-#    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
-#    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
-#    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
-#    --gcp_service_account_key_path="${GOOGLE_APPLICATION_CREDENTIALS}" \
-#    --debug \
-#    --dry_run
+python3 -m clouddq ALL configs \
+    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
+    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
+    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
+    --gcp_service_account_key_path="${GOOGLE_APPLICATION_CREDENTIALS}" \
+    --debug \
+    --dry_run
 
 # test clouddq with exported service account key
-#python3 -m clouddq ALL configs \
-#    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
-#    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
-#    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
-#    --gcp_service_account_key_path="${GOOGLE_APPLICATION_CREDENTIALS}" \
-#    --gcp_impersonation_credentials="${IMPERSONATION_SERVICE_ACCOUNT}" \
-#    --debug \
-#    --dry_run
+python3 -m clouddq ALL configs \
+    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
+    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
+    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
+    --gcp_service_account_key_path="${GOOGLE_APPLICATION_CREDENTIALS}" \
+    --gcp_impersonation_credentials="${IMPERSONATION_SERVICE_ACCOUNT}" \
+    --debug \
+    --dry_run
 
 # test clouddq with service account impersonation
-#python3 -m clouddq ALL configs \
-#    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
-#    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
-#    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
-#    --gcp_impersonation_credentials="${IMPERSONATION_SERVICE_ACCOUNT}" \
-#    --debug \
-#    --dry_run
+python3 -m clouddq ALL configs \
+    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
+    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
+    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
+    --gcp_impersonation_credentials="${IMPERSONATION_SERVICE_ACCOUNT}" \
+    --debug \
+    --dry_run

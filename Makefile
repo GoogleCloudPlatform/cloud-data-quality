@@ -54,7 +54,7 @@ test-pip-install:  ## run tests on pip-install-path
 	@source scripts/test_pip_install.sh
 
 .PHONY: test-all
-test-all: test-pip-install test  ## run all tests
+test-all: test  ## run all tests
 
 .PHONY: check
 check: bin/bazelisk ## check code with black, buildifier, pyupgrade, and flake8
