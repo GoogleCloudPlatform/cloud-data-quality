@@ -22,8 +22,9 @@ from pathlib import Path
 
 from google.auth.exceptions import RefreshError
 
+from clouddq.bigquery_client import BigQueryClient
 from clouddq.main import main
-from clouddq.classes.bigquery_client import BigQueryClient
+#from clouddq.classes.bigquery_client import BigQueryClient
 
 logger = logging.getLogger(__name__)
 
