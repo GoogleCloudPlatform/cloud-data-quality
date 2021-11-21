@@ -76,16 +76,22 @@ class DqRuleBinding:
             logger.debug(f"parsed_entity_uri.to_dict(): {parsed_entity_uri.to_dict()}")
             entity_id = parsed_entity_uri.entity_id
             entity_uri = parsed_entity_uri
+        if entity_id:
+            entity_id.upper()
         column_id: str = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
             key="column_id",
         )
+        if column_id:
+            column_id.upper()
         row_filter_id: str = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
             key="row_filter_id",
         )
+        if row_filter_id:
+            row_filter_id.upper()
         rule_ids: list[str] = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
@@ -97,9 +103,11 @@ class DqRuleBinding:
         incremental_time_filter_column_id: str | None = kwargs.get(
             "incremental_time_filter_column_id", None
         )
+        if incremental_time_filter_column_id:
+            incremental_time_filter_column_id.upper()
         metadata: dict | None = kwargs.get("metadata", dict())
         return DqRuleBinding(
-            rule_binding_id=str(rule_binding_id),
+            rule_binding_id=str(rule_binding_id).upper(),
             entity_id=entity_id,
             entity_uri=entity_uri,
             column_id=column_id,
@@ -160,10 +168,10 @@ class DqRuleBinding:
         if self.entity_uri:
             logger.debug(f"Resolving entity uri: {self.entity_uri}")
             table_entity: DqEntity = configs_cache.get_table_entity_id(
-                self.entity_uri.entity_id
+                self.entity_uri.entity_id.upper()
             )
         elif self.entity_id:
-            table_entity: DqEntity = configs_cache.get_table_entity_id(self.entity_id)
+            table_entity: DqEntity = configs_cache.get_table_entity_id(self.entity_id.upper())
             # table_entity_dict = entities_collection.get(self.entity_id)
             # assert_not_none_or_empty(
             #     table_entity,
@@ -208,7 +216,7 @@ class DqRuleBinding:
                 rule_id = rule
                 arguments = None
             rule_config = configs_cache.get_rule_id(
-                rule_id
+                rule_id.upper()
             )
             rule_config.update_rule_binding_arguments(arguments)
             # rule_config_dict = rules_collection.get(rule_id, None)
@@ -237,7 +245,7 @@ class DqRuleBinding:
         # row_filter_config = DqRowFilter.from_dict(
         #     self.row_filter_id, row_filter_config_dict
         # )
-        row_filter = configs_cache.get_row_filter_id(self.row_filter_id)
+        row_filter = configs_cache.get_row_filter_id(self.row_filter_id.upper())
         return row_filter
 
     def resolve_all_configs_to_dict(
@@ -263,7 +271,7 @@ class DqRuleBinding:
         table_entity: DqEntity = self.resolve_table_entity_config(configs_cache)
         # Resolve column configs
         column_configs: DqEntityColumn = table_entity.resolve_column_config(
-            self.column_id
+            self.column_id.upper()
         )
         incremental_time_filter_column = None
         if self.incremental_time_filter_column_id:
@@ -289,6 +297,7 @@ class DqRuleBinding:
         rule_configs_dict = dict()
         for rule in self.resolve_rule_config_list(configs_cache):
             for rule_id, rule_config in rule.to_dict().items():
+                rule_id = rule_id.upper()
                 rule_sql_expr = Template(rule_config["rule_sql_expr"]).safe_substitute(
                     column=column_configs.column_name
                 )

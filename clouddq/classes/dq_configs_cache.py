@@ -30,7 +30,7 @@ import clouddq.classes.dq_entity_uri as dq_entity_uri
 import clouddq.classes.dq_row_filter as dq_row_filter
 import clouddq.classes.dq_rule as dq_rule
 import clouddq.classes.dq_rule_binding as dq_rule_binding
-import clouddq.integration.dataplex.dataplex_client as dataplex_client
+import clouddq.integration.dataplex.clouddq_dataplex as clouddq_dataplex
 from clouddq.utils import unnest_object_to_list
 from clouddq.utils import convert_json_value_to_dict
 
@@ -50,6 +50,7 @@ class DqConfigsCache:
         self._cache_db = cache_db
 
     def get_table_entity_id(self, entity_id: str) -> dq_entity.DqEntity:
+        entity_id = entity_id.upper()
         try:
             logger.debug(f"get_table_entity_id: {entity_id}")
             entity_record = self._cache_db["entities"].get(entity_id)
@@ -62,6 +63,7 @@ class DqConfigsCache:
         return entity
 
     def get_rule_id(self, rule_id: str) -> dq_rule.DqRule:
+        rule_id = rule_id.upper()
         try:
             rule_record = self._cache_db["rules"].get(rule_id)
         except NotFoundError:
@@ -73,6 +75,7 @@ class DqConfigsCache:
         return rule
 
     def get_row_filter_id(self, row_filter_id: str) -> dq_row_filter.DqRowFilter:
+        row_filter_id = row_filter_id.upper()
         try:
             row_filter_record = self._cache_db["row_filters"].get(row_filter_id)
         except NotFoundError:
@@ -82,6 +85,7 @@ class DqConfigsCache:
         return row_filter
 
     def get_rule_binding_id(self, rule_binding_id: str) -> dq_rule_binding.DqRuleBinding:
+        rule_binding_id = rule_binding_id.upper()
         try:
             rule_binding_record = self._cache_db["rule_bindings"].get(rule_binding_id)
         except NotFoundError:
@@ -113,13 +117,16 @@ class DqConfigsCache:
             unnest_object_to_list(rules_collection), pk="id"
         )
 
-    def resolve_dataplex_entity_uris(self, client: dataplex_client.DataplexClient) -> None:
+    def resolve_dataplex_entity_uris(self, client: clouddq_dataplex.CloudDqDataplexClient) -> None:
         for entity_uri in self._cache_db["rule_bindings"].rows_where("entity_uri is not null", select='entity_uri'):
-            entity_uri = dq_entity_uri.EntityUri.from_uri(entity_uri)
+            logger.debug(f"Processing entity_uri: {entity_uri}")
+            entity_uri = dq_entity_uri.EntityUri.from_uri(entity_uri['entity_uri'])
             dataplex_entity = client.get_dataplex_entity(zone_id=entity_uri.zone,
                                                 entity_id=entity_uri.entity_id)
-            clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(dataplex_entity).to_dict()
-            self._cache_db["entities"].insert(
+            clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
+                dataplex_entity=dataplex_entity).to_dict()
+            logger.debug(f"Writing parsed Dataplex Entity to db: {unnest_object_to_list(clouddq_entity)}")
+            self._cache_db["entities"].upsert_all(
                 unnest_object_to_list(clouddq_entity), pk="id", alter=True
             )
             

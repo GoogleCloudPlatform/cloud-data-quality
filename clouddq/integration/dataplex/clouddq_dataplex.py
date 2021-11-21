@@ -53,8 +53,8 @@ class CloudDqDataplexClient:
     def __init__(
         self,
         gcp_project_id: str,
-        gcp_dataplex_lake_name: str,
-        gcp_dataplex_region: str,
+        gcp_dataplex_lake_name: str | None = None,
+        gcp_dataplex_region: str | None = None,
         gcs_bucket_name: str | None = None,
         gcp_credentials: GcpCredentials | None = None,
         dataplex_endpoint: str = "https://dataplex.googleapis.com",
@@ -252,14 +252,21 @@ class CloudDqDataplexClient:
         self,
         zone_id: str,
         entity_id: str,
+        gcp_project_id: str = None,
+        location_id: str = None,
+        lake_name: str = None,
     ) -> DataplexEntity:
         params = {"view": "FULL"}
         response = self._client.get_entity(
-            zone_id=zone_id, entity_id=entity_id, params=params
+            zone_id=zone_id, 
+            entity_id=entity_id, 
+            gcp_project_id=gcp_project_id,
+            location_id=location_id,
+            lake_name=lake_name,
+            params=params
         )
         if response.status_code == 200:
-            entity = DataplexEntity.from_dict(json.loads(response.text))
-            return entity
+            return DataplexEntity.from_dict(json.loads(response.text))
         else:
             raise RuntimeError(f"Failed to retrieve Dataplex entity: '/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}/lakes/{self._client.lake_name}/zones/{zone_id}/entities/{entity_id}':\n {response.text}")
 

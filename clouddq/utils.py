@@ -54,7 +54,7 @@ def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
 def unnest_object_to_list(object: dict) -> list:
     collection = []
     for object_id, object_content in object.items():
-        collection.append({"id": object_id, **object_content})
+        collection.append({"id": object_id.upper(), **object_content})
     return collection
 
 

@@ -173,41 +173,43 @@ class DqEntity:
             columns[column_id] = column
         # validate environment override
         environment_override = dict()
-        for key, value in kwargs.get("environment_override", dict()).items():
-            target_env = get_from_dict_and_assert(
-                config_id=entity_id,
-                kwargs=value,
-                key="environment",
-                assertion=lambda v: v.lower() == key.lower(),
-                error_msg=f"Environment target key {key} must match value.",
-            )
-            override_configs = value["override"]
-            instance_name_override = get_custom_entity_configs(
-                entity_id=entity_id,
-                configs_map=override_configs,
-                source_database=source_database,
-                config_key="instance_name",
-            )
-            database_name_override = get_custom_entity_configs(
-                entity_id=entity_id,
-                configs_map=override_configs,
-                source_database=source_database,
-                config_key="database_name",
-            )
-            try:
-                table_name_override = get_custom_entity_configs(
+        input_environment_override = kwargs.get("environment_override", None)
+        if input_environment_override and type(input_environment_override) == dict:
+            for key, value in input_environment_override.items():
+                target_env = get_from_dict_and_assert(
+                    config_id=entity_id,
+                    kwargs=value,
+                    key="environment",
+                    assertion=lambda v: v.lower() == key.lower(),
+                    error_msg=f"Environment target key {key} must match value.",
+                )
+                override_configs = value["override"]
+                instance_name_override = get_custom_entity_configs(
                     entity_id=entity_id,
                     configs_map=override_configs,
                     source_database=source_database,
-                    config_key="table_name",
+                    config_key="instance_name",
                 )
-            except ValueError:
-                table_name_override = table_name
-            environment_override[target_env] = {
-                "instance_name": instance_name_override,
-                "database_name": database_name_override,
-                "table_name": table_name_override,
-            }
+                database_name_override = get_custom_entity_configs(
+                    entity_id=entity_id,
+                    configs_map=override_configs,
+                    source_database=source_database,
+                    config_key="database_name",
+                )
+                try:
+                    table_name_override = get_custom_entity_configs(
+                        entity_id=entity_id,
+                        configs_map=override_configs,
+                        source_database=source_database,
+                        config_key="table_name",
+                    )
+                except ValueError:
+                    table_name_override = table_name
+                environment_override[target_env] = {
+                    "instance_name": instance_name_override,
+                    "database_name": database_name_override,
+                    "table_name": table_name_override,
+                }
         return DqEntity(
             entity_id=str(entity_id),
             source_database=source_database,
@@ -259,20 +261,28 @@ class DqEntity:
             })
         return dict({f"{self.entity_id}": output})
 
-    def dict_values(self) -> dict:
+    def dict_values(self: DqEntity) -> dict:
         return dict(self.to_dict().get(self.entity_id))
 
-    def from_dataplex_entity(self, dataplex_entity: DataplexEntity) -> DqEntity:
-        if dataplex_entity.system == "BIGQUERY" or dataplex_entity.type == "TABLE"
+    @classmethod
+    def from_dataplex_entity(cls: DqEntity, dataplex_entity: DataplexEntity) -> DqEntity:
+        if dataplex_entity.system == "BIGQUERY":
             data_path = dataplex_entity.dataPath.split("/")
             bigquery_configs = dict(zip(data_path[::2], data_path[1::2]))
+            logger.debug(dataplex_entity.schema.to_dict())
+            schema_dict = {}
+            for column in dataplex_entity.schema.to_dict()['fields']:
+                column_configs = column
+                column_configs['data_type'] = column['type']
+                schema_dict[column_configs['name'].upper()] = column_configs
+            logger.debug(schema_dict)
             entity_configs = {
                 "source_database": dataplex_entity.system,
                 "table_name": bigquery_configs.get('tables'),
                 "database_name": bigquery_configs.get('datasets'),
                 "instance_name": bigquery_configs.get('projects'),
-                "columns": dataplex_entity.schema.to_dict()['fields'],
-                "environment_override": None,
+                "columns": schema_dict,
+                "environment_override": {},
                 "entity_id": dataplex_entity.id,
                 "dataplex_name": dataplex_entity.name,
                 "dataplex_lake": dataplex_entity.lake,
@@ -282,7 +292,7 @@ class DqEntity:
                 "dataplex_createTime": dataplex_entity.createTime,
                 "dataplex_updateTime": dataplex_entity.updateTime,
             }
-            return DqEntity.from_dict(entity_configs)
+            return DqEntity.from_dict(entity_id=dataplex_entity.id, kwargs=entity_configs)
         else:
             raise NotImplementedError(
                 f"Dataplex entity system {dataplex_entity.system}"

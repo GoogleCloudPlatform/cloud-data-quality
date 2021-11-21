@@ -29,7 +29,8 @@ import click
 import coloredlogs
 
 from clouddq import lib
-from clouddq.integration.dataplex.dataplex_client import DataplexClient
+from clouddq.integration.gcp_credentials import GcpCredentials
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.runners.dbt.dbt_runner import DbtRunner
@@ -336,17 +337,23 @@ def main(  # noqa: C901
     bigquery_client = None
     dataplex_client = None
     try:
-        if not skip_sql_validation:
-            # Create BigQuery client for query dry-runs
-            bigquery_client = BigQueryClient(
-                gcp_project_id=gcp_project_id,
-                gcp_service_account_key_path=gcp_service_account_key_path,
-                gcp_impersonation_credentials=gcp_impersonation_credentials,
-            )
-        dataplex_client = DataplexClient(
+        gcp_credentials = GcpCredentials(
             gcp_project_id=gcp_project_id,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
+        )
+        if not skip_sql_validation:
+            # Create BigQuery client for query dry-runs
+            bigquery_client = BigQueryClient(
+                gcp_credentials=gcp_credentials
+            )
+        dataplex_client = CloudDqDataplexClient(
+            gcp_credentials=gcp_credentials,
+            gcp_project_id=gcp_project_id,
+            gcp_dataplex_lake_name="amandeep-dev-lake",
+            gcp_dataplex_region="us-central1",
+            # gcp_dataplex_lake_name=gcp_dataplex_lake_name,
+            # gcp_dataplex_region=gcp_dataplex_region,
         )
         # Prepare dbt runtime
         dbt_runner = DbtRunner(

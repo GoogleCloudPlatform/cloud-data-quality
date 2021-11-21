@@ -46,8 +46,8 @@ class DataplexClient:
     def __init__(
         self,
         gcp_project_id: str,
-        gcp_dataplex_region: str,
-        gcp_dataplex_lake_name: str,
+        gcp_dataplex_region: str | None = None,
+        gcp_dataplex_lake_name: str | None = None,
         gcp_credentials: GcpCredentials | None = None,
         gcp_service_account_key_path: Path | None = None,
         gcp_impersonation_credentials: str | None = None,
@@ -119,6 +119,8 @@ class DataplexClient:
             gcp_project_id = self.gcp_project_id
         if not location_id:
             location_id = self.location_id
+        if not location_id or not gcp_project_id:
+            raise ValueError("Dataplex Client API call missing required arguments 'gcp_project_id' and 'location_id'.")
         response = self._session.get(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}",
@@ -141,6 +143,8 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
+        if not location_id or not gcp_project_id:
+            raise ValueError("Dataplex Client API call missing required arguments 'gcp_project_id', 'lake_name' and 'location_id'.")
         request_url = (
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks"
@@ -169,6 +173,8 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
+        if not location_id or not gcp_project_id:
+            raise ValueError("Dataplex Client API call missing required arguments 'gcp_project_id', 'lake_name' and 'location_id'.")
         response = self._session.get(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks/{task_id}/jobs",
@@ -189,6 +195,8 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
+        if not location_id or not gcp_project_id:
+            raise ValueError("Dataplex Client API call missing required arguments 'gcp_project_id', 'lake_name' and 'location_id'.")
         response = self._session.get(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks/{task_id}",
@@ -209,6 +217,8 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
+        if not location_id or not gcp_project_id:
+            raise ValueError("Dataplex Client API call missing required arguments 'gcp_project_id', 'lake_name' and 'location_id'.")
         response = self._session.delete(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks/{task_id}",
@@ -229,6 +239,8 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
+        if not location_id or not gcp_project_id:
+            raise ValueError("Dataplex Client API call missing required arguments 'gcp_project_id', 'lake_name' and 'location_id'.")
         response = self._session.post(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/tasks/",
@@ -256,14 +268,14 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
-
+        if not location_id or not gcp_project_id:
+            raise ValueError("Dataplex Client API call missing required arguments 'gcp_project_id', 'lake_name' and 'location_id'.")
         response = self._session.get(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/zones/{zone_id}/entities/{entity_id}",
             headers=self._headers,
             params=params,
         )
-
         return response
 
     def list_entities(
@@ -282,12 +294,12 @@ class DataplexClient:
             location_id = self.location_id
         if not lake_name:
             lake_name = self.lake_name
-
+        if not location_id or not gcp_project_id:
+            raise ValueError("Dataplex Client API call missing required arguments 'gcp_project_id', 'lake_name' and 'location_id'.")
         response = self._session.get(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/zones/{zone_id}/entities/",
             headers=self._headers,
             params=params,
         )
-
         return response
