@@ -20,9 +20,9 @@ import contextlib
 import hashlib
 import logging
 import os
+import json
 import random
 import re
-import shutil
 import string
 import time
 import typing
@@ -37,10 +37,10 @@ from jinja2 import select_autoescape
 import yaml
 
 
-MAXIMUM_EXPONENTIAL_BACKOFF = 32
-
-
 logger = logging.getLogger(__name__)
+
+
+MAXIMUM_EXPONENTIAL_BACKOFF_SECONDS = 32
 
 
 def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
@@ -49,6 +49,18 @@ def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
     if not yaml_configs:
         return dict()
     return yaml_configs.get(key, dict())
+
+
+def unnest_object_to_list(object: dict) -> list:
+    collection = []
+    for object_id, object_content in object.items():
+        collection.append({"id": object_id.upper(), **object_content})
+    return collection
+
+
+def convert_json_value_to_dict(object, key):
+    if object.get(key, None):
+        object[key] = json.loads(object[key])
 
 
 def get_templates_path(file_path: Path) -> Path:
@@ -118,6 +130,27 @@ def get_from_dict_and_assert(
     return value
 
 
+def get_keys_from_dict_and_assert_oneof(
+    config_id: str,
+    kwargs: typing.Dict,
+    keys: typing.List[str],
+    assertion: typing.Callable[[typing.Any], bool] = None,
+    error_msg: str = None,
+) -> typing.Any:
+    value = {key: kwargs.get(key) for key in keys if kwargs.get(key, None) is not None}
+    if len(value) != 1:
+        raise ValueError(
+            f"Config ID: {config_id} must define exactly one key from: {keys}."
+        )
+    if assertion and not assertion(value):
+        raise ValueError(
+            f"Assertion failed on value {value}.\n"
+            f"Config ID: {config_id}, kwargs: {kwargs}.\n"
+            f"Error: {error_msg}"
+        )
+    return value
+
+
 class DebugChainableUndefined(ChainableUndefined, DebugUndefined):
     pass
 
@@ -164,7 +197,7 @@ def sha256_digest(text: str) -> str:
 
 
 def exponential_backoff(
-    retry_iteration: int, max_retry_duration: int = MAXIMUM_EXPONENTIAL_BACKOFF
+    retry_iteration: int, max_retry_duration: int = MAXIMUM_EXPONENTIAL_BACKOFF_SECONDS
 ):
     retry_duration = 2 ** retry_iteration + random.random()
     if retry_duration <= max_retry_duration:
@@ -211,43 +244,33 @@ def validate_uri_and_assert(entity_uri: str) -> typing.Any:
     scheme = entity_uri.split("//")[0] + "//"
     entity_uri_without_scheme = entity_uri.split("//")[1]
 
-    if scheme in ["bigquery://", "local://", "gs://", ]:
+    if scheme in [
+        "bigquery://",
+        "local://",
+        "gs://",
+    ]:
 
-        raise NotImplementedError(
-            f"{scheme} scheme is not implemented."
-        )
+        raise NotImplementedError(f"{scheme} scheme is not implemented.")
 
     if scheme not in ["dataplex://"]:
-        raise ValueError(
-            f"{scheme} scheme is invalid."
-        )
+        raise ValueError(f"{scheme} scheme is invalid.")
 
     else:
 
         if "projects" not in entity_uri:
-            raise ValueError(
-                f"Invalid Entity URI : {entity_uri}"
-            )
+            raise ValueError(f"Invalid Entity URI : {entity_uri}")
 
         if "locations" not in entity_uri:
-            raise ValueError(
-                f"Invalid Entity URI : {entity_uri}"
-            )
+            raise ValueError(f"Invalid Entity URI : {entity_uri}")
 
         if "lakes" not in entity_uri:
-            raise ValueError(
-                f"Invalid Entity URI : {entity_uri}"
-            )
+            raise ValueError(f"Invalid Entity URI : {entity_uri}")
 
         if "zones" not in entity_uri:
-            raise ValueError(
-                f"Invalid Entity URI : {entity_uri}"
-            )
+            raise ValueError(f"Invalid Entity URI : {entity_uri}")
 
         if "entities" not in entity_uri:
-            raise ValueError(
-                f"Invalid Entity URI : {entity_uri}"
-            )
+            raise ValueError(f"Invalid Entity URI : {entity_uri}")
 
         project_id = entity_uri.split("/")[3]
         if not project_id:

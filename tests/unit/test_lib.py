@@ -23,8 +23,13 @@ import tempfile
 import pytest
 import yaml
 
+<<<<<<< Updated upstream
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.main import lib
+=======
+from clouddq import lib
+from clouddq.classes.dq_config_type import DqConfigType
+>>>>>>> Stashed changes
 
 
 logger = logging.getLogger(__name__)

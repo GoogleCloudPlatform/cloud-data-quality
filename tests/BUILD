@@ -166,4 +166,16 @@ py_test(
     data = DATA,
     legacy_create_init = 0,
     deps = DEPS,
+<<<<<<< Updated upstream
 )
+=======
+)
+
+py_test(
+    name = "test_utils",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+>>>>>>> Stashed changes

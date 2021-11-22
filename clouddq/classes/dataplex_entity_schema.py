@@ -15,23 +15,27 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from clouddq.classes.dataplex_entity_schema_field import DataplexEntitySchemaField
+from dataclasses import asdict
+from dataclasses import dataclass
 from typing import List
+
+from clouddq.classes.dataplex_entity_schema_field import DataplexEntitySchemaField
 from clouddq.utils import assert_not_none_or_empty
+
 
 @dataclass
 class DataplexEntitySchema:
     """ """
 
-    fields: List[DataplexEntitySchemaField]
+    fields: list[DataplexEntitySchemaField]
 
     @classmethod
     def from_dict(cls: DataplexEntitySchema, kwargs: dict) -> DataplexEntitySchema:
 
         fields = kwargs.get("fields")
-        assert_not_none_or_empty(value=fields,
-                 error_msg=f"Fields: must define non-empty value: 'fields'.")
+        assert_not_none_or_empty(
+            value=fields, error_msg=f"Fields: must define non-empty value: 'fields'."
+        )
 
         return DataplexEntitySchema(
             fields=fields,
@@ -51,4 +55,3 @@ class DataplexEntitySchema:
         }
 
         return dict(output)
-

@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 import json
+
+import pytest
 
 from clouddq.classes.dataplex_entity import DataplexEntity
 from clouddq.classes.dataplex_entity_schema import DataplexEntitySchema

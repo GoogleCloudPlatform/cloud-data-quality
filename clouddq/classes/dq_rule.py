@@ -48,6 +48,17 @@ class DqRule:
         params: dict = kwargs.get("params", dict())
         return DqRule(rule_id=str(rule_id), rule_type=rule_type, params=params)
 
+    def update_rule_binding_arguments(self, arguments: dict) -> None:
+        params = {"rule_binding_arguments": arguments}
+        if not self.params:
+            self.params = params
+        elif type(self.params) == dict:
+            self.params.update(params)
+        else:
+            raise ValueError(
+                f"DqRule ID: {self.rule_id} has invalid 'params' field:\n {self.params}"
+            )
+
     def to_dict(self: DqRule) -> dict:
         """
 

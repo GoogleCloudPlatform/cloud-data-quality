@@ -55,6 +55,7 @@ py_binary(
         ":integration",
         requirement("click"),
         requirement("coloredlogs"),
+        requirement("sqlite-utils"),
     ],
 )
 
@@ -77,6 +78,7 @@ py_library(
     visibility = ["//tests:__subpackages__"],
     deps = [
         requirement("jinja2"),
+        requirement("sqlite-utils"),
     ],
 )
 

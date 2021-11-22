@@ -15,15 +15,22 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from string import Template
 
+import clouddq.classes.dq_configs_cache as dq_configs_cache
 from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_entity_column import DqEntityColumn
+from clouddq.classes.dq_entity_uri import EntityUri
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_from_dict_and_assert
+from clouddq.utils import get_keys_from_dict_and_assert_oneof
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -31,7 +38,8 @@ class DqRuleBinding:
     """ """
 
     rule_binding_id: str
-    entity_id: str
+    entity_id: str | None
+    entity_uri: EntityUri | None
     column_id: str
     row_filter_id: str
     incremental_time_filter_column_id: str | None
@@ -54,21 +62,36 @@ class DqRuleBinding:
         Returns:
 
         """
-        entity_id: str = get_from_dict_and_assert(
+        entity_config: dict = get_keys_from_dict_and_assert_oneof(
             config_id=rule_binding_id,
             kwargs=kwargs,
-            key="entity_id",
+            keys=["entity_uri", "entity_id"],
         )
+        if "entity_id" in entity_config:
+            entity_id = entity_config["entity_id"]
+            entity_uri = None
+        if "entity_uri" in entity_config:
+            parsed_entity_uri = EntityUri.from_uri(entity_config["entity_uri"])
+            logger.debug(f"parsed_entity_uri: {parsed_entity_uri}")
+            logger.debug(f"parsed_entity_uri.to_dict(): {parsed_entity_uri.to_dict()}")
+            entity_id = parsed_entity_uri.entity_id
+            entity_uri = parsed_entity_uri
+        if entity_id:
+            entity_id.upper()
         column_id: str = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
             key="column_id",
         )
+        if column_id:
+            column_id.upper()
         row_filter_id: str = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
             key="row_filter_id",
         )
+        if row_filter_id:
+            row_filter_id.upper()
         rule_ids: list[str] = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
@@ -80,10 +103,13 @@ class DqRuleBinding:
         incremental_time_filter_column_id: str | None = kwargs.get(
             "incremental_time_filter_column_id", None
         )
+        if incremental_time_filter_column_id:
+            incremental_time_filter_column_id.upper()
         metadata: dict | None = kwargs.get("metadata", dict())
         return DqRuleBinding(
-            rule_binding_id=str(rule_binding_id),
+            rule_binding_id=str(rule_binding_id).upper(),
             entity_id=entity_id,
+            entity_uri=entity_uri,
             column_id=column_id,
             row_filter_id=row_filter_id,
             incremental_time_filter_column_id=incremental_time_filter_column_id,
@@ -105,6 +131,7 @@ class DqRuleBinding:
             {
                 f"{self.rule_binding_id}": {
                     "entity_id": self.entity_id,
+                    "entity_uri": self.entity_uri.to_dict(),
                     "column_id": self.column_id,
                     "row_filter_id": self.row_filter_id,
                     "incremental_time_filter_column_id": self.incremental_time_filter_column_id,  # noqa: E501
@@ -127,7 +154,7 @@ class DqRuleBinding:
         return dict(self.to_dict().get(self.rule_binding_id))
 
     def resolve_table_entity_config(
-        self: DqRuleBinding, entities_collection: dict
+        self: DqRuleBinding, configs_cache: dq_configs_cache.DqConfigsCache
     ) -> DqEntity:
         """
 
@@ -138,17 +165,28 @@ class DqRuleBinding:
         Returns:
 
         """
-
-        table_entity_dict = entities_collection.get(self.entity_id, None)
-        assert_not_none_or_empty(
-            table_entity_dict,
-            f"Table Entity_ID: {self.entity_id} not found in Entities Config.",
-        )
-        table_entity = DqEntity.from_dict(self.entity_id, table_entity_dict)
+        if self.entity_uri:
+            logger.debug(f"Resolving entity uri: {self.entity_uri}")
+            table_entity: DqEntity = configs_cache.get_table_entity_id(
+                self.entity_uri.entity_id.upper()
+            )
+        elif self.entity_id:
+            table_entity: DqEntity = configs_cache.get_table_entity_id(self.entity_id.upper())
+            # table_entity_dict = entities_collection.get(self.entity_id)
+            # assert_not_none_or_empty(
+            #     table_entity,
+            #     f"Table Entity_ID: {self.entity_id} not found in Entities Config.",
+            # )
+        else:
+            raise ValueError(
+                f"Rule Binding ID: {self.rule_binding_id} must define "
+                "either 'entity_id' or 'entity_uri'."
+            )
         return table_entity
 
     def resolve_rule_config_list(
-        self: DqRuleBinding, rules_collection: dict
+        self: DqRuleBinding,
+        configs_cache: dq_configs_cache.DqConfigsCache,
     ) -> list[DqRule]:
         """
 
@@ -167,7 +205,7 @@ class DqRuleBinding:
                     raise ValueError(
                         f"Rule Binding {self.rule_binding_id} has "
                         f"invalid configs in rule_ids. "
-                        f"Rach nested rule_id objects cannot "
+                        f"Each nested rule_id objects cannot "
                         f"have more than one rule_id. "
                         f"Current value: \n {rule}"
                     )
@@ -177,48 +215,45 @@ class DqRuleBinding:
             else:
                 rule_id = rule
                 arguments = None
-            rule_config_dict = rules_collection.get(rule_id, None)
-            assert_not_none_or_empty(
-                rule_config_dict, f"Rule_ID: {rule_id} not found in Rules Config."
+            rule_config = configs_cache.get_rule_id(
+                rule_id.upper()
             )
-            if arguments:
-                rule_config_dict["params"]["rule_binding_arguments"] = arguments
-            rule_config = DqRule.from_dict(rule_id, rule_config_dict)
+            rule_config.update_rule_binding_arguments(arguments)
+            # rule_config_dict = rules_collection.get(rule_id, None)
+            # assert_not_none_or_empty(
+            #     rule_config_dict, f"Rule_ID: {rule_id} not found in Rules Config."
+            # )
+            # if arguments:
+            #     rule_config_dict["params"]["rule_binding_arguments"] = arguments
+            # rule_config = DqRule.from_dict(rule_id, rule_config_dict)
             resolved_rule_config_list.append(rule_config)
         assert_not_none_or_empty(
             resolved_rule_config_list,
-            "Rule Binding must have non-empty rule_config_list.",
+            "Rule Binding must have non-empty rule_ids list.",
         )
         return resolved_rule_config_list
 
     def resolve_row_filter_config(
-        self: DqRuleBinding, row_filters_collection: dict
+        self: DqRuleBinding,
+        configs_cache: dq_configs_cache.DqConfigsCache,
     ) -> DqRowFilter:
-        """
-
-        Args:
-          self: DqRuleBinding:
-          row_filters_collection: typing.Dict:
-
-        Returns:
-
-        """
-
-        row_filter_config_dict = row_filters_collection.get(self.row_filter_id, None)
-        assert_not_none_or_empty(
-            row_filter_config_dict,
-            f"Row Filter ID: {self.row_filter_id} not found in Filters Config.",
-        )
-        row_filter_config = DqRowFilter.from_dict(
-            self.row_filter_id, row_filter_config_dict
-        )
-        return row_filter_config
+        # row_filter_config_dict = row_filters_collection.get(self.row_filter_id, None)
+        # assert_not_none_or_empty(
+        #     row_filter_config_dict,
+        #     f"Row Filter ID: {self.row_filter_id} not found in Filters Config.",
+        # )
+        # row_filter_config = DqRowFilter.from_dict(
+        #     self.row_filter_id, row_filter_config_dict
+        # )
+        row_filter = configs_cache.get_row_filter_id(self.row_filter_id.upper())
+        return row_filter
 
     def resolve_all_configs_to_dict(
         self: DqRuleBinding,
-        entities_collection: dict,
-        rules_collection: dict,
-        row_filters_collection: dict,
+        configs_cache: dq_configs_cache.DqConfigsCache,
+        # entities_collection: dict,
+        # rules_collection: dict,
+        # row_filters_collection: dict,
     ) -> dict:
         """
 
@@ -233,10 +268,10 @@ class DqRuleBinding:
         """
 
         # Resolve table configs
-        table_entity: DqEntity = self.resolve_table_entity_config(entities_collection)
+        table_entity: DqEntity = self.resolve_table_entity_config(configs_cache)
         # Resolve column configs
         column_configs: DqEntityColumn = table_entity.resolve_column_config(
-            self.column_id
+            self.column_id.upper()
         )
         incremental_time_filter_column = None
         if self.incremental_time_filter_column_id:
@@ -260,15 +295,16 @@ class DqRuleBinding:
             ).get("name")
         # Resolve rules configs
         rule_configs_dict = dict()
-        for rule in self.resolve_rule_config_list(rules_collection):
+        for rule in self.resolve_rule_config_list(configs_cache):
             for rule_id, rule_config in rule.to_dict().items():
+                rule_id = rule_id.upper()
                 rule_sql_expr = Template(rule_config["rule_sql_expr"]).safe_substitute(
                     column=column_configs.column_name
                 )
                 rule_config["rule_sql_expr"] = rule_sql_expr
                 rule_configs_dict[rule_id] = rule_config
         # Resolve filter configs
-        row_filter_config = self.resolve_row_filter_config(row_filters_collection)
+        row_filter_config = self.resolve_row_filter_config(configs_cache)
         return dict(
             {
                 "rule_binding_id": self.rule_binding_id,
