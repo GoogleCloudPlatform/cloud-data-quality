@@ -55,6 +55,12 @@ class DataplexEntity:
     def zone(self):
         return self.name.split("/")[7]
 
+    def get_compound_primary_key(self):
+        if self.scheme == "dataplex":
+            return f"projects/{self.project_id}/locations/{self.location}/lakes/{self.lake}/zones/{self.zone}/entities/{self.id}"
+        else:
+            raise NotImplementedError(f"EntityUri.get_compound_primary_key() for scheme {self.scheme} is not yet supported.")
+
     @classmethod
     def from_dict(cls: DataplexEntity, kwargs: dict) -> DataplexEntity:
         """
@@ -186,6 +192,7 @@ class DataplexEntity:
             "location": self.location,
             "lake": self.lake,
             "zone": self.zone,
+            "compound_primary_key": self.get_compound_primary_key(),
         }
 
         return dict(output)

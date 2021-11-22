@@ -118,7 +118,7 @@ class DqConfigsCache:
         )
 
     def resolve_dataplex_entity_uris(self, client: clouddq_dataplex.CloudDqDataplexClient) -> None:
-        for entity_uri in self._cache_db["rule_bindings"].rows_where("entity_uri is not null", select='entity_uri'):
+        for entity_uri in self._cache_db.query("select distinct entity_uri from rule_bindings where entity_uri is not null"):
             logger.debug(f"Processing entity_uri: {entity_uri}")
             entity_uri = dq_entity_uri.EntityUri.from_uri(entity_uri['entity_uri'])
             dataplex_entity = client.get_dataplex_entity(zone_id=entity_uri.zone,
@@ -129,4 +129,4 @@ class DqConfigsCache:
             self._cache_db["entities"].upsert_all(
                 unnest_object_to_list(clouddq_entity), pk="id", alter=True
             )
-            
+                
