@@ -21,7 +21,6 @@ import logging
 from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_DBT_ENVIRONMENT_TARGET
 from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig
 from clouddq.runners.dbt.dbt_connection_configs import GcpDbtConnectionConfig
-from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import run_dbt
 from clouddq.utils import write_templated_file_to_path
 
@@ -78,11 +77,11 @@ class DbtRunner:
 
     def run(
         self, configs: Dict, debug: bool = False, dry_run: bool = False
-    ) -> JobStatus:
+    ) -> None:
         logger.debug(f"Running dbt in path: {self.dbt_path}")
         if debug:
             self.test_dbt_connection()
-        job_status = run_dbt(
+        run_dbt(
             dbt_path=self.dbt_path,
             dbt_profile_dir=self.dbt_profiles_dir,
             configs=configs,
@@ -90,7 +89,6 @@ class DbtRunner:
             debug=False,
             dry_run=dry_run,
         )
-        return job_status
 
     def test_dbt_connection(self):
         run_dbt(

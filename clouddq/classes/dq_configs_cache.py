@@ -118,15 +118,23 @@ class DqConfigsCache:
         )
 
     def resolve_dataplex_entity_uris(self, client: clouddq_dataplex.CloudDqDataplexClient) -> None:
-        for entity_uri in self._cache_db.query("select distinct entity_uri from rule_bindings where entity_uri is not null"):
-            logger.debug(f"Processing entity_uri: {entity_uri}")
-            entity_uri = dq_entity_uri.EntityUri.from_uri(entity_uri['entity_uri'])
-            dataplex_entity = client.get_dataplex_entity(zone_id=entity_uri.zone,
-                                                entity_id=entity_uri.entity_id)
+        for record in self._cache_db.query("select distinct entity_uri, id from rule_bindings where entity_uri is not null"):
+            logger.debug(f"Processing record: {record}")
+            entity_uri = dq_entity_uri.EntityUri.from_uri(record['entity_uri'])
+            dataplex_entity = client.get_dataplex_entity(
+                gcp_project_id=entity_uri.project_id,
+                location_id=entity_uri.location,
+                lake_name=entity_uri.lake,
+                zone_id=entity_uri.zone,
+                entity_id=entity_uri.entity_id)
             clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
                 dataplex_entity=dataplex_entity).to_dict()
-            logger.debug(f"Writing parsed Dataplex Entity to db: {unnest_object_to_list(clouddq_entity)}")
+            resolved_entity = unnest_object_to_list(clouddq_entity)
+            logger.debug(f"Writing parsed Dataplex Entity to db: {resolved_entity}")
             self._cache_db["entities"].upsert_all(
-                unnest_object_to_list(clouddq_entity), pk="id", alter=True
+                resolved_entity, pk="id", alter=True
             )
+            self._cache_db["rule_bindings"].update(record["id"], {
+                "entity_id": resolved_entity[0]["id"]
+            })
                 

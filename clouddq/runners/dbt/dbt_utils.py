@@ -36,15 +36,6 @@ logger = logging.getLogger(__name__)
 ENV_VAR_PATTERN = re.compile(r".*env_var\((.+?)\).*", re.IGNORECASE)
 
 
-@unique
-class JobStatus(Enum):
-    """ """
-
-    UNKNOWN = 0
-    SUCCESS = 1
-    FAILED = 2
-
-
 def run_dbt(
     dbt_path: Path,
     dbt_profile_dir: Path,
@@ -52,7 +43,7 @@ def run_dbt(
     environment: str = "clouddq",
     debug: bool = False,
     dry_run: bool = False,
-) -> JobStatus:
+) -> None:
     """
 
     Args:
@@ -94,20 +85,16 @@ def run_dbt(
                     logger.info("\nExecuting dbt command:\n %s", command)
                     dbt(command)
                 else:
-                    return JobStatus.SUCCESS
+                    logger.info("\ndbt command generated as part of dry-run:\n %s", command)
     except SystemExit as sysexit:
         if sysexit.code == 0:
             logger.debug("dbt run completed successfully.")
-            return JobStatus.SUCCESS
         else:
-            logger.error(
-                f"dbt run failed with error {sysexit.code}\n{str(sysexit)}.",
-                exc_info=True,
+            raise RuntimeError(
+                f"dbt run failed with Runtime Error. See Runtime Error description in dbt run logs for details. Maybe the error is caused by custom SQL logic in a CUSTOM_SQL_EXPR or CUSTOM_SQL_STATEMENT rule?"
             )
-            return JobStatus.FAILED
     except Exception as e:
-        logger.error(f"dbt run failed with error {e}\n", exc_info=True)
-        return JobStatus.UNKNOWN
+        raise RuntimeError(f"dbt run failed with unknown error: '{e}'")
 
 
 def extract_dbt_env_var(text: str) -> str:
