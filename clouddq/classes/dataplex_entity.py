@@ -19,9 +19,7 @@ from dataclasses import asdict
 from dataclasses import dataclass
 
 from clouddq.classes.dataplex_entity_schema import DataplexEntitySchema
-from clouddq.classes.dq_entity_uri import EntityUri
 from clouddq.utils import assert_not_none_or_empty
-from clouddq.utils import validate_uri_and_assert
 
 
 @dataclass
@@ -136,29 +134,6 @@ class DataplexEntity:
             system=system,
             format=entity_format,
             schema=schema,
-        )
-
-    @classmethod
-    def from_uri(cls: DataplexEntity, entity_uri: EntityUri) -> DataplexEntity:
-
-        entity_uri_dict = entity_uri.to_dict()
-        uri = entity_uri_dict.get("uri")
-        print("URI", uri)
-        validate_uri_and_assert(entity_uri=uri)
-        entity_name = uri.split("//")[1]
-        entity_id = entity_uri_dict.get("entity_id")
-
-        return DataplexEntity(
-            name=entity_name,
-            createTime=None,
-            updateTime=None,
-            id=entity_id,
-            type=None,
-            asset=None,
-            dataPath=None,
-            system=None,
-            format=None,
-            schema=None,
         )
 
     def to_dict(self: DataplexEntity) -> dict:
