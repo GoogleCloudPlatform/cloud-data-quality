@@ -20,8 +20,11 @@ import contextlib
 import hashlib
 import logging
 import os
+import random
 import re
+import shutil
 import string
+import time
 import typing
 
 from jinja2 import ChainableUndefined  # type: ignore
@@ -34,7 +37,7 @@ from jinja2 import select_autoescape
 import yaml
 
 
-logger = logging.getLogger(__name__)
+MAXIMUM_EXPONENTIAL_BACKOFF = 32
 
 
 logger = logging.getLogger(__name__)
@@ -158,6 +161,31 @@ def strip_margin(text: str) -> str:
 
 def sha256_digest(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def exponential_backoff(
+    retry_iteration: int, max_retry_duration: int = MAXIMUM_EXPONENTIAL_BACKOFF
+):
+    retry_duration = 2 ** retry_iteration + random.random()
+    if retry_duration <= max_retry_duration:
+        time.sleep(retry_duration)
+    else:
+        raise RuntimeError("Maximum exponential backoff duration exceeded.")
+
+
+def make_archive(source, destination, keep_top_level_folder=True):
+    source = str(source)
+    destination = str(destination)
+    base = os.path.basename(destination)
+    name = base.split(".")[0]
+    format = base.split(".")[1]
+    if keep_top_level_folder:
+        archive_from = os.path.dirname(source)
+        archive_to = os.path.basename(source.strip(os.sep))
+        shutil.make_archive(name, format, archive_from, archive_to)
+    else:
+        shutil.make_archive(name, format, source)
+    shutil.move("{}.{}".format(name, format), destination)
 
 
 def update_dict(dict1: dict, dict2: dict) -> dict:
