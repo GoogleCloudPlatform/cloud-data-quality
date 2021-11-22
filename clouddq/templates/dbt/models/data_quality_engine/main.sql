@@ -75,7 +75,7 @@
         NULL AS progress_watermark,
         NULL AS rows_validated,
         NULL AS complex_rule_validation_errors_count,
-        NULL AS last_modified
+        NULL AS last_modified,
         NULL AS success_count,
         NULL AS success_percentage,
         NULL AS failed_count,

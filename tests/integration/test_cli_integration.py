@@ -21,8 +21,8 @@ from google.auth.exceptions import RefreshError
 import click.testing
 import pytest
 
-from clouddq.main import main
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
+from clouddq.main import main
 
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ class TestCliIntegration:
             f"--gcp_project_id={gcp_project_id}",
             f"--gcp_bq_dataset_id={gcp_bq_dataset}",
             f"--gcp_region_id={gcp_bq_region}",
-            "--debug" #, "--dry_run"
+            "--debug"
             ]
         result = runner.invoke(main, args)
         print(result.output)
@@ -114,7 +114,7 @@ class TestCliIntegration:
                 )
 
                 SELECT count(*) as errors
-                FROM {gcp_project_id}.{gcp_bq_dataset}.dq_summary 
+                FROM {gcp_project_id}.{gcp_bq_dataset}.dq_summary
                 JOIN last_mod ON last_mod.full_table_id = dq_summary.table_id
                 WHERE dq_summary.last_modified IS NOT NULL AND NOT dq_summary.last_modified = last_mod.last_modified
             """
@@ -130,8 +130,6 @@ class TestCliIntegration:
             assert False
         finally:
             client.close_connection()
-            print("testing this")
-
 
     @pytest.mark.xfail
     def test_cli_dry_run_sa_key_configs(
