@@ -80,7 +80,7 @@ class TestCliIntegration:
         print(result.output)
         assert result.exit_code == 0
 
-    def test_cli_oauth_configs(
+    def test_last_modified_in_dq_summary(
         self,
         runner,
         temp_configs_dir,
