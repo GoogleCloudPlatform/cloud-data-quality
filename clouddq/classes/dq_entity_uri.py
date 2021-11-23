@@ -130,8 +130,11 @@ class EntityUri:
 
         else:
 
-            if (("projects" and "locations" and "lakes") not in entity_uri_dict) and "zones" in entity_uri_dict:
-                raise NotImplementedError(f"{scheme} scheme is not implemented.")
+            if "projects" not in entity_uri_dict:
+                if "locations" not in entity_uri_dict:
+                    if "lakes" not in entity_uri_dict:
+                        if "zones" in entity_uri_dict:
+                            raise NotImplementedError(f"{entity_uri} is not implemented.")
 
             if "projects" not in entity_uri_dict:
                 raise ValueError(f"Invalid Entity URI : {entity_uri}")

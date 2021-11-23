@@ -14,11 +14,10 @@
 
 import pytest
 
-from clouddq.classes.dq_entity_uri import DqEntityUri
-from clouddq.integration.dataplex.dataplex_entity import DataplexEntity
+from clouddq.classes.dq_entity_uri import EntityUri
 
 
-class TestDqEntityUri:
+class TestDqEntityURI:
 
     @pytest.mark.parametrize(
         "entity_uri,error_type",
@@ -48,18 +47,53 @@ class TestDqEntityUri:
                 ValueError,
                 id="invalid_scheme"
             ),
-        ]
+            pytest.param(
+                "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities",
+                ValueError,
+                id="missing_entity_id"
+            ),
+            pytest.param(
+                "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/",
+                ValueError,
+                id="missing_entity_id_1"
+            ),
+            pytest.param(
+                "dataplex://projects@",
+                ValueError,
+                id="unsupported_@"
+            ),
+            pytest.param(
+                "dataplex://projects:",
+                ValueError,
+                id="unsupported_:"
+            ),
+            pytest.param(
+                "dataplex://projects?",
+                ValueError,
+                id="unsupported_?"
+            ),
+            pytest.param(
+                "dataplex://projects#",
+                ValueError,
+                id="unsupported_#"
+            ),
+        ],
     )
     def test_entity_uri_parse_failure(self, entity_uri, error_type):
+        """ """
         with pytest.raises(error_type):
-            DqEntityUri.from_uri(entity_uri)
+            EntityUri.from_uri(entity_uri)
 
     def test_entity_uri_parse_dataplex_uri(self):
         """ """
-        entity_uri = "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id"
-        parsed_uri = DqEntityUri.from_uri(entity_uri)
+        entity_uri = f"dataplex://projects/project-id/locations/us-central1/lakes" \
+                     f"/lake-id/zones/zone-id/entities/entity-id"
+        parsed_uri = EntityUri.from_uri(entity_uri)
         expected_entity_dict = {
-            "uri": "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
+            'compound_primary_key': f'projects/project-id/locations/us-central1/lakes'
+                                    f'/lake-id/zones/zone-id/entities/entity-id',
+            "uri": f"dataplex://projects/project-id/locations/us-central1/lakes"
+                   f"/lake-id/zones/zone-id/entities/entity-id",
             "scheme": "dataplex",
             "entity_id": "entity-id",
             "configs": {
@@ -71,32 +105,11 @@ class TestDqEntityUri:
             }
         }
         assert parsed_uri.scheme == "dataplex"
-        assert parsed_uri.uri == "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id"
+        assert parsed_uri.uri == f"dataplex://projects/project-id/locations/us-central1/lakes" \
+                                 f"/lake-id/zones/zone-id/entities/entity-id"
         assert parsed_uri.entity_id == "entity-id"
         assert parsed_uri.configs == expected_entity_dict["configs"]
         assert parsed_uri.to_dict() == expected_entity_dict
-
-    def test_entity_uri_dataplex_uri_to_dataplex_entity(self):
-        entity_uri = "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id"
-        parsed_uri = DqEntityUri.from_uri(entity_uri)
-        dataplex_entity = DataplexEntity.from_uri(parsed_uri)
-        # fix expected dataplex entity dict
-        # expected_dataplex_entity_dict = {
-        #     "name": "projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
-        #     "id": "entity-id",
-        #     "project_idd": "project-id",
-        #     "location_id": "us-central1",
-        #     "lake_id": "lake-id",
-        #     "zone_id": "zone-id",
-        #     "entity_id": "entity-id",
-        #     "type": None,
-        #     "asset": None,
-        #     "dataPath": None,
-        #     "system": None,
-        #     "format": None,
-        #     "schema": None,
-        # }
-        assert dataplex_entity.to_dict() == expected_dataplex_entity_dict
 
     @pytest.mark.parametrize(
         "entity_uri,error_type",
@@ -133,40 +146,40 @@ class TestDqEntityUri:
             ),
         ],
     )
-    def test_entity_uri_dataplex_uri_to_dataplex_entity_failure(self, entity_uri, error_type):
-        parsed_uri = DqEntityUri.from_uri(entity_uri)
+    def test_entity_uri_typo_parse_failure(self, entity_uri, error_type):
         with pytest.raises(error_type):
-            DataplexEntity.from_uri(parsed_uri)
-
-    def test_entity_uri_parse_elide_project_lake_id_failure(self):
-        """ """
-        entity_uri = "dataplex:///zones/zone-id/entities/entity-id"
-        parsed_uri = DqEntityUri.from_uri(entity_uri)
-        # This should be supported eventually
-        with pytest.raises(NotImplementedError):
-            DataplexEntity.from_uri(parsed_uri)
-
-    def test_entity_uri_parse_glob_failure(self):
-        """ """
-        entity_uri = "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entity/test_entity_*"
-        parsed_uri = DqEntityUri.from_uri(entity_uri)
-        # This should be supported eventually
-        with pytest.raises(NotImplementedError):
-            DataplexEntity.from_uri(parsed_uri)
+            EntityUri.from_uri(entity_uri)
 
     def test_entity_uri_parse_asset_id_failure(self):
         """ """
-        entity_uri = "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/assets/asset-id"
-        parsed_uri = DqEntityUri.from_uri(entity_uri)
+        entity_uri = f"dataplex://projects/project-id/locations/us-central1/lakes" \
+                     f"/lake-id/zones/zone-id/assets/asset-id"
+
         with pytest.raises(ValueError):
-            DataplexEntity.from_uri(parsed_uri)
+            EntityUri.from_uri(entity_uri)
 
     def test_entity_uri_parse_partition_failure(self):
         """ """
-        entity_uri = "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/partitions/partition-id"
-        parsed_uri = DqEntityUri.from_uri(entity_uri)
+        entity_uri = f"dataplex://projects/project-id/locations/us-central1/lakes" \
+                     f"/lake-id/zones/zone-id/partitions/partition-id"
         with pytest.raises(ValueError):
-            DataplexEntity.from_uri(parsed_uri)
+            EntityUri.from_uri(entity_uri)
+
+    def test_entity_uri_parse_elide_project_lake_id_failure(self):
+        """ """
+        entity_uri = "dataplex://zones/zone-id/entities/entity-id"
+        # This should be supported eventually
+        with pytest.raises(NotImplementedError):
+            EntityUri.from_uri(entity_uri)
+
+    def test_entity_uri_parse_glob_failure(self):
+        """ """
+        entity_uri = f"dataplex://projects/project-id/locations/us-central1/lakes" \
+                     f"/lake-id/zones/zone-id/entities/test_entity_*"
+        # This should be supported eventually
+        with pytest.raises(NotImplementedError):
+            EntityUri.from_uri(entity_uri)
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 2']))
