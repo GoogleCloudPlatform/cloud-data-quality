@@ -168,7 +168,7 @@ class DqRuleBinding:
         if self.entity_uri:
             logger.debug(f"Resolving entity uri: {self.entity_uri}")
             table_entity: DqEntity = configs_cache.get_table_entity_id(
-                self.entity_uri.entity_id.upper()
+                self.entity_uri.get_compound_primary_key().upper()
             )
         elif self.entity_id:
             table_entity: DqEntity = configs_cache.get_table_entity_id(self.entity_id.upper())

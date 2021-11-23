@@ -34,7 +34,6 @@ from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.runners.dbt.dbt_runner import DbtRunner
-from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
@@ -349,11 +348,11 @@ def main(  # noqa: C901
             )
         dataplex_client = CloudDqDataplexClient(
             gcp_credentials=gcp_credentials,
-            gcp_project_id=gcp_project_id,
-            gcp_dataplex_lake_name="amandeep-dev-lake",
-            gcp_dataplex_region="us-central1",
+            # gcp_project_id=gcp_project_id,
+            # gcp_dataplex_lake_name="amandeep-dev-lake",
+            # gcp_dataplex_region="us-central1",
             # gcp_dataplex_lake_name=gcp_dataplex_lake_name,
-            # gcp_dataplex_region=gcp_dataplex_region,
+            # gcp_dataplex_region=gcp_region_id,
         )
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
@@ -461,54 +460,50 @@ def main(  # noqa: C901
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem not in target_rule_binding_ids:
                 view.unlink()
+        # create dbt configs json for the main.sql loop and run dbt
         configs = {"target_rule_binding_ids": target_rule_binding_ids}
-        job_status: JobStatus = dbt_runner.run(
+        dbt_runner.run(
             configs=configs,
             debug=debug,
             dry_run=dry_run,
         )
-        if job_status == JobStatus.SUCCESS:
-
-            if not dry_run:
-                if target_bigquery_summary_table:
-                    invocation_id = get_dbt_invocation_id(dbt_path)
-                    logger.info(
-                        f"dbt invocation id for current execution "
-                        f"is {invocation_id}"
-                    )
-                    partition_date = date.today()
-                    logger.info(
-                        f"Partition date is {partition_date} and "
-                        f"is being used for getting the dq summary "
-                        f"results from summary table"
-                    )
-                    target_table = TargetTable(invocation_id, bigquery_client)
-                    target_table.write_to_target_bq_table(
-                        partition_date,
-                        target_bigquery_summary_table,
-                        dq_summary_table_name,
-                    )
-                    logger.info("Job completed successfully.")
-                else:
-                    logger.warning(
-                        "'--target_bigquery_summary_table' was not provided. "
-                        "It is needed to append the dq summary results to the "
-                        "provided target bigquery table. This will become a "
-                        "required argument in v1.0.0"
-                    )
-        elif job_status == JobStatus.FAILED:
-            raise RuntimeError("Job failed.")
-        else:
-            raise RuntimeError("Job failed with unknown status.")
+        if not dry_run:
+            if target_bigquery_summary_table:
+                invocation_id = get_dbt_invocation_id(dbt_path)
+                logger.info(
+                    f"dbt invocation id for current execution "
+                    f"is {invocation_id}"
+                )
+                json_logger.info(
+                    {"invocation_id":invocation_id, "target_bigquery_summary_table": target_bigquery_summary_table}
+                )
+                partition_date = date.today()
+                logger.info(
+                    f"Partition date is {partition_date} and "
+                    f"is being used for getting the dq summary "
+                    f"results from summary table"
+                )
+                target_table = TargetTable(invocation_id, bigquery_client)
+                target_table.write_to_target_bq_table(
+                    partition_date,
+                    target_bigquery_summary_table,
+                    dq_summary_table_name,
+                )
+                logger.info("Job completed successfully.")
+            else:
+                logger.warning(
+                    "'--target_bigquery_summary_table' was not provided. "
+                    "It is needed to append the dq summary results to the "
+                    "provided target bigquery table. This will become a "
+                    "required argument in v1.0.0"
+                )
     except Exception as error:
-        logger.debug("got to error")
         logger.error(error)
         json_logger.error(error, exc_info=True)
         sys.exit(1)
     finally:
         if bigquery_client:
             bigquery_client.close_connection()
-        logger.debug("got to finally.")
 
 
 if __name__ == "__main__":

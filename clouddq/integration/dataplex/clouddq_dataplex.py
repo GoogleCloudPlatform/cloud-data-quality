@@ -53,7 +53,7 @@ class CloudDqDataplexClient:
 
     def __init__(
         self,
-        gcp_project_id: str,
+        gcp_project_id: str | None = None,
         gcp_dataplex_lake_name: str | None = None,
         gcp_dataplex_region: str | None = None,
         gcs_bucket_name: str | None = None,

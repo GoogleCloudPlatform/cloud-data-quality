@@ -45,7 +45,7 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
         config = load_yaml(file, configs_type.value)
         if not config:
             continue
-
+        config = {key.upper():value for key,value in config.items()}
         intersection = config.keys() & all_configs.keys()
 
         # The new config defines keys that we have already loaded

@@ -99,14 +99,14 @@ class DqEntity:
     database_name: str
     instance_name: str
     columns: dict[str, DqEntityColumn]
-    environment_override: dict
-    dataplex_name: str
-    dataplex_lake: str
-    dataplex_zone: str
-    dataplex_location: str
-    dataplex_asset_id: str
-    dataplex_createTime: str
-    dataplex_updateTime: str
+    environment_override: dict | None
+    dataplex_name: str | None
+    dataplex_lake: str | None
+    dataplex_zone: str | None
+    dataplex_location: str | None
+    dataplex_asset_id: str | None
+    dataplex_createTime: str | None
+    dataplex_updateTime: str | None
 
     def resolve_column_config(self: DqEntity, column_id: str) -> DqEntityColumn:
         """
@@ -283,7 +283,7 @@ class DqEntity:
                 "instance_name": bigquery_configs.get('projects'),
                 "columns": schema_dict,
                 "environment_override": {},
-                "entity_id": dataplex_entity.id,
+                "entity_id": dataplex_entity.name,
                 "dataplex_name": dataplex_entity.name,
                 "dataplex_lake": dataplex_entity.lake,
                 "dataplex_zone": dataplex_entity.zone,
@@ -292,7 +292,7 @@ class DqEntity:
                 "dataplex_createTime": dataplex_entity.createTime,
                 "dataplex_updateTime": dataplex_entity.updateTime,
             }
-            return DqEntity.from_dict(entity_id=dataplex_entity.id, kwargs=entity_configs)
+            return DqEntity.from_dict(entity_id=dataplex_entity.name.upper(), kwargs=entity_configs)
         else:
             raise NotImplementedError(
                 f"Dataplex entity system {dataplex_entity.system}"
