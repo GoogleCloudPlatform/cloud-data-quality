@@ -272,7 +272,7 @@ class TestJinjaTemplates:
             "<your_gcp_project_id>.<your_bigquery_dataset_id>", "<your_gcp_project_id_2>.<your_bigquery_dataset_id_2>"
         )
         expected = expected.replace(
-            "<your_bigquery_dataset_id>.INFORMATION_SCHEMA", "<your_bigquery_dataset_id_2>.INFORMATION_SCHEMA"
+            "<your_bigquery_dataset_id>.__TABLES__", "<your_bigquery_dataset_id_2>.__TABLES__"
         )
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
