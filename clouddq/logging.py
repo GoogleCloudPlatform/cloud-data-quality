@@ -1,7 +1,8 @@
-import logging
-import json
-import sys
 from datetime import datetime
+
+import json
+import logging
+import sys
 
 
 APP_VERSION = "0.4.0-rc1"
@@ -78,4 +79,3 @@ def get_logger():
     logging_stream_handler.setFormatter(stream_formatter)
     logger.addHandler(logging_stream_handler)
     return logger
-

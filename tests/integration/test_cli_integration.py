@@ -49,7 +49,7 @@ class TestCliIntegration:
         gcp_bq_region
     ):
         logger.info(f"Running test_cli_dbt_path with {gcp_project_id=}, {gcp_bq_dataset=}, {gcp_bq_region=}")
-        logger.info(f"test_cli_dbt_path gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dbt_path {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -71,7 +71,7 @@ class TestCliIntegration:
         test_profiles_dir,
         gcp_application_credentials,
     ):
-        logger.info(f"test_cli_dry_run_dbt_path gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_dbt_path {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -92,7 +92,7 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_application_credentials,
     ):
-        logger.info(f"test_cli_dry_run_oauth_configs gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_oauth_configs {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -115,7 +115,7 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_application_credentials,
     ):
-        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_last_modified_in_dq_summary {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -168,7 +168,7 @@ class TestCliIntegration:
         gcp_sa_key,
         gcp_application_credentials,
     ):
-        logger.info(f"test_cli_dry_run_sa_key_configs gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_sa_key_configs {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -199,7 +199,7 @@ class TestCliIntegration:
         gcp_impersonation_credentials,
         gcp_application_credentials,
     ):
-        logger.info(f"test_cli_dry_run_sa_key_and_impersonation gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_sa_key_and_impersonation {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -230,7 +230,7 @@ class TestCliIntegration:
         gcp_impersonation_credentials,
         gcp_application_credentials,
     ):
-        logger.info(f"test_cli_dry_run_oath_impersonation gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_oath_impersonation {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -257,7 +257,7 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_application_credentials,
     ):
-        logger.info(f"test_cli_dry_run_oath_impersonation gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_oath_impersonation {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -281,7 +281,7 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_application_credentials,
     ):
-        logger.info(f"test_cli_dry_run_missing_project_id_fail gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_missing_project_id_fail {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -303,7 +303,7 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_application_credentials,
     ):
-        logger.info(f"test_cli_dry_run_dataset_in_wrong_region_fail gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_dataset_in_wrong_region_fail {gcp_application_credentials=}")
         args = [
             "ALL",
             f"{temp_configs_dir}",

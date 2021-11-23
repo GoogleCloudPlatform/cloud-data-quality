@@ -14,7 +14,6 @@
 
 """Data Quality Engine for BigQuery."""
 from datetime import date
-from datetime import datetime
 from pathlib import Path
 from pprint import pformat
 from typing import Optional
@@ -22,8 +21,6 @@ from typing import Optional
 import json
 import logging
 import logging.config
-import sys
-import traceback
 
 import click
 import coloredlogs
@@ -31,12 +28,13 @@ import coloredlogs
 from clouddq import lib
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
+from clouddq.logging import get_json_logger
+from clouddq.logging import get_logger
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
-from clouddq.logging import LOG_LEVEL, APP_NAME, APP_VERSION, get_logger, get_json_logger
 
 
 json_logger = get_json_logger()
