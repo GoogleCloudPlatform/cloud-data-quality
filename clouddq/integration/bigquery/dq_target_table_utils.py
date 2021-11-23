@@ -14,14 +14,23 @@
 
 from datetime import date
 
+import json
 import logging
 
 from google.cloud import bigquery
+from google.cloud.bigquery.table import RowIterator
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 
 
 logger = logging.getLogger(__name__)
+
+
+def log_summary(summary_data: RowIterator):
+    json_logger = get_json_logger()
+    for row in summary_data:
+        data = dict(row.items())
+        json_logger.info(json.dumps(data, default=str))
 
 
 def load_target_table_from_bigquery(
@@ -47,9 +56,10 @@ def load_target_table_from_bigquery(
 
         # Start the query, passing in the extra configuration.
         # Make an API request and wait for the job to complete
-        bigquery_client.execute_query(
+        summary_data = bigquery_client.execute_query(
             query_string=query_string, job_config=job_config
         ).result()
+        log_summary(summary_data)
         logger.info(
             f"Table {target_bigquery_summary_table} already exists "
             f"and query results are appended to the table."
@@ -65,7 +75,8 @@ def load_target_table_from_bigquery(
         SELECT * from `{dq_summary_table_name}`
         WHERE invocation_id='{invocation_id}'
         AND DATE(execution_ts)='{partition_date}'"""
-        bigquery_client.execute_query(query_string=query_string)
+        summary_data = bigquery_client.execute_query(query_string=query_string).result()
+        log_summary(summary_data)
         logger.info(
             f"Table created and dq summary results loaded to the "
             f"table {target_bigquery_summary_table}"

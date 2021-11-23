@@ -37,6 +37,31 @@ class TestCliIntegration:
     def test_profiles_dir(self):
         return Path("tests").joinpath("resources", "test_dbt_profiles_dir")
 
+    def test_cli_dbt_path(
+        self,
+        runner,
+        temp_configs_dir,
+        test_profiles_dir,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region
+    ):
+        logger.info(f"Running test_cli_dbt_path with {gcp_project_id=}, {gcp_bq_dataset=}, {gcp_bq_region=}")
+        logger.info(f"test_cli_dbt_path gcp_application_credentials in use: {gcp_application_credentials}")
+        args = [
+            "ALL",
+            f"{temp_configs_dir}",
+            f"--dbt_profiles_dir={test_profiles_dir}",
+            f"--gcp_project_id={gcp_project_id}",
+            f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+            f"--gcp_region_id={gcp_bq_region}",            
+            "--debug",
+            ]
+        result = runner.invoke(main, args)
+        print(result.output)
+        assert result.exit_code == 0
+
     def test_cli_dry_run_dbt_path(
         self,
         runner,
@@ -44,7 +69,7 @@ class TestCliIntegration:
         test_profiles_dir,
         gcp_application_credentials,
     ):
-        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_dbt_path gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -65,7 +90,7 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_application_credentials,
     ):
-        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_oauth_configs gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -90,7 +115,7 @@ class TestCliIntegration:
         gcp_sa_key,
         gcp_application_credentials,
     ):
-        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_sa_key_configs gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -121,7 +146,7 @@ class TestCliIntegration:
         gcp_impersonation_credentials,
         gcp_application_credentials,
     ):
-        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_sa_key_and_impersonation gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -152,7 +177,7 @@ class TestCliIntegration:
         gcp_impersonation_credentials,
         gcp_application_credentials,
     ):
-        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_oath_impersonation gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -179,7 +204,7 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_application_credentials,
     ):
-        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_oath_impersonation gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -203,7 +228,7 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_application_credentials,
     ):
-        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_missing_project_id_fail gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
@@ -225,7 +250,7 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_application_credentials,
     ):
-        logger.info(f"gcp_application_credentials in use: {gcp_application_credentials}")
+        logger.info(f"test_cli_dry_run_dataset_in_wrong_region_fail gcp_application_credentials in use: {gcp_application_credentials}")
         args = [
             "ALL",
             f"{temp_configs_dir}",
