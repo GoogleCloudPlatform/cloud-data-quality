@@ -111,7 +111,7 @@ class DatabaseType(str, Enum):
     """ """
 
     BIGQUERY = "BIGQUERY"
-    DATAPLEX = "DATAPLEX"
+    DATAPLEX_BQ_EXTERNAL_TABLE = "DATAPLEX_BQ_EXTERNAL_TABLE"
 
     def get_column_type(
         self: DqEntityColumn, column_type: DatabaseColumnType | str

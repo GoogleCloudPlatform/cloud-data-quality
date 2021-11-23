@@ -164,7 +164,7 @@ class TestClasses:
     def test_dq_entity_parse_dataplex_configs(self):
         """ """
         dataplex_entity_input_dict = {
-            "source_database": "DATAPLEX",
+            "source_database": "DATAPLEX_BQ_EXTERNAL_TABLE",
             "table_name": "table",
             "lake_name": "lake",
             "zone_name": "zone",
@@ -182,7 +182,7 @@ class TestClasses:
         )
         dataplex_entity_configs_expected = {
             "test_dataplex_entity": {
-                "source_database": "DATAPLEX",
+                "source_database": "DATAPLEX_BQ_EXTERNAL_TABLE",
                 "table_name": "table",
                 "database_name": "lake_zone",
                 "instance_name": "project_name",

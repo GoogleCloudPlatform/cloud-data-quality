@@ -236,7 +236,7 @@ class TestCliIntegration:
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 1
-        assert isinstance(result.exception, AssertionError)
+        assert isinstance(result.exception, SystemExit)
 
 
 if __name__ == "__main__":
