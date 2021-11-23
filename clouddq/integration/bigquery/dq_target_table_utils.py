@@ -21,8 +21,8 @@ from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
-from clouddq.logging import get_json_logger
-from clouddq.logging import get_logger
+from clouddq.log import get_json_logger
+from clouddq.log import get_logger
 
 
 logger = logging.getLogger(__name__)

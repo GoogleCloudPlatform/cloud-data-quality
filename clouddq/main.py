@@ -28,8 +28,8 @@ import coloredlogs
 from clouddq import lib
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
-from clouddq.logging import get_json_logger
-from clouddq.logging import get_logger
+from clouddq.log import get_json_logger
+from clouddq.log import get_logger
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
