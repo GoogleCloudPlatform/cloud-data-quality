@@ -97,8 +97,12 @@ class DqConfigsCache:
         return rule_binding
 
     def load_all_rule_bindings_collection(self, rule_binding_collection: dict) -> None:
+        rule_bindings_rows = unnest_object_to_list(rule_binding_collection)
+        for record in rule_bindings_rows:
+            if "entity_uri" not in record:
+                record.update({"entity_uri": None})
         self._cache_db["rule_bindings"].upsert_all(
-            unnest_object_to_list(rule_binding_collection), pk="id"
+            rule_bindings_rows, pk="id"
         ).add_foreign_key("entity_id", "entities", "id").add_foreign_key("row_filter_id", "row_filters", "id")
 
     def load_all_entities_collection(self, entities_collection: dict) -> None:

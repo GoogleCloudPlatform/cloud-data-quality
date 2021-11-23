@@ -62,7 +62,7 @@ class TestCli:
         result = runner.invoke(main, args)
         logger.info(result.output)
         assert result.exit_code == 1
-        assert isinstance(result.exception, ValueError)
+        assert isinstance(result.exception, SystemExit)
 
     def test_cli_dry_run(
         self,

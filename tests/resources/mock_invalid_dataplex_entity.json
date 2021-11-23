@@ -3,6 +3,7 @@
   "updateTime": "updateTimestamp",
   "asset": "asset-id",
   "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
+  "db_primary_key": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
   "system": "BIGQUERY",
   "schema": {
     "fields": [

@@ -15,19 +15,6 @@
 load("@rules_python//python:defs.bzl", "py_test")
 load("@py_deps//:requirements.bzl", "requirement")
 
-py_test(
-    name = "compiler_version_test",
-    srcs = [
-        "compiler_version_test.py",
-        "conftest.py",
-    ],
-    legacy_create_init = 0,
-    deps = [
-        requirement("pytest"),
-        requirement("filelock"),
-    ],
-)
-
 filegroup(
     name = "resources",
     srcs = glob(["resources/*"]),
@@ -65,7 +52,10 @@ SRCS = glob([
     "test_*.py",
     "unit/test_*.py",
     "integration/test_*.py",
-]) + ["conftest.py"]
+]) + [
+    "compiler_version_test.py",
+    "conftest.py",
+    ]
 
 DATA = [
     ":resources",
@@ -77,6 +67,15 @@ DATA = [
     "//clouddq:dbt_project_template",
     "//clouddq:macros_template",
 ]
+
+py_test(
+    name = "compiler_version_test",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
 
 py_test(
     name = "test_classes",
@@ -166,9 +165,6 @@ py_test(
     data = DATA,
     legacy_create_init = 0,
     deps = DEPS,
-<<<<<<< Updated upstream
-)
-=======
 )
 
 py_test(
@@ -178,4 +174,3 @@ py_test(
     legacy_create_init = 0,
     deps = DEPS,
 )
->>>>>>> Stashed changes

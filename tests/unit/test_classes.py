@@ -21,6 +21,7 @@ from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
 
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -70,13 +71,13 @@ class TestClasses:
         [
             pytest.param(
                 {"table_name": "table", "lake_name": "lake", "zone_name": "zone", "project_name": "project"},
-                "DATAPLEX",
+                "DATAPLEX_BQ_EXTERNAL_TABLE",
                 "lake_zone",
                 id="dataplex_native"
             ),
             pytest.param(
                 {"table_name": "table", "database_name": "lake_zone", "project_name": "project"},
-                "DATAPLEX",
+                "DATAPLEX_BQ_EXTERNAL_TABLE",
                 "lake_zone",
                 id="dataplex_backwards_compatible"
             ),

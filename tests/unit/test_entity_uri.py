@@ -88,6 +88,7 @@ class TestEntityURI:
             "uri": "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
             "scheme": "dataplex",
             "entity_id": "entity-id",
+            'db_primary_key': 'projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id',
             "configs": {
                 "projects": "project-id",
                 "locations": "us-central1",
@@ -109,6 +110,7 @@ class TestEntityURI:
 
         expected_dataplex_entity_dict = {
             "name": "projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
+            "db_primary_key": "projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
             "createTime": None,
             "updateTime": None,
             "id": "entity-id",

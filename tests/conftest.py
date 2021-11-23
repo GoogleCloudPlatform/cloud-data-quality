@@ -229,7 +229,8 @@ def test_dq_dataplex_client(dataplex_endpoint,
 
 @pytest.fixture(scope="session")
 def test_configs_cache():
-    prepare_configs_cache(configs_path=Path("tests/resources/configs"))
+    configs_cache = prepare_configs_cache(configs_path=Path("tests/resources/configs"))
+    return configs_cache
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "dataplex: mark as tests for dataplex integration test.")

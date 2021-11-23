@@ -50,43 +50,10 @@ class TestJinjaTemplates:
         """ """
         return lib.load_rules_config(configs_path=Path("tests/resources/configs"))
 
-    def test_rules_class(self, test_rules_collection):
-        """
-
-        Args:
-          test_rules_collection:
-
-        Returns:
-
-        """
-        for key, value in test_rules_collection.items():
-            if value["rule_type"] == RuleType.CUSTOM_SQL_STATEMENT:
-                continue
-            rule = DqRule.from_dict(rule_id=key, kwargs=value)
-            assert key in rule.to_dict()
-            value.update({"rule_sql_expr": rule.resolve_sql_expr()})
-            if "params" not in value:
-                value.update({"params": {}})
-            assert dict(rule.dict_values()) == dict(value)
-
     @pytest.fixture(scope="session")
     def test_row_filters_collection(self):
         """ """
         return lib.load_row_filters_config(configs_path=Path("tests/resources/configs"))
-
-    def test_filters_class(self, test_row_filters_collection):
-        """
-
-        Args:
-          test_row_filters_collection:
-
-        Returns:
-
-        """
-        for key, value in test_row_filters_collection.items():
-            dq_filter = DqRowFilter.from_dict(row_filter_id=key, kwargs=value)
-            assert key in dq_filter.to_dict()
-            assert dict(dq_filter.dict_values()) == dict(value)
 
     @pytest.fixture(scope="session")
     def test_rule_bindings_collection_team_1(self):
@@ -109,18 +76,40 @@ class TestJinjaTemplates:
             Path("tests/resources/configs/rule_bindings/team-3-rule-bindings.yml")
         )
 
-    def test_resolve_time_filter_column(self, test_rule_bindings_collection_team_1):
+    @pytest.fixture(scope="session")
+    def test_all_rule_bindings_collections(self):
+        """ """
+        return lib.load_rule_bindings_config(configs_path=Path("tests/resources/configs"))
+
+    def test_rules_class(self, test_rules_collection):
+        for key, value in test_rules_collection.items():
+            if value["rule_type"] == RuleType.CUSTOM_SQL_STATEMENT:
+                continue
+            rule = DqRule.from_dict(rule_id=key, kwargs=value)
+            assert key in rule.to_dict()
+            value.update({"rule_sql_expr": rule.resolve_sql_expr()})
+            if "params" not in value:
+                value.update({"params": {}})
+            assert dict(rule.dict_values()) == dict(value)
+
+    def test_filters_class(self, test_row_filters_collection):
+        for key, value in test_row_filters_collection.items():
+            dq_filter = DqRowFilter.from_dict(row_filter_id=key, kwargs=value)
+            assert key in dq_filter.to_dict()
+            assert dict(dq_filter.dict_values()) == dict(value)
+
+    def test_resolve_time_filter_column(self, test_rule_bindings_collection_team_1, test_configs_cache):
         """ """
         logger.info(pformat(test_rule_bindings_collection_team_1))
         first_rule_binding_config = (
             test_rule_bindings_collection_team_1.values().__iter__().__next__()
         )
-        entities_configs = lib.load_entities_config(configs_path=Path("tests/resources/configs"))
+        # entities_configs = lib.load_entities_config(configs_path=Path("tests/resources/configs"))
         rule_binding = DqRuleBinding.from_dict(
             rule_binding_id="dq_summary",
             kwargs=first_rule_binding_config,
         )
-        entity = rule_binding.resolve_table_entity_config(entities_configs)
+        entity = rule_binding.resolve_table_entity_config(configs_cache=test_configs_cache,)
         entity.resolve_column_config(rule_binding.incremental_time_filter_column_id)
         with pytest.raises(ValueError):
             entity.resolve_column_config("invalid_column")
@@ -141,14 +130,13 @@ class TestJinjaTemplates:
                 value.update({"metadata": {}})
             if "incremental_time_filter_column_id" not in value:
                 value.update({"incremental_time_filter_column_id": None})
+            value.update({'entity_uri': None})
             assert dict(rule_binding.dict_values()) == dict(value)
 
     def test_rule_bindings_class_resolve_configs(
         self,
         test_rule_bindings_collection_team_2,
-        test_entities_collection,
-        test_rules_collection,
-        test_row_filters_collection,
+        test_configs_cache,
     ):
         """
 
@@ -160,25 +148,15 @@ class TestJinjaTemplates:
         """
         for key, value in test_rule_bindings_collection_team_2.items():
             rule_binding = DqRuleBinding.from_dict(rule_binding_id=key, kwargs=value)
-            rule_binding.resolve_table_entity_config(
-                entities_collection=test_entities_collection
+            rule_binding.resolve_table_entity_config(configs_cache=test_configs_cache,
             )
-            rule_binding.resolve_rule_config_list(
-                rules_collection=test_rules_collection
+            rule_binding.resolve_rule_config_list(configs_cache=test_configs_cache,
             )
-            rule_binding.resolve_row_filter_config(
-                row_filters_collection=test_row_filters_collection
+            rule_binding.resolve_row_filter_config(configs_cache=test_configs_cache,
             )
-            rule_binding.resolve_all_configs_to_dict(
-                entities_collection=test_entities_collection,
-                rules_collection=test_rules_collection,
-                row_filters_collection=test_row_filters_collection,
+            rule_binding.resolve_all_configs_to_dict(configs_cache=test_configs_cache,
             )
 
-    @pytest.fixture(scope="session")
-    def test_all_rule_bindings_collections(self):
-        """ """
-        return lib.load_rule_bindings_config(configs_path=Path("tests/resources/configs"))
 
     def test_load_rule_bindings_valid(self, test_all_rule_bindings_collections):
         """
@@ -194,9 +172,7 @@ class TestJinjaTemplates:
     def test_render_run_dq_main_sql(
         self,
         test_rule_bindings_collection_team_2,
-        test_entities_collection,
-        test_rules_collection,
-        test_row_filters_collection,
+        test_configs_cache
     ):
         """
 
@@ -217,13 +193,10 @@ class TestJinjaTemplates:
             .__next__()  # use first rule binding
         )
         output = lib.create_rule_binding_view_model(
-            configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
-            entities_collection=test_entities_collection,
-            rules_collection=test_rules_collection,
-            row_filters_collection=test_row_filters_collection,
+            configs_cache=test_configs_cache,
             environment="DEV",
             debug=True,
         )
@@ -235,9 +208,7 @@ class TestJinjaTemplates:
     def test_render_run_dq_main_sql_env_override(
         self,
         test_rule_bindings_collection_team_2,
-        test_entities_collection,
-        test_rules_collection,
-        test_row_filters_collection,
+        test_configs_cache,
     ):
         """
 
@@ -258,13 +229,10 @@ class TestJinjaTemplates:
             .__next__()  # use first rule binding
         )
         output = lib.create_rule_binding_view_model(
-            configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
-            entities_collection=test_entities_collection,
-            rules_collection=test_rules_collection,
-            row_filters_collection=test_row_filters_collection,
+            configs_cache=test_configs_cache,
             environment="TEST",
             debug=True,
         )
@@ -279,9 +247,7 @@ class TestJinjaTemplates:
     def test_render_run_dq_main_sql_high_watermark(
         self,
         test_rule_bindings_collection_team_1,
-        test_entities_collection,
-        test_rules_collection,
-        test_row_filters_collection,
+        test_configs_cache,
     ):
         """
 
@@ -304,13 +270,10 @@ class TestJinjaTemplates:
             .__next__()  # use first rule binding
         )
         output = lib.create_rule_binding_view_model(
-            configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
-            entities_collection=test_entities_collection,
-            rules_collection=test_rules_collection,
-            row_filters_collection=test_row_filters_collection,
+            configs_cache=test_configs_cache,
             environment="DEV",
             debug=True,
         )
@@ -322,9 +285,7 @@ class TestJinjaTemplates:
     def test_render_run_dq_main_sql_custom_sql_statement(
         self,
         test_rule_bindings_collection_team_3,
-        test_entities_collection,
-        test_rules_collection,
-        test_row_filters_collection,
+        test_configs_cache,
     ):
         """
 
@@ -347,13 +308,10 @@ class TestJinjaTemplates:
             .__next__()  # use first rule binding
         )
         output = lib.create_rule_binding_view_model(
-            configs_path=Path("tests/resources/configs"),
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
-            entities_collection=test_entities_collection,
-            rules_collection=test_rules_collection,
-            row_filters_collection=test_row_filters_collection,
+            configs_cache=test_configs_cache,
             environment="DEV",
             debug=True,
         )
@@ -363,7 +321,7 @@ class TestJinjaTemplates:
         assert output == expected
 
     def test_prepare_configs_from_rule_binding(
-        self, test_rule_bindings_collection_team_2
+        self, test_rule_bindings_collection_team_2, test_configs_cache
     ):
         """ """
         rule_binding_id, rule_binding_configs = (
@@ -379,7 +337,7 @@ class TestJinjaTemplates:
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
             environment=env,
             metadata=metadata,
-            configs_path=Path("tests/resources/configs"),
+            configs_cache=test_configs_cache,
         )
         logger.info(pformat(json.dumps(configs["configs"])))
         with open("tests/resources/expected_configs.json") as f:
@@ -388,17 +346,6 @@ class TestJinjaTemplates:
         metadata.update(rule_binding_configs["metadata"])
         assert configs["metadata"] == dict(metadata)
         assert configs["environment"] == env
-
-    def test_load_configs(self):
-        """ """
-        (
-            entities_collection,
-            row_filters_collection,
-            rules_collection,
-        ) = lib.load_configs_if_not_defined(configs_path=Path("tests/resources/configs"))
-        assert len(entities_collection) > 0
-        assert len(row_filters_collection) > 0
-        assert len(rules_collection) > 0
 
 
 if __name__ == "__main__":
