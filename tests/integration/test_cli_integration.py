@@ -56,7 +56,8 @@ class TestCliIntegration:
             f"--dbt_profiles_dir={test_profiles_dir}",
             f"--gcp_project_id={gcp_project_id}",
             f"--gcp_bq_dataset_id={gcp_bq_dataset}",
-            f"--gcp_region_id={gcp_bq_region}",            
+            f"--gcp_region_id={gcp_bq_region}",
+            f"--target_bigquery_summary_table={gcp_project_id}.{gcp_bq_dataset}.dq_summary_target",
             "--debug",
             ]
         result = runner.invoke(main, args)
