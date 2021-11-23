@@ -60,6 +60,8 @@ class TestCliIntegration:
             f"--target_bigquery_summary_table={gcp_project_id}.{gcp_bq_dataset}.dq_summary_target",
             "--debug",
             ]
+        logger.info(f"Args: {' '.join(args)}")
+        
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0
