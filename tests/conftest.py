@@ -21,6 +21,7 @@ import tempfile
 import pytest
 
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
+from clouddq.lib import prepare_configs_cache
 
 
 logger = logging.getLogger(__name__)
@@ -189,8 +190,11 @@ def temp_configs_dir(gcp_project_id, gcp_bq_dataset):
 def gcp_dataplex_zone_id():
     gcp_dataplex_zone_id = os.environ.get('DATAPLEX_ZONE_ID', None)
     if not gcp_dataplex_zone_id:
-        logger.fatal("Required test environment variable DATAPLEX_ZONE_ID cannot be found. "
+        logger.warning("Required test environment variable DATAPLEX_ZONE_ID cannot be found. "
                      "Set this to the Dataplex Zone used for testing.")
+        test_zone_id = "raw"
+        logging.warning(f"Defaulting to using test: {test_zone_id}")
+        gcp_dataplex_zone_id = test_zone_id
     return gcp_dataplex_zone_id
 
 @pytest.fixture(scope="session")
@@ -222,6 +226,10 @@ def test_dq_dataplex_client(dataplex_endpoint,
                                 gcp_dataplex_region=gcp_dataplex_region,
                                 gcp_project_id=gcp_project_id,
                                 gcs_bucket_name=gcs_bucket_name)
+
+@pytest.fixture(scope="session")
+def test_configs_cache():
+    prepare_configs_cache(configs_path=Path("tests/resources/configs"))
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "dataplex: mark as tests for dataplex integration test.")

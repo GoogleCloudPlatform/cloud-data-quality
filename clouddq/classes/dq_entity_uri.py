@@ -49,11 +49,11 @@ class EntityUri:
     def zone(self):
         return self.uri.split("/")[9]
 
-    def get_compound_primary_key(self):
+    def get_db_primary_key(self):
         if self.scheme == "dataplex":
             return f"projects/{self.project_id}/locations/{self.location}/lakes/{self.lake}/zones/{self.zone}/entities/{self.entity_id}"
         else:
-            raise NotImplementedError(f"EntityUri.get_compound_primary_key() for scheme {self.scheme} is not yet supported.")
+            raise NotImplementedError(f"EntityUri.get_db_primary_key() for scheme {self.scheme} is not yet supported.")
 
     @property
     def configs(self):
@@ -88,7 +88,7 @@ class EntityUri:
             "uri": self.uri,
             "scheme": self.scheme,
             "entity_id": self.entity_id,
-            "compound_primary_key": self.get_compound_primary_key(),
+            "db_primary_key": self.get_db_primary_key(),
             "configs": self.configs,
         }
 
