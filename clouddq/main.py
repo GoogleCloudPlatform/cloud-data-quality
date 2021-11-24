@@ -335,10 +335,13 @@ def main(  # noqa: C901
         )
     if (
         not dbt_profiles_dir
-        and (not gcp_project_id or not gcp_bq_dataset_id or not gcp_region_id)
+        and (  # noqa: W503
+            not gcp_project_id or not gcp_bq_dataset_id or not gcp_region_id
+        )
     ) or (dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id or gcp_region_id)):
         raise ValueError(
-            "CLI input must contain either all of (--gcp_project_id, --gcp_bq_dataset_id, --gcp_region_id) or --dbt_profiles_dir."
+            "CLI input must define either all of "
+            "(--gcp_project_id, --gcp_bq_dataset_id, --gcp_region_id) or --dbt_profiles_dir."
         )
     bigquery_client = None
     dataplex_client = None

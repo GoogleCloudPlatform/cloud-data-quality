@@ -271,9 +271,9 @@ class DataplexClient:
         lake_name: str = None,
     ) -> Response:
         if not zone_id:
-            raise ValueError(f"zone_id is the required argument.")
+            raise ValueError("zone_id is a required argument.")
         if not entity_id:
-            raise ValueError(f"entity_id is the required argument.")
+            raise ValueError("entity_id is a required argument.")
         if not gcp_project_id:
             gcp_project_id = self.gcp_project_id
         if not location_id:
@@ -301,7 +301,7 @@ class DataplexClient:
         lake_name: str = None,
     ) -> Response:
         if not zone_id:
-            raise ValueError(f"zone_id is the required argument.")
+            raise ValueError("zone_id is the required argument.")
         if not gcp_project_id:
             gcp_project_id = self.gcp_project_id
         if not location_id:

@@ -33,7 +33,7 @@ class TestUtils:
             utils.get_keys_from_dict_and_assert_oneof('none', kwargs=kwargs, keys=[])
         with pytest.raises(ValueError):
             utils.get_keys_from_dict_and_assert_oneof('two', kwargs=kwargs, keys=['a', 'b'])
-        
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP']))

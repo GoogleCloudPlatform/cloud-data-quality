@@ -23,10 +23,10 @@ import logging
 import os
 import random
 import re
+import shutil
 import string
 import time
 import typing
-import shutil
 
 from jinja2 import ChainableUndefined  # type: ignore
 from jinja2 import DebugUndefined
@@ -238,4 +238,3 @@ def update_dict(dict1: dict, dict2: dict) -> dict:
             output_dict[key].append(dict2[key])
 
     return output_dict
-

@@ -15,7 +15,6 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
-from dataclasses import asdict
 from dataclasses import dataclass
 
 from clouddq.utils import assert_not_none_or_empty
@@ -53,18 +52,18 @@ class DataplexEntitySchemaField:
 
         name = kwargs.get("name")
         assert_not_none_or_empty(
-            value=name, error_msg=f"Name: must define non-empty value: 'name'."
+            value=name, error_msg="Name: must define non-empty value: 'name'."
         )
 
         data_type = kwargs.get("data_type")
         assert_not_none_or_empty(
             value=data_type,
-            error_msg=f"DataType: must define non-empty value: 'data_type'.",
+            error_msg="DataType: must define non-empty value: 'data_type'.",
         )
 
         mode = kwargs.get("mode")
         assert_not_none_or_empty(
-            value=mode, error_msg=f"Mode: must define non-empty value: 'mode'."
+            value=mode, error_msg="Mode: must define non-empty value: 'mode'."
         )
 
         return DataplexEntitySchemaField(

@@ -17,7 +17,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import json
 import logging
 import sqlite3
 
@@ -27,7 +26,6 @@ from sqlite_utils.db import NotFoundError
 from clouddq.utils import convert_json_value_to_dict
 from clouddq.utils import unnest_object_to_list
 
-import clouddq.classes.dataplex_entity as dataplex_entity
 import clouddq.classes.dq_entity as dq_entity
 import clouddq.classes.dq_entity_uri as dq_entity_uri
 import clouddq.classes.dq_row_filter as dq_row_filter
