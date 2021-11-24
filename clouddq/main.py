@@ -29,10 +29,10 @@ import click
 import coloredlogs
 
 from clouddq import lib
-from clouddq.integration.gcp_credentials import GcpCredentials
-from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
+from clouddq.integration.gcp_credentials import GcpCredentials
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
@@ -333,6 +333,13 @@ def main(  # noqa: C901
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
         )
+    if (
+        not dbt_profiles_dir
+        and (not gcp_project_id or not gcp_bq_dataset_id or not gcp_region_id)
+    ) or (dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id or gcp_region_id)):
+        raise ValueError(
+            "CLI input must contain either all of (--gcp_project_id, --gcp_bq_dataset_id, --gcp_region_id) or --dbt_profiles_dir."
+        )
     bigquery_client = None
     dataplex_client = None
     try:
@@ -343,16 +350,9 @@ def main(  # noqa: C901
         )
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
-            bigquery_client = BigQueryClient(
-                gcp_credentials=gcp_credentials
-            )
+            bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
         dataplex_client = CloudDqDataplexClient(
             gcp_credentials=gcp_credentials,
-            # gcp_project_id=gcp_project_id,
-            # gcp_dataplex_lake_name="amandeep-dev-lake",
-            # gcp_dataplex_region="us-central1",
-            # gcp_dataplex_lake_name=gcp_dataplex_lake_name,
-            # gcp_dataplex_region=gcp_region_id,
         )
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
@@ -384,7 +384,7 @@ def main(  # noqa: C901
         logger.info(
             f"Writing summary results to GCP table: `{dq_summary_table_name}`. "
         )
-        # Check existence of dataset for target BQ table
+        # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             target_table_ref = bigquery_client.table_from_string(
                 target_bigquery_summary_table
@@ -396,6 +396,9 @@ def main(  # noqa: C901
                     f"{target_bigquery_summary_table}. "
                     f"Dataset {target_dataset_id} does not exist. "
                 )
+            bigquery_client.assert_dataset_is_in_region(
+                dataset=target_dataset_id, region=gcp_region_id
+            )
         # Load metadata
         metadata = json.loads(metadata)
         # Load Rule Bindings
@@ -409,14 +412,6 @@ def main(  # noqa: C901
         # Load all configs into a local cache
         configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
         configs_cache.resolve_dataplex_entity_uris(dataplex_client)
-        # # Load all other configs
-        # (
-        #     entities_collection,
-        #     row_filters_collection,
-        #     rules_collection,
-        # ) = lib.load_configs_if_not_defined(
-        #     configs_path=configs_path,
-        # )
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
@@ -436,10 +431,6 @@ def main(  # noqa: C901
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name=dq_summary_table_name,
                 configs_cache=configs_cache,
-                # entities_collection=entities_collection,
-                # rules_collection=rules_collection,
-                # row_filters_collection=row_filters_collection,
-                # configs_path=configs_path,
                 environment=environment_target,
                 metadata=metadata,
                 debug=print_sql_queries,
@@ -471,11 +462,13 @@ def main(  # noqa: C901
             if target_bigquery_summary_table:
                 invocation_id = get_dbt_invocation_id(dbt_path)
                 logger.info(
-                    f"dbt invocation id for current execution "
-                    f"is {invocation_id}"
+                    f"dbt invocation id for current execution " f"is {invocation_id}"
                 )
                 json_logger.info(
-                    {"invocation_id":invocation_id, "target_bigquery_summary_table": target_bigquery_summary_table}
+                    {
+                        "invocation_id": invocation_id,
+                        "target_bigquery_summary_table": target_bigquery_summary_table,
+                    }
                 )
                 partition_date = date.today()
                 logger.info(
@@ -500,7 +493,7 @@ def main(  # noqa: C901
     except Exception as error:
         logger.error(error)
         json_logger.error(error, exc_info=True)
-        sys.exit(1)
+        raise SystemExit(error)
     finally:
         if bigquery_client:
             bigquery_client.close_connection()

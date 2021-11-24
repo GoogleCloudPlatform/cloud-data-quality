@@ -15,11 +15,11 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from string import Template
 
-import clouddq.classes.dq_configs_cache as dq_configs_cache
+import logging
+
 from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_entity_column import DqEntityColumn
 from clouddq.classes.dq_entity_uri import EntityUri
@@ -28,6 +28,8 @@ from clouddq.classes.dq_rule import DqRule
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_from_dict_and_assert
 from clouddq.utils import get_keys_from_dict_and_assert_oneof
+
+import clouddq.classes.dq_configs_cache as dq_configs_cache
 
 
 logger = logging.getLogger(__name__)
@@ -126,12 +128,16 @@ class DqRuleBinding:
         Returns:
 
         """
+        if self.entity_uri:
+            entity_uri = self.entity_uri.to_dict()
+        else:
+            entity_uri = None
 
         return dict(
             {
                 f"{self.rule_binding_id}": {
                     "entity_id": self.entity_id,
-                    "entity_uri": self.entity_uri.to_dict(),
+                    "entity_uri": entity_uri,
                     "column_id": self.column_id,
                     "row_filter_id": self.row_filter_id,
                     "incremental_time_filter_column_id": self.incremental_time_filter_column_id,  # noqa: E501
@@ -171,12 +177,9 @@ class DqRuleBinding:
                 self.entity_uri.get_db_primary_key().upper()
             )
         elif self.entity_id:
-            table_entity: DqEntity = configs_cache.get_table_entity_id(self.entity_id.upper())
-            # table_entity_dict = entities_collection.get(self.entity_id)
-            # assert_not_none_or_empty(
-            #     table_entity,
-            #     f"Table Entity_ID: {self.entity_id} not found in Entities Config.",
-            # )
+            table_entity: DqEntity = configs_cache.get_table_entity_id(
+                self.entity_id.upper()
+            )
         else:
             raise ValueError(
                 f"Rule Binding ID: {self.rule_binding_id} must define "
@@ -215,17 +218,8 @@ class DqRuleBinding:
             else:
                 rule_id = rule
                 arguments = None
-            rule_config = configs_cache.get_rule_id(
-                rule_id.upper()
-            )
+            rule_config = configs_cache.get_rule_id(rule_id.upper())
             rule_config.update_rule_binding_arguments(arguments)
-            # rule_config_dict = rules_collection.get(rule_id, None)
-            # assert_not_none_or_empty(
-            #     rule_config_dict, f"Rule_ID: {rule_id} not found in Rules Config."
-            # )
-            # if arguments:
-            #     rule_config_dict["params"]["rule_binding_arguments"] = arguments
-            # rule_config = DqRule.from_dict(rule_id, rule_config_dict)
             resolved_rule_config_list.append(rule_config)
         assert_not_none_or_empty(
             resolved_rule_config_list,
@@ -237,23 +231,12 @@ class DqRuleBinding:
         self: DqRuleBinding,
         configs_cache: dq_configs_cache.DqConfigsCache,
     ) -> DqRowFilter:
-        # row_filter_config_dict = row_filters_collection.get(self.row_filter_id, None)
-        # assert_not_none_or_empty(
-        #     row_filter_config_dict,
-        #     f"Row Filter ID: {self.row_filter_id} not found in Filters Config.",
-        # )
-        # row_filter_config = DqRowFilter.from_dict(
-        #     self.row_filter_id, row_filter_config_dict
-        # )
         row_filter = configs_cache.get_row_filter_id(self.row_filter_id.upper())
         return row_filter
 
     def resolve_all_configs_to_dict(
         self: DqRuleBinding,
         configs_cache: dq_configs_cache.DqConfigsCache,
-        # entities_collection: dict,
-        # rules_collection: dict,
-        # row_filters_collection: dict,
     ) -> dict:
         """
 

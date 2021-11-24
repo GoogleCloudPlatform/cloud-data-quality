@@ -15,14 +15,13 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
+from pprint import pformat
 
 import json
 import logging
 import re
 import time
 import typing
-
-from pprint import pformat
 
 from requests import Response
 
@@ -264,12 +263,14 @@ class CloudDqDataplexClient:
             gcp_project_id=gcp_project_id,
             location_id=location_id,
             lake_name=lake_name,
-            params=params
+            params=params,
         )
         if response.status_code == 200:
             return DataplexEntity.from_dict(json.loads(response.text))
         else:
-            raise RuntimeError(f"Failed to retrieve Dataplex entity: '/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}/lakes/{self._client.lake_name}/zones/{zone_id}/entities/{entity_id}':\n {response.text}")
+            raise RuntimeError(
+                f"Failed to retrieve Dataplex entity: '/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}/lakes/{self._client.lake_name}/zones/{zone_id}/entities/{entity_id}':\n {response.text}"
+            )
 
     def list_dataplex_entities(
             self,
@@ -320,14 +321,15 @@ class CloudDqDataplexClient:
                 response = update_dict(response, next_page_response)
                 response["nextPageToken"] = next_page_response["nextPageToken"]
 
-        if 'entities' not in response:
-            raise RuntimeError(f"Failed to list Dataplex zone '/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}/lakes/{self._client.lake_name}/zones/{zone_id}':\n {pformat(response)}")
+        if "entities" not in response:
+            raise RuntimeError(
+                f"Failed to list Dataplex zone '/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}/lakes/{self._client.lake_name}/zones/{zone_id}':\n {pformat(response)}"
+            )
 
         dataplex_entities = []
-        for entity in response['entities']:
-            print(f"Parsing entity: {entity}")
+        for entity in response["entities"]:
             entity_with_schema = self.get_dataplex_entity(
-                zone_id=zone_id,
-                entity_id=entity['id'])
+                zone_id=zone_id, entity_id=entity["id"]
+            )
             dataplex_entities.append(entity_with_schema)
         return dataplex_entities

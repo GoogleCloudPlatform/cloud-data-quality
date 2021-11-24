@@ -96,6 +96,7 @@ class TestDqEntityURI:
                    f"/lake-id/zones/zone-id/entities/entity-id",
             "scheme": "dataplex",
             "entity_id": "entity-id",
+            "db_primary_key": "projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
             "configs": {
                 "projects": "project-id",
                 "locations": "us-central1",
@@ -110,6 +111,27 @@ class TestDqEntityURI:
         assert parsed_uri.entity_id == "entity-id"
         assert parsed_uri.configs == expected_entity_dict["configs"]
         assert parsed_uri.to_dict() == expected_entity_dict
+
+    def test_entity_uri_dataplex_uri_to_dataplex_entity(self):
+        entity_uri = "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id"
+        parsed_uri = DqEntityUri.from_uri(entity_uri)
+        dataplex_entity = DataplexEntity.from_uri(parsed_uri)
+        expected_dataplex_entity_dict = {
+            "name": "projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
+            "db_primary_key": "projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
+            "id": "entity-id",
+            "project_id": "project-id",
+            "location": "us-central1",
+            "lake": "lake-id",
+            "zone": "zone-id",
+            "type": None,
+            "asset": None,
+            "dataPath": None,
+            "system": None,
+            "format": None,
+            "schema": None,
+        }
+        assert dataplex_entity.to_dict() == expected_dataplex_entity_dict
 
     @pytest.mark.parametrize(
         "entity_uri,error_type",

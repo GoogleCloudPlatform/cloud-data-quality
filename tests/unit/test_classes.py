@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import pytest
 
 from clouddq.classes.dq_entity import DqEntity
@@ -70,13 +72,13 @@ class TestClasses:
         [
             pytest.param(
                 {"table_name": "table", "lake_name": "lake", "zone_name": "zone", "project_name": "project"},
-                "DATAPLEX",
+                "DATAPLEX_BQ_EXTERNAL_TABLE",
                 "lake_zone",
                 id="dataplex_native"
             ),
             pytest.param(
                 {"table_name": "table", "database_name": "lake_zone", "project_name": "project"},
-                "DATAPLEX",
+                "DATAPLEX_BQ_EXTERNAL_TABLE",
                 "lake_zone",
                 id="dataplex_backwards_compatible"
             ),
@@ -163,7 +165,7 @@ class TestClasses:
     def test_dq_entity_parse_dataplex_configs(self):
         """ """
         dataplex_entity_input_dict = {
-            "source_database": "DATAPLEX",
+            "source_database": "DATAPLEX_BQ_EXTERNAL_TABLE",
             "table_name": "table",
             "lake_name": "lake",
             "zone_name": "zone",
@@ -181,7 +183,7 @@ class TestClasses:
         )
         dataplex_entity_configs_expected = {
             "test_dataplex_entity": {
-                "source_database": "DATAPLEX",
+                "source_database": "DATAPLEX_BQ_EXTERNAL_TABLE",
                 "table_name": "table",
                 "database_name": "lake_zone",
                 "instance_name": "project_name",

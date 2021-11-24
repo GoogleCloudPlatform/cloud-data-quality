@@ -40,6 +40,7 @@ class TestDataplexEntity:
 
         dataplex_entity_expected_dict = {
             "name": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
+            "db_primary_key": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
             "createTime": "createTimestamp",
             "updateTime": "updateTimestamp",
             "id": "entity_id",
@@ -91,6 +92,7 @@ class TestDataplexEntity:
 
         dataplex_entity_expected = {
             "name": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
+            "db_primary_key": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
             "createTime": "createTimestamp",
             "updateTime": "updateTimestamp",
             "id": "entity_id",

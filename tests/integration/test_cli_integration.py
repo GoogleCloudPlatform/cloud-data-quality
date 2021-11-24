@@ -16,8 +16,6 @@ from pathlib import Path
 
 import logging
 
-from google.auth.exceptions import RefreshError
-
 import click.testing
 import pytest
 
@@ -193,7 +191,7 @@ class TestCliIntegration:
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 1
-        assert isinstance(result.exception, RefreshError)
+        assert isinstance(result.exception, SystemExit)
 
     def test_cli_dry_run_missing_project_id_fail(
         self,
@@ -238,7 +236,7 @@ class TestCliIntegration:
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 1
-        assert isinstance(result.exception, AssertionError)
+        assert isinstance(result.exception, SystemExit)
 
 
 if __name__ == "__main__":
