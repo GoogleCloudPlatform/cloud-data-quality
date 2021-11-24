@@ -97,6 +97,8 @@ class TestDataplexEntity:
             "type": "TABLE",
             "asset": "asset-id",
             "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
+            'db_primary_key': f'projects/project-id/locations/location-id/lakes'
+                              f'/lake_name/zones/zone-id/entities/entity_id',
             "system": "BIGQUERY",
             "format": {"format": "OTHER"},
             "schema": DataplexEntitySchema.from_dict(kwargs=schema),

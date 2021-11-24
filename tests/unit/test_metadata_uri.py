@@ -90,7 +90,7 @@ class TestDqEntityURI:
                      f"/lake-id/zones/zone-id/entities/entity-id"
         parsed_uri = EntityUri.from_uri(entity_uri)
         expected_entity_dict = {
-            'compound_primary_key': f'projects/project-id/locations/us-central1/lakes'
+            'db_primary_key': f'projects/project-id/locations/us-central1/lakes'
                                     f'/lake-id/zones/zone-id/entities/entity-id',
             "uri": f"dataplex://projects/project-id/locations/us-central1/lakes"
                    f"/lake-id/zones/zone-id/entities/entity-id",
