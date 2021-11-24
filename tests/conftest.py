@@ -31,8 +31,12 @@ logger = logging.getLogger(__name__)
 def gcp_project_id():
     gcp_project_id = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     if not gcp_project_id:
-        logger.fatal("Required test environment variable GOOGLE_CLOUD_PROJECT "
+        logger.warning("Required test environment variable GOOGLE_CLOUD_PROJECT "
         "cannot be found. Set this to the project_id used for integration testing.")
+        # Todo: remove this once test fixture for creating dataplex entities is complete
+        test_project_id = "dataplex-clouddq"
+        logging.warning(f"Defaulting to using test: {test_project_id}")
+        gcp_project_id = test_project_id
     return gcp_project_id
 
 
@@ -118,8 +122,12 @@ def gcs_clouddq_executable_path():
 def gcp_dataplex_region():
     gcp_dataplex_region = os.environ.get('DATAPLEX_REGION_ID', None)
     if not gcp_dataplex_region:
-        logger.fatal("Required test environment variable DATAPLEX_REGION_ID "
+        logger.warning("Required test environment variable DATAPLEX_REGION_ID "
         "cannot be found. Set this to the region id of the Dataplex Lake.")
+        # Todo: remove this once test fixture for creating dataplex entities is complete
+        test_region_id = "us-central1"
+        logging.warning(f"Defaulting to using test: {test_region_id}")
+        gcp_dataplex_region = test_region_id
     return gcp_dataplex_region
 
 @pytest.fixture(scope="session")
@@ -128,6 +136,10 @@ def gcp_dataplex_lake_name():
     if not gcp_dataplex_lake_name:
         logger.fatal("Required test environment variable DATAPLEX_LAKE_NAME "
         "cannot be found. Set this to the Dataplex Lake used for testing.")
+        # Todo: remove this once test fixture for creating dataplex entities is complete
+        test_lake_name = "amandeep-dev-lake"
+        logging.warning(f"Defaulting to using test: {test_lake_name}")
+        gcp_dataplex_lake_name = test_lake_name
     return gcp_dataplex_lake_name
 
 @pytest.fixture(scope="session")
@@ -201,8 +213,12 @@ def gcp_dataplex_zone_id():
 def gcp_dataplex_bucket_name():
     gcp_dataplex_bucket_name = os.environ.get('DATAPLEX_BUCKET_NAME', None)
     if not gcp_dataplex_bucket_name:
-        logger.fatal("Required test environment variable DATAPLEX_BUCKET_NAME cannot be found. "
+        logger.warning("Required test environment variable DATAPLEX_BUCKET_NAME cannot be found. "
                      "Set this to the Dataplex gcs assets bucket name used for testing.")
+        # Todo: remove this once test fixture for creating dataplex entities is complete
+        test_bucket_name = "amandeep-dev-bucket"
+        logging.warning(f"Defaulting to using test: {test_bucket_name}")
+        gcp_dataplex_bucket_name = test_bucket_name
     return gcp_dataplex_bucket_name
 
 @pytest.fixture(scope="session")
@@ -211,6 +227,10 @@ def gcp_dataplex_bigquery_dataset_id():
     if not gcp_dataplex_bigquery_dataset_id:
         logger.fatal("Required test environment variable DATAPLEX_BIGQUERY_DATASET_ID cannot be found. "
                      "Set this to the Dataplex bigquery assets dataset id used for testing.")
+        # Todo: remove this once test fixture for creating dataplex entities is complete
+        test_dataset_id = "clouddq_test_asset_curated"
+        logging.warning(f"Defaulting to using test: {test_dataset_id}")
+        gcp_dataplex_bigquery_dataset_id = test_dataset_id
     return gcp_dataplex_bigquery_dataset_id
 
 @pytest.fixture(scope="session")

@@ -296,15 +296,34 @@ class CloudDqDataplexClient:
             )
 
     def list_dataplex_entities(
-        self, zone_id: str, prefix: str = None
-    ) -> list[DataplexEntity]:
+            self,
+            zone_id: str,
+            prefix: str = None,
+            data_path: str = None,
+            gcp_project_id: str = None,
+            location_id: str = None,
+            lake_name: str = None,
+    ) -> typing.List[DataplexEntity]:
         params = {"page_size": 1000}
         logger.info(f"Prefix value for filter is {prefix}")
+
+        if prefix and data_path:
+            raise ValueError(f"Either prefix or datapath should be passed not both")
         if prefix:
             params.update({"filter": f"id=starts_with({prefix})"})
+        if data_path:
+            params.update({"filter": f"data_path=starts_with({data_path})"})
 
         logger.info(f"Initial params are {params}")
-        response = self._client.list_entities(zone_id=zone_id, params=params).json()
+        response = self._client.list_entities(
+            zone_id=zone_id,
+            params=params,
+            gcp_project_id=gcp_project_id,
+            location_id=location_id,
+            lake_name=lake_name,
+        ).json()
+
+        print("params", params)
 
         while "nextPageToken" in response:
             time.sleep(3)  # to avoid api limit exceed error of 4 calls per 10 sec

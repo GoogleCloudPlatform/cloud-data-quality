@@ -124,6 +124,23 @@ class TestMetadataIntegration:
             print(f"Entities with '{prefix}' prefix are not present in the dataplex lake.")
         assert len(dataplex_entities_list) > 0
 
+    def test_dataplex_metadata_list_entities_with_data_path(self,
+                                                         test_dq_dataplex_client,
+                                                         gcp_dataplex_zone_id,
+                                                         gcp_project_id,
+                                                         gcp_dataplex_bucket_name,
+                                                         gcp_dataplex_bigquery_dataset_id, ):
+        print(f"zone id  is {gcp_dataplex_zone_id}")
+        data_path = f"projects/{gcp_project_id}/datasets/{gcp_dataplex_bigquery_dataset_id}/tables/contact_details"
+        dataplex_entities_list = test_dq_dataplex_client.list_dataplex_entities(zone_id=gcp_dataplex_zone_id,
+                                                                                data_path=data_path,)
+        print(f"Dataplex Entities List is \n {dataplex_entities_list}")
+        if len(dataplex_entities_list) > 0:
+            print(f"Total Entities are {len(dataplex_entities_list)}")
+        else:
+            print(f"Entities with '{data_path}' datapath are not present in the dataplex lake.")
+        assert len(dataplex_entities_list) > 0
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
