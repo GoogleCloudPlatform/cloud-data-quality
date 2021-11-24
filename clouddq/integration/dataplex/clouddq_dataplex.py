@@ -21,7 +21,6 @@ import json
 import logging
 import re
 import time
-import typing
 
 from requests import Response
 
@@ -213,7 +212,27 @@ class CloudDqDataplexClient:
             delete_task_response = self._client.delete_dataplex_task(
                 task_id=task_id,
             )
-            return delete_task_response
+            if delete_task_response.status_code == 200:
+                retry_iteration = 0
+                get_task_response = self._client.get_dataplex_task(
+                    task_id=task_id,
+                )
+                try:
+                    while get_task_response.status_code != 404:
+                        exponential_backoff(retry_iteration)
+                        retry_iteration += 1
+                        get_task_response = self._client.get_dataplex_task(
+                            task_id=task_id,
+                        )
+                    logger.info(f"Successfully deleted Task ID: {task_id}")
+                    return delete_task_response
+                except RuntimeError as e:
+                    logger.error(
+                        f"Failed to delete Task ID: {task_id} with error: {e}",
+                        exc_info=True,
+                    )
+            else:
+                return delete_task_response
         else:
             return get_task_response
 
@@ -269,7 +288,9 @@ class CloudDqDataplexClient:
             return DataplexEntity.from_dict(json.loads(response.text))
         else:
             raise RuntimeError(
-                f"Failed to retrieve Dataplex entity: '/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}/lakes/{self._client.lake_name}/zones/{zone_id}/entities/{entity_id}':\n {response.text}"
+                f"Failed to retrieve Dataplex entity: "
+                f"'/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}"
+                f"/lakes/{self._client.lake_name}/zones/{zone_id}/entities/{entity_id}':\n {response.text}"
             )
 
     def list_dataplex_entities(
@@ -323,7 +344,9 @@ class CloudDqDataplexClient:
 
         if "entities" not in response:
             raise RuntimeError(
-                f"Failed to list Dataplex zone '/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}/lakes/{self._client.lake_name}/zones/{zone_id}':\n {pformat(response)}"
+                "Failed to list Dataplex zone "
+                f"'/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}"
+                f"/lakes/{self._client.lake_name}/zones/{zone_id}':\n {pformat(response)}"
             )
 
         dataplex_entities = []

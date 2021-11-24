@@ -30,14 +30,14 @@ class TestMetadataIntegration:
             pytest.param(
                 'contact_details',
                 {
-                    "name": f"projects/<gcp_project_id>/locations/<gcp_dataplex_region>/lakes/<gcp_dataplex_lake_name>/"
-                            f"zones/<gcp_dataplex_zone_id>/entities/contact_details",
+                    "name": "projects/<gcp_project_id>/locations/<gcp_dataplex_region>/lakes/<gcp_dataplex_lake_name>/"
+                            "zones/<gcp_dataplex_zone_id>/entities/contact_details",
                     "createTime": "2021-11-11T07:37:14.212950Z", "updateTime": "2021-11-11T07:37:14.212950Z",
                     "id": "contact_details", "type": "TABLE", "asset": "clouddq-test-asset-curated-bigquery",
-                    "dataPath": f"projects/<gcp_project_id>/datasets/"
-                                f"<gcp_dataplex_bigquery_dataset_id>/tables/contact_details",
-                    "system": "BIGQUERY", "format": {"format": "OTHER"}, "schema": {
-                    "fields": [{"name": "row_id", "type": "STRING", "mode": "REQUIRED"},
+                    "dataPath": "projects/<gcp_project_id>/datasets/"
+                                "<gcp_dataplex_bigquery_dataset_id>/tables/contact_details",
+                    "system": "BIGQUERY", "format": {"format": "OTHER"},
+                    "schema": {"fields": [{"name": "row_id", "type": "STRING", "mode": "REQUIRED"},
                                {"name": "contact_type", "type": "STRING", "mode": "REQUIRED"},
                                {"name": "value", "type": "STRING", "mode": "REQUIRED"},
                                {"name": "ts", "type": "TIMESTAMP", "mode": "REQUIRED"}]}},
@@ -47,15 +47,15 @@ class TestMetadataIntegration:
             pytest.param(
                 'asset_bucket',
                 {
-                    "name": f"projects/<gcp_project_id>/locations/<gcp_dataplex_region>/lakes/"
-                            f"<gcp_dataplex_lake_name>/zones/<gcp_dataplex_zone_id>/"
-                            f"entities/d6d0e5bc-163c-4993-8da2-68b4bad58633",
+                    "name": "projects/<gcp_project_id>/locations/<gcp_dataplex_region>/lakes/"
+                            "<gcp_dataplex_lake_name>/zones/<gcp_dataplex_zone_id>/"
+                            "entities/d6d0e5bc-163c-4993-8da2-68b4bad58633",
                     "createTime": "2021-10-25T02:35:36.207049Z", "updateTime": "2021-10-25T02:35:36.207049Z",
                     "id": "asset_bucket", "type": "TABLE", "asset": "asset-bucket",
-                    "dataPath": f"gs://<gcp_dataplex_bucket_name>", "system": "CLOUD_STORAGE",
+                    "dataPath": "gs://<gcp_dataplex_bucket_name>", "system": "CLOUD_STORAGE",
                     "format": {"format": "CSV", "mimeType": "text/csv",
-                               "csv": {"encoding": "UTF-8", "headerRows": 1, "delimiter": ","}}, "schema": {
-                    "fields": [{"name": "row_id", "type": "STRING", "mode": "NULLABLE"},
+                               "csv": {"encoding": "UTF-8", "headerRows": 1, "delimiter": ","}},
+                    "schema": {"fields": [{"name": "row_id", "type": "STRING", "mode": "NULLABLE"},
                                {"name": "contact_type", "type": "STRING", "mode": "NULLABLE"},
                                {"name": "value", "type": "STRING", "mode": "NULLABLE"},
                                {"name": "ts", "type": "STRING", "mode": "NULLABLE"}]}},
@@ -83,7 +83,8 @@ class TestMetadataIntegration:
 
         expected_obj["dataPath"] = expected_obj["dataPath"].replace("<gcp_project_id>",
                                                                     request.getfixturevalue("gcp_project_id")) \
-            .replace("<gcp_dataplex_bigquery_dataset_id>", request.getfixturevalue("gcp_dataplex_bigquery_dataset_id")) \
+            .replace("<gcp_dataplex_bigquery_dataset_id>",
+                request.getfixturevalue("gcp_dataplex_bigquery_dataset_id")) \
             .replace("<gcp_dataplex_bucket_name>", request.getfixturevalue("gcp_dataplex_bucket_name"))
 
         expected_entity = DataplexEntity.from_dict(kwargs=expected_obj)
@@ -112,7 +113,10 @@ class TestMetadataIntegration:
                                                          gcp_dataplex_zone_id, ):
         print(f"zone id  is {gcp_dataplex_zone_id}")
         prefix = 'test_clouddq_'
-        dataplex_entities_list = test_dq_dataplex_client.list_dataplex_entities(zone_id=gcp_dataplex_zone_id, prefix=prefix)
+        dataplex_entities_list = test_dq_dataplex_client.list_dataplex_entities(
+            zone_id=gcp_dataplex_zone_id,
+            prefix=prefix
+            )
         print(f"Dataplex Entities List is \n {dataplex_entities_list}")
         if len(dataplex_entities_list) > 0:
             print(f"Total Entities are {len(dataplex_entities_list)}")

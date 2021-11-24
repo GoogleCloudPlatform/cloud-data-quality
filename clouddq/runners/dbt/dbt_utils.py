@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
-from enum import unique
 from pathlib import Path
 from pprint import pformat
 from typing import Dict
@@ -91,7 +89,10 @@ def run_dbt(
             logger.debug("dbt run completed successfully.")
         else:
             raise RuntimeError(
-                f"dbt run failed with Runtime Error. See Runtime Error description in dbt run logs for details. Maybe the error is caused by custom SQL logic in a CUSTOM_SQL_EXPR or CUSTOM_SQL_STATEMENT rule?"
+                "dbt run failed with Runtime Error. "
+                "See Runtime Error description in dbt run logs for details. "
+                "Maybe the error is caused by custom SQL logic in a CUSTOM_SQL_EXPR "
+                "or CUSTOM_SQL_STATEMENT rule?"
             )
     except Exception as e:
         raise RuntimeError(f"dbt run failed with unknown error: '{e}'")

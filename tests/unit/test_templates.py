@@ -138,36 +138,12 @@ class TestJinjaTemplates:
         test_rule_bindings_collection_team_2,
         test_configs_cache,
     ):
-        """
-
-        Args:
-          test_rule_bindings_collection_team_2:
-
-        Returns:
-
-        """
         for key, value in test_rule_bindings_collection_team_2.items():
             rule_binding = DqRuleBinding.from_dict(rule_binding_id=key, kwargs=value)
-            rule_binding.resolve_table_entity_config(configs_cache=test_configs_cache,
-            )
-            rule_binding.resolve_rule_config_list(configs_cache=test_configs_cache,
-            )
-            rule_binding.resolve_row_filter_config(configs_cache=test_configs_cache,
-            )
-            rule_binding.resolve_all_configs_to_dict(configs_cache=test_configs_cache,
-            )
-
-
-    def test_load_rule_bindings_valid(self, test_all_rule_bindings_collections):
-        """
-
-        Args:
-          test_all_rule_bindings_collections:
-
-        Returns:
-
-        """
-        self.test_rule_bindings_class(test_all_rule_bindings_collections)
+            rule_binding.resolve_table_entity_config(configs_cache=test_configs_cache)
+            rule_binding.resolve_rule_config_list(configs_cache=test_configs_cache)
+            rule_binding.resolve_row_filter_config(configs_cache=test_configs_cache)
+            rule_binding.resolve_all_configs_to_dict(configs_cache=test_configs_cache)
 
     def test_render_run_dq_main_sql(
         self,
