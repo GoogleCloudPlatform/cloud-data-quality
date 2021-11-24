@@ -277,6 +277,7 @@ class CloudDqDataplexClient:
         location_id: str = None,
         lake_name: str = None,
     ) -> DataplexEntity:
+        logger.debug(f"CloudDqDataplex.get_dataplex_entity() arguments: {locals()}")
         params = {"view": "FULL"}
         response = self._client.get_entity(
             zone_id=zone_id,
@@ -305,16 +306,14 @@ class CloudDqDataplexClient:
             lake_name: str = None,
     ) -> typing.List[DataplexEntity]:
         params = {"page_size": 1000}
-        logger.info(f"Prefix value for filter is {prefix}")
 
         if prefix and data_path:
-            raise ValueError(f"Either prefix or datapath should be passed not both")
+            raise ValueError(f"Either prefix or datapath should be passed but not both")
         if prefix:
             params.update({"filter": f"id=starts_with({prefix})"})
         if data_path:
             params.update({"filter": f"data_path=starts_with({data_path})"})
 
-        logger.info(f"Initial params are {params}")
         response = self._client.list_entities(
             zone_id=zone_id,
             params=params,
@@ -322,8 +321,6 @@ class CloudDqDataplexClient:
             location_id=location_id,
             lake_name=lake_name,
         ).json()
-
-        print("params", params)
 
         while "nextPageToken" in response:
             time.sleep(3)  # to avoid api limit exceed error of 4 calls per 10 sec
@@ -354,7 +351,11 @@ class CloudDqDataplexClient:
         dataplex_entities = []
         for entity in response["entities"]:
             entity_with_schema = self.get_dataplex_entity(
-                zone_id=zone_id, entity_id=entity["id"]
+                entity_id=entity["id"],
+                zone_id=zone_id,
+                gcp_project_id=gcp_project_id,
+                location_id=location_id,
+                lake_name=lake_name,
             )
             dataplex_entities.append(entity_with_schema)
         return dataplex_entities

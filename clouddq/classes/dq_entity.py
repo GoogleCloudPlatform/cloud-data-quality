@@ -267,26 +267,24 @@ class DqEntity:
 
     @classmethod
     def from_dataplex_entity(
-        cls: DqEntity, dataplex_entity: DataplexEntity
+        cls: DqEntity, entity_id: str, dataplex_entity: DataplexEntity
     ) -> DqEntity:
         if dataplex_entity.system == "BIGQUERY":
             data_path = dataplex_entity.dataPath.split("/")
             bigquery_configs = dict(zip(data_path[::2], data_path[1::2]))
-            logger.debug(dataplex_entity.schema.to_dict())
             schema_dict = {}
             for column in dataplex_entity.schema.to_dict()["fields"]:
                 column_configs = column
                 column_configs["data_type"] = column["type"]
                 schema_dict[column_configs["name"].upper()] = column_configs
-            logger.debug(schema_dict)
             entity_configs = {
                 "source_database": dataplex_entity.system,
                 "table_name": bigquery_configs.get("tables"),
-                "database_name": bigquery_configs.get("datasets"),
-                "instance_name": bigquery_configs.get("projects"),
+                "dataset_name": bigquery_configs.get("datasets"),
+                "project_name": bigquery_configs.get("projects"),
                 "columns": schema_dict,
                 "environment_override": {},
-                "entity_id": dataplex_entity.name,
+                "entity_id": entity_id,
                 "dataplex_name": dataplex_entity.name,
                 "dataplex_lake": dataplex_entity.lake,
                 "dataplex_zone": dataplex_entity.zone,
@@ -296,7 +294,7 @@ class DqEntity:
                 "dataplex_updateTime": dataplex_entity.updateTime,
             }
             return DqEntity.from_dict(
-                entity_id=dataplex_entity.name.upper(), kwargs=entity_configs
+                entity_id=entity_id.upper(), kwargs=entity_configs
             )
         else:
             raise NotImplementedError(

@@ -133,24 +133,57 @@ class DqConfigsCache:
         )
 
     def resolve_dataplex_entity_uris(
-        self, client: clouddq_dataplex.CloudDqDataplexClient
+        self, client: clouddq_dataplex.CloudDqDataplexClient, default_configs: dict | None = None
     ) -> None:
         for record in self._cache_db.query(
             "select distinct entity_uri, id from rule_bindings where entity_uri is not null"
         ):
-            logger.debug(f"Processing record: {record}")
-            entity_uri = dq_entity_uri.EntityUri.from_uri(record["entity_uri"])
-            dataplex_entity = client.get_dataplex_entity(
-                gcp_project_id=entity_uri.project_id,
-                location_id=entity_uri.location,
-                lake_name=entity_uri.lake,
-                zone_id=entity_uri.zone,
-                entity_id=entity_uri.entity_id,
-            )
-            clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
-                dataplex_entity=dataplex_entity
-            ).to_dict()
-            resolved_entity = unnest_object_to_list(clouddq_entity)
+            logger.debug(f"Processing entity_uri record: {record}")
+            logger.debug(f"Default configs: {default_configs}")
+            entity_uri = dq_entity_uri.EntityUri.from_uri(
+                uri_string=record["entity_uri"],
+                default_configs=default_configs,)
+            logger.debug(f"Parsed entity_uri : {entity_uri.to_dict()=}")
+            if entity_uri.scheme == 'dataplex':
+                dataplex_entity = client.get_dataplex_entity(
+                    gcp_project_id=entity_uri.get_configs('projects'),
+                    location_id=entity_uri.get_configs('locations'),
+                    lake_name=entity_uri.get_configs('lakes'),
+                    zone_id=entity_uri.get_configs('zones'),
+                    entity_id=entity_uri.get_entity_id(),
+                )
+                clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
+                    entity_id=entity_uri.get_db_primary_key(),
+                    dataplex_entity=dataplex_entity
+                ).to_dict()
+                resolved_entity = unnest_object_to_list(clouddq_entity)
+            elif entity_uri.scheme == 'bigquery':
+                zone_id=entity_uri.get_configs('zones')
+                if not zone_id:
+                    raise RuntimeError(
+                        "Failed to retrieve default Dataplex 'zones' for "
+                        f"entity_uri: {entity_uri.complete_uri_string}."
+                        )
+                dataplex_entities_match = client.list_dataplex_entities(
+                    gcp_project_id=entity_uri.get_configs('projects'),
+                    location_id=entity_uri.get_configs('locations'),
+                    lake_name=entity_uri.get_configs('lakes'),
+                    zone_id=entity_uri.get_configs('zones'),
+                    data_path=entity_uri.get_entity_id(),
+                )
+                logger.debug(f"Retrieved DataplexEntities: {dataplex_entity=}")
+                if dataplex_entities_match:
+                    dataplex_entity = dataplex_entities_match[0]
+                    clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
+                        entity_id=entity_uri.get_db_primary_key(),
+                        dataplex_entity=dataplex_entity
+                    ).to_dict()
+                else:
+                    raise RuntimeError(
+                        "Could not find Dataplex Metadata entry for BigQuery "
+                        f"entity_uri: {entity_uri.complete_uri_string}"
+                    )
+                resolved_entity = unnest_object_to_list(clouddq_entity)
             logger.debug(f"Writing parsed Dataplex Entity to db: {resolved_entity}")
             self._cache_db["entities"].upsert_all(resolved_entity, pk="id", alter=True)
             self._cache_db["rule_bindings"].update(

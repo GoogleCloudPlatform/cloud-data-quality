@@ -16,81 +16,54 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
-from enum import unique
 
+import logging
 import re
 
 import typing
 
-# from clouddq.utils import get_from_dict_and_assert
-
-def assert_not_none_or_empty(value: typing.Any, error_msg: str) -> None:
-    """
-
-    Args:
-      value: typing.Any:
-      error_msg: str:
-
-    Returns:
-
-    """
-    if not value:
-        raise ValueError(error_msg)
-
-
-def get_from_dict_and_assert(
-    config_id: str,
-    kwargs: typing.Dict,
-    key: str,
-    assertion: typing.Callable[[typing.Any], bool] = None,
-    error_msg: str = None,
-) -> typing.Any:
-    value = kwargs.get(key, None)
-    assert_not_none_or_empty(
-        value, f"Config ID: {config_id} must define non-empty value: '{key}'."
-    )
-    if assertion and not assertion(value):
-        raise ValueError(
-            f"Assertion failed on value {value}.\n"
-            f"Config ID: {config_id}, kwargs: {kwargs}.\n"
-            f"Error: {error_msg}"
-        )
-    return value
-
+from clouddq.classes.metadata_registry_defaults import DATAPLEX_URI_FIELDS
+from clouddq.classes.metadata_registry_defaults import BIGQUERY_URI_FIELDS
+from clouddq.classes.entity_uri_schemes import EntityUriScheme
+from clouddq.utils import get_from_dict_and_assert
 
 UNSUPPORTED_URI_CONFIGS = re.compile("[@#?:]")
 
-@unique
-class EntityUriScheme(str, Enum):
-    """ """
-    DATAPLEX = "dataplex"
-    BIGQUERY = "bigquery"
-    LOCAL = "local"
-    GS = "gs"
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class EntityUri:
     """ """
     scheme: EntityUriScheme
     uri_configs_string: str
+    default_configs: dict
     @property
     def complete_uri_string(self: EntityUri) -> str:
         return f"{self.scheme.value}://{self.uri_configs_string}"
     @property
     def configs_dict(self: EntityUri) -> dict:
         entity_uri_list = self.uri_configs_string.split("/")
+        all_configs = {}
+        if self.default_configs and type(self.default_configs) == dict:
+            all_configs.update(self.default_configs)
         uri_dict = dict(zip(entity_uri_list[::2], entity_uri_list[1::2]))
-        return uri_dict
+        all_configs.update(uri_dict)
+        return all_configs
     def get_configs(self: EntityUri, configs_key: str) -> typing.Any:
         configs_dict = self.configs_dict
         return configs_dict.get(configs_key)
     @classmethod
-    def from_uri(cls: EntityUri, uri_string: str) -> EntityUri:
+    def from_uri(cls: EntityUri, uri_string: str, default_configs: dict | None = None) -> EntityUri:
         uri_scheme, uri_configs_string = uri_string.split("://")
         scheme = EntityUriScheme(uri_scheme)
+        default_scheme_configs = None
+        if default_configs:
+            default_scheme_configs = default_configs
+        logger.debug(f"{default_scheme_configs=}")
         entity_uri = EntityUri(scheme=scheme,
-            uri_configs_string=uri_configs_string,)
+            uri_configs_string=uri_configs_string,
+            default_configs=default_scheme_configs)
         entity_uri.validate()
         return entity_uri
     def to_dict(self: EntityUri) -> dict:
@@ -115,56 +88,20 @@ class EntityUri:
                 f"contains unsupported entity_uri character: '{unsupported_configs.group(0)}'."
                 )
         if self.scheme == EntityUriScheme.DATAPLEX:
-            get_from_dict_and_assert(
-                config_id=self.complete_uri_string,
-                kwargs=configs,
-                key="projects",
-            )
-            get_from_dict_and_assert(
-                config_id=self.complete_uri_string,
-                kwargs=configs,
-                key="locations",
-            )
-            get_from_dict_and_assert(
-                config_id=self.complete_uri_string,
-                kwargs=configs,
-                key="lakes",
-            )
-            get_from_dict_and_assert(
-                config_id=self.complete_uri_string,
-                kwargs=configs,
-                key="zones",
-            )
-            get_from_dict_and_assert(
-                config_id=self.complete_uri_string,
-                kwargs=configs,
-                key="entities",
-            )
-            assert "None" not in self.get_db_primary_key()
-            assert "None" not in self.get_entity_id()
+            self._validate_dataplex_uri_fields(
+                config_id=self.complete_uri_string, 
+                configs=configs)
         elif self.scheme == EntityUriScheme.BIGQUERY:
-            get_from_dict_and_assert(
-                config_id=self.complete_uri_string,
-                kwargs=configs,
-                key="projects",
-            )
-            get_from_dict_and_assert(
-                config_id=self.complete_uri_string,
-                kwargs=configs,
-                key="datasets",
-            )
-            get_from_dict_and_assert(
-                config_id=self.complete_uri_string,
-                kwargs=configs,
-                key="tables",
-            )
-            assert "None" not in self.get_db_primary_key()
-            assert "None" not in self.get_entity_id()
+            self._validate_bigquery_uri_fields(
+                config_id=self.complete_uri_string, 
+                configs=configs)
         else:
             raise NotImplementedError(
                 f"EntityUri scheme '{self.scheme}' in entity_uri: "
                 f"'{self.complete_uri_string}'"
                 " is not yet supported.")
+        assert "None" not in self.get_db_primary_key()
+        assert "None" not in self.get_entity_id()
     def get_entity_id(self: EntityUri) -> str:
         if self.scheme == EntityUriScheme.DATAPLEX:
             return self.get_configs('entities')
@@ -194,6 +131,22 @@ class EntityUri:
             raise NotImplementedError(
                 f"EntityUri.get_db_primary_key() for scheme '{self.scheme}' "
                 f"is not yet supported in entity_uri '{self.complete_uri_string}'."
+            )
+    def _validate_dataplex_uri_fields(self, config_id: str, configs: dict) -> None:
+        expected_fields = DATAPLEX_URI_FIELDS
+        for field in expected_fields:
+            get_from_dict_and_assert(
+                config_id=config_id,
+                kwargs=configs,
+                key=field,
+            )
+    def _validate_bigquery_uri_fields(self, config_id: str, configs: dict) -> None:
+        expected_fields = BIGQUERY_URI_FIELDS
+        for field in expected_fields:
+            get_from_dict_and_assert(
+                config_id=config_id,
+                kwargs=configs,
+                key=field,
             )
 
 if __name__ == "__main__":

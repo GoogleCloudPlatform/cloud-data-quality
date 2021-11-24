@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rule_bindings:
-  T3_DQ_1_EMAIL_DUPLICATE:
-    entity_id: TEST_TABLE
-    column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
-    rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: "contact_type,value"
-      - NOT_NULL_SIMPLE
-      - IN_REF_SET
-    metadata:
-      brand: one
+"""todo: add classes docstring."""
+
+from enum import Enum
+from enum import unique
+
+
+@unique
+class EntityUriScheme(str, Enum):
+    """ """
+    DATAPLEX = "dataplex"
+    BIGQUERY = "bigquery"

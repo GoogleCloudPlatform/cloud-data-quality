@@ -21,6 +21,7 @@ import json
 import logging
 import typing
 
+from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_rule_binding import DqRuleBinding
@@ -45,7 +46,6 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
         config = load_yaml(file, configs_type.value)
         if not config:
             continue
-        config = {key.upper(): value for key, value in config.items()}
         intersection = config.keys() & all_configs.keys()
 
         # The new config defines keys that we have already loaded
@@ -88,6 +88,15 @@ def load_rules_config(configs_path: Path) -> typing.Dict:
 
 def load_row_filters_config(configs_path: Path) -> typing.Dict:
     return load_configs(configs_path, DqConfigType.ROW_FILTERS)
+
+
+def load_metadata_registry_default_configs(configs_path: Path) -> MetadataRegistryDefaults:
+    try:
+        configs = load_configs(configs_path, DqConfigType.METADATA_REGISTRY_DEFAULTS)
+        return MetadataRegistryDefaults.from_dict(configs)
+    except ValueError as e:
+        logger.warning(e)
+    return MetadataRegistryDefaults.from_dict({})
 
 
 def create_rule_binding_view_model(
@@ -150,8 +159,9 @@ def prepare_configs_from_rule_binding_id(
         metadata.update(rule_binding_configs["metadata"])
     configs.update({"dq_summary_table_name": dq_summary_table_name})
     configs.update({"metadata": metadata})
-    configs.update({"configs_hashsum": sha256_digest(json.dumps(configs))})
+    configs.update({"configs_hashsum": sha256_digest(json.dumps(rule_binding_configs))})
     configs.update({"progress_watermark": progress_watermark})
+    logger.debug(f"Prepared configs for {rule_binding_id=}:\n {configs=}")
     return configs
 
 
