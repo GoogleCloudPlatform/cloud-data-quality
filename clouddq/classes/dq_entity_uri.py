@@ -66,7 +66,7 @@ class EntityUri:
         if self.scheme == "dataplex":
             return (
                 f"projects/{self.project_id}/locations/{self.location}/"
-                + f"lakes/{self.lake}/zones/{self.zone}/entities/{self.id}"  # noqa: W503
+                + f"lakes/{self.lake}/zones/{self.zone}/entities/{self.entity_id}"  # noqa: W503
             )
         else:
             raise NotImplementedError(
@@ -192,6 +192,7 @@ class EntityUri:
                 value=entity_id,
                 error_msg=f"Required argument entity_id is missing in the URI : {entity_uri}",
             )
+
             if entity_id.endswith("*"):
                 raise NotImplementedError(
                     f"{entity_id} wildcard filter is not implemented."
