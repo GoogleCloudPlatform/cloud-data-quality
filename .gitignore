@@ -3,15 +3,9 @@
 .vscode
 **.json
 **.patch
-dbt/log
-dbt/logs
-dbt/modules
-dbt/target
-dbt/models/rule_binding_views/*
+dbt/
 .user.yml
 profiles.yml
-dbt/.user.yml
-dbt/profiles.yml
 bazel-*
 bin
 Pipfile*
