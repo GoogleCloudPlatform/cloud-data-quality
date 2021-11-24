@@ -41,6 +41,7 @@ def load_target_table_from_bigquery(
     partition_date: date,
     target_bigquery_summary_table: str,
     dq_summary_table_name: str,
+    summary_to_stdout: bool = False
 ):
 
     if bigquery_client.is_table_exists(target_bigquery_summary_table):
@@ -61,7 +62,8 @@ def load_target_table_from_bigquery(
         summary_data = bigquery_client.execute_query(
             query_string=query_string, job_config=job_config
         ).result()
-        log_summary(summary_data)
+        if summary_to_stdout:
+            log_summary(summary_data)
         logger.info(
             f"Table {target_bigquery_summary_table} already exists "
             f"and query results are appended to the table."
@@ -78,7 +80,8 @@ def load_target_table_from_bigquery(
         WHERE invocation_id='{invocation_id}'
         AND DATE(execution_ts)='{partition_date}'"""
         summary_data = bigquery_client.execute_query(query_string=query_string).result()
-        log_summary(summary_data)
+        if summary_to_stdout:
+            log_summary(summary_data)
         logger.info(
             f"Table created and dq summary results loaded to the "
             f"table {target_bigquery_summary_table}"
@@ -99,6 +102,7 @@ class TargetTable:
         partition_date: date,
         target_bigquery_summary_table: str,
         dq_summary_table_name: str,
+        summary_to_stdout: bool = False,
     ):
         try:
 
@@ -108,6 +112,7 @@ class TargetTable:
                 partition_date=partition_date,
                 target_bigquery_summary_table=target_bigquery_summary_table,
                 dq_summary_table_name=dq_summary_table_name,
+                summary_to_stdout=summary_to_stdout,
             )
 
         except Exception as error:

@@ -59,6 +59,7 @@ class TestCliIntegration:
             f"--gcp_region_id={gcp_bq_region}",
             f"--target_bigquery_summary_table={gcp_project_id}.{gcp_bq_dataset}.dq_summary_target",
             "--debug",
+            "--summary_to_stdout",
             ]
         logger.info(f"Args: {' '.join(args)}")
         

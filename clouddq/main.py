@@ -181,6 +181,13 @@ coloredlogs.install(logger=logger)
     type=bool,
     default=True,
 )
+@click.option(
+    "--summary_to_stdout",
+    help="If True, the summary of the validation results will be logged to stdout. "
+    "This flag only takes effect if target_bigquery_summary_table is specified as well.",
+    is_flag=True,
+    default=False,
+)
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
@@ -199,6 +206,7 @@ def main(  # noqa: C901
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
+    summary_to_stdout: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -254,7 +262,12 @@ def main(  # noqa: C901
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
-        )
+        )  
+    if summary_to_stdout:
+        logger.debug("Logging summary to stdout")
+    else:
+        logger.debug("NOT logging summary to stdout")
+        
     bigquery_client = None
     try:
         if not skip_sql_validation:
@@ -392,6 +405,7 @@ def main(  # noqa: C901
                         partition_date,
                         target_bigquery_summary_table,
                         dq_summary_table_name,
+                        summary_to_stdout,
                     )
                     logger.info("Job completed successfully.")
                 else:
@@ -401,6 +415,11 @@ def main(  # noqa: C901
                         "provided target bigquery table. This will become a "
                         "required argument in v1.0.0"
                     )
+                    if summary_to_stdout:
+                        logger.warning("'--summary_to_stdout' was set but does"
+                        " not take effect unless "
+                        "'--target_bigquery_summary_table' is provided")
+
         elif job_status == JobStatus.FAILED:
             raise RuntimeError("Job failed.")
         else:
