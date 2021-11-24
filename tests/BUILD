@@ -159,7 +159,7 @@ py_test(
 )
 
 py_test(
-    name = "test_entity_uri",
+    name = "test_metadata_uri",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,

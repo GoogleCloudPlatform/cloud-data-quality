@@ -29,6 +29,7 @@ from clouddq.classes.dataplex_entity import DataplexEntity
 from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
 from clouddq.integration.gcs import upload_blob
+from clouddq.utils import exponential_backoff
 from clouddq.utils import update_dict
 
 
