@@ -22,7 +22,6 @@ from google.cloud.bigquery.table import RowIterator
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.log import get_json_logger
-from clouddq.log import get_logger
 
 
 logger = logging.getLogger(__name__)
@@ -41,7 +40,7 @@ def load_target_table_from_bigquery(
     partition_date: date,
     target_bigquery_summary_table: str,
     dq_summary_table_name: str,
-    summary_to_stdout: bool = False
+    summary_to_stdout: bool = False,
 ):
 
     if bigquery_client.is_table_exists(target_bigquery_summary_table):

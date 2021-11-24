@@ -262,12 +262,12 @@ def main(  # noqa: C901
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
-        )  
+        )
     if summary_to_stdout:
         logger.debug("Logging summary to stdout")
     else:
         logger.debug("NOT logging summary to stdout")
-        
+
     bigquery_client = None
     try:
         if not skip_sql_validation:
@@ -416,9 +416,11 @@ def main(  # noqa: C901
                         "required argument in v1.0.0"
                     )
                     if summary_to_stdout:
-                        logger.warning("'--summary_to_stdout' was set but does"
-                        " not take effect unless "
-                        "'--target_bigquery_summary_table' is provided")
+                        logger.warning(
+                            "'--summary_to_stdout' was set but does"
+                            " not take effect unless "
+                            "'--target_bigquery_summary_table' is provided"
+                        )
 
         elif job_status == JobStatus.FAILED:
             raise RuntimeError("Job failed.")

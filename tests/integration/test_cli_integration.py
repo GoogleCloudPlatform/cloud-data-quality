@@ -62,7 +62,7 @@ class TestCliIntegration:
             "--summary_to_stdout",
             ]
         logger.info(f"Args: {' '.join(args)}")
-        
+
         result = runner.invoke(main, args)
         print(result.output)
         assert result.exit_code == 0

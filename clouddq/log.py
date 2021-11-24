@@ -17,6 +17,7 @@ from datetime import datetime
 import json
 import logging
 import sys
+import traceback
 
 
 APP_VERSION = "0.4.0-rc1"
