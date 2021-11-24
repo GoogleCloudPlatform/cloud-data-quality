@@ -17,202 +17,430 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from enum import unique
+
+import re
 
 import typing
 
-from clouddq.utils import assert_not_none_or_empty
+# from clouddq.utils import get_from_dict_and_assert
+
+def assert_not_none_or_empty(value: typing.Any, error_msg: str) -> None:
+    """
+
+    Args:
+      value: typing.Any:
+      error_msg: str:
+
+    Returns:
+
+    """
+    if not value:
+        raise ValueError(error_msg)
 
 
-class DataplexSupportedSchemes(str, Enum):
-    DATAPLEX = "dataplex://"
+def get_from_dict_and_assert(
+    config_id: str,
+    kwargs: typing.Dict,
+    key: str,
+    assertion: typing.Callable[[typing.Any], bool] = None,
+    error_msg: str = None,
+) -> typing.Any:
+    value = kwargs.get(key, None)
+    assert_not_none_or_empty(
+        value, f"Config ID: {config_id} must define non-empty value: '{key}'."
+    )
+    if assertion and not assertion(value):
+        raise ValueError(
+            f"Assertion failed on value {value}.\n"
+            f"Config ID: {config_id}, kwargs: {kwargs}.\n"
+            f"Error: {error_msg}"
+        )
+    return value
 
 
-class DataplexUnsupportedSchemes(str, Enum):
-    BIGQUERY = "bigquery://"
-    LOCAL = "local://"
-    GS = "gs://"
+UNSUPPORTED_URI_CONFIGS = re.compile("[@#?:]")
 
+@unique
+class EntityUriScheme(str, Enum):
+    """ """
+    DATAPLEX = "dataplex"
+    BIGQUERY = "bigquery"
+    LOCAL = "local"
+    GS = "gs"
 
 @dataclass
 class EntityUri:
-
-    uri: str
-
+    """ """
+    scheme: EntityUriScheme
+    uri_configs_string: str
     @property
-    def scheme(self):
-        return self.uri.split("/")[0].replace(":", "")
-
+    def complete_uri_string(self: EntityUri) -> str:
+        return f"{self.scheme.value}://{self.uri_configs_string}"
     @property
-    def entity_id(self):
-        return self.uri.split("/")[11]
-
-    @property
-    def project_id(self):
-        return self.uri.split("/")[3]
-
-    @property
-    def location(self):
-        return self.uri.split("/")[5]
-
-    @property
-    def lake(self):
-        return self.uri.split("/")[7]
-
-    @property
-    def zone(self):
-        return self.uri.split("/")[9]
-
-    def get_db_primary_key(self):
-        if self.scheme == "dataplex":
+    def configs_dict(self: EntityUri) -> dict:
+        entity_uri_list = self.uri_configs_string.split("/")
+        uri_dict = dict(zip(entity_uri_list[::2], entity_uri_list[1::2]))
+        return uri_dict
+    def get_configs(self: EntityUri, configs_key: str) -> typing.Any:
+        configs_dict = self.configs_dict
+        return configs_dict.get(configs_key)
+    @classmethod
+    def from_uri(cls: EntityUri, uri_string: str) -> EntityUri:
+        uri_scheme, uri_configs_string = uri_string.split("://")
+        scheme = EntityUriScheme(uri_scheme)
+        entity_uri = EntityUri(scheme=scheme,
+            uri_configs_string=uri_configs_string,)
+        entity_uri.validate()
+        return entity_uri
+    def to_dict(self: EntityUri) -> dict:
+        return {
+            "uri": self.complete_uri_string,
+            "scheme": self.scheme.value,
+            "entity_id": self.get_entity_id(),
+            "db_primary_key": self.get_db_primary_key(),
+            "configs": self.configs_dict,
+        }
+    def validate(self: EntityUri) -> None:
+        configs = self.configs_dict
+        if "*" in self.uri_configs_string:
+            raise NotImplementedError(
+                f"EntityUri: '{self.scheme}://{self.uri_configs_string}' "
+                f"does not yet support wildcard character: '*'."
+                )
+        unsupported_configs = UNSUPPORTED_URI_CONFIGS.search(self.uri_configs_string)
+        if unsupported_configs:
+            raise ValueError(
+                f"EntityUri: '{self.scheme}://{self.uri_configs_string}' "
+                f"contains unsupported entity_uri character: '{unsupported_configs.group(0)}'."
+                )
+        if self.scheme == EntityUriScheme.DATAPLEX:
+            get_from_dict_and_assert(
+                config_id=self.complete_uri_string,
+                kwargs=configs,
+                key="projects",
+            )
+            get_from_dict_and_assert(
+                config_id=self.complete_uri_string,
+                kwargs=configs,
+                key="locations",
+            )
+            get_from_dict_and_assert(
+                config_id=self.complete_uri_string,
+                kwargs=configs,
+                key="lakes",
+            )
+            get_from_dict_and_assert(
+                config_id=self.complete_uri_string,
+                kwargs=configs,
+                key="zones",
+            )
+            get_from_dict_and_assert(
+                config_id=self.complete_uri_string,
+                kwargs=configs,
+                key="entities",
+            )
+            assert "None" not in self.get_db_primary_key()
+            assert "None" not in self.get_entity_id()
+        elif self.scheme == EntityUriScheme.BIGQUERY:
+            get_from_dict_and_assert(
+                config_id=self.complete_uri_string,
+                kwargs=configs,
+                key="projects",
+            )
+            get_from_dict_and_assert(
+                config_id=self.complete_uri_string,
+                kwargs=configs,
+                key="datasets",
+            )
+            get_from_dict_and_assert(
+                config_id=self.complete_uri_string,
+                kwargs=configs,
+                key="tables",
+            )
+            assert "None" not in self.get_db_primary_key()
+            assert "None" not in self.get_entity_id()
+        else:
+            raise NotImplementedError(
+                f"EntityUri scheme '{self.scheme}' in entity_uri: "
+                f"'{self.complete_uri_string}'"
+                " is not yet supported.")
+    def get_entity_id(self: EntityUri) -> str:
+        if self.scheme == EntityUriScheme.DATAPLEX:
+            return self.get_configs('entities')
+        elif self.scheme == EntityUriScheme.BIGQUERY:
+            return self.get_db_primary_key()
+        else:
+            raise NotImplementedError(
+                f"EntityUri.get_entity_id() for scheme '{self.scheme}' "
+                f"is not yet supported in entity_uri '{self.complete_uri_string}'."
+            )
+    def get_db_primary_key(self) -> str:
+        if self.scheme == EntityUriScheme.DATAPLEX:
             return (
-                f"projects/{self.project_id}/locations/{self.location}/"
-                + f"lakes/{self.lake}/zones/{self.zone}/entities/{self.id}"  # noqa: W503
+                f"projects/{self.get_configs('projects')}/"
+                f"locations/{self.get_configs('locations')}/"
+                f"lakes/{self.get_configs('lakes')}/"
+                f"zones/{self.get_configs('zones')}/"
+                f"entities/{self.get_configs('entities')}"  # noqa: W503
+            )
+        elif self.scheme == EntityUriScheme.BIGQUERY:
+            return (
+                f"projects/{self.get_configs('projects')}/"
+                f"datasets/{self.get_configs('datasets')}/"
+                f"tables/{self.get_configs('tables')}"
             )
         else:
             raise NotImplementedError(
-                f"EntityUri.get_db_primary_key() for scheme {self.scheme} is not yet supported."
+                f"EntityUri.get_db_primary_key() for scheme '{self.scheme}' "
+                f"is not yet supported in entity_uri '{self.complete_uri_string}'."
             )
 
-    @property
-    def configs(self):
-        return {
-            "projects": self.project_id,
-            "locations": self.location,
-            "lakes": self.lake,
-            "zones": self.zone,
-            "entities": self.entity_id,
-        }
+if __name__ == "__main__":
+    dataplex_uri = "dataplex://projects/dataplex-clouddq/locations/us-central1/lakes/amandeep-dev-lake/zones/raw/entities/contact_details"
+    print(f"{dataplex_uri=}")
+    dataplex_entity_uri = EntityUri.from_uri(dataplex_uri)
+    print(f"{dataplex_entity_uri.configs_dict=}")
+    print(f"{dataplex_entity_uri.get_entity_id()=}")
+    print(f"{dataplex_entity_uri.get_db_primary_key()=}")
+    print(f"{dataplex_entity_uri.to_dict()=}")
+    bigquery_uri = "bigquery://projects/project-id/datasets/dataset-id/tables/table-id"
+    print(f"{bigquery_uri=}")
+    bigquery_entity_uri = EntityUri.from_uri(bigquery_uri)
+    print(f"{bigquery_entity_uri.configs_dict=}")
+    print(f"{bigquery_entity_uri.get_entity_id()=}")
+    print(f"{bigquery_entity_uri.get_db_primary_key()=}")
+    print(f"{bigquery_entity_uri.to_dict()=}")
+    try:
+        gcs_uri = "gs://bucket-name/tables/table-id"
+        print(f"{gcs_uri=}")
+        gcs_entity_uri = EntityUri.from_uri(gcs_uri)
+        print(f"{gcs_entity_uri=}")
+    except NotImplementedError as e:
+        print(e)
+        pass
+    try:
+        unsupported_uri = "dataplex://projects/dataplex-clouddq/locations/us-central1/lakes/amandeep-dev-lake/zones/raw/entities/contact_details:column"
+        print(f"{unsupported_uri=}")
+        unsupported_entity_uri = EntityUri.from_uri(unsupported_uri)
+        print(f"{unsupported_entity_uri=}")
+    except ValueError as e:
+        print(e)
+        pass
+    try:
+        unsupported_uri = "dataplex://projects/dataplex-clouddq/locations/us-central1/lakes/amandeep-dev-lake/zones/raw/entities/contact_details_*"
+        print(f"{unsupported_uri=}")
+        unsupported_entity_uri = EntityUri.from_uri(unsupported_uri)
+        print(f"{unsupported_entity_uri=}")
+    except NotImplementedError as e:
+        print(e)
+        pass
+    try:
+        validation_error_uri = "dataplex://projects/dataplex-clouddq/locations/us-central1/lakes/amandeep-dev-lake/zones/raw/entitie/contact_details"
+        print(f"{validation_error_uri=}")
+        validation_error_uri_entity_uri = EntityUri.from_uri(validation_error_uri)
+        print(f"{validation_error_uri_entity_uri=}")
+    except ValueError as e:
+        print(e)
+        pass
+    try:
+        validation_error_uri = "dataplex://dataplex-clouddq/locations/us-central1/lakes/amandeep-dev-lake/zones/raw/entities/contact_details"
+        print(f"{validation_error_uri=}")
+        validation_error_uri_entity_uri = EntityUri.from_uri(validation_error_uri)
+        print(f"{validation_error_uri_entity_uri=}")
+    except ValueError as e:
+        print(e)
+        pass
+    try:
+        validation_error_uri = "dataplex://projects/dataplex-clouddq/locations//lakes/amandeep-dev-lake/zones/raw/entities/contact_details"
+        print(f"{validation_error_uri=}")
+        validation_error_uri_entity_uri = EntityUri.from_uri(validation_error_uri)
+        print(f"{validation_error_uri_entity_uri=}")
+    except ValueError as e:
+        print(e)
+        pass
 
-    @classmethod
-    def from_uri(cls: EntityUri, entity_uri: str) -> EntityUri:
+# @dataclass
+# class EntityUri:
 
-        cls.validate_uri_and_assert(entity_uri=entity_uri)
+#     uri: str
 
-        return EntityUri(
-            uri=entity_uri,
-        )
+#     @property
+#     def scheme(self):
+#         return self.uri.split("/")[0].replace(":", "")
 
-    def to_dict(self: EntityUri) -> dict:
-        """
-        Serialize Entity URI to dictionary
-        Args:
-          self: EntityUri:
+#     @property
+#     def entity_id(self):
+#         return self.uri.split("/")[11]
 
-        Returns:
+#     @property
+#     def project_id(self):
+#         return self.uri.split("/")[3]
 
-        """
+#     @property
+#     def location(self):
+#         return self.uri.split("/")[5]
 
-        output = {
-            "uri": self.uri,
-            "scheme": self.scheme,
-            "entity_id": self.entity_id,
-            "db_primary_key": self.get_db_primary_key(),
-            "configs": self.configs,
-        }
+#     @property
+#     def lake(self):
+#         return self.uri.split("/")[7]
 
-        return dict(output)
+#     @property
+#     def zone(self):
+#         return self.uri.split("/")[9]
 
-    @classmethod
-    def convert_entity_uri_to_dict(
-        cls: EntityUri, entity_uri: str, delimiter: str
-    ) -> dict:
+#     def get_db_primary_key(self):
+#         if self.scheme == "dataplex":
+#             return (
+#                 f"projects/{self.project_id}/locations/{self.location}/"
+#                 + f"lakes/{self.lake}/zones/{self.zone}/entities/{self.entity_id}"  # noqa: W503
+#             )
+#         else:
+#             raise NotImplementedError(
+#                 f"EntityUri.get_db_primary_key() for scheme {self.scheme} is not yet supported."
+#             )
 
-        entity_uri_list = entity_uri.split(delimiter)
-        return dict(zip(entity_uri_list[::2], entity_uri_list[1::2]))
+#     @property
+#     def configs(self):
+#         return {
+#             "projects": self.project_id,
+#             "locations": self.location,
+#             "lakes": self.lake,
+#             "zones": self.zone,
+#             "entities": self.entity_id,
+#         }
 
-    @classmethod
-    def validate_uri_and_assert(
-        cls: EntityUri, entity_uri: str
-    ) -> typing.Any:  # noqa: C901
+#     @classmethod
+#     def from_uri(cls: EntityUri, entity_uri: str) -> EntityUri:
 
-        entity_uri_dict = cls.convert_entity_uri_to_dict(entity_uri, delimiter="/")
+#         cls.validate_uri_and_assert(entity_uri=entity_uri)
 
-        scheme = entity_uri.split("//")[0] + "//"
-        entity_uri_without_scheme = entity_uri.split("//")[1]
+#         return EntityUri(
+#             uri=entity_uri,
+#         )
 
-        for unsupported_scheme in DataplexUnsupportedSchemes:
-            if scheme == unsupported_scheme.value:
-                raise NotImplementedError(f"{scheme} scheme is not implemented.")
+#     def to_dict(self: EntityUri) -> dict:
+#         """
+#         Serialize Entity URI to dictionary
+#         Args:
+#           self: EntityUri:
 
-        for supported_scheme in DataplexSupportedSchemes:
-            if scheme != supported_scheme.value:
-                raise ValueError(f"{scheme} scheme is invalid.")
+#         Returns:
 
-        else:
+#         """
 
-            if "projects" not in entity_uri_dict:
-                if "locations" not in entity_uri_dict:
-                    if "lakes" not in entity_uri_dict:
-                        if "zones" in entity_uri_dict:
-                            raise NotImplementedError(
-                                f"{entity_uri} is not implemented."
-                            )
+#         output = {
+#             "uri": self.uri,
+#             "scheme": self.scheme,
+#             "entity_id": self.entity_id,
+#             "db_primary_key": self.get_db_primary_key(),
+#             "configs": self.configs,
+#         }
 
-            if "projects" not in entity_uri_dict:
-                raise ValueError(f"Invalid Entity URI : {entity_uri}")
+#         return dict(output)
 
-            if "locations" not in entity_uri_dict:
-                raise ValueError(f"Invalid Entity URI : {entity_uri}")
+#     @classmethod
+#     def convert_entity_uri_to_dict(
+#         cls: EntityUri, entity_uri: str, delimiter: str
+#     ) -> dict:
 
-            if "lakes" not in entity_uri_dict:
-                raise ValueError(f"Invalid Entity URI : {entity_uri}")
+#         entity_uri_list = entity_uri.split(delimiter)
+#         return dict(zip(entity_uri_list[::2], entity_uri_list[1::2]))
 
-            if "zones" not in entity_uri_dict:
-                raise ValueError(f"Invalid Entity URI : {entity_uri}")
+#     @classmethod
+#     def validate_uri_and_assert(
+#         cls: EntityUri, entity_uri: str
+#     ) -> typing.Any:  # noqa: C901
 
-            if "entities" not in entity_uri_dict:
-                raise ValueError(f"Invalid Entity URI : {entity_uri}")
+#         entity_uri_dict = cls.convert_entity_uri_to_dict(entity_uri, delimiter="/")
 
-            project_id = entity_uri_dict.get("projects")
-            assert_not_none_or_empty(
-                value=project_id,
-                error_msg=f"Required argument project_id is missing in the URI : {entity_uri}",
-            )
+#         scheme = entity_uri.split("//")[0] + "//"
+#         entity_uri_without_scheme = entity_uri.split("//")[1]
 
-            location_id = entity_uri_dict.get("locations")
-            assert_not_none_or_empty(
-                value=location_id,
-                error_msg=f"Required argument location_id is missing in the URI : {entity_uri}",
-            )
+#         for unsupported_scheme in DataplexUnsupportedSchemes:
+#             if scheme == unsupported_scheme.value:
+#                 raise NotImplementedError(f"{scheme} scheme is not implemented.")
 
-            lake_id = entity_uri_dict.get("lakes")
-            assert_not_none_or_empty(
-                value=lake_id,
-                error_msg=f"Required argument lake_id is missing in the URI : {entity_uri}",
-            )
+#         for supported_scheme in DataplexSupportedSchemes:
+#             if scheme != supported_scheme.value:
+#                 raise ValueError(f"{scheme} scheme is invalid.")
 
-            zone_id = entity_uri_dict.get("zones")
-            assert_not_none_or_empty(
-                value=zone_id,
-                error_msg=f"Required argument zone_id is missing in the URI : {entity_uri}",
-            )
+#         else:
 
-            entity_id = entity_uri_dict.get("entities")
-            assert_not_none_or_empty(
-                value=entity_id,
-                error_msg=f"Required argument entity_id is missing in the URI : {entity_uri}",
-            )
-            if entity_id.endswith("*"):
-                raise NotImplementedError(
-                    f"{entity_id} wildcard filter is not implemented."
-                )
+#             if "projects" not in entity_uri_dict:
+#                 if "locations" not in entity_uri_dict:
+#                     if "lakes" not in entity_uri_dict:
+#                         if "zones" in entity_uri_dict:
+#                             raise NotImplementedError(
+#                                 f"{entity_uri} is not implemented."
+#                             )
 
-            if "@" in entity_uri_without_scheme:
-                raise ValueError(
-                    f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
-                )
+#             if "projects" not in entity_uri_dict:
+#                 raise ValueError(f"Invalid Entity URI : {entity_uri}")
 
-            if "#" in entity_uri_without_scheme:
-                raise ValueError(
-                    f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
-                )
+#             if "locations" not in entity_uri_dict:
+#                 raise ValueError(f"Invalid Entity URI : {entity_uri}")
 
-            if "?" in entity_uri_without_scheme:
-                raise ValueError(
-                    f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
-                )
+#             if "lakes" not in entity_uri_dict:
+#                 raise ValueError(f"Invalid Entity URI : {entity_uri}")
 
-            if ":" in entity_uri_without_scheme:
-                raise ValueError(
-                    f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
-                )
+#             if "zones" not in entity_uri_dict:
+#                 raise ValueError(f"Invalid Entity URI : {entity_uri}")
+
+#             if "entities" not in entity_uri_dict:
+#                 raise ValueError(f"Invalid Entity URI : {entity_uri}")
+
+#             project_id = entity_uri_dict.get("projects")
+#             assert_not_none_or_empty(
+#                 value=project_id,
+#                 error_msg=f"Cannot find required argument project_id in the URI : {entity_uri}",
+#             )
+
+#             location_id = entity_uri_dict.get("locations")
+#             assert_not_none_or_empty(
+#                 value=location_id,
+#                 error_msg=f"Cannot find required argument location_id in the URI : {entity_uri}",
+#             )
+
+#             lake_id = entity_uri_dict.get("lakes")
+#             assert_not_none_or_empty(
+#                 value=lake_id,
+#                 error_msg=f"Cannot find required argument lake_id in the URI : {entity_uri}",
+#             )
+
+#             zone_id = entity_uri_dict.get("zones")
+#             assert_not_none_or_empty(
+#                 value=zone_id,
+#                 error_msg=f"Cannot find required argument zone_id in the URI : {entity_uri}",
+#             )
+
+#             entity_id = entity_uri_dict.get("entities")
+#             assert_not_none_or_empty(
+#                 value=entity_id,
+#                 error_msg=f"Cannot find required argument entity_id in the URI : {entity_uri}",
+#             )
+
+#             if entity_id.endswith("*"):
+#                 raise NotImplementedError(
+#                     f"{entity_id} wildcard filter is not implemented."
+#                 )
+
+#             if "@" in entity_uri_without_scheme:
+#                 raise ValueError(
+#                     f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
+#                 )
+
+#             if "#" in entity_uri_without_scheme:
+#                 raise ValueError(
+#                     f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
+#                 )
+
+#             if "?" in entity_uri_without_scheme:
+#                 raise ValueError(
+#                     f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
+#                 )
+
+#             if ":" in entity_uri_without_scheme:
+#                 raise ValueError(
+#                     f"Invalid Entity URI : {entity_uri}, Special characters [@, #, ?, : ] are not allowed."
+#                 )

@@ -22,6 +22,8 @@ import logging
 import re
 import time
 
+import typing
+
 from requests import Response
 
 from clouddq.classes.dataplex_entity import DataplexEntity
