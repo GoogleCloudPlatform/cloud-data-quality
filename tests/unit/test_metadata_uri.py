@@ -166,6 +166,31 @@ class TestEntityURI:
                 ValueError,
                 id="typo_entity"
             ),
+            pytest.param(
+                "dataplex://project/project-id/location/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
+                ValueError,
+                id="typo_project_location"
+            ),
+            pytest.param(
+                "dataplex://projects/project-id/location/us-central1/lake/lake-id/zones/zone-id/entities/entity-id",
+                ValueError,
+                id="typo_location_lake"
+            ),
+            pytest.param(
+                "dataplex://project/project-id/location/us-central1/lake/lake-id/zones/zone-id/entities/entity-id",
+                ValueError,
+                id="typo_project_location_lake"
+            ),
+            pytest.param(
+                "dataplex://project/project-id/location/us-central1/lake/lake-id/zone/zone-id/entities/entity-id",
+                ValueError,
+                id="typo_project_location_lake_zone"
+            ),
+            pytest.param(
+                "dataplex://project/project-id/location/us-central1/lake/lake-id/zone/zone-id/entity/entity-id",
+                ValueError,
+                id="typo_project_location_lake_zone_entity"
+            ),
         ],
     )
     def test_entity_uri_typo_parse_failure(self, entity_uri, error_type):
