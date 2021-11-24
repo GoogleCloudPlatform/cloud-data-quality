@@ -53,7 +53,9 @@ class EntityUri:
         if self.scheme == "dataplex":
             return f"projects/{self.project_id}/locations/{self.location}/lakes/{self.lake}/zones/{self.zone}/entities/{self.entity_id}"
         else:
-            raise NotImplementedError(f"EntityUri.get_db_primary_key() for scheme {self.scheme} is not yet supported.")
+            raise NotImplementedError(
+                f"EntityUri.get_db_primary_key() for scheme {self.scheme} is not yet supported."
+            )
 
     @property
     def configs(self):

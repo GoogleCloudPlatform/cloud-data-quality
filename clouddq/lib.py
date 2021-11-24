@@ -21,8 +21,8 @@ import json
 import logging
 import typing
 
-from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_config_type import DqConfigType
+from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import load_jinja_template
@@ -45,7 +45,7 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
         config = load_yaml(file, configs_type.value)
         if not config:
             continue
-        config = {key.upper():value for key,value in config.items()}
+        config = {key.upper(): value for key, value in config.items()}
         intersection = config.keys() & all_configs.keys()
 
         # The new config defines keys that we have already loaded
@@ -166,4 +166,3 @@ def prepare_configs_cache(configs_path: Path) -> DqConfigsCache:
     rule_binding_collection = load_rule_bindings_config(configs_path)
     configs_cache.load_all_rule_bindings_collection(rule_binding_collection)
     return configs_cache
-

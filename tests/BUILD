@@ -55,7 +55,7 @@ SRCS = glob([
 ]) + [
     "compiler_version_test.py",
     "conftest.py",
-    ]
+]
 
 DATA = [
     ":resources",
@@ -75,7 +75,6 @@ py_test(
     legacy_create_init = 0,
     deps = DEPS,
 )
-
 
 py_test(
     name = "test_classes",

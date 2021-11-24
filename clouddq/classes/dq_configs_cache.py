@@ -17,12 +17,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import json
 import logging
 import sqlite3
-import json
 
 from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
+
+from clouddq.utils import convert_json_value_to_dict
+from clouddq.utils import unnest_object_to_list
 
 import clouddq.classes.dataplex_entity as dataplex_entity
 import clouddq.classes.dq_entity as dq_entity
@@ -31,8 +34,6 @@ import clouddq.classes.dq_row_filter as dq_row_filter
 import clouddq.classes.dq_rule as dq_rule
 import clouddq.classes.dq_rule_binding as dq_rule_binding
 import clouddq.integration.dataplex.clouddq_dataplex as clouddq_dataplex
-from clouddq.utils import unnest_object_to_list
-from clouddq.utils import convert_json_value_to_dict
 
 
 logger = logging.getLogger(__name__)
@@ -55,10 +56,12 @@ class DqConfigsCache:
             logger.debug(f"get_table_entity_id: {entity_id}")
             entity_record = self._cache_db["entities"].get(entity_id)
         except NotFoundError:
-            error_message = f"Table Entity_ID: {entity_id} not found in Entities Config Cache."
+            error_message = (
+                f"Table Entity_ID: {entity_id} not found in Entities Config Cache."
+            )
             raise NotFoundError(error_message)
-        convert_json_value_to_dict(entity_record, 'environment_override')
-        convert_json_value_to_dict(entity_record, 'columns')
+        convert_json_value_to_dict(entity_record, "environment_override")
+        convert_json_value_to_dict(entity_record, "columns")
         entity = dq_entity.DqEntity.from_dict(entity_id, entity_record)
         return entity
 
@@ -70,7 +73,7 @@ class DqConfigsCache:
             error_message = f"Rule_ID: {rule_id} not found in Rules Config Cache."
             logger.error(error_message, exc_info=True)
             raise NotFoundError(error_message)
-        convert_json_value_to_dict(rule_record, 'params')
+        convert_json_value_to_dict(rule_record, "params")
         rule = dq_rule.DqRule.from_dict(rule_id, rule_record)
         return rule
 
@@ -79,21 +82,29 @@ class DqConfigsCache:
         try:
             row_filter_record = self._cache_db["row_filters"].get(row_filter_id)
         except NotFoundError:
-            error_message = f"Row Filter ID: {row_filter_id} not found in Filters Config Cache."
+            error_message = (
+                f"Row Filter ID: {row_filter_id} not found in Filters Config Cache."
+            )
             raise NotFoundError(error_message)
-        row_filter = dq_row_filter.DqRowFilter.from_dict(row_filter_id, row_filter_record)
+        row_filter = dq_row_filter.DqRowFilter.from_dict(
+            row_filter_id, row_filter_record
+        )
         return row_filter
 
-    def get_rule_binding_id(self, rule_binding_id: str) -> dq_rule_binding.DqRuleBinding:
+    def get_rule_binding_id(
+        self, rule_binding_id: str
+    ) -> dq_rule_binding.DqRuleBinding:
         rule_binding_id = rule_binding_id.upper()
         try:
             rule_binding_record = self._cache_db["rule_bindings"].get(rule_binding_id)
         except NotFoundError:
             error_message = f"Rule_Binding_ID: {rule_binding_id} not found in Rule Bindings Config Cache."
             raise NotFoundError(error_message)
-        convert_json_value_to_dict(rule_binding_record, 'rule_ids')
-        convert_json_value_to_dict(rule_binding_record, 'metadata')
-        rule_binding = dq_rule_binding.DqRuleBinding.from_dict(rule_binding_id, rule_binding_record)
+        convert_json_value_to_dict(rule_binding_record, "rule_ids")
+        convert_json_value_to_dict(rule_binding_record, "metadata")
+        rule_binding = dq_rule_binding.DqRuleBinding.from_dict(
+            rule_binding_id, rule_binding_record
+        )
         return rule_binding
 
     def load_all_rule_bindings_collection(self, rule_binding_collection: dict) -> None:
@@ -103,7 +114,9 @@ class DqConfigsCache:
                 record.update({"entity_uri": None})
         self._cache_db["rule_bindings"].upsert_all(
             rule_bindings_rows, pk="id"
-        ).add_foreign_key("entity_id", "entities", "id").add_foreign_key("row_filter_id", "row_filters", "id")
+        ).add_foreign_key("entity_id", "entities", "id").add_foreign_key(
+            "row_filter_id", "row_filters", "id"
+        )
 
     def load_all_entities_collection(self, entities_collection: dict) -> None:
         self._cache_db["entities"].upsert_all(
@@ -121,24 +134,27 @@ class DqConfigsCache:
             unnest_object_to_list(rules_collection), pk="id"
         )
 
-    def resolve_dataplex_entity_uris(self, client: clouddq_dataplex.CloudDqDataplexClient) -> None:
-        for record in self._cache_db.query("select distinct entity_uri, id from rule_bindings where entity_uri is not null"):
+    def resolve_dataplex_entity_uris(
+        self, client: clouddq_dataplex.CloudDqDataplexClient
+    ) -> None:
+        for record in self._cache_db.query(
+            "select distinct entity_uri, id from rule_bindings where entity_uri is not null"
+        ):
             logger.debug(f"Processing record: {record}")
-            entity_uri = dq_entity_uri.EntityUri.from_uri(record['entity_uri'])
+            entity_uri = dq_entity_uri.EntityUri.from_uri(record["entity_uri"])
             dataplex_entity = client.get_dataplex_entity(
                 gcp_project_id=entity_uri.project_id,
                 location_id=entity_uri.location,
                 lake_name=entity_uri.lake,
                 zone_id=entity_uri.zone,
-                entity_id=entity_uri.entity_id)
+                entity_id=entity_uri.entity_id,
+            )
             clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
-                dataplex_entity=dataplex_entity).to_dict()
+                dataplex_entity=dataplex_entity
+            ).to_dict()
             resolved_entity = unnest_object_to_list(clouddq_entity)
             logger.debug(f"Writing parsed Dataplex Entity to db: {resolved_entity}")
-            self._cache_db["entities"].upsert_all(
-                resolved_entity, pk="id", alter=True
+            self._cache_db["entities"].upsert_all(resolved_entity, pk="id", alter=True)
+            self._cache_db["rule_bindings"].update(
+                record["id"], {"entity_id": resolved_entity[0]["id"]}
             )
-            self._cache_db["rule_bindings"].update(record["id"], {
-                "entity_id": resolved_entity[0]["id"]
-            })
-                

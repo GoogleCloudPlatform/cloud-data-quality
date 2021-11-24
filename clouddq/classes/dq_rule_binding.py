@@ -15,11 +15,11 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from string import Template
 
-import clouddq.classes.dq_configs_cache as dq_configs_cache
+import logging
+
 from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_entity_column import DqEntityColumn
 from clouddq.classes.dq_entity_uri import EntityUri
@@ -28,6 +28,8 @@ from clouddq.classes.dq_rule import DqRule
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_from_dict_and_assert
 from clouddq.utils import get_keys_from_dict_and_assert_oneof
+
+import clouddq.classes.dq_configs_cache as dq_configs_cache
 
 
 logger = logging.getLogger(__name__)
@@ -175,7 +177,9 @@ class DqRuleBinding:
                 self.entity_uri.get_db_primary_key().upper()
             )
         elif self.entity_id:
-            table_entity: DqEntity = configs_cache.get_table_entity_id(self.entity_id.upper())
+            table_entity: DqEntity = configs_cache.get_table_entity_id(
+                self.entity_id.upper()
+            )
         else:
             raise ValueError(
                 f"Rule Binding ID: {self.rule_binding_id} must define "
@@ -214,9 +218,7 @@ class DqRuleBinding:
             else:
                 rule_id = rule
                 arguments = None
-            rule_config = configs_cache.get_rule_id(
-                rule_id.upper()
-            )
+            rule_config = configs_cache.get_rule_id(rule_id.upper())
             rule_config.update_rule_binding_arguments(arguments)
             resolved_rule_config_list.append(rule_config)
         assert_not_none_or_empty(

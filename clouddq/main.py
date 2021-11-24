@@ -29,10 +29,10 @@ import click
 import coloredlogs
 
 from clouddq import lib
-from clouddq.integration.gcp_credentials import GcpCredentials
-from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
+from clouddq.integration.gcp_credentials import GcpCredentials
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
@@ -333,8 +333,13 @@ def main(  # noqa: C901
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
         )
-    if (not dbt_profiles_dir and (not gcp_project_id or not gcp_bq_dataset_id or not gcp_region_id)) or (dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id or gcp_region_id)):
-        raise ValueError("CLI input must contain either all of (--gcp_project_id, --gcp_bq_dataset_id, --gcp_region_id) or --dbt_profiles_dir.")
+    if (
+        not dbt_profiles_dir
+        and (not gcp_project_id or not gcp_bq_dataset_id or not gcp_region_id)
+    ) or (dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id or gcp_region_id)):
+        raise ValueError(
+            "CLI input must contain either all of (--gcp_project_id, --gcp_bq_dataset_id, --gcp_region_id) or --dbt_profiles_dir."
+        )
     bigquery_client = None
     dataplex_client = None
     try:
@@ -345,9 +350,7 @@ def main(  # noqa: C901
         )
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
-            bigquery_client = BigQueryClient(
-                gcp_credentials=gcp_credentials
-            )
+            bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
         dataplex_client = CloudDqDataplexClient(
             gcp_credentials=gcp_credentials,
         )
@@ -394,7 +397,8 @@ def main(  # noqa: C901
                     f"Dataset {target_dataset_id} does not exist. "
                 )
             bigquery_client.assert_dataset_is_in_region(
-            dataset=target_dataset_id, region=gcp_region_id)
+                dataset=target_dataset_id, region=gcp_region_id
+            )
         # Load metadata
         metadata = json.loads(metadata)
         # Load Rule Bindings
@@ -458,11 +462,13 @@ def main(  # noqa: C901
             if target_bigquery_summary_table:
                 invocation_id = get_dbt_invocation_id(dbt_path)
                 logger.info(
-                    f"dbt invocation id for current execution "
-                    f"is {invocation_id}"
+                    f"dbt invocation id for current execution " f"is {invocation_id}"
                 )
                 json_logger.info(
-                    {"invocation_id":invocation_id, "target_bigquery_summary_table": target_bigquery_summary_table}
+                    {
+                        "invocation_id": invocation_id,
+                        "target_bigquery_summary_table": target_bigquery_summary_table,
+                    }
                 )
                 partition_date = date.today()
                 logger.info(

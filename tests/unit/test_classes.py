@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import pytest
 
 from clouddq.classes.dq_entity import DqEntity
@@ -21,7 +23,6 @@ from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
 
-import logging
 
 logger = logging.getLogger(__name__)
 

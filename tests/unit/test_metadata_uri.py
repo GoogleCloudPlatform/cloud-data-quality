@@ -48,7 +48,7 @@ class TestDqEntityUri:
                 ValueError,
                 id="invalid_scheme"
             ),
-           pytest.param(
+            pytest.param(
                 "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities",
                 ValueError,
                 id="missing_entity_id"
