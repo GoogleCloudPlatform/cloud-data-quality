@@ -74,9 +74,8 @@ class DqRuleBinding:
             entity_uri = None
         if "entity_uri" in entity_config:
             parsed_entity_uri = EntityUri.from_uri(entity_config["entity_uri"])
-            logger.debug(f"parsed_entity_uri: {parsed_entity_uri}")
             logger.debug(f"parsed_entity_uri.to_dict(): {parsed_entity_uri.to_dict()}")
-            entity_id = parsed_entity_uri.entity_id
+            entity_id = parsed_entity_uri.get_entity_id()
             entity_uri = parsed_entity_uri
         if entity_id:
             entity_id.upper()

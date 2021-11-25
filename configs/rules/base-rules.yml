@@ -32,7 +32,7 @@ rules:
     rule_type: CUSTOM_SQL_EXPR
     params:
       custom_sql_expr: |-
-        $column in (select distinct value from dq_test.contact_details)
+        $column in (select distinct value from clouddq_us_central1.contact_details)
 
   NOT_BLANK:
     rule_type: NOT_BLANK

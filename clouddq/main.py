@@ -29,6 +29,7 @@ import click
 import coloredlogs
 
 from clouddq import lib
+from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
@@ -354,9 +355,6 @@ def main(  # noqa: C901
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
             bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
-        dataplex_client = CloudDqDataplexClient(
-            gcp_credentials=gcp_credentials,
-        )
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -406,15 +404,40 @@ def main(  # noqa: C901
         metadata = json.loads(metadata)
         # Load Rule Bindings
         configs_path = Path(rule_binding_config_path)
-        logger.debug("Loading rule bindings from: %s", configs_path.absolute())
+        logger.debug("Loading rule bindings from: {configs_path.absolute()}")
         all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
         # Prepare list of Rule Bindings in-scope for run
         target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
         if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
             target_rule_binding_ids = list(all_rule_bindings.keys())
+        logger.debug(f"Preparing SQL for rule bindings: {target_rule_binding_ids}")
+        # Load default configs for metadata registries
+        registry_defaults: MetadataRegistryDefaults = lib.load_metadata_registry_default_configs(Path(configs_path))
+        default_dataplex_projects = registry_defaults.get_dataplex_registry_defaults('projects')
+        default_dataplex_locations = registry_defaults.get_dataplex_registry_defaults('locations')
+        default_dataplex_lakes = registry_defaults.get_dataplex_registry_defaults('lakes')
+        logger.debug(f"Using metadata_registry_defaults: {registry_defaults.default_configs}")
+        dataplex_registry_defaults = registry_defaults.get_dataplex_registry_defaults()
+        logger.debug(f"Using dataplex_registry_defaults: {dataplex_registry_defaults}")
+        # Prepare Dataplex Client from metadata registry defaults
+        dataplex_client = CloudDqDataplexClient(
+            gcp_credentials=gcp_credentials,
+            gcp_project_id=default_dataplex_projects,
+            gcp_dataplex_lake_name=default_dataplex_lakes,
+            gcp_dataplex_region=default_dataplex_locations,
+        )
+        logger.debug(
+            "Created CloudDqDataplexClient with arguments: "
+            f"{gcp_credentials=}, "
+            f"{default_dataplex_projects=}, "
+            f"{default_dataplex_lakes=}, "
+            f"{default_dataplex_locations=}, "
+        )
         # Load all configs into a local cache
         configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
-        configs_cache.resolve_dataplex_entity_uris(dataplex_client)
+        configs_cache.resolve_dataplex_entity_uris(
+            client=dataplex_client, 
+            default_configs=dataplex_registry_defaults)
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
