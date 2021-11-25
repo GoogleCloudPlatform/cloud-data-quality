@@ -20,70 +20,70 @@ from clouddq.classes.dq_entity_uri import EntityUri
 
 class TestEntityURI:
 
-    # @pytest.mark.parametrize(
-    #     "entity_uri,error_type",
-    #     [
-    #         pytest.param(
-    #             "dataplex://",
-    #             ValueError,
-    #             id="incomplete_dataplex"
-    #         ),
-    #         pytest.param(
-    #             "bigquery://",
-    #             ValueError,
-    #             id="incomplete_bigquery"
-    #         ),
-    #         pytest.param(
-    #             "local://",
-    #             NotImplementedError,
-    #             id="incomplete_local"
-    #         ),
-    #         pytest.param(
-    #             "gs://",
-    #             NotImplementedError,
-    #             id="not_implemented_scheme"
-    #         ),
-    #         pytest.param(
-    #             "dataplex:bigquery://",
-    #             ValueError,
-    #             id="invalid_scheme"
-    #         ),
-    #         pytest.param(
-    #             "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities",
-    #             ValueError,
-    #             id="missing_entity_id"
-    #         ),
-    #         pytest.param(
-    #             "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/",
-    #             ValueError,
-    #             id="missing_entity_id_1"
-    #         ),
-    #         pytest.param(
-    #             "dataplex://projects@",
-    #             ValueError,
-    #             id="unsupported_@"
-    #         ),
-    #         pytest.param(
-    #             "dataplex://projects:",
-    #             ValueError,
-    #             id="unsupported_:"
-    #         ),
-    #         pytest.param(
-    #             "dataplex://projects?",
-    #             ValueError,
-    #             id="unsupported_?"
-    #         ),
-    #         pytest.param(
-    #             "dataplex://projects#",
-    #             ValueError,
-    #             id="unsupported_#"
-    #         ),
-    #     ],
-    # )
-    # def test_entity_uri_parse_failure(self, entity_uri, error_type):
-    #     """ """
-    #     with pytest.raises(error_type):
-    #         EntityUri.from_uri(entity_uri)
+    @pytest.mark.parametrize(
+        "entity_uri,error_type",
+        [
+            pytest.param(
+                "dataplex://",
+                ValueError,
+                id="incomplete_dataplex"
+            ),
+            pytest.param(
+                "bigquery://",
+                ValueError,
+                id="incomplete_bigquery"
+            ),
+            pytest.param(
+                "local://",
+                NotImplementedError,
+                id="incomplete_local"
+            ),
+            pytest.param(
+                "gs://",
+                NotImplementedError,
+                id="not_implemented_scheme"
+            ),
+            pytest.param(
+                "dataplex:bigquery://",
+                ValueError,
+                id="invalid_scheme"
+            ),
+            pytest.param(
+                "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities",
+                ValueError,
+                id="missing_entity_id"
+            ),
+            pytest.param(
+                "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/",
+                ValueError,
+                id="missing_entity_id_1"
+            ),
+            pytest.param(
+                "dataplex://projects@",
+                ValueError,
+                id="unsupported_@"
+            ),
+            pytest.param(
+                "dataplex://projects:",
+                ValueError,
+                id="unsupported_:"
+            ),
+            pytest.param(
+                "dataplex://projects?",
+                ValueError,
+                id="unsupported_?"
+            ),
+            pytest.param(
+                "dataplex://projects#",
+                ValueError,
+                id="unsupported_#"
+            ),
+        ],
+    )
+    def test_entity_uri_parse_failure(self, entity_uri, error_type):
+        """ """
+        with pytest.raises(error_type):
+            EntityUri.from_uri(entity_uri)
 
     def test_entity_uri_parse_dataplex_uri_without_default_configs(self):
         """ """
