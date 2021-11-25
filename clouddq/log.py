@@ -78,7 +78,7 @@ class JSONFormatter(logging.Formatter):
 def get_json_logger():
     json_logger = logging.getLogger("clouddq-json-logger")
     json_logger.setLevel(LOG_LEVEL)
-    logging_stream_handler = logging.StreamHandler(sys.stderr)
+    logging_stream_handler = logging.StreamHandler(sys.stdout)
     logging_stream_handler.setFormatter(JSONFormatter())
     json_logger.addHandler(logging_stream_handler)
     return json_logger
