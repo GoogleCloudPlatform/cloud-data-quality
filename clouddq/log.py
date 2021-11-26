@@ -77,20 +77,22 @@ class JSONFormatter(logging.Formatter):
 
 def get_json_logger():
     json_logger = logging.getLogger("clouddq-json-logger")
-    json_logger.setLevel(LOG_LEVEL)
-    logging_stream_handler = logging.StreamHandler(sys.stdout)
-    logging_stream_handler.setFormatter(JSONFormatter())
-    json_logger.addHandler(logging_stream_handler)
+    if not json_logger.hasHandlers():
+        json_logger.setLevel(LOG_LEVEL)
+        logging_stream_handler = logging.StreamHandler(sys.stdout)
+        logging_stream_handler.setFormatter(JSONFormatter())
+        json_logger.addHandler(logging_stream_handler)
     return json_logger
 
 
 def get_logger():
     logger = logging.getLogger("clouddq")
-    logger.setLevel(LOG_LEVEL)
-    logging_stream_handler = logging.StreamHandler(sys.stderr)
-    stream_formatter = logging.Formatter(
-        "{asctime} {name} {levelname:8s} {message}", style="{"
-    )
-    logging_stream_handler.setFormatter(stream_formatter)
-    logger.addHandler(logging_stream_handler)
+    if not logger.hasHandlers():
+        logger.setLevel(LOG_LEVEL)
+        logging_stream_handler = logging.StreamHandler(sys.stderr)
+        stream_formatter = logging.Formatter(
+            "{asctime} {name} {levelname:8s} {message}", style="{"
+        )
+        logging_stream_handler.setFormatter(stream_formatter)
+        logger.addHandler(logging_stream_handler)
     return logger
