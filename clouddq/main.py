@@ -26,12 +26,14 @@ import click
 import coloredlogs
 
 from clouddq import lib
+from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
+from clouddq.integration.gcp_credentials import GcpCredentials
 from clouddq.log import get_json_logger
 from clouddq.log import get_logger
 from clouddq.runners.dbt.dbt_runner import DbtRunner
-from clouddq.runners.dbt.dbt_utils import JobStatus
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
@@ -263,20 +265,32 @@ def main(  # noqa: C901
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
         )
+    if (
+        not dbt_profiles_dir
+        and (  # noqa: W503
+            not gcp_project_id or not gcp_bq_dataset_id or not gcp_region_id
+        )
+    ) or (dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id or gcp_region_id)):
+        raise ValueError(
+            "CLI input must define either all of "
+            "(--gcp_project_id, --gcp_bq_dataset_id, --gcp_region_id) or --dbt_profiles_dir."
+        )
     if summary_to_stdout:
         logger.debug("Logging summary to stdout")
     else:
         logger.debug("NOT logging summary to stdout")
 
     bigquery_client = None
+    dataplex_client = None
     try:
+        gcp_credentials = GcpCredentials(
+            gcp_project_id=gcp_project_id,
+            gcp_service_account_key_path=gcp_service_account_key_path,
+            gcp_impersonation_credentials=gcp_impersonation_credentials,
+        )
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
-            bigquery_client = BigQueryClient(
-                gcp_project_id=gcp_project_id,
-                gcp_service_account_key_path=gcp_service_account_key_path,
-                gcp_impersonation_credentials=gcp_impersonation_credentials,
-            )
+            bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -307,7 +321,7 @@ def main(  # noqa: C901
         logger.info(
             f"Writing summary results to GCP table: `{dq_summary_table_name}`. "
         )
-        # Check existence of dataset for target BQ table
+        # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             target_table_ref = bigquery_client.table_from_string(
                 target_bigquery_summary_table
@@ -319,24 +333,47 @@ def main(  # noqa: C901
                     f"{target_bigquery_summary_table}. "
                     f"Dataset {target_dataset_id} does not exist. "
                 )
+            bigquery_client.assert_dataset_is_in_region(
+                dataset=target_dataset_id, region=gcp_region_id
+            )
         # Load metadata
         metadata = json.loads(metadata)
         # Load Rule Bindings
         configs_path = Path(rule_binding_config_path)
-        logger.debug("Loading rule bindings from: %s", configs_path.absolute())
+        logger.debug("Loading rule bindings from: {configs_path.absolute()}")
         all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
         # Prepare list of Rule Bindings in-scope for run
         target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
         if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
             target_rule_binding_ids = list(all_rule_bindings.keys())
-        # Load all other configs
-        (
-            entities_collection,
-            row_filters_collection,
-            rules_collection,
-        ) = lib.load_configs_if_not_defined(
-            configs_path=configs_path,
+        logger.debug(f"Preparing SQL for rule bindings: {target_rule_binding_ids}")
+        # Load default configs for metadata registries
+        registry_defaults: MetadataRegistryDefaults = lib.load_metadata_registry_default_configs(Path(configs_path))
+        default_dataplex_projects = registry_defaults.get_dataplex_registry_defaults('projects')
+        default_dataplex_locations = registry_defaults.get_dataplex_registry_defaults('locations')
+        default_dataplex_lakes = registry_defaults.get_dataplex_registry_defaults('lakes')
+        logger.debug(f"Using metadata_registry_defaults: {registry_defaults.default_configs}")
+        dataplex_registry_defaults = registry_defaults.get_dataplex_registry_defaults()
+        logger.debug(f"Using dataplex_registry_defaults: {dataplex_registry_defaults}")
+        # Prepare Dataplex Client from metadata registry defaults
+        dataplex_client = CloudDqDataplexClient(
+            gcp_credentials=gcp_credentials,
+            gcp_project_id=default_dataplex_projects,
+            gcp_dataplex_lake_name=default_dataplex_lakes,
+            gcp_dataplex_region=default_dataplex_locations,
         )
+        logger.debug(
+            "Created CloudDqDataplexClient with arguments: "
+            f"{gcp_credentials=}, "
+            f"{default_dataplex_projects=}, "
+            f"{default_dataplex_lakes=}, "
+            f"{default_dataplex_locations=}, "
+        )
+        # Load all configs into a local cache
+        configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
+        configs_cache.resolve_dataplex_entity_uris(
+            client=dataplex_client, 
+            default_configs=dataplex_registry_defaults)
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
@@ -355,10 +392,7 @@ def main(  # noqa: C901
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name=dq_summary_table_name,
-                entities_collection=entities_collection,
-                rules_collection=rules_collection,
-                row_filters_collection=row_filters_collection,
-                configs_path=configs_path,
+                configs_cache=configs_cache,
                 environment=environment_target,
                 metadata=metadata,
                 debug=print_sql_queries,
@@ -379,56 +413,57 @@ def main(  # noqa: C901
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem not in target_rule_binding_ids:
                 view.unlink()
+        # create dbt configs json for the main.sql loop and run dbt
         configs = {"target_rule_binding_ids": target_rule_binding_ids}
-        job_status: JobStatus = dbt_runner.run(
+        dbt_runner.run(
             configs=configs,
             debug=debug,
             dry_run=dry_run,
         )
-        if job_status == JobStatus.SUCCESS:
-
-            if not dry_run:
-                if target_bigquery_summary_table:
-                    invocation_id = get_dbt_invocation_id(dbt_path)
-                    logger.info(
-                        f"dbt invocation id for current execution "
-                        f"is {invocation_id}"
-                    )
-                    partition_date = date.today()
-                    logger.info(
-                        f"Partition date is {partition_date} and "
-                        f"is being used for getting the dq summary "
-                        f"results from summary table"
-                    )
-                    target_table = TargetTable(invocation_id, bigquery_client)
-                    target_table.write_to_target_bq_table(
-                        partition_date,
-                        target_bigquery_summary_table,
-                        dq_summary_table_name,
-                        summary_to_stdout,
-                    )
-                    logger.info("Job completed successfully.")
-                else:
-                    logger.warning(
-                        "'--target_bigquery_summary_table' was not provided. "
-                        "It is needed to append the dq summary results to the "
-                        "provided target bigquery table. This will become a "
-                        "required argument in v1.0.0"
-                    )
-                    if summary_to_stdout:
+        if not dry_run:
+            if target_bigquery_summary_table:
+                invocation_id = get_dbt_invocation_id(dbt_path)
+                logger.info(
+                    f"dbt invocation id for current execution "
+                    f"is {invocation_id}"
+                )
+                json_logger.info(
+                    {
+                        "invocation_id": invocation_id,
+                        "target_bigquery_summary_table": target_bigquery_summary_table,
+                    }
+                )
+                partition_date = date.today()
+                logger.info(
+                    f"Partition date is {partition_date} and "
+                    f"is being used for getting the dq summary "
+                    f"results from summary table"
+                )
+                target_table = TargetTable(invocation_id, bigquery_client)
+                target_table.write_to_target_bq_table(
+                    partition_date,
+                    target_bigquery_summary_table,
+                    dq_summary_table_name,
+                    summary_to_stdout,
+                )
+                logger.info("Job completed successfully.")
+            else:
+                logger.warning(
+                    "'--target_bigquery_summary_table' was not provided. "
+                    "It is needed to append the dq summary results to the "
+                    "provided target bigquery table. This will become a "
+                    "required argument in v1.0.0"
+                )
+                if summary_to_stdout:
                         logger.warning(
                             "'--summary_to_stdout' was set but does"
                             " not take effect unless "
                             "'--target_bigquery_summary_table' is provided"
                         )
-
-        elif job_status == JobStatus.FAILED:
-            raise RuntimeError("Job failed.")
-        else:
-            raise RuntimeError("Job failed with unknown status.")
     except Exception as error:
+        logger.error(error)
         json_logger.error(error, exc_info=True)
-        raise error
+        raise SystemExit(error)
     finally:
         if bigquery_client:
             bigquery_client.close_connection()
