@@ -44,7 +44,7 @@ class MetadataRegistryDefaults:
         default_configs = {}
         logger.debug(f"Loaded 'metadata_registry_defaults':\n {pformat(kwargs)}")
         for registry_scheme, registry_defaults in kwargs.items():
-            scheme = EntityUriScheme(registry_scheme)
+            scheme = EntityUriScheme.from_scheme(registry_scheme)
             default_configs[scheme.value] = {}
             expected_uri_fields = None
             if scheme == EntityUriScheme.DATAPLEX:

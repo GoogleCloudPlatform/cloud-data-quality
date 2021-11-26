@@ -16,9 +16,6 @@
 from enum import Enum
 from enum import unique
 
-
-UNSUPPORTED_SCHEMES = ["dataplex:bigquery"]
-
 @unique
 class EntityUriScheme(str, Enum):
     """ """
@@ -28,18 +25,8 @@ class EntityUriScheme(str, Enum):
     @classmethod
     def from_scheme(cls, scheme: str):
 
-        if scheme in UNSUPPORTED_SCHEMES:
-            raise ValueError(f"{scheme} scheme is invalid.")
-        else:
-            supported_schemes = [supported_scheme.value for supported_scheme in EntityUriScheme]
-            if scheme in supported_schemes:
-                return cls(scheme)
-            else:
-                raise NotImplementedError(f"{scheme} scheme is not implemented.")
+        try:
+            return cls(scheme)
+        except ValueError:
+            raise NotImplementedError(f"{scheme} scheme is not implemented.")
 
-            # works with python >  3.8
-
-            # if any((uri_scheme := supported_scheme.value) == scheme for supported_scheme in EntityUriScheme):
-            #     return cls(uri_scheme)
-            # else:
-            #     raise NotImplementedError
