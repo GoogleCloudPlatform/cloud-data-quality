@@ -114,27 +114,6 @@ class TestEntityURI:
         assert parsed_uri.get_db_primary_key() == expected_entity_dict["db_primary_key"]
         assert parsed_uri.to_dict() == expected_entity_dict
 
-    # def test_entity_uri_dataplex_uri_to_dataplex_entity(self):
-    #     entity_uri = "dataplex://projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id"  # noqa: E501
-    #     parsed_uri = EntityUri.from_uri(entity_uri)
-    #     dataplex_entity = DataplexEntity.from_uri(parsed_uri)
-    #     expected_dataplex_entity_dict = {
-    #         "name": "projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",
-    #         "db_primary_key": "projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",  # noqa: E501
-    #         "id": "entity-id",
-    #         "project_id": "project-id",
-    #         "location": "us-central1",
-    #         "lake": "lake-id",
-    #         "zone": "zone-id",
-    #         "type": None,
-    #         "asset": None,
-    #         "dataPath": None,
-    #         "system": None,
-    #         "format": None,
-    #         "schema": None,
-    #     }
-    #     assert dataplex_entity.to_dict() == expected_dataplex_entity_dict
-
     @pytest.mark.parametrize(
         "entity_uri,error_type",
         [
@@ -193,6 +172,11 @@ class TestEntityURI:
                 ValueError,
                 id="typo_project_location_lake_zone_entity"
             ),
+            pytest.param(
+                "dataplex://project/project-id/location//lakes/lake-id/zones/zone-id/entities/entity-id",
+                ValueError,
+                id="missing_location"
+            ),
         ],
     )
     def test_entity_uri_typo_parse_failure(self, entity_uri, error_type):
@@ -217,9 +201,19 @@ class TestEntityURI:
     def test_entity_uri_parse_elide_project_lake_id_failure(self):
         """ """
         entity_uri = "dataplex://zones/zone-id/entities/entity-id"
-        # This should be supported eventually
-        with pytest.raises(NotImplementedError):
+        default_configs = {
+            "projects": "project-id",
+            "locations": "us-central1",
+            "lakes": "lake-id",
+        }
+        # This should fail without metadata_defaults
+        with pytest.raises(ValueError):
             EntityUri.from_uri(entity_uri)
+        parsed_uri = EntityUri.from_uri(uri_string=entity_uri,default_configs=default_configs)
+        assert parsed_uri.complete_uri_string == entity_uri
+        assert parsed_uri.get_db_primary_key() == "projects/project-id/locations/us-central1/lakes" \
+                     "/lake-id/zones/zone-id/entities/entity-id"
+
 
     def test_entity_uri_parse_glob_failure(self):
         """ """
@@ -255,4 +249,4 @@ class TestEntityURI:
         assert parsed_uri.to_dict() == expected_entity_dict
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 2']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

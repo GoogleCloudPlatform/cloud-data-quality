@@ -267,7 +267,6 @@ def test_dataplex_metadata_defaults_configs(
     }
     return dataplex_metadata_defaults
 
-
 @pytest.fixture(scope="session")
 def test_configs_cache(
         test_dq_dataplex_client, 
