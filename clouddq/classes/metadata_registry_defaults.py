@@ -16,12 +16,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pprint import pformat
 import logging
 
 from clouddq.classes.entity_uri_schemes import EntityUriScheme
 
 DATAPLEX_URI_FIELDS = ["projects", "locations", "lakes", "zones", "entities"]
 BIGQUERY_URI_FIELDS = ["projects", "datasets", "tables"]
+SAMPLE_DEFAULT_REGISTRIES_YAML = """
+metadata_registry_defaults:
+  dataplex:
+    projects: <my-gcp-project-id>
+    locations: <my-gcp-dataplex-region-id>
+    lakes: <my-gcp-dataplex-lake-id>
+    zones: <my-gcp-dataplex-zone-id>
+"""
 
 logger = logging.getLogger(__name__)
 
@@ -33,19 +42,21 @@ class MetadataRegistryDefaults:
     @classmethod
     def from_dict(cls: MetadataRegistryDefaults, kwargs: dict) -> MetadataRegistryDefaults:
         default_configs = {}
-        logger.debug(f"MetadataRegistryDefaults.from_dict(): {kwargs}")
+        logger.debug(f"Loaded 'metadata_registry_defaults':\n {pformat(kwargs)}")
         for registry_scheme, registry_defaults in kwargs.items():
             scheme = EntityUriScheme(registry_scheme)
             default_configs[scheme.value] = {}
             expected_uri_fields = None
             if scheme == EntityUriScheme.DATAPLEX:
                 expected_uri_fields = DATAPLEX_URI_FIELDS
-            elif scheme == EntityUriScheme.BIGQUERY:
-                expected_uri_fields = BIGQUERY_URI_FIELDS
+            else:
+                raise NotImplementedError(
+                    f"'metadata_registry_default' not implemented for registry '{scheme}' "
+                )
             for key, value in registry_defaults.items():
                 if key not in expected_uri_fields:
                     raise ValueError(
-                        f"metadata_registry_default for scheme '{scheme}' "
+                        f"'metadata_registry_default' for scheme '{scheme}' "
                         f"contains unexpected field '{key}'."
                         )
                 default_configs[scheme][key] = value

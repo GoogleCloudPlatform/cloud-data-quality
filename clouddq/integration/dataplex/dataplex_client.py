@@ -23,6 +23,7 @@ from google.auth.credentials import Credentials
 from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
+from pprint import pformat
 
 import google.auth
 import google.auth.transport.requests
@@ -333,4 +334,23 @@ class DataplexClient:
             headers=self._headers,
             params=params,
         )
+        if "entities" not in response.json():
+            logger.warning(
+                f"\nFailed to retrieve entities matching filter:\n"
+                f" '{params['filter']}'\n"
+                f"in Dataplex zone:\n"
+                f" '/projects/{gcp_project_id}/locations/{location_id}"
+                f"/lakes/{lake_name}/zones/{zone_id}'.\n\n"
+                f"Arguments used in list_entities API call:\n"
+                f"{gcp_project_id=}\n"
+                f"{location_id=}\n"
+                f"{lake_name=}\n"
+                f"{zone_id=}\n" 
+                f"{params=}\n\n"
+                f"API response:\n"
+                f"Response status code: {pformat(response.status_code)}\n"
+                f"Response body: {pformat(response.json())}\n\n"
+                "Ensure 1) you have sufficient IAM permission to query the Dataplex zone "
+                "and 2) the table is registered in the correct Dataplex zone.\n"
+            )
         return response

@@ -314,51 +314,47 @@ class CloudDqDataplexClient:
         if data_path:
             params.update({"filter": f"data_path=starts_with({data_path})"})
 
-        logger.info(f"Initial params are {params}")
+        response_dict = {}
         response = self._client.list_entities(
             zone_id=zone_id,
             params=params,
             gcp_project_id=gcp_project_id,
             location_id=location_id,
             lake_name=lake_name,
-        ).json()
+        )
+        response_dict.update(response.json())
 
-        print("params", params)
-
-        while "nextPageToken" in response:
+        while "nextPageToken" in response_dict:
             time.sleep(3)  # to avoid api limit exceed error of 4 calls per 10 sec
-            next_page_token = response["nextPageToken"]
-            logger.info(f"Next Page Token {next_page_token}")
+            next_page_token = response_dict["nextPageToken"]
+            logger.debug(f"Getting next page...")
             page_token = {"page_token": f"{next_page_token}"}
             params.update(page_token)
-            logger.info(f"Updated Params are {params}")
             next_page_response = self._client.list_entities(
-                zone_id, params=params
-            ).json()
-            logger.info(f"Next page response {next_page_response}")
-
-            if "nextPageToken" not in next_page_response:
-                del response["nextPageToken"]
-                response = update_dict(response, next_page_response)
-            else:
-                response = update_dict(response, next_page_response)
-                response["nextPageToken"] = next_page_response["nextPageToken"]
-
-        if "entities" not in response:
-            raise RuntimeError(
-                "Failed to list Dataplex zone "
-                f"'/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}"
-                f"/lakes/{self._client.lake_name}/zones/{zone_id}':\n {pformat(response)}"
-            )
-
-        dataplex_entities = []
-        for entity in response["entities"]:
-            entity_with_schema = self.get_dataplex_entity(
-                entity_id=entity["id"],
                 zone_id=zone_id,
+                params=params,
                 gcp_project_id=gcp_project_id,
                 location_id=location_id,
                 lake_name=lake_name,
-            )
-            dataplex_entities.append(entity_with_schema)
+            ).json()
+            logger.debug(f"Next page response {next_page_response}")
+
+            if "nextPageToken" not in next_page_response:
+                del response_dict["nextPageToken"]
+                response_dict = update_dict(response_dict, next_page_response)
+            else:
+                response_dict = update_dict(response_dict, next_page_response)
+                response_dict["nextPageToken"] = next_page_response["nextPageToken"]
+
+        dataplex_entities = []
+        if "entities" in response_dict:
+            for entity in response_dict["entities"]:
+                entity_with_schema = self.get_dataplex_entity(
+                    entity_id=entity["id"],
+                    zone_id=zone_id,
+                    gcp_project_id=gcp_project_id,
+                    location_id=location_id,
+                    lake_name=lake_name,
+                )
+                dataplex_entities.append(entity_with_schema)
         return dataplex_entities

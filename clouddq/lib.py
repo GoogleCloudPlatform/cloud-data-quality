@@ -108,6 +108,7 @@ def create_rule_binding_view_model(
     metadata: typing.Optional[typing.Dict] = None,
     debug: bool = False,
     progress_watermark: bool = True,
+    default_configs: typing.Optional[typing.Dict] = None,
 ) -> str:
     template = load_jinja_template(
         template_path=Path("dbt", "macros", "run_dq_main.sql")
@@ -120,6 +121,7 @@ def create_rule_binding_view_model(
         configs_cache=configs_cache,
         metadata=metadata,
         progress_watermark=progress_watermark,
+        default_configs=default_configs,
     )
     sql_string = template.render(configs)
     if debug:
@@ -143,8 +145,12 @@ def prepare_configs_from_rule_binding_id(
     configs_cache: DqConfigsCache,
     metadata: typing.Optional[typing.Dict] = None,
     progress_watermark: bool = True,
+    default_configs: typing.Optional[typing.Dict] = None,
 ) -> typing.Dict:
-    rule_binding = DqRuleBinding.from_dict(rule_binding_id, rule_binding_configs)
+    rule_binding = DqRuleBinding.from_dict(
+        rule_binding_id, 
+        rule_binding_configs, 
+        default_configs)
     resolved_rule_binding_configs = rule_binding.resolve_all_configs_to_dict(
         configs_cache=configs_cache,
     )
@@ -161,7 +167,7 @@ def prepare_configs_from_rule_binding_id(
     configs.update({"metadata": metadata})
     configs.update({"configs_hashsum": sha256_digest(json.dumps(rule_binding_configs))})
     configs.update({"progress_watermark": progress_watermark})
-    logger.debug(f"Prepared configs for {rule_binding_id}:\n {configs}")
+    logger.debug(f"Prepared json configs for {rule_binding_id}:\n{pformat(configs)}")
     return configs
 
 

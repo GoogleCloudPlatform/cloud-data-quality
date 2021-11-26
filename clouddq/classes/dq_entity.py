@@ -298,6 +298,6 @@ class DqEntity:
             )
         else:
             raise NotImplementedError(
-                f"Dataplex entity system {dataplex_entity.system}"
-                f" unsupported for entity:\n {dataplex_entity.to_dict()}"
+                f"Dataplex entity system {dataplex_entity.system} "
+                f"is unsupported for entity:\n {dataplex_entity.to_dict()}"
             )

@@ -272,16 +272,10 @@ def main(  # noqa: C901
         )
     ) or (dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id or gcp_region_id)):
         raise ValueError(
-            "CLI input must define either all of "
-            "(--gcp_project_id, --gcp_bq_dataset_id, --gcp_region_id) or --dbt_profiles_dir."
+            "CLI input must define connection configs using '--dbt_profiles_dir' or "
+            "using '--gcp_project_id', '--gcp_bq_dataset_id', and '--gcp_region_id'."
         )
-    if summary_to_stdout:
-        logger.debug("Logging summary to stdout")
-    else:
-        logger.debug("NOT logging summary to stdout")
-
     bigquery_client = None
-    dataplex_client = None
     try:
         gcp_credentials = GcpCredentials(
             gcp_project_id=gcp_project_id,
@@ -312,21 +306,25 @@ def main(  # noqa: C901
             dbt_profiles_dir=Path(dbt_profiles_dir),
             environment_target=environment_target,
         )
+        logger.info(
+            f"Writing BigQuery rule_binding views and intermediate summary results to BigQuery table: `{dq_summary_table_name}`. "
+        )
         if gcp_region_id and not skip_sql_validation:
             dq_summary_dataset = ".".join(dq_summary_table_name.split(".")[:2])
             logger.debug(f"dq_summary_dataset: {dq_summary_dataset}")
             bigquery_client.assert_dataset_is_in_region(
                 dataset=dq_summary_dataset, region=gcp_region_id
             )
-        logger.info(
-            f"Writing summary results to GCP table: `{dq_summary_table_name}`. "
-        )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
+            logger.info(
+                f"Writing summary results to target BigQuery table: `{target_bigquery_summary_table}`. "
+            )
             target_table_ref = bigquery_client.table_from_string(
                 target_bigquery_summary_table
             )
             target_dataset_id = target_table_ref.dataset_id
+            logger.debug(f"BigQuery dataset used in --target_bigquery_summary_table: {target_dataset_id}")
             if not bigquery_client.is_dataset_exists(target_dataset_id):
                 raise AssertionError(
                     "Invalid argument to --target_bigquery_summary_table: "
@@ -336,25 +334,29 @@ def main(  # noqa: C901
             bigquery_client.assert_dataset_is_in_region(
                 dataset=target_dataset_id, region=gcp_region_id
             )
+        else:
+            logger.warning("CLI --target_bigquery_summary_table is not set. This will become a required argument in v1.0.0.")
+        if summary_to_stdout and target_bigquery_summary_table:
+            logger.info("--summary_to_stdout is True. Logging summary results as json to stdout.")
+        elif summary_to_stdout and not target_bigquery_summary_table:
+            logger.warning("--summary_to_stdout is True but --target_bigquery_summary_table is not set. No summary logs will be logged to stdout.")
         # Load metadata
         metadata = json.loads(metadata)
         # Load Rule Bindings
         configs_path = Path(rule_binding_config_path)
-        logger.debug("Loading rule bindings from: {configs_path.absolute()}")
+        logger.debug(f"Loading rule bindings from: {configs_path.absolute()}")
         all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
         # Prepare list of Rule Bindings in-scope for run
         target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
         if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
             target_rule_binding_ids = list(all_rule_bindings.keys())
-        logger.debug(f"Preparing SQL for rule bindings: {target_rule_binding_ids}")
+        logger.info(f"Preparing SQL for rule bindings: {target_rule_binding_ids}")
         # Load default configs for metadata registries
         registry_defaults: MetadataRegistryDefaults = lib.load_metadata_registry_default_configs(Path(configs_path))
         default_dataplex_projects = registry_defaults.get_dataplex_registry_defaults('projects')
         default_dataplex_locations = registry_defaults.get_dataplex_registry_defaults('locations')
         default_dataplex_lakes = registry_defaults.get_dataplex_registry_defaults('lakes')
-        logger.debug(f"Using metadata_registry_defaults: {registry_defaults.default_configs}")
         dataplex_registry_defaults = registry_defaults.get_dataplex_registry_defaults()
-        logger.debug(f"Using dataplex_registry_defaults: {dataplex_registry_defaults}")
         # Prepare Dataplex Client from metadata registry defaults
         dataplex_client = CloudDqDataplexClient(
             gcp_credentials=gcp_credentials,
@@ -373,7 +375,8 @@ def main(  # noqa: C901
         configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
         configs_cache.resolve_dataplex_entity_uris(
             client=dataplex_client, 
-            default_configs=dataplex_registry_defaults)
+            default_configs=dataplex_registry_defaults,
+            target_rule_binding_ids=target_rule_binding_ids)
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
@@ -386,8 +389,7 @@ def main(  # noqa: C901
                     f"Creating sql string from configs for rule binding: "
                     f"{rule_binding_id}"
                 )
-                logger.debug("Rule binding config json:")
-                logger.debug(pformat(rule_binding_configs))
+                logger.debug(f"Rule binding config json:\n{pformat(rule_binding_configs)}")
             sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
@@ -397,8 +399,13 @@ def main(  # noqa: C901
                 metadata=metadata,
                 debug=print_sql_queries,
                 progress_watermark=progress_watermark,
+                default_configs=dataplex_registry_defaults,
             )
             if not skip_sql_validation:
+                logger.debug(
+                    f"Validating generated SQL code for rule binding "
+                    f"{rule_binding_id} using BigQuery dry-run client.",
+                )
                 bigquery_client.check_query_dry_run(query_string=sql_string)
             logger.debug(
                 f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
@@ -427,17 +434,17 @@ def main(  # noqa: C901
                     f"dbt invocation id for current execution "
                     f"is {invocation_id}"
                 )
-                json_logger.info(
-                    {
+                json_logger.info(json.dumps({
                         "invocation_id": invocation_id,
                         "target_bigquery_summary_table": target_bigquery_summary_table,
-                    }
-                )
+                        "summary_to_stdout": summary_to_stdout,
+                        "target_rule_binding_ids": target_rule_binding_ids,
+                }))
                 partition_date = date.today()
-                logger.info(
-                    f"Partition date is {partition_date} and "
-                    f"is being used for getting the dq summary "
-                    f"results from summary table"
+                logger.debug(
+                    f"Using partition date is {partition_date} "
+                    f"for getting the dq summary "
+                    f"results from intermediate dq_summary table"
                 )
                 target_table = TargetTable(invocation_id, bigquery_client)
                 target_table.write_to_target_bq_table(
@@ -463,7 +470,7 @@ def main(  # noqa: C901
     except Exception as error:
         logger.error(error)
         json_logger.error(error, exc_info=True)
-        raise SystemExit(error)
+        raise SystemExit(f"\n\n{error}")
     finally:
         if bigquery_client:
             bigquery_client.close_connection()
