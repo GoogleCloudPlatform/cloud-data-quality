@@ -22,6 +22,7 @@ import pytest
 
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.lib import prepare_configs_cache
+from clouddq import lib
 
 
 logger = logging.getLogger(__name__)
@@ -247,9 +248,19 @@ def test_dq_dataplex_client(dataplex_endpoint,
                                 gcp_project_id=gcp_project_id,
                                 gcs_bucket_name=gcs_bucket_name)
 
+
 @pytest.fixture(scope="session")
-def test_configs_cache():
+def test_all_metadata_defaults_configs():
+    """ """
+    return lib.load_metadata_registry_default_configs(configs_path=Path("tests/resources/configs"))
+
+@pytest.fixture(scope="session")
+def test_configs_cache(test_dq_dataplex_client, test_all_metadata_defaults_configs):
     configs_cache = prepare_configs_cache(configs_path=Path("tests/resources/configs"))
+    print("metadata default configs", test_all_metadata_defaults_configs)
+    default_registry_configs = test_all_metadata_defaults_configs.get_dataplex_registry_defaults()
+    configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
+                                               default_configs=default_registry_configs)
     return configs_cache
 
 def pytest_configure(config):

@@ -151,6 +151,14 @@ py_test(
 )
 
 py_test(
+    name = "test_metadata_uri_templates",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
     name = "test_dataplex_entity",
     srcs = SRCS,
     data = DATA,

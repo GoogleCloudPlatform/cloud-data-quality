@@ -350,7 +350,7 @@ class CloudDqDataplexClient:
                 f"'/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}"
                 f"/lakes/{self._client.lake_name}/zones/{zone_id}':\n {pformat(response)}"
             )
-
+        # need to improve error message
         dataplex_entities = []
         for entity in response["entities"]:
             entity_with_schema = self.get_dataplex_entity(

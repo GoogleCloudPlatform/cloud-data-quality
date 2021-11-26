@@ -214,12 +214,12 @@ class TestEntityURI:
         with pytest.raises(ValueError):
             EntityUri.from_uri(entity_uri)
 
-    # def test_entity_uri_parse_elide_project_lake_id_failure(self):
-    #     """ """
-    #     entity_uri = "dataplex://zones/zone-id/entities/entity-id"
-    #     # This is now supported
-    #     with pytest.raises(NotImplementedError):
-    #         EntityUri.from_uri(entity_uri)
+    def test_entity_uri_parse_elide_project_lake_id_failure(self):
+        """ """
+        entity_uri = "dataplex://zones/zone-id/entities/entity-id"
+        # This should be supported eventually
+        with pytest.raises(NotImplementedError):
+            EntityUri.from_uri(entity_uri)
 
     def test_entity_uri_parse_glob_failure(self):
         """ """
