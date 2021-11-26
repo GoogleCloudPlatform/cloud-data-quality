@@ -179,9 +179,12 @@ def dataplex_task_service_account_name():
     return dataplex_task_service_account_name
 
 @pytest.fixture(scope="session")
-def temp_configs_dir(gcp_project_id, gcp_bq_dataset):
+def source_configs_path():
+    return Path("tests").joinpath("resources", "configs")
+
+@pytest.fixture(scope="session")
+def temp_configs_dir(gcp_project_id, gcp_bq_dataset, source_configs_path):
     # Create temp directory
-    source_configs_path = Path("tests").joinpath("resources", "configs")
     temp_clouddq_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_artifacts")
     # Clean directory if exists
     if os.path.exists(temp_clouddq_dir):
@@ -250,26 +253,29 @@ def test_dq_dataplex_client(dataplex_endpoint,
 
 
 @pytest.fixture(scope="session")
-def test_all_metadata_defaults_configs():
-    """ """
-    return lib.load_metadata_registry_default_configs(configs_path=Path("tests/resources/configs"))
-
-@pytest.fixture(scope="session")
-def test_configs_cache(
-        test_dq_dataplex_client, 
+def test_dataplex_metadata_defaults_configs(
         gcp_dataplex_lake_name,
         gcp_dataplex_region,
         gcp_project_id,
         gcp_dataplex_zone_id,):
-    configs_cache = prepare_configs_cache(configs_path=Path("tests/resources/configs"))
-    default_registry_configs = {
+    """ """
+    dataplex_metadata_defaults = {
         "projects": gcp_project_id,
         "locations": gcp_dataplex_region,
         "lakes": gcp_dataplex_lake_name,
         "zones": gcp_dataplex_zone_id,
     }
+    return dataplex_metadata_defaults
+
+
+@pytest.fixture(scope="session")
+def test_configs_cache(
+        test_dq_dataplex_client, 
+        source_configs_path,
+        test_dataplex_metadata_defaults_configs):
+    configs_cache = prepare_configs_cache(configs_path=source_configs_path)
     configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
-                                               default_configs=default_registry_configs)
+                                               default_configs=test_dataplex_metadata_defaults_configs)
     return configs_cache
 
 def pytest_configure(config):

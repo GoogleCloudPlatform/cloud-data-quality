@@ -42,7 +42,7 @@ class MetadataRegistryDefaults:
     @classmethod
     def from_dict(cls: MetadataRegistryDefaults, kwargs: dict) -> MetadataRegistryDefaults:
         default_configs = {}
-        logger.debug(f"Loaded 'metadata_registry_defaults':\n {pformat(kwargs)}")
+        logger.debug(f"Parsing input 'metadata_registry_defaults':\n {pformat(kwargs)}")
         for registry_scheme, registry_defaults in kwargs.items():
             scheme = EntityUriScheme.from_scheme(registry_scheme)
             default_configs[scheme.value] = {}

@@ -34,6 +34,22 @@ class DqConfigType(str, Enum):
     ENTITIES = "entities"
     METADATA_REGISTRY_DEFAULTS = "metadata_registry_defaults"
 
+    def is_required(
+        self: DqConfigType,
+    ) -> bool:
+        if self == DqConfigType.RULES:
+            return True
+        elif self == DqConfigType.RULE_BINDINGS:
+            return True
+        elif self == DqConfigType.ROW_FILTERS:
+            return True
+        elif self == DqConfigType.ENTITIES:
+            return False
+        elif self == DqConfigType.METADATA_REGISTRY_DEFAULTS:
+            return False
+        else:
+            raise NotImplementedError(f"DQ Config Type: {self} not implemented.")
+
     def to_class(
         self: DqConfigType,
     ) -> type[DqRule] | type[DqRuleBinding] | type[DqRowFilter] | type[DqEntity] | type[MetadataRegistryDefaults]:

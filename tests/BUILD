@@ -181,3 +181,11 @@ py_test(
     legacy_create_init = 0,
     deps = DEPS,
 )
+
+py_test(
+    name = "test_metadata_registry_defaults",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)

@@ -67,10 +67,12 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
 
         all_configs.update(config)
 
-    assert_not_none_or_empty(
-        all_configs,
-        f"Failed to load {configs_type.value} from file path: {configs_path}",
-    )
+    if configs_type.is_required():
+        assert_not_none_or_empty(
+            all_configs,
+            f"Failed to load {configs_type.value} from file path: {configs_path}",
+        )
+
     return all_configs
 
 
@@ -91,12 +93,12 @@ def load_row_filters_config(configs_path: Path) -> typing.Dict:
 
 
 def load_metadata_registry_default_configs(configs_path: Path) -> MetadataRegistryDefaults:
+    configs = load_configs(configs_path, DqConfigType.METADATA_REGISTRY_DEFAULTS)
     try:
-        configs = load_configs(configs_path, DqConfigType.METADATA_REGISTRY_DEFAULTS)
         return MetadataRegistryDefaults.from_dict(configs)
     except ValueError as e:
         logger.warning(e)
-    return MetadataRegistryDefaults.from_dict({})
+        return MetadataRegistryDefaults.from_dict({})
 
 
 def create_rule_binding_view_model(
