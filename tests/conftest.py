@@ -255,10 +255,19 @@ def test_all_metadata_defaults_configs():
     return lib.load_metadata_registry_default_configs(configs_path=Path("tests/resources/configs"))
 
 @pytest.fixture(scope="session")
-def test_configs_cache(test_dq_dataplex_client, test_all_metadata_defaults_configs):
+def test_configs_cache(
+        test_dq_dataplex_client, 
+        gcp_dataplex_lake_name,
+        gcp_dataplex_region,
+        gcp_project_id,
+        gcp_dataplex_zone_id,):
     configs_cache = prepare_configs_cache(configs_path=Path("tests/resources/configs"))
-    print("metadata default configs", test_all_metadata_defaults_configs)
-    default_registry_configs = test_all_metadata_defaults_configs.get_dataplex_registry_defaults()
+    default_registry_configs = {
+        "projects": gcp_project_id,
+        "locations": gcp_dataplex_region,
+        "lakes": gcp_dataplex_lake_name,
+        "zones": gcp_dataplex_zone_id,
+    }
     configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
                                                default_configs=default_registry_configs)
     return configs_cache
