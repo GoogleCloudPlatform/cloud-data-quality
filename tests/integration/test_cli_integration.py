@@ -40,7 +40,6 @@ class TestCliIntegration:
         self,
         runner,
         temp_configs_dir,
-        test_profiles_dir,
         gcp_application_credentials,
         gcp_project_id,
         gcp_bq_dataset,
@@ -51,7 +50,6 @@ class TestCliIntegration:
         args = [
             "ALL",
             f"{temp_configs_dir}",
-            f"--dbt_profiles_dir={test_profiles_dir}",
             f"--gcp_project_id={gcp_project_id}",
             f"--gcp_bq_dataset_id={gcp_bq_dataset}",
             f"--gcp_region_id={gcp_bq_region}",
