@@ -31,6 +31,7 @@
         progress_watermark,
         rows_validated,
         complex_rule_validation_errors_count,
+        last_modified,
         CASE WHEN complex_rule_validation_errors_count IS NOT NULL
           THEN rows_validated - complex_rule_validation_errors_count
           ELSE COUNTIF(simple_rule_row_is_valid IS TRUE)
@@ -52,11 +53,11 @@
         END
         AS failed_percentage,
         COUNTIF(column_value IS NULL) AS null_count,
-        COUNTIF(column_value IS NULL) / rows_validated AS null_percentage,
+        COUNTIF(column_value IS NULL) / rows_validated AS null_percentage
     FROM
         {{ ref(rule_binding_id) }}
     GROUP BY
-        1,2,3,4,5,6,7,8,9,10,11,12
+        1,2,3,4,5,6,7,8,9,10,11,12,13
     {% if loop.nextitem is defined %}
     UNION ALL
     {% endif %}
@@ -73,6 +74,8 @@
         NULL AS dq_run_id,
         NULL AS progress_watermark,
         NULL AS rows_validated,
+        NULL AS complex_rule_validation_errors_count,
+        NULL AS last_modified,
         NULL AS success_count,
         NULL AS success_percentage,
         NULL AS failed_count,

@@ -209,14 +209,12 @@ class DbtRunner:
         assert self.dbt_path.is_dir()
         dbt_main_path = self.dbt_path / "models" / "data_quality_engine"
         dbt_main_path.mkdir(parents=True, exist_ok=True)
-        if not dbt_main_path.joinpath("main.sql").is_file():
-            write_templated_file_to_path(
-                dbt_main_path.joinpath("main.sql"), DBT_TEMPLATED_FILE_LOCATIONS
-            )
-        if not dbt_main_path.joinpath("dq_summary.sql").is_file():
-            write_templated_file_to_path(
-                dbt_main_path.joinpath("dq_summary.sql"), DBT_TEMPLATED_FILE_LOCATIONS
-            )
+        write_templated_file_to_path(
+            dbt_main_path.joinpath("main.sql"), DBT_TEMPLATED_FILE_LOCATIONS
+        )
+        write_templated_file_to_path(
+            dbt_main_path.joinpath("dq_summary.sql"), DBT_TEMPLATED_FILE_LOCATIONS
+        )
 
     def _prepare_rule_binding_view_path(self, write_log: bool = False) -> None:
         assert self.dbt_path.is_dir()

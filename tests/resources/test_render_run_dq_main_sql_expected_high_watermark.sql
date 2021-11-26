@@ -36,6 +36,12 @@ data AS (
     AND
       True
 ),
+last_mod AS (
+    SELECT
+        project_id || '.' || dataset_id || '.' || table_id AS table_id,
+        TIMESTAMP_MILLIS(last_modified_time) AS last_modified
+    FROM <your_bigquery_dataset_id>.__TABLES__
+),
 validation_results AS (
 
 SELECT
@@ -68,12 +74,14 @@ all_validation_results AS (
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.column_value AS column_value,
     r.num_rows_validated AS rows_validated,
+    last_mod.last_modified,
     '{}' AS metadata_json_string,
     '' AS configs_hashsum,
     CONCAT(r.rule_binding_id, '_', r.rule_id, '_', TIMESTAMP_TRUNC(r.execution_ts, HOUR), '_', True) AS dq_run_id,
     TRUE AS progress_watermark,
   FROM
     validation_results r
+  JOIN last_mod USING(table_id)
 )
 SELECT
   *

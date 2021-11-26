@@ -14,7 +14,6 @@
 
 """Data Quality Engine for BigQuery."""
 from datetime import date
-from datetime import datetime
 from pathlib import Path
 from pprint import pformat
 from typing import Optional
@@ -22,8 +21,6 @@ from typing import Optional
 import json
 import logging
 import logging.config
-import sys
-import traceback
 
 import click
 import coloredlogs
@@ -34,86 +31,12 @@ from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
+from clouddq.log import get_json_logger
+from clouddq.log import get_logger
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
-
-
-APP_VERSION = "0.4.0-rc1"
-APP_NAME = "clouddq"
-LOG_LEVEL = logging._nameToLevel["DEBUG"]
-
-
-class JsonEncoderStrFallback(json.JSONEncoder):
-    def default(self, obj):
-        try:
-            return super().default(obj)
-        except TypeError as exc:
-            if "not JSON serializable" in str(exc):
-                return str(obj)
-            raise
-
-
-class JsonEncoderDatetime(JsonEncoderStrFallback):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        else:
-            return super().default(obj)
-
-
-class JSONFormatter(logging.Formatter):
-    def __init__(self):
-        super().__init__()
-
-    def format(self, record):
-        record.msg = json.dumps(
-            {
-                "severity": record.levelname,
-                "time": datetime.utcfromtimestamp(record.created)
-                .astimezone()
-                .isoformat()
-                .replace("+00:00", "Z"),
-                "logging.googleapis.com/sourceLocation": {
-                    "file": record.pathname or record.filename,
-                    "function": record.funcName,
-                    "line": record.lineno,
-                },
-                "exception": record.exc_info,
-                "traceback": traceback.format_exception(*record.exc_info)
-                if record.exc_info
-                else None,
-                "message": record.getMessage(),
-                "logging.googleapis.com/labels": {
-                    "name": APP_NAME,
-                    "releaseId": APP_VERSION,
-                },
-            },
-            cls=JsonEncoderDatetime,
-        )
-        return super().format(record)
-
-
-def get_json_logger():
-    json_logger = logging.getLogger("clouddq-json-logger")
-    json_logger.setLevel(LOG_LEVEL)
-    logging_stream_handler = logging.StreamHandler(sys.stderr)
-    logging_stream_handler.setFormatter(JSONFormatter())
-    json_logger.addHandler(logging_stream_handler)
-    return json_logger
-
-
-def get_logger():
-    logger = logging.getLogger("clouddq")
-    logger.setLevel(LOG_LEVEL)
-    logging_stream_handler = logging.StreamHandler(sys.stderr)
-    stream_formatter = logging.Formatter(
-        "{asctime} {name} {levelname:8s} {message}", style="{"
-    )
-    logging_stream_handler.setFormatter(stream_formatter)
-    logger.addHandler(logging_stream_handler)
-    return logger
 
 
 json_logger = get_json_logger()
@@ -260,6 +183,13 @@ coloredlogs.install(logger=logger)
     type=bool,
     default=True,
 )
+@click.option(
+    "--summary_to_stdout",
+    help="If True, the summary of the validation results will be logged to stdout. "
+    "This flag only takes effect if target_bigquery_summary_table is specified as well.",
+    is_flag=True,
+    default=False,
+)
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
@@ -278,6 +208,7 @@ def main(  # noqa: C901
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
+    summary_to_stdout: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -344,6 +275,11 @@ def main(  # noqa: C901
             "CLI input must define either all of "
             "(--gcp_project_id, --gcp_bq_dataset_id, --gcp_region_id) or --dbt_profiles_dir."
         )
+    if summary_to_stdout:
+        logger.debug("Logging summary to stdout")
+    else:
+        logger.debug("NOT logging summary to stdout")
+
     bigquery_client = None
     dataplex_client = None
     try:
@@ -488,7 +424,8 @@ def main(  # noqa: C901
             if target_bigquery_summary_table:
                 invocation_id = get_dbt_invocation_id(dbt_path)
                 logger.info(
-                    f"dbt invocation id for current execution " f"is {invocation_id}"
+                    f"dbt invocation id for current execution "
+                    f"is {invocation_id}"
                 )
                 json_logger.info(
                     {
@@ -507,6 +444,7 @@ def main(  # noqa: C901
                     partition_date,
                     target_bigquery_summary_table,
                     dq_summary_table_name,
+                    summary_to_stdout,
                 )
                 logger.info("Job completed successfully.")
             else:
@@ -516,6 +454,12 @@ def main(  # noqa: C901
                     "provided target bigquery table. This will become a "
                     "required argument in v1.0.0"
                 )
+                if summary_to_stdout:
+                        logger.warning(
+                            "'--summary_to_stdout' was set but does"
+                            " not take effect unless "
+                            "'--target_bigquery_summary_table' is provided"
+                        )
     except Exception as error:
         logger.error(error)
         json_logger.error(error, exc_info=True)
