@@ -39,37 +39,65 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
         yaml_files = itertools.chain(
             configs_path.glob("**/*.yaml"), configs_path.glob("**/*.yml")
         )
-    all_configs = {}
+
+    config_class = None
+    all_configs = None
+    
     for file in yaml_files:
         config = load_yaml(file, configs_type.value)
-        if not config:
-            continue
 
-        intersection = config.keys() & all_configs.keys()
+        if config:
+            if config_class and not config_class == type(config):
+                raise ValueError(f"Previously loaded {config_class} for "
+                "{configs_type.value} but now got {type(config)} from file "
+                "{file}")
+            else:
+                config_class = type(config)
 
-        # The new config defines keys that we have already loaded
-        if intersection:
-            # Verify that objects pointed to by duplicate keys are identical
-            config_i = {}
-            all_configs_i = {}
-            for k in intersection:
-                config_i[k] = config[k]
-                all_configs_i[k] = all_configs[k]
+            if not all_configs:
+                all_configs = config_class() # create empty of the right type
 
-            # == on dicts performs deep compare:
-            if not config_i == all_configs_i:
-                raise ValueError(
-                    f"Detected Duplicated Config ID(s): {intersection} "
-                    f"If a config ID is repeated, it must be for an identical "
-                    f"configuration."
-                )
+        if config and type(config) == dict:
+            # rules, entities, rule_bindings
 
-        all_configs.update(config)
+            intersection = config.keys() & all_configs.keys()
 
-    assert_not_none_or_empty(
-        all_configs,
-        f"Failed to load {configs_type.value} from file path: {configs_path}",
-    )
+            # The new config defines keys that we have already loaded
+            if intersection:
+                # Verify that objects pointed to by duplicate keys are identical
+                config_i = {}
+                all_configs_i = {}
+                for k in intersection:
+                    config_i[k] = config[k]
+                    all_configs_i[k] = all_configs[k]
+
+                # == on dicts performs deep compare:
+                if not config_i == all_configs_i:
+                    raise ValueError(
+                        f"Detected Duplicated Config ID(s): {intersection} "
+                        f"If a config ID is repeated, it must be for an identical "
+                        f"configuration."
+                    )
+
+            all_configs.update(config)
+        elif config and type(config) == list:
+            # rule_dimensions
+            # Each time we load a list, it has to be identical (except for sort order)
+            config = sorted(config)
+            if all_configs and not all_configs == config:
+                raise ValueError("Previously loaded {config_class} for "
+                "{configs_type.value} but now got different list from file "
+                "{file}")
+            else:
+                all_configs = config
+
+    if not configs_type is DqConfigType.RULE_DIMENSIONS:
+        # rule dimensions are optional
+        assert_not_none_or_empty(
+            all_configs,
+            f"Failed to load {configs_type.value} from file path: {configs_path}",
+        )
+    
     return all_configs
 
 
@@ -87,6 +115,10 @@ def load_rules_config(configs_path: Path) -> typing.Dict:
 
 def load_row_filters_config(configs_path: Path) -> typing.Dict:
     return load_configs(configs_path, DqConfigType.ROW_FILTERS)
+
+
+def load_rule_dimensions_config(configs_path: Path) -> list:
+    return load_configs(configs_path, DqConfigType.RULE_DIMENSIONS)
 
 
 def create_rule_binding_view_model(
@@ -140,6 +172,7 @@ def prepare_configs_from_rule_binding_id(
     entities_collection: typing.Optional[typing.Dict] = None,
     row_filters_collection: typing.Optional[typing.Dict] = None,
     rules_collection: typing.Optional[typing.Dict] = None,
+    rule_dimensions: list = None,
     metadata: typing.Optional[typing.Dict] = None,
     progress_watermark: bool = True,
 ) -> typing.Dict:
@@ -147,6 +180,7 @@ def prepare_configs_from_rule_binding_id(
         entities_collection,
         row_filters_collection,
         rules_collection,
+        rule_dimensions,
     ) = load_configs_if_not_defined(
         configs_path=configs_path,
         entities_collection=entities_collection,
@@ -180,11 +214,14 @@ def load_configs_if_not_defined(
     entities_collection: typing.Dict = None,
     row_filters_collection: typing.Dict = None,
     rules_collection: typing.Dict = None,
-) -> typing.Tuple[typing.Dict, typing.Dict, typing.Dict]:
+    rule_dimensions: list = None,
+) -> typing.Tuple[typing.Dict, typing.Dict, typing.Dict, list]:
     if not entities_collection:
         entities_collection = load_entities_config(configs_path)
     if not row_filters_collection:
         row_filters_collection = load_row_filters_config(configs_path)
     if not rules_collection:
         rules_collection = load_rules_config(configs_path)
-    return entities_collection, row_filters_collection, rules_collection
+    if not rule_dimensions:
+        rule_dimensions = load_rule_dimensions_config(configs_path)
+    return entities_collection, row_filters_collection, rules_collection, rule_dimensions

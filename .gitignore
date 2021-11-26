@@ -23,7 +23,6 @@ set_environment_variables.sh
 *.zip
 *.zip.hashsum
 *.zip.sha256sum
-configs/
 setenvs.sh
 tmp
 cloudbuild-workspace/

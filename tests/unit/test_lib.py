@@ -85,6 +85,49 @@ class TestLib:
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_load_configs_dimensions(self, temp_configs_dir):
+        try:
+            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_load_configs_dims")
+            config_path = Path(temp_configs_dir)
+
+            temp_dir.mkdir(parents=True)
+
+            rule_original = config_path / 'rules' / 'base-rules.yml'
+
+            assert os.path.isfile(rule_original)
+            shutil.copy(rule_original, temp_dir / 'rule.yml')
+
+            # check that it loads ok
+            rules = lib.load_configs(temp_dir, DqConfigType.RULES)
+            dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
+
+            assert len(rules) == 4
+            assert dims is None
+            shutil.rm(temp_dir / 'rule.yml')
+
+            # add rule_dimensions to the file and load again
+            with open(rule_original) as f:
+                testconfig = yaml.safe_load(f)
+
+            dims_ref = ['completeness', 'accuracy', 'conformity'
+            testconfig[DqConfigType.RULE_DIMENSIONS.value] = dims_ref
+            
+            with open(temp_dir / 'rule.yml') as f:
+                yaml.safe_dump(testconfig, f)
+            
+            rules = lib.load_configs(temp_dir, DqConfigType.RULES)
+            dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
+
+            assert len(rules) == 4
+            assert sorted(dims) == sorted(dims_ref)
+            shutil.rm(temp_dir / 'rule.yml')
+
+
+
+
+        finally:
+            shutil.rmtree(temp_dir)
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP']))

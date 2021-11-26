@@ -334,6 +334,7 @@ def main(  # noqa: C901
             entities_collection,
             row_filters_collection,
             rules_collection,
+            rules_dimensions,
         ) = lib.load_configs_if_not_defined(
             configs_path=configs_path,
         )

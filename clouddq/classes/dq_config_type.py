@@ -32,6 +32,7 @@ class DqConfigType(str, Enum):
     RULE_BINDINGS = "rule_bindings"
     ROW_FILTERS = "row_filters"
     ENTITIES = "entities"
+    RULE_DIMENSIONS = "rule_dimensions"
 
     def to_class(
         self: DqConfigType,
