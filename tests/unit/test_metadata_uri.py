@@ -45,7 +45,7 @@ class TestEntityURI:
             ),
             pytest.param(
                 "dataplex:bigquery://",
-                ValueError,
+                NotImplementedError,
                 id="invalid_scheme"
             ),
             pytest.param(
@@ -104,13 +104,12 @@ class TestEntityURI:
                 "entities": "entity-id",
             }
         }
-        assert parsed_uri.scheme == "dataplex"
+        assert parsed_uri.scheme == expected_entity_dict["scheme"]
         assert parsed_uri.uri_configs_string == "projects/project-id/locations/us-central1/lakes" \
                                  "/lake-id/zones/zone-id/entities/entity-id"
         assert parsed_uri.default_configs == None
-        assert parsed_uri.complete_uri_string == "dataplex://projects/project-id/locations/us-central1/lakes" \
-                   "/lake-id/zones/zone-id/entities/entity-id"
-        assert parsed_uri.get_entity_id() == "entity-id"
+        assert parsed_uri.complete_uri_string == expected_entity_dict["uri"]
+        assert parsed_uri.get_entity_id() == expected_entity_dict["entity_id"]
         assert parsed_uri.configs_dict == expected_entity_dict["configs"]
         assert parsed_uri.get_db_primary_key() == expected_entity_dict["db_primary_key"]
         assert parsed_uri.to_dict() == expected_entity_dict
@@ -230,6 +229,30 @@ class TestEntityURI:
         with pytest.raises(NotImplementedError):
             EntityUri.from_uri(entity_uri)
 
+    def test_entity_uri_parse_bigquery_uri_without_default_configs(self):
+        """ """
+        bigquery_uri = "bigquery://projects/project-id/datasets/dataset-id/tables/table-id"
+        parsed_uri = EntityUri.from_uri(bigquery_uri)
+        print(parsed_uri)
+        expected_entity_dict = {
+            "uri": "bigquery://projects/project-id/datasets/dataset-id/tables/table-id",
+            "scheme": "bigquery",
+            "entity_id": "projects/project-id/datasets/dataset-id/tables/table-id",
+            "db_primary_key": "projects/project-id/datasets/dataset-id/tables/table-id",
+            "configs": {
+                "projects": "project-id",
+                "datasets": "dataset-id",
+                "tables": "table-id",
+            }
+        }
+        assert parsed_uri.scheme == expected_entity_dict["scheme"]
+        assert parsed_uri.uri_configs_string == "projects/project-id/datasets/dataset-id/tables/table-id"
+        assert parsed_uri.default_configs == None
+        assert parsed_uri.complete_uri_string == expected_entity_dict["uri"]
+        assert parsed_uri.get_entity_id() == expected_entity_dict["entity_id"]
+        assert parsed_uri.get_db_primary_key() == expected_entity_dict["db_primary_key"]
+        assert parsed_uri.configs_dict == expected_entity_dict["configs"]
+        assert parsed_uri.to_dict() == expected_entity_dict
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 2']))
