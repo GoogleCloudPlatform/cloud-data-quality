@@ -171,18 +171,22 @@ class DqConfigsCache:
                     ).to_dict()
                     resolved_entity = unnest_object_to_list(clouddq_entity)
                 elif entity_uri.scheme == 'bigquery':
-                    zone_id=entity_uri.get_configs('zones')
-                    if not zone_id:
-                        raise RuntimeError(
-                            "Failed to retrieve default Dataplex 'zones' for "
-                            f"entity_uri: {entity_uri.complete_uri_string}. \n"
-                            f"Ensure the BigQuery dataset containing this table "
-                            f"is registered as an asset in Dataplex.\n"
-                            f"You can then specify the default Dataplex configs for "
-                            f"projects/locations/lakes/zones as part of a YAML "
-                            f"metadata_default_registries config, e.g.\n"
-                            f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
-                            )
+                    required_arguments = ["projects", "lakes", "locations", "zones"]
+                    for argument in required_arguments:
+                        uri_argument=entity_uri.get_configs(argument)
+                        if not uri_argument:
+                            raise RuntimeError(
+                                f"Failed to retrieve default Dataplex '{argument}' for "
+                                f"entity_uri: {entity_uri.complete_uri_string}. \n"
+                                f"'{argument}' is a required argument to look-up metadata for the entity_uri "
+                                f"using Dataplex Metadata API.\n"
+                                f"Ensure the BigQuery dataset containing this table "
+                                f"is registered as an asset in Dataplex.\n"
+                                f"You can then specify the default Dataplex configs for "
+                                f"projects/locations/lakes/zones as part of a YAML "
+                                f"metadata_default_registries config, e.g.\n"
+                                f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
+                                )
                     dataplex_entities_match = client.list_dataplex_entities(
                         gcp_project_id=entity_uri.get_configs('projects'),
                         location_id=entity_uri.get_configs('locations'),
