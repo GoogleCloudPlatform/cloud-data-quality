@@ -26,6 +26,9 @@ PyYAML = "^5.3.1"
 dbt-bigquery = "^0.20.2"
 sqlite-utils = "^3.18"
 requests-oauth2 = "^0.3.0"
+sqlite-utils = "^3.18"
+google-api-python-client = "^2.27.0"
+google-cloud-storage = "^1.42.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
