@@ -19,13 +19,13 @@ from dataclasses import dataclass
 
 import logging
 import re
-
 import typing
 
-from clouddq.classes.metadata_registry_defaults import DATAPLEX_URI_FIELDS
-from clouddq.classes.metadata_registry_defaults import BIGQUERY_URI_FIELDS
-from clouddq.classes.metadata_registry_defaults import SAMPLE_DEFAULT_REGISTRIES_YAML
 from clouddq.classes.entity_uri_schemes import EntityUriScheme
+from clouddq.classes.metadata_registry_defaults import BIGQUERY_URI_FIELDS
+from clouddq.classes.metadata_registry_defaults import DATAPLEX_URI_FIELDS
+from clouddq.classes.metadata_registry_defaults import SAMPLE_DEFAULT_REGISTRIES_YAML
+
 
 UNSUPPORTED_URI_CONFIGS = re.compile("[@#?:]")
 
@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EntityUri:
     """ """
+
     scheme: EntityUriScheme
     uri_configs_string: str
     default_configs: dict
@@ -58,15 +59,19 @@ class EntityUri:
         return configs_dict.get(configs_key)
 
     @classmethod
-    def from_uri(cls: EntityUri, uri_string: str, default_configs: dict | None = None) -> EntityUri:
+    def from_uri(
+        cls: EntityUri, uri_string: str, default_configs: dict | None = None
+    ) -> EntityUri:
         uri_scheme, uri_configs_string = uri_string.split("://")
         scheme = EntityUriScheme.from_scheme(uri_scheme)
         default_scheme_configs = None
         if default_configs:
             default_scheme_configs = default_configs
-        entity_uri = EntityUri(scheme=scheme,
+        entity_uri = EntityUri(
+            scheme=scheme,
             uri_configs_string=uri_configs_string,
-            default_configs=default_scheme_configs)
+            default_configs=default_scheme_configs,
+        )
         entity_uri.validate()
         return entity_uri
 
@@ -85,32 +90,33 @@ class EntityUri:
             raise NotImplementedError(
                 f"EntityUri: '{self.complete_uri_string}' "
                 f"does not yet support wildcard character: '*'."
-                )
+            )
         unsupported_configs = UNSUPPORTED_URI_CONFIGS.search(self.uri_configs_string)
         if unsupported_configs:
             raise ValueError(
                 f"EntityUri: '{self.complete_uri_string}' "
                 f"contains unsupported entity_uri character: '{unsupported_configs.group(0)}'."
-                )
+            )
         if self.scheme == EntityUriScheme.DATAPLEX:
             self._validate_dataplex_uri_fields(
-                config_id=self.complete_uri_string, 
-                configs=configs)
+                config_id=self.complete_uri_string, configs=configs
+            )
         elif self.scheme == EntityUriScheme.BIGQUERY:
             self._validate_bigquery_uri_fields(
-                config_id=self.complete_uri_string, 
-                configs=configs)
+                config_id=self.complete_uri_string, configs=configs
+            )
         else:
             raise NotImplementedError(
                 f"EntityUri scheme '{self.scheme}' in entity_uri: "
                 f"'{self.complete_uri_string}'"
-                " is not yet supported.")
+                " is not yet supported."
+            )
         assert "None" not in self.get_db_primary_key()
         assert "None" not in self.get_entity_id()
 
     def get_entity_id(self: EntityUri) -> str:
         if self.scheme == EntityUriScheme.DATAPLEX:
-            return self.get_configs('entities')
+            return self.get_configs("entities")
         elif self.scheme == EntityUriScheme.BIGQUERY:
             return self.get_db_primary_key()
         else:
@@ -146,12 +152,12 @@ class EntityUri:
             value = configs.get(field, None)
             if not value:
                 raise ValueError(
-                f"Required argument '{field}' not found in  entity_uri: {config_id}.\n"
-                f"Either add '{field}' to the URI or specify default Dataplex configs for "
-                f"projects/locations/lakes/zones as part of a YAML "
-                f"'metadata_default_registries' config, e.g.\n"
-                f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
-            )
+                    f"Required argument '{field}' not found in  entity_uri: {config_id}.\n"
+                    f"Either add '{field}' to the URI or specify default Dataplex configs for "
+                    f"projects/locations/lakes/zones as part of a YAML "
+                    f"'metadata_default_registries' config, e.g.\n"
+                    f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
+                )
 
     def _validate_bigquery_uri_fields(self, config_id: str, configs: dict) -> None:
         expected_fields = BIGQUERY_URI_FIELDS
@@ -159,10 +165,10 @@ class EntityUri:
             value = configs.get(field, None)
             if not value:
                 raise ValueError(
-                value,
-                f"Required argument '{field}' not found in entity_uri: {config_id}.\n"
-                f"Either add '{field}' to the URI or specify default Dataplex "
-                f"projects/locations/lakes/zones configs as part of the YAML "
-                f"input config under headings 'metadata_default_registries', e.g.\n"
-                f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
-            )
+                    value,
+                    f"Required argument '{field}' not found in entity_uri: {config_id}.\n"
+                    f"Either add '{field}' to the URI or specify default Dataplex "
+                    f"projects/locations/lakes/zones configs as part of the YAML "
+                    f"input config under headings 'metadata_default_registries', e.g.\n"
+                    f"{SAMPLE_DEFAULT_REGISTRIES_YAML}",
+                )

@@ -16,13 +16,11 @@ from pathlib import Path
 import logging
 import os
 import shutil
-import tempfile
 
 import pytest
 
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.lib import prepare_configs_cache
-from clouddq import lib
 from clouddq.utils import working_directory
 
 
@@ -257,7 +255,7 @@ def test_profiles_dir():
 @pytest.fixture(scope="function")
 def test_configs_cache(
         source_configs_path,
-        # test_dq_dataplex_client, 
+        # test_dq_dataplex_client,
         # test_dataplex_metadata_defaults_configs,
         tmp_path):
     temp_path = Path(tmp_path).joinpath("clouddq_test_configs_cache")
@@ -277,12 +275,12 @@ def test_configs_cache(
 
 @pytest.fixture(scope="function")
 def temp_configs_dir(
-        gcp_project_id, 
-        gcp_bq_dataset, 
+        gcp_project_id,
+        gcp_bq_dataset,
         gcp_dataplex_region,
         gcp_dataplex_lake_name,
         gcp_dataplex_zone_id,
-        source_configs_path, 
+        source_configs_path,
         tmp_path):
     # Create temp directory
     temp_clouddq_dir = Path(tmp_path).joinpath("clouddq_test_artifacts")

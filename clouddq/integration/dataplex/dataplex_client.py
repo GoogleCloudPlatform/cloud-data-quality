@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from pprint import pformat
 
 import json
 import logging
@@ -23,7 +24,6 @@ from google.auth.credentials import Credentials
 from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
-from pprint import pformat
 
 import google.auth
 import google.auth.transport.requests
@@ -345,7 +345,7 @@ class DataplexClient:
                 f"{gcp_project_id=}\n"
                 f"{location_id=}\n"
                 f"{lake_name=}\n"
-                f"{zone_id=}\n" 
+                f"{zone_id=}\n"
                 f"{params=}\n\n"
                 f"API response:\n"
                 f"Response status code: {pformat(response.status_code)}\n"

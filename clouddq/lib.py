@@ -21,10 +21,10 @@ import json
 import logging
 import typing
 
-from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_rule_binding import DqRuleBinding
+from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import load_jinja_template
 from clouddq.utils import load_yaml
@@ -92,7 +92,9 @@ def load_row_filters_config(configs_path: Path) -> typing.Dict:
     return load_configs(configs_path, DqConfigType.ROW_FILTERS)
 
 
-def load_metadata_registry_default_configs(configs_path: Path) -> MetadataRegistryDefaults:
+def load_metadata_registry_default_configs(
+    configs_path: Path,
+) -> MetadataRegistryDefaults:
     configs = load_configs(configs_path, DqConfigType.METADATA_REGISTRY_DEFAULTS)
     try:
         return MetadataRegistryDefaults.from_dict(configs)
@@ -150,9 +152,8 @@ def prepare_configs_from_rule_binding_id(
     default_configs: typing.Optional[typing.Dict] = None,
 ) -> typing.Dict:
     rule_binding = DqRuleBinding.from_dict(
-        rule_binding_id, 
-        rule_binding_configs, 
-        default_configs)
+        rule_binding_id, rule_binding_configs, default_configs
+    )
     resolved_rule_binding_configs = rule_binding.resolve_all_configs_to_dict(
         configs_cache=configs_cache,
     )

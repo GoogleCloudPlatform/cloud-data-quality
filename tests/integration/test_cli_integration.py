@@ -15,11 +15,11 @@
 from pathlib import Path
 
 import logging
+import shutil
+import tempfile
 
 import click.testing
 import pytest
-import tempfile
-import shutil
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.main import main
@@ -67,7 +67,6 @@ class TestCliIntegration:
                 assert result.exit_code == 0
         finally:
             shutil.rmtree(temp_dir)
-
 
     def test_cli_dry_run_dbt_path(
         self,
@@ -163,7 +162,8 @@ class TestCliIntegration:
                         SELECT count(*) as errors
                         FROM {gcp_project_id}.{gcp_bq_dataset}.dq_summary
                         JOIN last_mod ON last_mod.full_table_id = dq_summary.table_id
-                        WHERE dq_summary.last_modified IS NOT NULL AND NOT dq_summary.last_modified = last_mod.last_modified
+                        WHERE dq_summary.last_modified IS NOT NULL
+                            AND NOT dq_summary.last_modified = last_mod.last_modified
                     """
                     query_job = client.execute_query(sql)
                     results = query_job.result()
@@ -179,7 +179,6 @@ class TestCliIntegration:
                     client.close_connection()
         finally:
             shutil.rmtree(temp_dir)
-
 
     @pytest.mark.xfail
     def test_cli_dry_run_sa_key_configs(

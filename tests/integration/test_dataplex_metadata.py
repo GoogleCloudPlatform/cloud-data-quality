@@ -17,12 +17,11 @@ import logging
 import pytest
 
 from clouddq.classes.dataplex_entity import DataplexEntity
-from clouddq.classes.dq_entity_uri import EntityUri
 
 
 logger = logging.getLogger(__name__)
 
-
+@pytest.mark.dataplex
 class TestMetadataIntegration:
 
     @pytest.mark.parametrize(
@@ -140,6 +139,7 @@ class TestMetadataIntegration:
         else:
             print(f"Entities with '{data_path}' datapath are not present in the dataplex lake.")
         assert len(dataplex_entities_list) > 0
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

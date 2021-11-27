@@ -242,11 +242,13 @@ class DqEntity:
             "instance_name": self.instance_name,
             "columns": columns,
         }
-        if self.source_database == 'BIGQUERY':
-            output.update({
-                "dataset_name": self.database_name,
-                "project_name": self.instance_name,
-            })
+        if self.source_database == "BIGQUERY":
+            output.update(
+                {
+                    "dataset_name": self.database_name,
+                    "project_name": self.instance_name,
+                }
+            )
         if self.environment_override:
             output["environment_override"] = self.environment_override
         if self.dataplex_name:

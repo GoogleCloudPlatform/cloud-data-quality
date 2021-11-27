@@ -15,15 +15,16 @@
 
 from pathlib import Path
 
-import pytest
 import logging
 import os
 import shutil
 import tempfile
+
+import pytest
 import yaml
 
-from clouddq.lib import load_metadata_registry_default_configs
 from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
+from clouddq.lib import load_metadata_registry_default_configs
 
 
 logger = logging.getLogger(__name__)
@@ -123,7 +124,7 @@ class TestMetadataRegistryDefaults:
             with open(config_path / 'metadata_registry_defaults.yml') as f:
                 testconfig = yaml.safe_load(f)
 
-            assert testconfig == {'metadata_registry_defaults':dataplex_expected_defaults}
+            assert testconfig == {'metadata_registry_defaults': dataplex_expected_defaults}
             testconfig['metadata_registry_defaults']['dataplex']['projects'] = '<my-gcp-project-id-2>'
 
             with open(temp_dir / 'metadata_registry_defaults2.yml', 'w') as f:

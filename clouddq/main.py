@@ -307,7 +307,8 @@ def main(  # noqa: C901
             environment_target=environment_target,
         )
         logger.info(
-            f"Writing BigQuery rule_binding views and intermediate summary results to BigQuery table: `{dq_summary_table_name}`. "
+            "Writing BigQuery rule_binding views and intermediate "
+            f"summary results to BigQuery table: `{dq_summary_table_name}`. "
         )
         if gcp_region_id and not skip_sql_validation:
             dq_summary_dataset = ".".join(dq_summary_table_name.split(".")[:2])
@@ -318,13 +319,16 @@ def main(  # noqa: C901
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             logger.info(
-                f"Writing summary results to target BigQuery table: `{target_bigquery_summary_table}`. "
+                "Writing summary results to target BigQuery table: "
+                f"`{target_bigquery_summary_table}`. "
             )
             target_table_ref = bigquery_client.table_from_string(
                 target_bigquery_summary_table
             )
             target_dataset_id = target_table_ref.dataset_id
-            logger.debug(f"BigQuery dataset used in --target_bigquery_summary_table: {target_dataset_id}")
+            logger.debug(
+                f"BigQuery dataset used in --target_bigquery_summary_table: {target_dataset_id}"
+            )
             if not bigquery_client.is_dataset_exists(target_dataset_id):
                 raise AssertionError(
                     "Invalid argument to --target_bigquery_summary_table: "
@@ -335,11 +339,18 @@ def main(  # noqa: C901
                 dataset=target_dataset_id, region=gcp_region_id
             )
         else:
-            logger.warning("CLI --target_bigquery_summary_table is not set. This will become a required argument in v1.0.0.")
+            logger.warning(
+                "CLI --target_bigquery_summary_table is not set. This will become a required argument in v1.0.0."
+            )
         if summary_to_stdout and target_bigquery_summary_table:
-            logger.info("--summary_to_stdout is True. Logging summary results as json to stdout.")
+            logger.info(
+                "--summary_to_stdout is True. Logging summary results as json to stdout."
+            )
         elif summary_to_stdout and not target_bigquery_summary_table:
-            logger.warning("--summary_to_stdout is True but --target_bigquery_summary_table is not set. No summary logs will be logged to stdout.")
+            logger.warning(
+                "--summary_to_stdout is True but --target_bigquery_summary_table is not set. "
+                "No summary logs will be logged to stdout."
+            )
         # Load metadata
         metadata = json.loads(metadata)
         # Load Rule Bindings
@@ -352,10 +363,18 @@ def main(  # noqa: C901
             target_rule_binding_ids = list(all_rule_bindings.keys())
         logger.info(f"Preparing SQL for rule bindings: {target_rule_binding_ids}")
         # Load default configs for metadata registries
-        registry_defaults: MetadataRegistryDefaults = lib.load_metadata_registry_default_configs(Path(configs_path))
-        default_dataplex_projects = registry_defaults.get_dataplex_registry_defaults('projects')
-        default_dataplex_locations = registry_defaults.get_dataplex_registry_defaults('locations')
-        default_dataplex_lakes = registry_defaults.get_dataplex_registry_defaults('lakes')
+        registry_defaults: MetadataRegistryDefaults = (
+            lib.load_metadata_registry_default_configs(Path(configs_path))
+        )
+        default_dataplex_projects = registry_defaults.get_dataplex_registry_defaults(
+            "projects"
+        )
+        default_dataplex_locations = registry_defaults.get_dataplex_registry_defaults(
+            "locations"
+        )
+        default_dataplex_lakes = registry_defaults.get_dataplex_registry_defaults(
+            "lakes"
+        )
         dataplex_registry_defaults = registry_defaults.get_dataplex_registry_defaults()
         # Prepare Dataplex Client from metadata registry defaults
         dataplex_client = CloudDqDataplexClient(
@@ -374,9 +393,10 @@ def main(  # noqa: C901
         # Load all configs into a local cache
         configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
         configs_cache.resolve_dataplex_entity_uris(
-            client=dataplex_client, 
+            client=dataplex_client,
             default_configs=dataplex_registry_defaults,
-            target_rule_binding_ids=target_rule_binding_ids)
+            target_rule_binding_ids=target_rule_binding_ids,
+        )
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
@@ -389,7 +409,9 @@ def main(  # noqa: C901
                     f"Creating sql string from configs for rule binding: "
                     f"{rule_binding_id}"
                 )
-                logger.debug(f"Rule binding config json:\n{pformat(rule_binding_configs)}")
+                logger.debug(
+                    f"Rule binding config json:\n{pformat(rule_binding_configs)}"
+                )
             sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
@@ -431,15 +453,18 @@ def main(  # noqa: C901
             if target_bigquery_summary_table:
                 invocation_id = get_dbt_invocation_id(dbt_path)
                 logger.info(
-                    f"dbt invocation id for current execution "
-                    f"is {invocation_id}"
+                    f"dbt invocation id for current execution " f"is {invocation_id}"
                 )
-                json_logger.info(json.dumps({
-                        "invocation_id": invocation_id,
-                        "target_bigquery_summary_table": target_bigquery_summary_table,
-                        "summary_to_stdout": summary_to_stdout,
-                        "target_rule_binding_ids": target_rule_binding_ids,
-                }))
+                json_logger.info(
+                    json.dumps(
+                        {
+                            "invocation_id": invocation_id,
+                            "target_bigquery_summary_table": target_bigquery_summary_table,
+                            "summary_to_stdout": summary_to_stdout,
+                            "target_rule_binding_ids": target_rule_binding_ids,
+                        }
+                    )
+                )
                 partition_date = date.today()
                 logger.debug(
                     f"Using partition date is {partition_date} "
@@ -462,11 +487,11 @@ def main(  # noqa: C901
                     "required argument in v1.0.0"
                 )
                 if summary_to_stdout:
-                        logger.warning(
-                            "'--summary_to_stdout' was set but does"
-                            " not take effect unless "
-                            "'--target_bigquery_summary_table' is provided"
-                        )
+                    logger.warning(
+                        "'--summary_to_stdout' was set but does"
+                        " not take effect unless "
+                        "'--target_bigquery_summary_table' is provided"
+                    )
     except Exception as error:
         logger.error(error)
         json_logger.error(error, exc_info=True)

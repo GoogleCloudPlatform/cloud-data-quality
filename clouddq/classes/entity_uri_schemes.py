@@ -16,9 +16,11 @@
 from enum import Enum
 from enum import unique
 
+
 @unique
 class EntityUriScheme(str, Enum):
     """ """
+
     DATAPLEX = "dataplex"
     BIGQUERY = "bigquery"
 
@@ -29,4 +31,3 @@ class EntityUriScheme(str, Enum):
             return cls(scheme)
         except ValueError:
             raise NotImplementedError(f"{scheme} scheme is not implemented.")
-

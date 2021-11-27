@@ -17,9 +17,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pprint import pformat
+
 import logging
 
 from clouddq.classes.entity_uri_schemes import EntityUriScheme
+
 
 DATAPLEX_URI_FIELDS = ["projects", "locations", "lakes", "zones", "entities"]
 BIGQUERY_URI_FIELDS = ["projects", "datasets", "tables"]
@@ -38,9 +40,13 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MetadataRegistryDefaults:
     """ """
+
     default_configs: dict
+
     @classmethod
-    def from_dict(cls: MetadataRegistryDefaults, kwargs: dict) -> MetadataRegistryDefaults:
+    def from_dict(
+        cls: MetadataRegistryDefaults, kwargs: dict
+    ) -> MetadataRegistryDefaults:
         default_configs = {}
         logger.debug(f"Parsing input 'metadata_registry_defaults':\n {pformat(kwargs)}")
         for registry_scheme, registry_defaults in kwargs.items():
@@ -58,7 +64,7 @@ class MetadataRegistryDefaults:
                     raise ValueError(
                         f"'metadata_registry_default' for scheme '{scheme}' "
                         f"contains unexpected field '{key}'."
-                        )
+                    )
                 default_configs[scheme][key] = value
         return MetadataRegistryDefaults(default_configs=default_configs)
 
@@ -66,11 +72,10 @@ class MetadataRegistryDefaults:
         return self.default_configs
 
     def get_dataplex_registry_defaults(self, key: str | None = None) -> str | None:
-        if self.default_configs.get('dataplex', None):
+        if self.default_configs.get("dataplex", None):
             if key:
-                return self.default_configs['dataplex'].get(key, None)
+                return self.default_configs["dataplex"].get(key, None)
             else:
-                return self.default_configs['dataplex']
+                return self.default_configs["dataplex"]
         else:
             return None
-        

@@ -16,14 +16,15 @@
 from pathlib import Path
 
 import logging
-import tempfile
 import shutil
+import tempfile
 
 import pytest
 
 from clouddq import lib
 from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.utils import working_directory
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ class TestDqConfigsCache:
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 configs_cache = lib.prepare_configs_cache(temp_configs_dir)
+                assert type(configs_cache) == DqConfigsCache
                 assert configs_cache._cache_db["entities"].exists()
                 assert configs_cache._cache_db["rules"].exists()
                 assert configs_cache._cache_db["row_filters"].exists()
@@ -45,8 +47,7 @@ class TestDqConfigsCache:
     def test_resolve_dataplex_entity_uris(self,
             temp_configs_dir,
             test_dq_dataplex_client,
-            test_dataplex_metadata_defaults_configs,
-        ):
+            test_dataplex_metadata_defaults_configs):
         try:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_configs_cache_2")
             temp_dir.mkdir(parents=True)
@@ -61,7 +62,6 @@ class TestDqConfigsCache:
                 assert count_2 > count_1
         finally:
             shutil.rmtree(temp_dir)
-
 
 
 if __name__ == "__main__":

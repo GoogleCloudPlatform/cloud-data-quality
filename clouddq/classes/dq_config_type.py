@@ -24,6 +24,7 @@ from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 
+
 @unique
 class DqConfigType(str, Enum):
     """ """
@@ -52,7 +53,9 @@ class DqConfigType(str, Enum):
 
     def to_class(
         self: DqConfigType,
-    ) -> type[DqRule] | type[DqRuleBinding] | type[DqRowFilter] | type[DqEntity] | type[MetadataRegistryDefaults]:
+    ) -> type[DqRule] | type[DqRuleBinding] | type[DqRowFilter] | type[DqEntity] | type[
+        MetadataRegistryDefaults
+    ]:
         if self == DqConfigType.RULES:
             return DqRule
         elif self == DqConfigType.RULE_BINDINGS:

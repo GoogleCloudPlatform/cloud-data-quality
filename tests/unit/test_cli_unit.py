@@ -15,14 +15,15 @@
 from pathlib import Path
 
 import logging
-
-import click.testing
-import pytest
 import shutil
 import tempfile
 
+import click.testing
+import pytest
+
 from clouddq.main import main
 from clouddq.utils import working_directory
+
 
 logger = logging.getLogger(__name__)
 
@@ -46,17 +47,23 @@ class TestCli:
         self,
         runner,
         source_configs_path):
-            args = [
-                "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
-                f"{source_configs_path}",
-                "--dry_run",
-                "--debug",
-                "--skip_sql_validation"
-                ]
-            result = runner.invoke(main, args)
-            logger.info(result.output)
-            assert result.exit_code == 1
-            assert isinstance(result.exception, ValueError)
+        try:
+            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_dry_run_1")
+            temp_dir.mkdir(parents=True)
+            with working_directory(temp_dir):
+                args = [
+                    "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
+                    f"{source_configs_path}",
+                    "--dry_run",
+                    "--debug",
+                    "--skip_sql_validation"
+                    ]
+                result = runner.invoke(main, args)
+                logger.info(result.output)
+                assert result.exit_code == 1
+                assert isinstance(result.exception, ValueError)
+        finally:
+            shutil.rmtree(temp_dir)
 
     def test_cli_dry_run(
         self,

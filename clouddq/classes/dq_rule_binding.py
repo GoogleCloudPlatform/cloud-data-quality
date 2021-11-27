@@ -76,8 +76,8 @@ class DqRuleBinding:
             entity_uri = None
         if "entity_uri" in entity_config:
             parsed_entity_uri = EntityUri.from_uri(
-                entity_config["entity_uri"], 
-                default_configs=default_configs)
+                entity_config["entity_uri"], default_configs=default_configs
+            )
             entity_id = parsed_entity_uri.get_entity_id()
             entity_uri = parsed_entity_uri
         if entity_id:
@@ -174,7 +174,9 @@ class DqRuleBinding:
 
         """
         if self.entity_uri:
-            logger.debug(f"Resolving entity uri from configs cache:\n{pformat(self.entity_uri.to_dict())}")
+            logger.debug(
+                f"Resolving entity uri from configs cache:\n{pformat(self.entity_uri.to_dict())}"
+            )
             table_entity: DqEntity = configs_cache.get_table_entity_id(
                 self.entity_uri.get_db_primary_key().upper()
             )

@@ -15,14 +15,11 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
-from pprint import pformat
 
 import json
 import logging
 import re
 import time
-
-import typing
 
 from requests import Response
 
@@ -297,18 +294,18 @@ class CloudDqDataplexClient:
             )
 
     def list_dataplex_entities(
-            self,
-            zone_id: str,
-            prefix: str = None,
-            data_path: str = None,
-            gcp_project_id: str = None,
-            location_id: str = None,
-            lake_name: str = None,
-    ) -> typing.List[DataplexEntity]:
+        self,
+        zone_id: str,
+        prefix: str = None,
+        data_path: str = None,
+        gcp_project_id: str = None,
+        location_id: str = None,
+        lake_name: str = None,
+    ) -> list[DataplexEntity]:
         params = {"page_size": 1000}
 
         if prefix and data_path:
-            raise ValueError(f"Either prefix or datapath should be passed but not both")
+            raise ValueError("Either prefix or datapath should be passed but not both")
         if prefix:
             params.update({"filter": f"id=starts_with({prefix})"})
         if data_path:
@@ -327,7 +324,7 @@ class CloudDqDataplexClient:
         while "nextPageToken" in response_dict:
             time.sleep(3)  # to avoid api limit exceed error of 4 calls per 10 sec
             next_page_token = response_dict["nextPageToken"]
-            logger.debug(f"Getting next page...")
+            logger.debug("Getting next page...")
             page_token = {"page_token": f"{next_page_token}"}
             params.update(page_token)
             next_page_response = self._client.list_entities(
