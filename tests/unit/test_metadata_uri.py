@@ -217,6 +217,24 @@ class TestEntityURI:
             "/lake-id/zones/zone-id/entities/entity-id"
             )
 
+    def test_entity_uri_parse_override_project_lake_id_failure(self):
+        """ """
+        entity_uri = "dataplex://projects/project-id-2/zones/zone-id/entities/entity-id"
+        default_configs = {
+            "projects": "project-id-1",
+            "locations": "us-central1",
+            "lakes": "lake-id",
+        }
+        # This should fail without metadata_defaults
+        with pytest.raises(ValueError):
+            EntityUri.from_uri(entity_uri)
+        parsed_uri = EntityUri.from_uri(uri_string=entity_uri, default_configs=default_configs)
+        assert parsed_uri.complete_uri_string == entity_uri
+        assert parsed_uri.get_db_primary_key() == (
+            "projects/project-id-2/locations/us-central1/lakes"
+            "/lake-id/zones/zone-id/entities/entity-id"
+            )
+
     def test_entity_uri_parse_glob_failure(self):
         """ """
         entity_uri = "dataplex://projects/project-id/locations/us-central1/lakes" \
