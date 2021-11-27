@@ -16,8 +16,8 @@ entities:
   TEST_TABLE:
     source_database: BIGQUERY
     table_name: contact_details
-    dataset_name: dataplex_clouddq
-    project_name: dataplex-clouddq
+    dataset_name: dq_test
+    project_name: <your_gcp_project_id>
     environment_override:
       TEST:
         environment: test

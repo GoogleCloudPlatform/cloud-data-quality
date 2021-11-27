@@ -314,7 +314,7 @@ def temp_configs_dir(
         lines = lines.replace("<my-gcp-dataplex-region-id>", gcp_dataplex_region)
         lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
         lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
-        lines = lines.replace("<your_bigquery_dataset_id>", gcp_bq_dataset)
+        lines = lines.replace("<my_bigquery_dataset_id>", gcp_bq_dataset)
         source_file.write(lines)
     yield configs_path.absolute()
     if os.path.exists(temp_clouddq_dir):

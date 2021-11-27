@@ -77,6 +77,8 @@ jobs:
           export GCS_BAZEL_CACHE=${{ secrets.BAZEL_CACHE_BUCKET }}
           export DATAPLEX_LAKE_NAME=${{ secrets.DATAPLEX_LAKE_NAME }}
           export DATAPLEX_REGION_ID=${{ secrets.DATAPLEX_REGION_ID }}
+          export DATAPLEX_ZONE_ID=${{ secrets.DATAPLEX_ZONE_ID }}
+          export DATAPLEX_BIGQUERY_DATASET_ID=${{ secrets.DATAPLEX_BIGQUERY_DATASET_ID }}
           export DATAPLEX_TARGET_BQ_DATASET="${{ secrets.DATAPLEX_TARGET_BQ_DATASET}}"
           export DATAPLEX_TARGET_BQ_TABLE=${{ secrets.DATAPLEX_TARGET_BQ_TABLE }}
           export DATAPLEX_TASK_SA=${{ secrets.DATAPLEX_TASK_SA }}

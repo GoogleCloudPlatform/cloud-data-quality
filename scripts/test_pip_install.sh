@@ -62,11 +62,30 @@ mkdir "$TEST_DIR"
 cp -r tests/resources/configs "$TEST_DIR"
 cp tests/resources/test_dbt_profiles_dir/profiles.yml "$TEST_DIR"
 cd "$TEST_DIR"
+
+# update profiles.yml
 sed -i s/clouddq/"${CLOUDDQ_BIGQUERY_DATASET}"/g "$TEST_DIR"/profiles.yml
 sed -i s/\<your_gcp_project_id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/profiles.yml
 sed -i s/EU/"${CLOUDDQ_BIGQUERY_REGION}"/g "$TEST_DIR"/profiles.yml
+
+# update configs/entities/test-data.yml
 sed -i s/\<your_gcp_project_id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/configs/entities/test-data.yml
 sed -i s/\<your_bigquery_dataset_id\>/"${CLOUDDQ_BIGQUERY_DATASET}"/g "$TEST_DIR"/configs/entities/test-data.yml
+
+# update dataplex entity_uris
+# configs/rule_bindings/team-4-rule-bindings.yml
+sed -i s/\<my-gcp-dataplex-lake-id\>/"${DATAPLEX_LAKE_NAME}"/g "$TEST_DIR"/configs/rule_bindings/team-4-rule-bindings.yml
+sed -i s/\<my-gcp-dataplex-region-id\>/"${DATAPLEX_REGION_ID}"/g "$TEST_DIR"/configs/rule_bindings/team-4-rule-bindings.yml
+sed -i s/\<my-gcp-project-id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/configs/rule_bindings/team-4-rule-bindings.yml
+sed -i s/\<my-gcp-dataplex-zone-id\>/"${DATAPLEX_ZONE_ID}"/g "$TEST_DIR"/configs/rule_bindings/team-4-rule-bindings.yml
+sed -i s/\<my_bigquery_dataset_id\>/"${DATAPLEX_BIGQUERY_DATASET_ID}"/g "$TEST_DIR"/configs/rule_bindings/team-4-rule-bindings.yml
+# configs/metadata_registry_defaults.yml
+sed -i s/\<my-gcp-dataplex-lake-id\>/"${DATAPLEX_LAKE_NAME}"/g "$TEST_DIR"/configs/metadata_registry_defaults.yml
+sed -i s/\<my-gcp-dataplex-region-id\>/"${DATAPLEX_REGION_ID}"/g "$TEST_DIR"/configs/metadata_registry_defaults.yml
+sed -i s/\<my-gcp-project-id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/configs/metadata_registry_defaults.yml
+sed -i s/\<my-gcp-dataplex-zone-id\>/"${DATAPLEX_ZONE_ID}"/g "$TEST_DIR"/configs/metadata_registry_defaults.yml
+
+# run with --dbt_profiles_dir
 python3 -m clouddq ALL configs --dbt_profiles_dir="$TEST_DIR" --debug --dry_run
 python3 -m clouddq ALL configs --dbt_profiles_dir="$TEST_DIR" --dbt_path="$TEST_DIR" --debug --dry_run
 
