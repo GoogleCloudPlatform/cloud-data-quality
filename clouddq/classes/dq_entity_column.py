@@ -127,16 +127,10 @@ class DatabaseType(str, Enum):
                 f"Current mapping: {BIGQUERY_COLUMN_TYPES_MAPPING}",
             )
             return database_column_type
-        if self == DatabaseType.DATAPLEX:
-            # todo: implement dataplex specific data types
-            database_column_type = BIGQUERY_COLUMN_TYPES_MAPPING.get(column_type, None)
-            assert_not_none_or_empty(
-                database_column_type,
-                f"Database: {self} does not have type {column_type} "
-                f"defined in column type mapping."
-                f"Current mapping: {BIGQUERY_COLUMN_TYPES_MAPPING}",
+        if self == DatabaseType.DATAPLEX_BQ_EXTERNAL_TABLE:
+            raise NotImplementedError(
+                f"Database: {self} does not yet have column type mapping."
             )
-            return database_column_type
         else:
             raise NotImplementedError(
                 f"Database: {self} does not yet have column type mapping."

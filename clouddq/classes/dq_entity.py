@@ -32,11 +32,6 @@ ENTITY_CUSTOM_CONFIG_MAPPING = {
         "database_name": "{dataset_name}",
         "instance_name": "{project_name}",
     },
-    "DATAPLEX_BQ_EXTERNAL_TABLE": {
-        "table_name": "{table_name}",
-        "database_name": "{lake_name}_{zone_name}",
-        "instance_name": "{project_name}",
-    },
 }
 
 logger = logging.getLogger(__name__)
@@ -141,6 +136,7 @@ class DqEntity:
         source_database = get_from_dict_and_assert(
             config_id=entity_id, kwargs=kwargs, key="source_database"
         )
+        source_database = source_database.upper()
         table_name = get_custom_entity_configs(
             entity_id=entity_id,
             configs_map=kwargs,
@@ -246,6 +242,11 @@ class DqEntity:
             "instance_name": self.instance_name,
             "columns": columns,
         }
+        if self.source_database == 'BIGQUERY':
+            output.update({
+                "dataset_name": self.database_name,
+                "project_name": self.instance_name,
+            })
         if self.environment_override:
             output["environment_override"] = self.environment_override
         if self.dataplex_name:

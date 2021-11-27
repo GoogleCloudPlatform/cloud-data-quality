@@ -41,45 +41,45 @@ class TestJinjaTemplates:
     """ """
 
     @pytest.fixture(scope="session")
-    def test_entities_collection(self):
+    def test_entities_collection(self, source_configs_path):
         """ """
-        return lib.load_entities_config(configs_path=Path("tests/resources/configs"))
+        return lib.load_entities_config(configs_path=source_configs_path)
 
     @pytest.fixture(scope="session")
-    def test_rules_collection(self):
+    def test_rules_collection(self, source_configs_path):
         """ """
-        return lib.load_rules_config(configs_path=Path("tests/resources/configs"))
+        return lib.load_rules_config(configs_path=source_configs_path)
 
     @pytest.fixture(scope="session")
-    def test_row_filters_collection(self):
+    def test_row_filters_collection(self, source_configs_path):
         """ """
-        return lib.load_row_filters_config(configs_path=Path("tests/resources/configs"))
+        return lib.load_row_filters_config(configs_path=source_configs_path)
 
     @pytest.fixture(scope="session")
-    def test_rule_bindings_collection_team_1(self):
+    def test_rule_bindings_collection_team_1(self, source_configs_path):
         """ """
         return lib.load_rule_bindings_config(
-            Path("tests/resources/configs/rule_bindings/team-1-rule-bindings.yml")
+            source_configs_path / "rule_bindings" / "team-1-rule-bindings.yml"
         )
 
     @pytest.fixture(scope="session")
-    def test_rule_bindings_collection_team_2(self):
+    def test_rule_bindings_collection_team_2(self, source_configs_path):
         """ """
         return lib.load_rule_bindings_config(
-            Path("tests/resources/configs/rule_bindings/team-2-rule-bindings.yml")
+            source_configs_path / "rule_bindings" / "team-2-rule-bindings.yml"
         )
 
     @pytest.fixture(scope="session")
-    def test_rule_bindings_collection_team_3(self):
+    def test_rule_bindings_collection_team_3(self, source_configs_path):
         """ """
         return lib.load_rule_bindings_config(
-            Path("tests/resources/configs/rule_bindings/team-3-rule-bindings.yml")
+            source_configs_path / "rule_bindings" / "team-3-rule-bindings.yml"
         )
 
     @pytest.fixture(scope="session")
-    def test_all_rule_bindings_collections(self):
+    def test_all_rule_bindings_collections(self, source_configs_path):
         """ """
-        return lib.load_rule_bindings_config(configs_path=Path("tests/resources/configs"))
+        return lib.load_rule_bindings_config(configs_path=source_configs_path)
 
     def test_rules_class(self, test_rules_collection):
         for key, value in test_rules_collection.items():
@@ -104,7 +104,7 @@ class TestJinjaTemplates:
         first_rule_binding_config = (
             test_rule_bindings_collection_team_1.values().__iter__().__next__()
         )
-        # entities_configs = lib.load_entities_config(configs_path=Path("tests/resources/configs"))
+        print(first_rule_binding_config)
         rule_binding = DqRuleBinding.from_dict(
             rule_binding_id="dq_summary",
             kwargs=first_rule_binding_config,
@@ -148,7 +148,8 @@ class TestJinjaTemplates:
     def test_render_run_dq_main_sql(
         self,
         test_rule_bindings_collection_team_2,
-        test_configs_cache
+        test_configs_cache,
+        test_resources
     ):
         """
 
@@ -161,13 +162,14 @@ class TestJinjaTemplates:
         Returns:
 
         """
-        with open("tests/resources/test_render_run_dq_main_sql_expected.sql") as f:
+        with open(test_resources / "test_render_run_dq_main_sql_expected.sql") as f:
             expected = f.read()
         rule_binding_id, rule_binding_configs = (
             test_rule_bindings_collection_team_2.items()
             .__iter__()
             .__next__()  # use first rule binding
         )
+        print(rule_binding_configs)
         output = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
@@ -185,6 +187,7 @@ class TestJinjaTemplates:
         self,
         test_rule_bindings_collection_team_2,
         test_configs_cache,
+        test_resources,
     ):
         """
 
@@ -197,7 +200,7 @@ class TestJinjaTemplates:
         Returns:
 
         """
-        with open("tests/resources/test_render_run_dq_main_sql_expected.sql") as f:
+        with open(test_resources / "test_render_run_dq_main_sql_expected.sql") as f:
             expected = f.read()
         rule_binding_id, rule_binding_configs = (
             test_rule_bindings_collection_team_2.items()
@@ -227,6 +230,7 @@ class TestJinjaTemplates:
         self,
         test_rule_bindings_collection_team_1,
         test_configs_cache,
+        test_resources
     ):
         """
 
@@ -240,7 +244,7 @@ class TestJinjaTemplates:
 
         """
         with open(
-            "tests/resources/test_render_run_dq_main_sql_expected_high_watermark.sql",
+            test_resources / "test_render_run_dq_main_sql_expected_high_watermark.sql",
         ) as f:
             expected = f.read()
         rule_binding_id, rule_binding_configs = (
@@ -265,6 +269,7 @@ class TestJinjaTemplates:
         self,
         test_rule_bindings_collection_team_3,
         test_configs_cache,
+        test_resources
     ):
         """
 
@@ -278,7 +283,7 @@ class TestJinjaTemplates:
 
         """
         with open(
-            "tests/resources/test_render_run_dq_main_sql_expected_custom_sql_statement.sql",
+            test_resources / "test_render_run_dq_main_sql_expected_custom_sql_statement.sql",
         ) as f:
             expected = f.read()
         rule_binding_id, rule_binding_configs = (
@@ -300,7 +305,7 @@ class TestJinjaTemplates:
         assert output == expected
 
     def test_prepare_configs_from_rule_binding(
-        self, test_rule_bindings_collection_team_2, test_configs_cache
+        self, test_rule_bindings_collection_team_2, test_configs_cache, test_resources
     ):
         """ """
         rule_binding_id, rule_binding_configs = (
@@ -319,7 +324,7 @@ class TestJinjaTemplates:
             configs_cache=test_configs_cache,
         )
         logger.info(pformat(json.dumps(configs["configs"])))
-        with open("tests/resources/expected_configs.json") as f:
+        with open(test_resources / "expected_configs.json") as f:
             expected_configs = json.loads(f.read())
         assert configs["configs"] == dict(expected_configs)
         metadata.update(rule_binding_configs["metadata"])
@@ -328,4 +333,4 @@ class TestJinjaTemplates:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

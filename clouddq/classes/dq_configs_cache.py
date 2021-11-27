@@ -109,7 +109,7 @@ class DqConfigsCache:
         return rule_binding
 
     def load_all_rule_bindings_collection(self, rule_binding_collection: dict) -> None:
-        logger.debug(f"Loading 'rule_bindings' configs into cache:\n{pformat(rule_binding_collection)}")
+        logger.debug(f"Loading 'rule_bindings' configs into cache:\n{pformat(rule_binding_collection.keys())}")
         rule_bindings_rows = unnest_object_to_list(rule_binding_collection)
         for record in rule_bindings_rows:
             if "entity_uri" not in record:
@@ -121,19 +121,19 @@ class DqConfigsCache:
         )
 
     def load_all_entities_collection(self, entities_collection: dict) -> None:
-        logger.debug(f"Loading 'entities' configs into cache:\n{pformat(entities_collection)}")
+        logger.debug(f"Loading 'entities' configs into cache:\n{pformat(entities_collection.keys())}")
         self._cache_db["entities"].upsert_all(
             unnest_object_to_list(entities_collection), pk="id"
         )
 
     def load_all_row_filters_collection(self, row_filters_collection: dict) -> None:
-        logger.debug(f"Loading 'row_filters' configs into cache:\n{pformat(row_filters_collection)}")
+        logger.debug(f"Loading 'row_filters' configs into cache:\n{pformat(row_filters_collection.keys())}")
         self._cache_db["row_filters"].upsert_all(
             unnest_object_to_list(row_filters_collection), pk="id"
         )
 
     def load_all_rules_collection(self, rules_collection: dict) -> None:
-        logger.debug(f"Loading 'rules' configs into cache:\n{pformat(rules_collection)}")
+        logger.debug(f"Loading 'rules' configs into cache:\n{pformat(rules_collection.keys())}")
         self._cache_db["rules"].upsert_all(
             unnest_object_to_list(rules_collection), pk="id"
         )
@@ -144,6 +144,8 @@ class DqConfigsCache:
         default_configs: dict | None = None,
         target_rule_binding_ids: typing.List[str] = None,
     ) -> None:
+        if not target_rule_binding_ids:
+            target_rule_binding_ids = ["ALL"]
         logger.debug(f"Using Dataplex default configs for resolving entity_uris:\n{pformat(default_configs)}")
         for record in self._cache_db.query(
             "select distinct entity_uri, id from rule_bindings where entity_uri is not null"

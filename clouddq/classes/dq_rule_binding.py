@@ -54,7 +54,7 @@ class DqRuleBinding:
         cls: DqRuleBinding,
         rule_binding_id: str,
         kwargs: dict,
-        default_configs: dict,
+        default_configs: dict | None = None,
     ) -> DqRuleBinding:
         """
 

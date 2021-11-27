@@ -29,6 +29,7 @@
       }
     },
     "database_name": "<your_bigquery_dataset_id>",
+    "dataset_name": "<your_bigquery_dataset_id>",
     "environment_override": {
       "test": {
         "database_name": "<your_bigquery_dataset_id_2>",
@@ -37,6 +38,7 @@
       }
     },
     "instance_name": "<your_gcp_project_id>",
+    "project_name": "<your_gcp_project_id>",
     "source_database": "BIGQUERY",
     "table_name": "contact_details"
   },

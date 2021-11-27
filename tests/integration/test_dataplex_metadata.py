@@ -17,6 +17,7 @@ import logging
 import pytest
 
 from clouddq.classes.dataplex_entity import DataplexEntity
+from clouddq.classes.dq_entity_uri import EntityUri
 
 
 logger = logging.getLogger(__name__)
@@ -128,7 +129,6 @@ class TestMetadataIntegration:
                                                          test_dq_dataplex_client,
                                                          gcp_dataplex_zone_id,
                                                          gcp_project_id,
-                                                         gcp_dataplex_bucket_name,
                                                          gcp_dataplex_bigquery_dataset_id, ):
         print(f"zone id  is {gcp_dataplex_zone_id}")
         data_path = f"projects/{gcp_project_id}/datasets/{gcp_dataplex_bigquery_dataset_id}/tables/contact_details"
@@ -141,6 +141,5 @@ class TestMetadataIntegration:
             print(f"Entities with '{data_path}' datapath are not present in the dataplex lake.")
         assert len(dataplex_entities_list) > 0
 
-
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

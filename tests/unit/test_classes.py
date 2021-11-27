@@ -71,18 +71,6 @@ class TestClasses:
         "configs_map,source_database,expected",
         [
             pytest.param(
-                {"table_name": "table", "lake_name": "lake", "zone_name": "zone", "project_name": "project"},
-                "DATAPLEX_BQ_EXTERNAL_TABLE",
-                "lake_zone",
-                id="dataplex_native"
-            ),
-            pytest.param(
-                {"table_name": "table", "database_name": "lake_zone", "project_name": "project"},
-                "DATAPLEX_BQ_EXTERNAL_TABLE",
-                "lake_zone",
-                id="dataplex_backwards_compatible"
-            ),
-            pytest.param(
                 {"table_name": "table", "dataset_name": "dataset", "project_name": "project"},
                 "BIGQUERY",
                 "dataset",
@@ -99,6 +87,27 @@ class TestClasses:
     def test_get_custom_entity_configs_database_name(self, configs_map, source_database, expected):
         output = get_custom_entity_configs('test', configs_map, source_database, "database_name")
         assert output == expected
+
+    @pytest.mark.parametrize(
+        "configs_map,source_database,expected",
+        [
+            pytest.param(
+                {"table_name": "table", "lake_name": "lake", "zone_name": "zone", "project_name": "project"},
+                "DATAPLEX_BQ_EXTERNAL_TABLE",
+                "lake_zone",
+                id="dataplex_native"
+            ),
+            pytest.param(
+                {"table_name": "table", "database_name": "lake_zone", "project_name": "project"},
+                "DATAPLEX_BQ_EXTERNAL_TABLE",
+                "lake_zone",
+                id="dataplex_backwards_compatible"
+            ),
+        ],
+    )
+    def test_get_custom_entity_configs_database_name_fail(self, configs_map, source_database, expected):
+        with pytest.raises(NotImplementedError):
+            get_custom_entity_configs('test', configs_map, source_database, "database_name")
 
     def test_dq_entity_parse_bigquery_configs(self):
         """ """
@@ -120,7 +129,9 @@ class TestClasses:
                 "source_database": "BIGQUERY",
                 "table_name": "table_name",
                 "database_name": "dataset_name",
+                "dataset_name": "dataset_name",
                 "instance_name": "project_name",
+                "project_name": "project_name",
                 "columns": {
                     "TEST_COLUMN": {
                         "description": "test column description",
@@ -151,7 +162,9 @@ class TestClasses:
                 "source_database": "BIGQUERY",
                 "table_name": "table_name",
                 "database_name": "dataset_name",
+                "dataset_name": "dataset_name",
                 "instance_name": "project_name",
+                "project_name": "project_name",
                 "columns": {
                     "TEST_COLUMN": {
                         "description": "test column description",
@@ -162,7 +175,7 @@ class TestClasses:
         }
         assert bq_entity_configs.to_dict() == bq_entity_configs_expected
 
-    def test_dq_entity_parse_dataplex_configs(self):
+    def test_dq_entity_parse_dataplex_configs_fails(self):
         """ """
         dataplex_entity_input_dict = {
             "source_database": "DATAPLEX_BQ_EXTERNAL_TABLE",
@@ -177,25 +190,26 @@ class TestClasses:
                     "data_type": "STRING"
                 }},
         }
-        dataplex_entity_configs = DqEntity.from_dict(
-            entity_id="test_dataplex_entity",
-            kwargs=dataplex_entity_input_dict
-        )
-        dataplex_entity_configs_expected = {
-            "test_dataplex_entity": {
-                "source_database": "DATAPLEX_BQ_EXTERNAL_TABLE",
-                "table_name": "table",
-                "database_name": "lake_zone",
-                "instance_name": "project_name",
-                "columns": {
-                    "TEST_COLUMN": {
-                        "description": "test column description",
-                        "name": "test_column",
-                        "data_type": "STRING"
-                    }},
+        with pytest.raises(NotImplementedError):
+            dataplex_entity_configs = DqEntity.from_dict(
+                entity_id="test_dataplex_entity",
+                kwargs=dataplex_entity_input_dict
+            )
+            dataplex_entity_configs_expected = {
+                "test_dataplex_entity": {
+                    "source_database": "DATAPLEX_BQ_EXTERNAL_TABLE",
+                    "table_name": "table",
+                    "database_name": "lake_zone",
+                    "instance_name": "project_name",
+                    "columns": {
+                        "TEST_COLUMN": {
+                            "description": "test column description",
+                            "name": "test_column",
+                            "data_type": "STRING"
+                        }},
+                }
             }
-        }
-        assert dataplex_entity_configs.to_dict() == dataplex_entity_configs_expected
+            assert dataplex_entity_configs.to_dict() == dataplex_entity_configs_expected
 
     def test_dq_filter_parse_failure(self):
         """ """
@@ -292,4 +306,4 @@ class TestClasses:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 2']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

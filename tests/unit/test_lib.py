@@ -87,4 +87,4 @@ class TestLib:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))
