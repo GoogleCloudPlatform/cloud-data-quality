@@ -253,8 +253,10 @@ export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
 # Create BigQuery Dataset. Skip this step if `CLOUDDQ_BIGQUERY_DATASET` already exists
 bq --location=${CLOUDDQ_BIGQUERY_REGION} mk --dataset ${GOOGLE_CLOUD_PROJECT}:${CLOUDDQ_BIGQUERY_DATASET}
+# Fetch the example csv file
+curl -LO https://raw.githubusercontent.com/GoogleCloudPlatform/cloud-data-quality/main/tests/data/contact_details.csv
 # Load sample data to the dataset
-bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details tests/data/contact_details.csv
+bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_details contact_details.csv
 ```
 
 Before running CloudDQ, we need to edit the table configurations in `configs/entities/test-data.yml` to use our Project ID and BigQuery dataset ID.
