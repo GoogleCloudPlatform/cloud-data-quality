@@ -21,6 +21,7 @@ import pytest
 
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.lib import prepare_configs_cache
+from clouddq.lib import load_metadata_registry_default_configs
 from clouddq.utils import working_directory
 
 
@@ -272,6 +273,22 @@ def test_configs_cache(
         #                                         target_rule_binding_ids=target_rule_binding_ids)
         yield configs_cache
 
+@pytest.fixture(scope="session")
+def test_all_metadata_defaults_configs():
+    """ """
+    return load_metadata_registry_default_configs(configs_path=Path("tests/resources/configs"))
+
+@pytest.fixture(scope="function")
+def test_default_dataplex_configs_cache(temp_configs_dir,
+                                        test_dq_dataplex_client,
+                                        test_all_metadata_defaults_configs,
+                                        ):
+
+    configs_cache = prepare_configs_cache(configs_path=temp_configs_dir)
+    default_registry_configs = test_all_metadata_defaults_configs.get_dataplex_registry_defaults()
+    configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
+                                                default_configs=default_registry_configs)
+    return configs_cache
 
 @pytest.fixture(scope="function")
 def temp_configs_dir(
