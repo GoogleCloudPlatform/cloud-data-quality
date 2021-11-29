@@ -21,6 +21,5 @@ rule_bindings:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type,value"
       - NOT_NULL_SIMPLE
-      - IN_REF_SET
     metadata:
       brand: one
