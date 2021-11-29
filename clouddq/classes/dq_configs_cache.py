@@ -237,6 +237,3 @@ class DqConfigsCache:
                 self._cache_db["entities"].upsert_all(
                     resolved_entity, pk="id", alter=True
                 )
-                self._cache_db["rule_bindings"].update(
-                    record["id"], {"entity_id": resolved_entity[0]["id"]}
-                )
