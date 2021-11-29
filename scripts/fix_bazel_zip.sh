@@ -18,17 +18,38 @@ set -o nounset
 set -o pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=/dev/null
+. "$ROOT/scripts/common.sh"
+
 BASE_NAME="clouddq"
+TMP_PATH="/tmp/fix_bazel_zip"
+
+fix_tmp_path() {
+  local TEMP_PATH=$1
+  echo $TEMP_PATH
+  if [[ $(grep -c "PYTHON_BINARY = '/usr/bin/python3'" "${TEMP_PATH}"/__main__.py) == 1 ]]; then
+    sed -i "s/PYTHON_BINARY = '\/usr\/bin\/python3'/PYTHON_BINARY = sys.executable/g" "${TEMP_PATH}"/__main__.py
+  else
+    err 'Cannot fix file "${TEMP_PATH}"/__main__.py'
+    exit 1
+  fi
+  if [[ $(grep -c "f'dbt-{dbt_version}'" "${TEMP_PATH}"/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py) == 1 ]]; then
+    sed -i "s/f'dbt-{dbt_version}'/'Product_Dataplex\/1.0 (GPN:Dataplex_CloudDQ)'/g" "${TEMP_PATH}"/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py
+  else
+    err 'Cannot fix file "${TEMP_PATH}"/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py'
+    exit 1
+  fi
+}
 
 fix_bazel_zip() {
   echo "Usage: fix_bazel_zip archive.zip"
-  rm -rf /tmp/fix_bazel_zip/*
+  rm -rf "${TMP_PATH}"/*
   unzip -qq "$1" -d /tmp/fix_bazel_zip
-  rm /tmp/fix_bazel_zip/runfiles/"${BASE_NAME}"/__init__.py
-  sed -i "s/PYTHON_BINARY = '\/usr\/bin\/python3'/PYTHON_BINARY = sys.executable/g" /tmp/fix_bazel_zip/__main__.py
-  cd /tmp/fix_bazel_zip/ && zip -qq -r "${BASE_NAME}".zip *
+  rm "${TMP_PATH}"/runfiles/"${BASE_NAME}"/__init__.py
+  fix_tmp_path "${TMP_PATH}"
+  cd "${TMP_PATH}"/ && zip -qq -r "${BASE_NAME}".zip *
   cd -
-  cp /tmp/fix_bazel_zip/"${BASE_NAME}".zip "${BASE_NAME}"_patched.zip
+  cp "${TMP_PATH}"/"${BASE_NAME}".zip "${BASE_NAME}"_patched.zip
 }
 
 create_hashsum() {
