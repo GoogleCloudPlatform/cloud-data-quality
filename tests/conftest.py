@@ -293,7 +293,7 @@ def test_default_dataplex_configs_cache(temp_configs_dir,
 @pytest.fixture(scope="function")
 def temp_configs_dir(
         gcp_project_id,
-        gcp_bq_dataset,
+        gcp_dataplex_bigquery_dataset_id,
         gcp_dataplex_region,
         gcp_dataplex_lake_name,
         gcp_dataplex_zone_id,
@@ -310,7 +310,7 @@ def temp_configs_dir(
         lines = source_file.read()
     with open(test_data, "w") as source_file:
         lines = lines.replace("<your_gcp_project_id>", gcp_project_id)
-        lines = lines.replace("<your_bigquery_dataset_id>", gcp_bq_dataset)
+        lines = lines.replace("<your_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
         source_file.write(lines)
     # Prepare metadata_registry_default_configs
     registry_defaults = configs_path.joinpath("metadata_registry_defaults.yml")
@@ -331,7 +331,7 @@ def temp_configs_dir(
         lines = lines.replace("<my-gcp-dataplex-region-id>", gcp_dataplex_region)
         lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
         lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
-        lines = lines.replace("<my_bigquery_dataset_id>", gcp_bq_dataset)
+        lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
         source_file.write(lines)
     yield configs_path.absolute()
     if os.path.exists(temp_clouddq_dir):
