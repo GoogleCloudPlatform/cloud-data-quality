@@ -30,13 +30,13 @@ fix_tmp_path() {
   if [[ $(grep -c "PYTHON_BINARY = '/usr/bin/python3'" "${TEMP_PATH}"/__main__.py) == 1 ]]; then
     sed -i "s/PYTHON_BINARY = '\/usr\/bin\/python3'/PYTHON_BINARY = sys.executable/g" "${TEMP_PATH}"/__main__.py
   else
-    err 'Cannot fix file "${TEMP_PATH}"/__main__.py'
+    err "Failed to fix file ${TEMP_PATH}/__main__.py. Expected string to replace not found: PYTHON_BINARY = '/usr/bin/python3'"
     exit 1
   fi
   if [[ $(grep -c "f'dbt-{dbt_version}'" "${TEMP_PATH}"/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py) == 1 ]]; then
     sed -i "s/f'dbt-{dbt_version}'/'Product_Dataplex\/1.0 (GPN:Dataplex_CloudDQ)'/g" "${TEMP_PATH}"/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py
   else
-    err 'Cannot fix file "${TEMP_PATH}"/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py'
+    err "Failed to file ${TEMP_PATH}/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py. Expected string to replace not found: f'dbt-{dbt_version}'"
     exit 1
   fi
 }
