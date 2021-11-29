@@ -239,12 +239,20 @@ class TestClasses:
             dict(),
             {"custom_sql_expr": ""},
             {"custom_sql_expr": "'; drop table Students; select ?;--"},
+            {"custom_sql_expr": "'; drop table Students; select ?;#"},
+            {"custom_sql_expr": "'; drop table Students; select ?/*"},
         ],
     )
     def test_rule_type_custom_to_sql_failure(self, params):
         """ """
         with pytest.raises(ValueError):
             RuleType.CUSTOM_SQL_EXPR.to_sql(params)
+
+    def test_rule_type_custom_to_sql(self):
+        """ """
+        params = {"custom_sql_expr": "column_name in (select column from `project-id.dataset_id.table_id`)"}
+        sql = RuleType.CUSTOM_SQL_EXPR.to_sql(params).substitute(column="column_name")
+        assert sql == params["custom_sql_expr"]
 
     def test_rule_type_custom_to_sql(self):
         """ """
@@ -269,7 +277,6 @@ class TestClasses:
         [
             dict(),
             {"pattern": ""},
-            {"pattern": "&/42"},
             {"pattern": "'; drop table Students; select true;--"},
         ],
     )
