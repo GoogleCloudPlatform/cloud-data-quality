@@ -256,39 +256,25 @@ def test_profiles_dir():
 @pytest.fixture(scope="function")
 def test_configs_cache(
         source_configs_path,
-        # test_dq_dataplex_client,
-        # test_dataplex_metadata_defaults_configs,
         tmp_path):
     temp_path = Path(tmp_path).joinpath("clouddq_test_configs_cache")
     temp_path.mkdir()
     with working_directory(temp_path):
         configs_cache = prepare_configs_cache(configs_path=source_configs_path)
-        # target_rule_binding_ids = [
-        #     "T1_DQ_1_VALUE_NOT_NULL",
-        #     "T2_DQ_1_EMAIL",
-        #     "T3_DQ_1_EMAIL_DUPLICATE"
-        # ]
-        # configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
-        #                                         default_configs=test_dataplex_metadata_defaults_configs,
-        #                                         target_rule_binding_ids=target_rule_binding_ids)
         yield configs_cache
-
-@pytest.fixture(scope="session")
-def test_all_metadata_defaults_configs():
-    """ """
-    return load_metadata_registry_default_configs(configs_path=Path("tests/resources/configs"))
 
 @pytest.fixture(scope="function")
 def test_default_dataplex_configs_cache(temp_configs_dir,
                                         test_dq_dataplex_client,
-                                        test_all_metadata_defaults_configs,
-                                        ):
-
-    configs_cache = prepare_configs_cache(configs_path=temp_configs_dir)
-    default_registry_configs = test_all_metadata_defaults_configs.get_dataplex_registry_defaults()
-    configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
-                                                default_configs=default_registry_configs)
-    return configs_cache
+                                        test_dataplex_metadata_defaults_configs,
+                                        tmp_path):
+    temp_path = Path(tmp_path).joinpath("clouddq_test_configs_cache")
+    temp_path.mkdir()
+    with working_directory(temp_path):
+        configs_cache = prepare_configs_cache(configs_path=temp_configs_dir)
+        configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
+                                                    default_configs=test_dataplex_metadata_defaults_configs)
+        yield configs_cache
 
 @pytest.fixture(scope="function")
 def temp_configs_dir(
