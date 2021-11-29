@@ -87,7 +87,7 @@ def get_json_logger():
 
 def get_logger():
     logger = logging.getLogger("clouddq")
-    if not logger.hasHandlers():
+    if not len(logger.handlers):
         logger.setLevel(LOG_LEVEL)
         logging_stream_handler = logging.StreamHandler(sys.stderr)
         stream_formatter = logging.Formatter(
