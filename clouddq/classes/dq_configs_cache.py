@@ -23,6 +23,7 @@ import sqlite3
 
 from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
+from sqlite_utils.db import AlterError
 
 from clouddq.classes.metadata_registry_defaults import SAMPLE_DEFAULT_REGISTRIES_YAML
 from clouddq.utils import convert_json_value_to_dict
@@ -117,9 +118,8 @@ class DqConfigsCache:
                 record.update({"entity_uri": None})
         self._cache_db["rule_bindings"].upsert_all(
             rule_bindings_rows, pk="id"
-        ).add_foreign_key("entity_id", "entities", "id").add_foreign_key(
-            "row_filter_id", "row_filters", "id"
         )
+
 
     def load_all_entities_collection(self, entities_collection: dict) -> None:
         logger.debug(
@@ -236,7 +236,4 @@ class DqConfigsCache:
                 logger.debug(f"Writing parsed Dataplex Entity to db: {resolved_entity}")
                 self._cache_db["entities"].upsert_all(
                     resolved_entity, pk="id", alter=True
-                )
-                self._cache_db["rule_bindings"].update(
-                    record["id"], {"entity_id": resolved_entity[0]["id"]}
                 )

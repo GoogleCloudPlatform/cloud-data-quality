@@ -20,7 +20,7 @@ import sys
 import traceback
 
 
-APP_VERSION = "0.4.0-rc1"
+APP_VERSION = "0.4.0-rc3"
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
 
@@ -77,7 +77,7 @@ class JSONFormatter(logging.Formatter):
 
 def get_json_logger():
     json_logger = logging.getLogger("clouddq-json-logger")
-    if not json_logger.hasHandlers():
+    if not len(json_logger.handlers):
         json_logger.setLevel(LOG_LEVEL)
         logging_stream_handler = logging.StreamHandler(sys.stdout)
         logging_stream_handler.setFormatter(JSONFormatter())
@@ -87,7 +87,7 @@ def get_json_logger():
 
 def get_logger():
     logger = logging.getLogger("clouddq")
-    if not logger.hasHandlers():
+    if not len(logger.handlers):
         logger.setLevel(LOG_LEVEL)
         logging_stream_handler = logging.StreamHandler(sys.stderr)
         stream_formatter = logging.Formatter(

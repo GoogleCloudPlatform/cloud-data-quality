@@ -256,44 +256,30 @@ def test_profiles_dir():
 @pytest.fixture(scope="function")
 def test_configs_cache(
         source_configs_path,
-        # test_dq_dataplex_client,
-        # test_dataplex_metadata_defaults_configs,
         tmp_path):
     temp_path = Path(tmp_path).joinpath("clouddq_test_configs_cache")
     temp_path.mkdir()
     with working_directory(temp_path):
         configs_cache = prepare_configs_cache(configs_path=source_configs_path)
-        # target_rule_binding_ids = [
-        #     "T1_DQ_1_VALUE_NOT_NULL",
-        #     "T2_DQ_1_EMAIL",
-        #     "T3_DQ_1_EMAIL_DUPLICATE"
-        # ]
-        # configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
-        #                                         default_configs=test_dataplex_metadata_defaults_configs,
-        #                                         target_rule_binding_ids=target_rule_binding_ids)
         yield configs_cache
-
-@pytest.fixture(scope="session")
-def test_all_metadata_defaults_configs():
-    """ """
-    return load_metadata_registry_default_configs(configs_path=Path("tests/resources/configs"))
 
 @pytest.fixture(scope="function")
 def test_default_dataplex_configs_cache(temp_configs_dir,
                                         test_dq_dataplex_client,
-                                        test_all_metadata_defaults_configs,
-                                        ):
-
-    configs_cache = prepare_configs_cache(configs_path=temp_configs_dir)
-    default_registry_configs = test_all_metadata_defaults_configs.get_dataplex_registry_defaults()
-    configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
-                                                default_configs=default_registry_configs)
-    return configs_cache
+                                        test_dataplex_metadata_defaults_configs,
+                                        tmp_path):
+    temp_path = Path(tmp_path).joinpath("clouddq_test_configs_cache")
+    temp_path.mkdir()
+    with working_directory(temp_path):
+        configs_cache = prepare_configs_cache(configs_path=temp_configs_dir)
+        configs_cache.resolve_dataplex_entity_uris(client=test_dq_dataplex_client,
+                                                    default_configs=test_dataplex_metadata_defaults_configs)
+        yield configs_cache
 
 @pytest.fixture(scope="function")
 def temp_configs_dir(
         gcp_project_id,
-        gcp_bq_dataset,
+        gcp_dataplex_bigquery_dataset_id,
         gcp_dataplex_region,
         gcp_dataplex_lake_name,
         gcp_dataplex_zone_id,
@@ -310,7 +296,7 @@ def temp_configs_dir(
         lines = source_file.read()
     with open(test_data, "w") as source_file:
         lines = lines.replace("<your_gcp_project_id>", gcp_project_id)
-        lines = lines.replace("<your_bigquery_dataset_id>", gcp_bq_dataset)
+        lines = lines.replace("<your_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
         source_file.write(lines)
     # Prepare metadata_registry_default_configs
     registry_defaults = configs_path.joinpath("metadata_registry_defaults.yml")
@@ -331,7 +317,7 @@ def temp_configs_dir(
         lines = lines.replace("<my-gcp-dataplex-region-id>", gcp_dataplex_region)
         lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
         lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
-        lines = lines.replace("<my_bigquery_dataset_id>", gcp_bq_dataset)
+        lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
         source_file.write(lines)
     yield configs_path.absolute()
     if os.path.exists(temp_clouddq_dir):

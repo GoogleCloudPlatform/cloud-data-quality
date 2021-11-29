@@ -48,7 +48,6 @@ class TestMetadataUriTemplates:
         self,
         test_rule_bindings_collection_team_4,
         test_default_dataplex_configs_cache,
-
     ):
         for key, value in test_rule_bindings_collection_team_4.items():
             rule_binding = DqRuleBinding.from_dict(rule_binding_id=key, kwargs=value)
