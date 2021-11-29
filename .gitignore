@@ -27,3 +27,5 @@ configs/
 setenvs.sh
 tmp
 cloudbuild-workspace/
+*~
+dbt

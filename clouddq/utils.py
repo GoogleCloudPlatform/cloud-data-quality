@@ -70,6 +70,7 @@ def get_template_file(file_path: Path) -> str:
 
 
 def write_templated_file_to_path(path: Path, lookup_table: typing.Dict) -> None:
+    logger.debug(f"Writing templated file {get_templates_path(path.name)} to {path}")
     path.write_text(get_template_file(lookup_table.get(path.name)))
 
 
