@@ -216,7 +216,7 @@ def main(  # noqa: C901
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
     summary_to_stdout: bool = False,
-    enable_experimental_bigquery_entity_uris: bool = False
+    enable_experimental_bigquery_entity_uris: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
