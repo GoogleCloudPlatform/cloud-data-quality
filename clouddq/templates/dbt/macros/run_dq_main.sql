@@ -21,6 +21,7 @@
 {% set entity_configs = configs.get('entity_configs') -%}
 {% set dataplex_lake = entity_configs.get('dataplex_lake') -%}
 {% set dataplex_zone = entity_configs.get('dataplex_zone') -%}
+{% set dataplex_asset_id = entity_configs.get('dataplex_asset_id') -%}
 {% set instance_name = entity_configs.get('instance_name') -%}
 {% set database_name = entity_configs.get('database_name') -%}
 {% set table_name = entity_configs.get('table_name') -%}
@@ -115,6 +116,11 @@ all_validation_results AS (
     '{{ dataplex_zone }}' AS dataplex_zone,
 {%- else %}
     CAST(NULL AS STRING) AS dataplex_zone,
+{%- endif %}
+{%- if dataplex_asset_id %}
+    '{{ dataplex_asset_id }}' AS dataplex_asset_id,
+{%- else %}
+    CAST(NULL AS STRING) AS dataplex_asset_id,
 {%- endif %}
     CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', {{ progress_watermark }}) AS dq_run_id,
     {{ progress_watermark|upper }} AS progress_watermark,

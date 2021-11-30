@@ -52,13 +52,14 @@ class TestCliIntegration:
             with working_directory(temp_dir):
                 logger.info(f"Running test_cli_dbt_path with {gcp_project_id=}, {gcp_bq_dataset=}, {gcp_bq_region=}")
                 logger.info(f"test_cli_dbt_path {gcp_application_credentials=}")
+                target_table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
                     f"--gcp_project_id={gcp_project_id}",
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--gcp_region_id={gcp_bq_region}",
-                    f"--target_bigquery_summary_table={gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}",
+                    f"--target_bigquery_summary_table={target_table}",
                     "--debug",
                     "--summary_to_stdout",
                     ]

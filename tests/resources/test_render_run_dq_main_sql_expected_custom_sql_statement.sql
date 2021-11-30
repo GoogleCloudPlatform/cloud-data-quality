@@ -89,6 +89,7 @@ all_validation_results AS (
     '' AS configs_hashsum,
     CAST(NULL AS STRING) AS dataplex_lake,
     CAST(NULL AS STRING) AS dataplex_zone,
+    CAST(NULL AS STRING) AS dataplex_asset_id,
     CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', True) AS dq_run_id,
     TRUE AS progress_watermark,
   FROM

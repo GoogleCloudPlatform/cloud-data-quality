@@ -28,7 +28,9 @@ from clouddq.classes.dq_rule_binding import DqRuleBinding
 
 RE_NEWLINES = r"(\n( )*)+"
 RE_CONFIGS_HASHSUM = r"'[\w\d]+' AS configs_hashsum,"
+RE_ASSET_ID = r"'[\w-]+' AS dataplex_asset_id,"
 CONFIGS_HASHSUM_REP = "'' AS configs_hashsum,"
+ASSET_ID_REP = "'<your_dataplex_asset_id>' AS dataplex_asset_id,"
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +95,6 @@ class TestMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
-            configs["configs"]["entity_configs"]["dataplex_updateTime"] = "<dataplex_entity_updateTime>"
 
             with open(test_resources / "dataplex_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
@@ -136,6 +137,7 @@ class TestMetadataUriTemplates:
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             assert output == expected
 
 

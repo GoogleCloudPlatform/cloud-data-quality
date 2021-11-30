@@ -29,6 +29,7 @@ REQUIRED_COLUMN_TYPES = {
     "last_modified": "TIMESTAMP",
     "dataplex_lake": "STRING",
     "dataplex_zone": "STRING",
+    "dataplex_asset_id": "STRING",
 }
 
 from clouddq.integration.gcp_credentials import GcpCredentials
@@ -149,7 +150,7 @@ class BigQueryClient:
             if failures:
                 raise ValueError(
                     f"Cannot find required column '{list(failures.keys())}' in BigQuery table '{table}'.\n"
-                    f"Ensure they are created by running the following command and retry:\n"
+                    f"Ensure they are created by running the following SQL script and retry:\n"
                     "```\n" + "\n".join(failures.values()) + "```"
                 )
         except NotFound:
