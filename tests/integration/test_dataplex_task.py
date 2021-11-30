@@ -113,7 +113,7 @@ class TestDataplexIntegration:
             if configs_file_path.joinpath(file_name).is_file():
                 configs_file_path.unlink()
 
-    @pytest.fixture(scope="session")
+    @pytest.fixture
     def temp_configs_files_path(self, temp_configs_dir):
         print("Invoked 'temp_configs_files_path' fixture.")
         configs_files_path = Path(tempfile.gettempdir()).joinpath("clouddq_test_artifacts", "files").absolute()

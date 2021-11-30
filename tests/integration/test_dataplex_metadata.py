@@ -64,6 +64,7 @@ class TestMetadataIntegration:
             ),
         ]
     )
+    @pytest.mark.xfail
     def test_dataplex_metadata_get_entity_valid(self,
                                                 test_dq_dataplex_client,
                                                 gcp_dataplex_zone_id,
