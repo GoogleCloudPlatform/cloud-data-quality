@@ -168,7 +168,9 @@ def prepare_configs_from_rule_binding_id(
         metadata.update(rule_binding_configs["metadata"])
     configs.update({"dq_summary_table_name": dq_summary_table_name})
     configs.update({"metadata": metadata})
-    configs.update({"configs_hashsum": sha256_digest(json.dumps(rule_binding_configs))})
+    configs.update(
+        {"configs_hashsum": sha256_digest(json.dumps(resolved_rule_binding_configs))}
+    )
     configs.update({"progress_watermark": progress_watermark})
     logger.debug(f"Prepared json configs for {rule_binding_id}:\n{pformat(configs)}")
     return configs
