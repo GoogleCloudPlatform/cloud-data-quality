@@ -146,6 +146,7 @@ class DqConfigsCache:
         client: clouddq_dataplex.CloudDqDataplexClient,
         default_configs: dict | None = None,
         target_rule_binding_ids: list[str] = None,
+        enable_experimental_bigquery_entity_uris: bool = True,
     ) -> None:
         if not target_rule_binding_ids:
             target_rule_binding_ids = ["ALL"]
@@ -184,6 +185,22 @@ class DqConfigsCache:
                     ).to_dict()
                     resolved_entity = unnest_object_to_list(clouddq_entity)
                 elif entity_uri.scheme == "bigquery":
+                    if not enable_experimental_bigquery_entity_uris:
+                        raise NotImplementedError(
+                            f"entity_uri '{entity_uri.complete_uri_string}' "
+                            f"in rule_binding id '{record['id']}' "
+                            "has unsupported scheme 'bigquery://'.\n"
+                            "Use CLI flag --enable_experimental_bigquery_entity_uris "
+                            "to enable looking up bigquery:// entity_uri scheme in format "
+                            "bigquery://projects/<project-id>/datasets/<dataset-id>/tables/<table-id> "
+                            "schemes using Dataplex Metadata API.\n"
+                            "Ensure the BigQuery dataset containing this table "
+                            "is registered as an asset in Dataplex.\n"
+                            "You can then specify the corresponding Dataplex "
+                            "projects/locations/lakes/zones as part of the "
+                            "metadata_default_registries YAML configs, e.g.\n"
+                            f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
+                        )
                     required_arguments = ["projects", "lakes", "locations", "zones"]
                     for argument in required_arguments:
                         uri_argument = entity_uri.get_configs(argument)
@@ -192,12 +209,12 @@ class DqConfigsCache:
                                 f"Failed to retrieve default Dataplex '{argument}' for "
                                 f"entity_uri: {entity_uri.complete_uri_string}. \n"
                                 f"'{argument}' is a required argument to look-up metadata for the entity_uri "
-                                f"using Dataplex Metadata API.\n"
-                                f"Ensure the BigQuery dataset containing this table "
-                                f"is registered as an asset in Dataplex.\n"
-                                f"You can then specify the default Dataplex configs for "
-                                f"projects/locations/lakes/zones as part of a YAML "
-                                f"metadata_default_registries config, e.g.\n"
+                                "using Dataplex Metadata API.\n"
+                                "Ensure the BigQuery dataset containing this table "
+                                "is registered as an asset in Dataplex.\n"
+                                "You can then specify the corresponding Dataplex "
+                                "projects/locations/lakes/zones as part of the "
+                                "metadata_default_registries YAML configs, e.g.\n"
                                 f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
                             )
                     dataplex_entities_match = client.list_dataplex_entities(
