@@ -75,7 +75,7 @@ def prepare_configs_path(input_directory):
 def main(args):
     with open(f"{args[1]}.hashsum") as f:
         expected_hexdigest = f.read().replace("\n", "").replace("\t", "")
-        print(f"expected hexdigest: {expected_hexdigest}")
+        print(f"CloudDQ executable expected hexdigest: {expected_hexdigest}")
         verify_executable(args[1], expected_hexdigest)
     args[3] = str(Path("configs").absolute())
     cmd = f"{sys.executable} {' '.join(args[1:])}"

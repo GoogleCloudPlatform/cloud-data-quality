@@ -23,8 +23,8 @@ import tempfile
 import pytest
 import yaml
 
+from clouddq import lib
 from clouddq.classes.dq_config_type import DqConfigType
-from clouddq.main import lib
 
 
 logger = logging.getLogger(__name__)
@@ -87,4 +87,4 @@ class TestLib:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

@@ -75,6 +75,12 @@ rules:
       custom_sql_expr: |-
         LENGTH( $column ) <= 30
 
+  IN_REF_SET:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (select distinct currency_code from `reference_data.currency_codes`)
+
   NO_DUPLICATES_IN_COLUMN_GROUPS:
     rule_type: CUSTOM_SQL_STATEMENT
     params:
@@ -118,14 +124,8 @@ entities:
   TEST_TABLE:
     source_database: BIGQUERY
     table_name: contact_details
-    dataset_name: <your_dataset_id>
-    project_name: <your_project_id>
-    environment_override:
-      TEST:
-        environment: test
-        override:
-          dataset_name: <your_project_id>
-          project_name: <your_project_id>
+    dataset_name: <your_bigquery_dataset_id>
+    project_name: <your_gcp_project_id>
     columns:
       ROW_ID:
         name: row_id
@@ -169,7 +169,7 @@ bq load --source_format=CSV --autodetect ${CLOUDDQ_BIGQUERY_DATASET}.contact_det
 
 Ensure you have sufficient IAM privileges to create BigQuery datasets and tables in your project.
 
-If you are testing CloudDQ with the provided configs, ensure you update the `<your_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) and the `<your_dataset_id>` field with the BigQuery dataset containing the `contact_details` table.
+If you are testing CloudDQ with the provided configs, ensure you update the `<your_gcp_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) and the `<your_bigquery_dataset_id>` field with the BigQuery dataset containing the `contact_details` table.
 
 ## Usage Guide
 
@@ -267,7 +267,7 @@ export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
 sed -i s/\<your_gcp_project_id\>/${GOOGLE_CLOUD_PROJECT}/g configs/entities/test-data.yml
-sed -i s/dq_test/${CLOUDDQ_BIGQUERY_DATASET}/g configs/entities/test-data.yml
+sed -i s/<your_bigquery_dataset_id>/${CLOUDDQ_BIGQUERY_DATASET}/g configs/entities/test-data.yml
 ```
 
 Using the same Project ID, GCP Region, and BigQuery dataset ID as defined before, we will attempt to execute two `Rule Binding`s with the unique identifers `T2_DQ_1_EMAIL` and `T3_DQ_1_EMAIL_DUPLICATE` from the `configs` directory containing the complete YAML configurations:

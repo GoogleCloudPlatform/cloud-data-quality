@@ -19,13 +19,16 @@ from pathlib import Path
 import json
 import logging
 import re
+import time
 
 from requests import Response
 
+from clouddq.classes.dataplex_entity import DataplexEntity
 from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
 from clouddq.integration.gcs import upload_blob
 from clouddq.utils import exponential_backoff
+from clouddq.utils import update_dict
 
 
 logger = logging.getLogger(__name__)
@@ -47,9 +50,9 @@ class CloudDqDataplexClient:
 
     def __init__(
         self,
-        gcp_project_id: str,
-        gcp_dataplex_lake_name: str,
-        gcp_dataplex_region: str,
+        gcp_project_id: str | None = None,
+        gcp_dataplex_lake_name: str | None = None,
+        gcp_dataplex_region: str | None = None,
         gcs_bucket_name: str | None = None,
         gcp_credentials: GcpCredentials | None = None,
         dataplex_endpoint: str = "https://dataplex.googleapis.com",
@@ -101,15 +104,28 @@ class CloudDqDataplexClient:
             clouddq_executable_checksum_path, "clouddq-executable.zip.hashsum"
         )
         # Prepare input CloudDQ YAML specs path
-        if str(clouddq_yaml_spec_file_path)[:5] == "gs://":
+        clouddq_yaml_spec_file_path = str(clouddq_yaml_spec_file_path)
+        if clouddq_yaml_spec_file_path[:5] == "gs://":
             clouddq_configs_gcs_path = clouddq_yaml_spec_file_path
         else:
-            raise ValueError(
-                "'clouddq_yaml_spec_file_path' argument "
-                f"{clouddq_yaml_spec_file_path} "
-                "must either be GCS path containing the "
-                "`.yml` or `.zip` CloudDQ YAML configs."
-            )
+            clouddq_yaml_spec_file_path = Path(clouddq_yaml_spec_file_path)
+            if clouddq_yaml_spec_file_path.is_file():
+                upload_blob(
+                    self.gcs_bucket_name,
+                    clouddq_yaml_spec_file_path.name,
+                    str(clouddq_yaml_spec_file_path.name),
+                )
+                gcs_uri = (
+                    f"gs://{self.gcs_bucket_name}/{clouddq_yaml_spec_file_path.name}"
+                )
+                clouddq_configs_gcs_path = gcs_uri
+            else:
+                raise ValueError(
+                    "'clouddq_yaml_spec_file_path' argument "
+                    f"{clouddq_yaml_spec_file_path} "
+                    "must either be a single file (`.yml` or `.zip`) "
+                    "or a GCS path to the `.yml` or `.zip` configs file."
+                )
         # Add user-agent tag as Task label
         allowed_user_agent_label = re.sub("[^0-9a-zA-Z]+", "-", USER_AGENT_TAG.lower())
         if task_labels:
@@ -249,3 +265,93 @@ class CloudDqDataplexClient:
             else:
                 clouddq_artifact_gcs_path = clouddq_artifact_path
         return clouddq_artifact_gcs_path
+
+    def get_dataplex_entity(
+        self,
+        zone_id: str,
+        entity_id: str,
+        gcp_project_id: str = None,
+        location_id: str = None,
+        lake_name: str = None,
+    ) -> DataplexEntity:
+        logger.debug(f"CloudDqDataplex.get_dataplex_entity() arguments: {locals()}")
+        params = {"view": "FULL"}
+        response = self._client.get_entity(
+            zone_id=zone_id,
+            entity_id=entity_id,
+            gcp_project_id=gcp_project_id,
+            location_id=location_id,
+            lake_name=lake_name,
+            params=params,
+        )
+        if response.status_code == 200:
+            return DataplexEntity.from_dict(json.loads(response.text))
+        else:
+            raise RuntimeError(
+                f"Failed to retrieve Dataplex entity: "
+                f"'/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}"
+                f"/lakes/{self._client.lake_name}/zones/{zone_id}/entities/{entity_id}':\n {response.text}"
+            )
+
+    def list_dataplex_entities(
+        self,
+        zone_id: str,
+        prefix: str = None,
+        data_path: str = None,
+        gcp_project_id: str = None,
+        location_id: str = None,
+        lake_name: str = None,
+    ) -> list[DataplexEntity]:
+        params = {"page_size": 1000}
+
+        if prefix and data_path:
+            raise ValueError("Either prefix or datapath should be passed but not both")
+        if prefix:
+            params.update({"filter": f"id=starts_with({prefix})"})
+        if data_path:
+            params.update({"filter": f"data_path=starts_with({data_path})"})
+
+        response_dict = {}
+        response = self._client.list_entities(
+            zone_id=zone_id,
+            params=params,
+            gcp_project_id=gcp_project_id,
+            location_id=location_id,
+            lake_name=lake_name,
+        )
+        response_dict.update(response.json())
+
+        while "nextPageToken" in response_dict:
+            time.sleep(3)  # to avoid api limit exceed error of 4 calls per 10 sec
+            next_page_token = response_dict["nextPageToken"]
+            logger.debug("Getting next page...")
+            page_token = {"page_token": f"{next_page_token}"}
+            params.update(page_token)
+            next_page_response = self._client.list_entities(
+                zone_id=zone_id,
+                params=params,
+                gcp_project_id=gcp_project_id,
+                location_id=location_id,
+                lake_name=lake_name,
+            ).json()
+            logger.debug(f"Next page response {next_page_response}")
+
+            if "nextPageToken" not in next_page_response:
+                del response_dict["nextPageToken"]
+                response_dict = update_dict(response_dict, next_page_response)
+            else:
+                response_dict = update_dict(response_dict, next_page_response)
+                response_dict["nextPageToken"] = next_page_response["nextPageToken"]
+
+        dataplex_entities = []
+        if "entities" in response_dict:
+            for entity in response_dict["entities"]:
+                entity_with_schema = self.get_dataplex_entity(
+                    entity_id=entity["id"],
+                    zone_id=zone_id,
+                    gcp_project_id=gcp_project_id,
+                    location_id=location_id,
+                    lake_name=lake_name,
+                )
+                dataplex_entities.append(entity_with_schema)
+        return dataplex_entities

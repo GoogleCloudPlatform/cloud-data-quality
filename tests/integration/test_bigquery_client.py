@@ -51,4 +51,4 @@ class TestBigQueryClient:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n 2']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

@@ -1,0 +1,38 @@
+{
+  "name": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
+  "db_primary_key": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
+  "createTime": "createTimestamp",
+  "updateTime": "updateTimestamp",
+  "id": "entity_id",
+  "type": "TABLE",
+  "asset": "asset-id",
+  "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
+  "system": "BIGQUERY",
+  "format": {
+    "format": "OTHER"
+  },
+  "schema": {
+    "fields": [
+      {
+        "name": "column1",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "column2",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "column3",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "column4",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED"
+      }
+    ]
+  }
+}

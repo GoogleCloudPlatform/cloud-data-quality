@@ -14,3 +14,4 @@ google-cloud-storage==1.42.3
 requests-oauth2==0.3.0
 pytest-xdist==2.4.0
 filelock==3.3.2
+sqlite-utils==3.18

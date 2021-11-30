@@ -6,12 +6,13 @@ steps:
         set -x
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
         source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
+        make test test_dataplex_metadata
         make test test_dataplex_task
         make check
         source scripts/install_gcloud.sh
         gsutil ls gs://$_GCS_BUCKET_NAME
-        gsutil cp clouddq_patched.zip gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}_${BRANCH_NAME}/clouddq-executable.zip
-        gsutil cp clouddq_patched.zip.hashsum gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/`date -I`/${SHORT_SHA}_${BRANCH_NAME}/clouddq-executable.zip.hashsum
+        gsutil cp clouddq_patched.zip gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/`date -I`/${BRANCH_NAME}_${SHORT_SHA}/clouddq-executable.zip
+        gsutil cp clouddq_patched.zip.hashsum gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/`date -I`/${BRANCH_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
@@ -21,7 +22,10 @@ steps:
     - 'GCS_BAZEL_CACHE=${_GCS_BAZEL_CACHE}'
     - 'DATAPLEX_LAKE_NAME=${_DATAPLEX_LAKE_NAME}'
     - 'DATAPLEX_REGION_ID=${_DATAPLEX_REGION_ID}'
-    - 'DATAPLEX_ENDPOINT=${_DATAPLEX_ENDPOINT}'
+    - 'DATAPLEX_LAKE_NAME=${_DATAPLEX_LAKE_NAME}'
+    - 'DATAPLEX_ZONE_ID=${_DATAPLEX_ZONE_ID}'
+    - 'DATAPLEX_BIGQUERY_DATASET_ID=${_DATAPLEX_BIGQUERY_DATASET_ID}'
+    - 'DATAPLEX_BUCKET_NAME=${_DATAPLEX_BUCKET_NAME}'
     - 'DATAPLEX_TARGET_BQ_DATASET=${_DATAPLEX_TARGET_BQ_DATASET}'
     - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
     - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'

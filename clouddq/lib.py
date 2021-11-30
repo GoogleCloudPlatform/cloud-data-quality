@@ -22,7 +22,9 @@ import logging
 import typing
 
 from clouddq.classes.dq_config_type import DqConfigType
+from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_rule_binding import DqRuleBinding
+from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import load_jinja_template
 from clouddq.utils import load_yaml
@@ -44,7 +46,6 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
         config = load_yaml(file, configs_type.value)
         if not config:
             continue
-
         intersection = config.keys() & all_configs.keys()
 
         # The new config defines keys that we have already loaded
@@ -66,10 +67,12 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
 
         all_configs.update(config)
 
-    assert_not_none_or_empty(
-        all_configs,
-        f"Failed to load {configs_type.value} from file path: {configs_path}",
-    )
+    if configs_type.is_required():
+        assert_not_none_or_empty(
+            all_configs,
+            f"Failed to load {configs_type.value} from file path: {configs_path}",
+        )
+
     return all_configs
 
 
@@ -89,18 +92,27 @@ def load_row_filters_config(configs_path: Path) -> typing.Dict:
     return load_configs(configs_path, DqConfigType.ROW_FILTERS)
 
 
+def load_metadata_registry_default_configs(
+    configs_path: Path,
+) -> MetadataRegistryDefaults:
+    configs = load_configs(configs_path, DqConfigType.METADATA_REGISTRY_DEFAULTS)
+    try:
+        return MetadataRegistryDefaults.from_dict(configs)
+    except ValueError as e:
+        logger.warning(e)
+        return MetadataRegistryDefaults.from_dict({})
+
+
 def create_rule_binding_view_model(
     rule_binding_id: str,
     rule_binding_configs: typing.Dict,
     dq_summary_table_name: str,
     environment: str,
-    configs_path: Path,
-    entities_collection: typing.Optional[typing.Dict] = None,
-    row_filters_collection: typing.Optional[typing.Dict] = None,
-    rules_collection: typing.Optional[typing.Dict] = None,
+    configs_cache: DqConfigsCache,
     metadata: typing.Optional[typing.Dict] = None,
     debug: bool = False,
     progress_watermark: bool = True,
+    default_configs: typing.Optional[typing.Dict] = None,
 ) -> str:
     template = load_jinja_template(
         template_path=Path("dbt", "macros", "run_dq_main.sql")
@@ -110,12 +122,10 @@ def create_rule_binding_view_model(
         rule_binding_configs=rule_binding_configs,
         dq_summary_table_name=dq_summary_table_name,
         environment=environment,
-        configs_path=configs_path,
-        entities_collection=entities_collection,
-        row_filters_collection=row_filters_collection,
-        rules_collection=rules_collection,
+        configs_cache=configs_cache,
         metadata=metadata,
         progress_watermark=progress_watermark,
+        default_configs=default_configs,
     )
     sql_string = template.render(configs)
     if debug:
@@ -136,28 +146,16 @@ def prepare_configs_from_rule_binding_id(
     rule_binding_configs: typing.Dict,
     dq_summary_table_name: str,
     environment: typing.Optional[str],
-    configs_path: typing.Optional[Path],
-    entities_collection: typing.Optional[typing.Dict] = None,
-    row_filters_collection: typing.Optional[typing.Dict] = None,
-    rules_collection: typing.Optional[typing.Dict] = None,
+    configs_cache: DqConfigsCache,
     metadata: typing.Optional[typing.Dict] = None,
     progress_watermark: bool = True,
+    default_configs: typing.Optional[typing.Dict] = None,
 ) -> typing.Dict:
-    (
-        entities_collection,
-        row_filters_collection,
-        rules_collection,
-    ) = load_configs_if_not_defined(
-        configs_path=configs_path,
-        entities_collection=entities_collection,
-        row_filters_collection=row_filters_collection,
-        rules_collection=rules_collection,
+    rule_binding = DqRuleBinding.from_dict(
+        rule_binding_id, rule_binding_configs, default_configs
     )
-    rule_binding = DqRuleBinding.from_dict(rule_binding_id, rule_binding_configs)
     resolved_rule_binding_configs = rule_binding.resolve_all_configs_to_dict(
-        entities_collection=entities_collection,
-        row_filters_collection=row_filters_collection,
-        rules_collection=rules_collection,
+        configs_cache=configs_cache,
     )
     configs: typing.Dict[typing.Any, typing.Any] = {
         "configs": dict(resolved_rule_binding_configs)
@@ -170,21 +168,20 @@ def prepare_configs_from_rule_binding_id(
         metadata.update(rule_binding_configs["metadata"])
     configs.update({"dq_summary_table_name": dq_summary_table_name})
     configs.update({"metadata": metadata})
-    configs.update({"configs_hashsum": sha256_digest(json.dumps(configs))})
+    configs.update({"configs_hashsum": sha256_digest(json.dumps(rule_binding_configs))})
     configs.update({"progress_watermark": progress_watermark})
+    logger.debug(f"Prepared json configs for {rule_binding_id}:\n{pformat(configs)}")
     return configs
 
 
-def load_configs_if_not_defined(
-    configs_path: Path,
-    entities_collection: typing.Dict = None,
-    row_filters_collection: typing.Dict = None,
-    rules_collection: typing.Dict = None,
-) -> typing.Tuple[typing.Dict, typing.Dict, typing.Dict]:
-    if not entities_collection:
-        entities_collection = load_entities_config(configs_path)
-    if not row_filters_collection:
-        row_filters_collection = load_row_filters_config(configs_path)
-    if not rules_collection:
-        rules_collection = load_rules_config(configs_path)
-    return entities_collection, row_filters_collection, rules_collection
+def prepare_configs_cache(configs_path: Path) -> DqConfigsCache:
+    configs_cache = DqConfigsCache()
+    entities_collection = load_entities_config(configs_path)
+    configs_cache.load_all_entities_collection(entities_collection)
+    row_filters_collection = load_row_filters_config(configs_path)
+    configs_cache.load_all_row_filters_collection(row_filters_collection)
+    rules_collection = load_rules_config(configs_path)
+    configs_cache.load_all_rules_collection(rules_collection)
+    rule_binding_collection = load_rule_bindings_config(configs_path)
+    configs_cache.load_all_rule_bindings_collection(rule_binding_collection)
+    return configs_cache

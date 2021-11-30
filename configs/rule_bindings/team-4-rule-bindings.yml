@@ -1,0 +1,59 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+rule_bindings:
+  T4_URI_DP_EMAIL_DUPLICATE:
+    entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/entities/contact_details
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: "contact_type,value"
+      - NOT_NULL_SIMPLE
+    metadata:
+      brand: one
+
+
+  T5_URI_BQ_EMAIL_DUPLICATE:
+    entity_uri: bigquery://locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/projects/<my-gcp-project-id>/datasets/<my_bigquery_dataset_id>/tables/contact_details
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: "contact_type,value"
+      - NOT_NULL_SIMPLE
+    metadata:
+      brand: one
+
+  T6_URI_BQ_ELIDE_EMAIL_DUPLICATE:
+    entity_uri: bigquery://projects/<my-gcp-project-id>/datasets/<my_bigquery_dataset_id>/tables/contact_details
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: "contact_type,value"
+      - NOT_NULL_SIMPLE
+    metadata:
+      brand: one
+
+  T7_URI_DP_EMAIL_DUPLICATE:
+    entity_uri: dataplex://zones/<my-gcp-dataplex-zone-id>/entities/contact_details
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: "contact_type,value"
+      - NOT_NULL_SIMPLE
+    metadata:
+      brand: one

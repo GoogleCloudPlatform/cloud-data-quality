@@ -29,6 +29,7 @@
       }
     },
     "database_name": "<your_bigquery_dataset_id>",
+    "dataset_name": "<your_bigquery_dataset_id>",
     "environment_override": {
       "test": {
         "database_name": "<your_bigquery_dataset_id_2>",
@@ -37,6 +38,7 @@
       }
     },
     "instance_name": "<your_gcp_project_id>",
+    "project_name": "<your_gcp_project_id>",
     "source_database": "BIGQUERY",
     "table_name": "contact_details"
   },
@@ -53,26 +55,28 @@
   "rule_configs_dict": {
     "CUSTOM_SQL_LENGTH_LE_30": {
       "params": {
-        "custom_sql_expr": "LENGTH( $column ) <= 30"
+        "custom_sql_expr": "LENGTH( $column ) <= 30",
+        "rule_binding_arguments": null
       },
       "rule_sql_expr": "LENGTH( value ) <= 30",
       "rule_type": "CUSTOM_SQL_EXPR"
     },
     "NOT_NULL_SIMPLE": {
-      "params": {},
+      "params": {"rule_binding_arguments": null},
       "rule_sql_expr": "value IS NOT NULL",
       "rule_type": "NOT_NULL"
     },
     "REGEX_VALID_EMAIL": {
       "params": {
-        "pattern": "^[^@]+[@]{1}[^@]+$"
+        "pattern": "^[^@]+[@]{1}[^@]+$",
+        "rule_binding_arguments": null
       },
       "rule_sql_expr": "REGEXP_CONTAINS( CAST( value  AS STRING), '^[^@]+[@]{1}[^@]+$' )",
       "rule_type": "REGEX"
     },
     "NOT_BLANK": {
       "rule_type": "NOT_BLANK",
-      "params": {},
+      "params": {"rule_binding_arguments": null},
       "rule_sql_expr": "TRIM(value) != ''"
     }
   },
