@@ -316,7 +316,9 @@ def main(  # noqa: C901
             bigquery_client.assert_dataset_is_in_region(
                 dataset=dq_summary_dataset, region=gcp_region_id
             )
-            bigquery_client.assert_required_columns_exist_in_table(dq_summary_table_name)
+            bigquery_client.assert_required_columns_exist_in_table(
+                dq_summary_table_name
+            )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             logger.info(

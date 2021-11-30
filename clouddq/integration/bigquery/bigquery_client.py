@@ -24,6 +24,7 @@ from google.api_core.exceptions import Forbidden
 from google.api_core.exceptions import NotFound
 from google.cloud import bigquery
 
+
 REQUIRED_COLUMN_TYPES = {
     "last_modified": "TIMESTAMP",
     "dataplex_lake": "STRING",
@@ -132,9 +133,9 @@ class BigQueryClient:
             return False
 
     def assert_required_columns_exist_in_table(
-            self, 
-            table: str,
-        ) -> None:
+        self,
+        table: str,
+    ) -> None:
         try:
             client = self.get_connection()
             table_ref = client.get_table(table)
@@ -142,9 +143,9 @@ class BigQueryClient:
             failures = {}
             for column_name, column_type in REQUIRED_COLUMN_TYPES.items():
                 if column_name not in column_names:
-                    failures[column_name] = (
-                        f"ALTER TABLE `{table}` ADD COLUMN {column_name} {column_type};\n"
-                    )
+                    failures[
+                        column_name
+                    ] = f"ALTER TABLE `{table}` ADD COLUMN {column_name} {column_type};\n"
             if failures:
                 raise ValueError(
                     f"Cannot find required column '{list(failures.keys())}' in BigQuery table '{table}'.\n"

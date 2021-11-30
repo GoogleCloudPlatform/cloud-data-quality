@@ -77,7 +77,9 @@ all_validation_results AS (
     last_mod.last_modified,
     '{}' AS metadata_json_string,
     '' AS configs_hashsum,
-    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', TIMESTAMP_TRUNC(r.execution_ts, HOUR), '_', True) AS dq_run_id,
+    CAST(NULL AS STRING) AS dataplex_lake,
+    CAST(NULL AS STRING) AS dataplex_zone,
+    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', True) AS dq_run_id,
     TRUE AS progress_watermark,
   FROM
     validation_results r

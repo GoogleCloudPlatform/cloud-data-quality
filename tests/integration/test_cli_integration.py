@@ -42,7 +42,9 @@ class TestCliIntegration:
         gcp_application_credentials,
         gcp_project_id,
         gcp_bq_dataset,
-        gcp_bq_region
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name
     ):
         try:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_1")
@@ -56,7 +58,7 @@ class TestCliIntegration:
                     f"--gcp_project_id={gcp_project_id}",
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--gcp_region_id={gcp_bq_region}",
-                    f"--target_bigquery_summary_table={gcp_project_id}.{gcp_bq_dataset}.dq_summary_target",
+                    f"--target_bigquery_summary_table={gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}",
                     "--debug",
                     "--summary_to_stdout",
                     ]
