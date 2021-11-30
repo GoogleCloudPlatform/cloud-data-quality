@@ -267,7 +267,7 @@ class TestClasses:
         with pytest.raises(ValueError):
             RuleType.CUSTOM_SQL_EXPR.to_sql(params)
 
-    def test_rule_type_custom_to_sql(self):
+    def test_rule_type_custom_to_sql_special_characters(self):
         """ """
         params = {"custom_sql_expr": "column_name in (select column from `project-id.dataset_id.table_id`)"}
         sql = RuleType.CUSTOM_SQL_EXPR.to_sql(params).substitute(column="column_name")

@@ -23,7 +23,6 @@ import sqlite3
 
 from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
-from sqlite_utils.db import AlterError
 
 from clouddq.classes.metadata_registry_defaults import SAMPLE_DEFAULT_REGISTRIES_YAML
 from clouddq.utils import convert_json_value_to_dict
@@ -116,10 +115,7 @@ class DqConfigsCache:
         for record in rule_bindings_rows:
             if "entity_uri" not in record:
                 record.update({"entity_uri": None})
-        self._cache_db["rule_bindings"].upsert_all(
-            rule_bindings_rows, pk="id"
-        )
-
+        self._cache_db["rule_bindings"].upsert_all(rule_bindings_rows, pk="id")
 
     def load_all_entities_collection(self, entities_collection: dict) -> None:
         logger.debug(

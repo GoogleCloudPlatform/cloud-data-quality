@@ -23,10 +23,8 @@ import pytest
 
 from clouddq import lib
 from clouddq import utils
-from clouddq.classes.dq_row_filter import DqRowFilter
-from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
-from clouddq.classes.rule_type import RuleType
+
 
 RE_NEWLINES = r"(\n( )*)+"
 RE_CONFIGS_HASHSUM = r"'[\w\d]+' AS configs_hashsum,"
@@ -48,9 +46,13 @@ class TestMetadataUriTemplates:
         self,
         test_rule_bindings_collection_team_4,
         test_default_dataplex_configs_cache,
+        test_dataplex_metadata_defaults_configs,
     ):
         for key, value in test_rule_bindings_collection_team_4.items():
-            rule_binding = DqRuleBinding.from_dict(rule_binding_id=key, kwargs=value)
+            rule_binding = DqRuleBinding.from_dict(
+                rule_binding_id=key,
+                kwargs=value,
+                default_configs=test_dataplex_metadata_defaults_configs)
             rule_binding.resolve_table_entity_config(configs_cache=test_default_dataplex_configs_cache)
             rule_binding.resolve_rule_config_list(configs_cache=test_default_dataplex_configs_cache)
             rule_binding.resolve_row_filter_config(configs_cache=test_default_dataplex_configs_cache)
@@ -61,6 +63,7 @@ class TestMetadataUriTemplates:
         test_rule_bindings_collection_team_4,
         test_default_dataplex_configs_cache,
         test_resources,
+        test_dataplex_metadata_defaults_configs,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_4.items():
@@ -74,6 +77,7 @@ class TestMetadataUriTemplates:
                 environment=env,
                 metadata=metadata,
                 configs_cache=test_default_dataplex_configs_cache,
+                default_configs=test_dataplex_metadata_defaults_configs,
             )
             logger.info(pformat(json.dumps(configs["configs"])))
 
@@ -92,12 +96,11 @@ class TestMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_updateTime"] = "<dataplex_entity_updateTime>"
 
             with open(test_resources / "dp_metadata_expected_configs.json") as f:
-                 expected_configs = json.loads(f.read())
-                 assert configs["configs"] == dict(expected_configs)
+                expected_configs = json.loads(f.read())
+                assert configs["configs"] == dict(expected_configs)
             metadata.update(rule_binding_configs["metadata"])
             assert configs["metadata"] == dict(metadata)
             assert configs["environment"] == env
-
 
     def test_render_run_dq_main_sql(
         self,
@@ -107,11 +110,11 @@ class TestMetadataUriTemplates:
         gcp_project_id,
         gcp_dataplex_bigquery_dataset_id,
         gcp_bq_dataset,
-
+        test_dataplex_metadata_defaults_configs,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_4.items():
-            with open(test_resources / f"dp_metadata_sql_expected.sql".lower()) as f:
+            with open(test_resources / "dp_metadata_sql_expected.sql") as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
@@ -120,6 +123,7 @@ class TestMetadataUriTemplates:
                 configs_cache=test_default_dataplex_configs_cache,
                 environment="DEV",
                 debug=True,
+                default_configs=test_dataplex_metadata_defaults_configs,
             )
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
@@ -132,4 +136,4 @@ class TestMetadataUriTemplates:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))
