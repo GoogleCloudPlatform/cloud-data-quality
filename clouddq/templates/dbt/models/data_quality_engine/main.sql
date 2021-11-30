@@ -27,6 +27,8 @@
         column_id,
         metadata_json_string,
         configs_hashsum,
+        dataplex_lake,
+        dataplex_zone,
         dq_run_id,
         progress_watermark,
         rows_validated,
@@ -57,7 +59,7 @@
     FROM
         {{ ref(rule_binding_id) }}
     GROUP BY
-        1,2,3,4,5,6,7,8,9,10,11,12,13
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
     {% if loop.nextitem is defined %}
     UNION ALL
     {% endif %}
@@ -81,6 +83,7 @@
         NULL AS failed_count,
         NULL AS failed_percentage,
         NULL AS null_count,
-        NULL AS null_percentage
+        NULL AS null_percentage,
+        NULL AS entity_configs
     LIMIT 0
 {%- endfor -%}

@@ -91,8 +91,6 @@ def run_dbt(
             raise RuntimeError(
                 "dbt run failed with Runtime Error. "
                 "See Runtime Error description in dbt run logs for details. "
-                "Maybe the error is caused by custom SQL logic in a CUSTOM_SQL_EXPR "
-                "or CUSTOM_SQL_STATEMENT rule?"
             )
     except Exception as e:
         raise RuntimeError(f"dbt run failed with unknown error: '{e}'")
