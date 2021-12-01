@@ -33,8 +33,8 @@ function zip_configs_directory_and_upload_to_gcs() {
 function upload_clouddq_zip_executable_to_gcs() {
   wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip
   wget -O clouddq_executable.zip.hashsum https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip.sha256sum
-  gsutil cp /tmp/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip
-  gsutil cp /tmp/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum
+  gsutil cp clouddq_executable.zip gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip
+  gsutil cp clouddq_executable.zip.hashsum gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum
 }
 
 function main() {

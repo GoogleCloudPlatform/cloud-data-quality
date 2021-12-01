@@ -30,7 +30,7 @@ PROJECT_ID = "<your_gcp_project_id>"
 REGION = "<preferred_gcp_region>"
 TEMPLATE_ID = "<template_id>"
 
-SCHEDULE_INTERVAL = timedelta(minutes=15)
+SCHEDULE_INTERVAL = timedelta(minutes=60)
 START_DATE = datetime.now() - SCHEDULE_INTERVAL
 
 # [START composer_simple_define_dag_airflow_1]

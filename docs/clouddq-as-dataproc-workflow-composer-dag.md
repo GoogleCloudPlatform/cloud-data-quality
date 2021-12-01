@@ -121,7 +121,7 @@ The above script will perform the following steps:
 
 ## 7. Schedule CloudDQ jobs via Dataproc Workflow Templates using Cloud Composer
 
-The Cloud Composer DAG in the below example are scheduled for execution with 15 minutes intervals.
+The Cloud Composer DAG in the below example are scheduled for execution with 60 minutes intervals.
 
 ### 7.1. Create a Cloud Composer Environment
 
