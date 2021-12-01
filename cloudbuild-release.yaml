@@ -73,7 +73,7 @@ steps:
         set -x
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq
-        tzdata sudo lsb-release apt-utils curl
+        tzdata sudo lsb-release apt-utils curl software-properties-common
 
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         
