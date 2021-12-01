@@ -21,31 +21,32 @@ rule_bindings:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type,value"
       - NOT_NULL_SIMPLE
+      - IN_REF_SET
     metadata:
       brand: one
 
 
-  T5_URI_BQ_EMAIL_DUPLICATE:
-    entity_uri: bigquery://locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/projects/<my-gcp-project-id>/datasets/<my_bigquery_dataset_id>/tables/contact_details
-    column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
-    rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: "contact_type,value"
-      - NOT_NULL_SIMPLE
-    metadata:
-      brand: one
+  # T5_URI_BQ_EMAIL_DUPLICATE:
+  #   entity_uri: bigquery://locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/projects/<my-gcp-project-id>/datasets/<my_bigquery_dataset_id>/tables/contact_details
+  #   column_id: VALUE
+  #   row_filter_id: DATA_TYPE_EMAIL
+  #   rule_ids:
+  #     - NO_DUPLICATES_IN_COLUMN_GROUPS:
+  #         column_names: "contact_type,value"
+  #     - NOT_NULL_SIMPLE
+  #   metadata:
+  #     brand: one
 
-  T6_URI_BQ_ELIDE_EMAIL_DUPLICATE:
-    entity_uri: bigquery://projects/<my-gcp-project-id>/datasets/<my_bigquery_dataset_id>/tables/contact_details
-    column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
-    rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: "contact_type,value"
-      - NOT_NULL_SIMPLE
-    metadata:
-      brand: one
+  # T6_URI_BQ_ELIDE_EMAIL_DUPLICATE:
+  #   entity_uri: bigquery://projects/<my-gcp-project-id>/datasets/<my_bigquery_dataset_id>/tables/contact_details
+  #   column_id: VALUE
+  #   row_filter_id: DATA_TYPE_EMAIL
+  #   rule_ids:
+  #     - NO_DUPLICATES_IN_COLUMN_GROUPS:
+  #         column_names: "contact_type,value"
+  #     - NOT_NULL_SIMPLE
+  #   metadata:
+  #     brand: one
 
   T7_URI_DP_EMAIL_DUPLICATE:
     entity_uri: dataplex://zones/<my-gcp-dataplex-zone-id>/entities/contact_details

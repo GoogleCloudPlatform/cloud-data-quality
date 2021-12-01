@@ -6,9 +6,9 @@ steps:
         set -x
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
         source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
+        make check
         make test test_dataplex_metadata
         make test test_dataplex_task
-        make check
         source scripts/install_gcloud.sh
         gsutil ls gs://$_GCS_BUCKET_NAME
         gsutil cp clouddq_patched.zip gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/`date -I`/${BRANCH_NAME}_${SHORT_SHA}/clouddq-executable.zip
