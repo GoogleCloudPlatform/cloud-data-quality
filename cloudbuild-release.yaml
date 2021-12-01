@@ -39,11 +39,15 @@ steps:
 
         gsutil cp clouddq_patched.zip
         gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
-        -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
         gsutil cp clouddq_patched.zip.hashsum
         gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
-        -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
+
+        gsutil cp clouddq/integration/clouddq_pyspark_driver.py
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq_pyspark_driver.py
     entrypoint: /bin/bash
   - name: 'ubuntu:18.04'
     env:
@@ -73,7 +77,7 @@ steps:
 
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         
-        DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt install gcc-10 -yq
+        DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt-get install gcc-10 -yq
 
         source scripts/cloud_build_test_debian_ubuntu.sh "3.8.6"
 
@@ -85,11 +89,15 @@ steps:
 
         gsutil cp clouddq_patched.zip
         gs://${_GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/main/`date
-        -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
         gsutil cp clouddq_patched.zip.hashsum
         gs://${_GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/main/`date
-        -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
+
+        gsutil cp clouddq/integration/clouddq_pyspark_driver.py
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/main/`date
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq_pyspark_driver.py
     entrypoint: /bin/bash
 timeout: 7200s
 logsBucket: 'gs://dataplex-clouddq-github-cloud-build'

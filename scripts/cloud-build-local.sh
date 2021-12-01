@@ -58,10 +58,14 @@ else
   fi
 fi
 
+TMP_YAML=/tmp/cloudbuild.yaml
+SOURCE_YAML=cloudbuild.yaml
+head -n -3 $SOURCE_YAML > $TMP_YAML
+
 function main() {
   set -x
   cloud-build-local \
-  --config=cloudbuild.yaml \
+  --config=${TMP_YAML} \
   --dryrun=${DRY_RUN} \
   --substitutions \
 _GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}",\
@@ -77,6 +81,7 @@ _DATAPLEX_BUCKET_NAME="${DATAPLEX_BUCKET_NAME}",\
 _DATAPLEX_TARGET_BQ_DATASET="${DATAPLEX_TARGET_BQ_DATASET}",\
 _DATAPLEX_TARGET_BQ_TABLE="${DATAPLEX_TARGET_BQ_TABLE}",\
 _DATAPLEX_TASK_SA="${DATAPLEX_TASK_SA}",\
+_GCS_RELEASE_BUCKET="${GCS_BUCKET_NAME}",\
 _GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE}" \
   .
   set +x
