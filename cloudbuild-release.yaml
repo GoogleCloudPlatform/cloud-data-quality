@@ -6,9 +6,9 @@ steps:
       - 'CLOUDDQ_BIGQUERY_REGION=${_CLOUDDQ_BIGQUERY_REGION}'
       - 'GCS_BUCKET_NAME=${_GCS_BUCKET_NAME}'
       - 'GCS_BAZEL_CACHE=${_GCS_BAZEL_CACHE}'
+      - 'DATAPLEX_ENDPOINT=${_DATAPLEX_ENDPOINT}'
       - 'DATAPLEX_LAKE_NAME=${_DATAPLEX_LAKE_NAME}'
       - 'DATAPLEX_REGION_ID=${_DATAPLEX_REGION_ID}'
-      - 'DATAPLEX_LAKE_NAME=${_DATAPLEX_LAKE_NAME}'
       - 'DATAPLEX_ZONE_ID=${_DATAPLEX_ZONE_ID}'
       - 'DATAPLEX_BIGQUERY_DATASET_ID=${_DATAPLEX_BIGQUERY_DATASET_ID}'
       - 'DATAPLEX_BUCKET_NAME=${_DATAPLEX_BUCKET_NAME}'
@@ -23,7 +23,7 @@ steps:
         set -x
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq
-        tzdata sudo lsb-release apt-utils
+        tzdata sudo lsb-release apt-utils curl
 
         source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
 
@@ -38,11 +38,11 @@ steps:
         gsutil ls gs://$_GCS_RELEASE_BUCKET
 
         gsutil cp clouddq_patched.zip
-        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/`date
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
         gsutil cp clouddq_patched.zip.hashsum
-        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/`date
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
   - name: 'ubuntu:18.04'
@@ -52,9 +52,9 @@ steps:
       - 'CLOUDDQ_BIGQUERY_REGION=${_CLOUDDQ_BIGQUERY_REGION}'
       - 'GCS_BUCKET_NAME=${_GCS_BUCKET_NAME}'
       - 'GCS_BAZEL_CACHE=${_GCS_BAZEL_CACHE}'
+      - 'DATAPLEX_ENDPOINT=${_DATAPLEX_ENDPOINT}'
       - 'DATAPLEX_LAKE_NAME=${_DATAPLEX_LAKE_NAME}'
       - 'DATAPLEX_REGION_ID=${_DATAPLEX_REGION_ID}'
-      - 'DATAPLEX_LAKE_NAME=${_DATAPLEX_LAKE_NAME}'
       - 'DATAPLEX_ZONE_ID=${_DATAPLEX_ZONE_ID}'
       - 'DATAPLEX_BIGQUERY_DATASET_ID=${_DATAPLEX_BIGQUERY_DATASET_ID}'
       - 'DATAPLEX_BUCKET_NAME=${_DATAPLEX_BUCKET_NAME}'
@@ -69,7 +69,11 @@ steps:
         set -x
 
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq
-        tzdata sudo lsb-release apt-utils
+        tzdata sudo lsb-release apt-utils curl
+
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        
+        DEBIAN_FRONTEND=noninteractive sudo apt-get update && sudo apt install gcc-10 -yq
 
         source scripts/cloud_build_test_debian_ubuntu.sh "3.8.6"
 
@@ -80,14 +84,14 @@ steps:
         gsutil ls gs://$_GCS_RELEASE_BUCKET
 
         gsutil cp clouddq_patched.zip
-        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/`date
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/main/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
         gsutil cp clouddq_patched.zip.hashsum
-        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/`date
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/main/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
 timeout: 7200s
-logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
-options:
-  machineType: E2_HIGHCPU_8
+# logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
+# options:
+#   machineType: E2_HIGHCPU_8

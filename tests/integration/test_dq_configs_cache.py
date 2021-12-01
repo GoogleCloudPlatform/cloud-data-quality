@@ -28,6 +28,7 @@ from clouddq.utils import working_directory
 
 logger = logging.getLogger(__name__)
 
+@pytest.mark.dataplex
 class TestDqConfigsCache:
 
     def test_prepare_configs_cache(self, temp_configs_dir):

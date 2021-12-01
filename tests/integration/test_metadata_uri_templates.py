@@ -34,7 +34,7 @@ ASSET_ID_REP = "'<your_dataplex_asset_id>' AS dataplex_asset_id,"
 
 logger = logging.getLogger(__name__)
 
-
+@pytest.mark.dataplex
 class TestMetadataUriTemplates:
     """ """
     @pytest.fixture(scope="function")
