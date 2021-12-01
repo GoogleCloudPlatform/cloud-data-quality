@@ -12,7 +12,7 @@ It takes as input Data Quality validation tests defined using a flexible and reu
 
 `CloudDQ` currently supports in-place validation of BigQuery data.
 
-**Note:** This project is currently in alpha status and may change in breaking ways.
+**Note:** This project is currently in beta status and may still change in breaking ways.
 
 ### Declarative Data Quality Configs
 
