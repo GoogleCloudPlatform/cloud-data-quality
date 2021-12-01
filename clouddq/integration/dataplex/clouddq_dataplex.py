@@ -90,6 +90,7 @@ class CloudDqDataplexClient:
         clouddq_executable_checksum_path: str | None = None,
         validate_only: bool = False,
         clouddq_pyspark_driver_filename: str = "clouddq_pyspark_driver.py",
+        enable_experimental_bigquery_entity_uris: bool = True,
     ) -> Response:
         # Set default CloudDQ PySpark driver path if not manually overridden
         clouddq_pyspark_driver_path = self._validate_clouddq_artifact_path(
@@ -132,7 +133,23 @@ class CloudDqDataplexClient:
             task_labels["user-agent"] = allowed_user_agent_label
         else:
             task_labels = {"user-agent": allowed_user_agent_label}
-        # Prepre Dataplex Task message body for CloudDQ Job
+        # Prepare CloudDQ execution argumnets
+        execution_arguments = (
+            f"clouddq-executable.zip, "
+            "ALL, "
+            f"{clouddq_configs_gcs_path}, "
+            f'--gcp_project_id="{clouddq_run_project_id}", '
+            f'--gcp_region_id="{clouddq_run_bq_region}", '
+            f'--gcp_bq_dataset_id="{clouddq_run_bq_dataset}", '
+            f"--target_bigquery_summary_table="
+            f'"{target_bq_result_project_name}.'
+            f"{target_bq_result_dataset_name}."
+            f'{target_bq_result_table_name}",'
+        )
+        # Set experimental flags
+        if enable_experimental_bigquery_entity_uris:
+            execution_arguments += " --enable_experimental_bigquery_entity_uris,"
+        # Prepare Dataplex Task message body for CloudDQ Job
         clouddq_post_body = {
             "spark": {
                 "python_script_file": clouddq_pyspark_driver_path,
@@ -143,18 +160,7 @@ class CloudDqDataplexClient:
                 ],
             },
             "execution_spec": {
-                "args": {
-                    "TASK_ARGS": f"clouddq-executable.zip, "
-                    "ALL, "
-                    f"{clouddq_configs_gcs_path}, "
-                    f'--gcp_project_id="{clouddq_run_project_id}", '
-                    f'--gcp_region_id="{clouddq_run_bq_region}", '
-                    f'--gcp_bq_dataset_id="{clouddq_run_bq_dataset}", '
-                    f"--target_bigquery_summary_table="
-                    f'"{target_bq_result_project_name}.'
-                    f"{target_bq_result_dataset_name}."
-                    f'{target_bq_result_table_name}",'
-                },
+                "args": {"TASK_ARGS": execution_arguments},
                 "service_account": f"{task_service_account}",
             },
             "trigger_spec": {"type": task_trigger_spec_type},

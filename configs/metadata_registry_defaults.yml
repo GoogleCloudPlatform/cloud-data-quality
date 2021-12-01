@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-metadata_registry_defaults:
-  dataplex:
-    projects: <my-gcp-project-id>
-    locations: <my-gcp-dataplex-region-id>
-    lakes: <my-gcp-dataplex-lake-id>
-    zones: <my-gcp-dataplex-zone-id>
+# metadata_registry_defaults:
+#   dataplex:
+#     projects: <my-gcp-project-id>
+#     locations: <my-gcp-dataplex-region-id>
+#     lakes: <my-gcp-dataplex-lake-id>
+#     zones: <my-gcp-dataplex-zone-id>
