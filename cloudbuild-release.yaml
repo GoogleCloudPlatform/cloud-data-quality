@@ -35,14 +35,14 @@ steps:
 
         source scripts/install_gcloud.sh
 
-        gsutil ls gs://$GCS_RELEASE_BUCKET
+        gsutil ls gs://$_GCS_RELEASE_BUCKET
 
         gsutil cp clouddq_patched.zip
-        gs://${GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/`date
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
         gsutil cp clouddq_patched.zip.hashsum
-        gs://${GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/`date
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
   - name: 'ubuntu:18.04'
@@ -77,14 +77,14 @@ steps:
 
         source scripts/install_gcloud.sh
 
-        gsutil ls gs://$GCS_RELEASE_BUCKET
+        gsutil ls gs://$_GCS_RELEASE_BUCKET
 
         gsutil cp clouddq_patched.zip
-        gs://${GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/`date
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
         gsutil cp clouddq_patched.zip.hashsum
-        gs://${GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/`date
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
 timeout: 7200s
