@@ -1,0 +1,55 @@
+steps:
+  - name: 'debian:11-slim'
+    env:
+      - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
+      - 'CLOUDDQ_BIGQUERY_DATASET=${_CLOUDDQ_BIGQUERY_DATASET}'
+      - 'CLOUDDQ_BIGQUERY_REGION=${_CLOUDDQ_BIGQUERY_REGION}'
+      - 'GCS_BUCKET_NAME=${_GCS_BUCKET_NAME}'
+      - 'GCS_BAZEL_CACHE=${_GCS_BAZEL_CACHE}'
+      - 'DATAPLEX_ENDPOINT=${_DATAPLEX_ENDPOINT}'
+      - 'DATAPLEX_LAKE_NAME=${_DATAPLEX_LAKE_NAME}'
+      - 'DATAPLEX_REGION_ID=${_DATAPLEX_REGION_ID}'
+      - 'DATAPLEX_ZONE_ID=${_DATAPLEX_ZONE_ID}'
+      - 'DATAPLEX_BIGQUERY_DATASET_ID=${_DATAPLEX_BIGQUERY_DATASET_ID}'
+      - 'DATAPLEX_BUCKET_NAME=${_DATAPLEX_BUCKET_NAME}'
+      - 'DATAPLEX_TARGET_BQ_DATASET=${_DATAPLEX_TARGET_BQ_DATASET}'
+      - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
+      - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
+      - 'TAG_NAME=$TAG_NAME'
+      - 'GCS_RELEASE_BUCKET=${_GCS_RELEASE_BUCKET}'
+    args:
+      - '-c'
+      - >
+        set -x
+
+        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq
+        tzdata sudo lsb-release apt-utils curl
+
+        source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
+
+        make check
+
+        make test test_dataplex_metadata
+
+        make test test_dataplex_task
+
+        source scripts/install_gcloud.sh
+
+        gsutil ls gs://$_GCS_RELEASE_BUCKET
+
+        gsutil cp clouddq_patched.zip
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
+
+        gsutil cp clouddq_patched.zip.hashsum
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
+
+        gsutil cp clouddq/integration/clouddq_pyspark_driver.py
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq_pyspark_driver.py
+    entrypoint: /bin/bash
+timeout: 3600s
+logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
+options:
+  machineType: E2_HIGHCPU_8
