@@ -20,7 +20,7 @@ import sys
 import traceback
 
 
-APP_VERSION = "0.4.0-rc3"
+APP_VERSION = "0.4.0"
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
 

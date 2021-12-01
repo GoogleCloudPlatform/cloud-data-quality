@@ -1,6 +1,6 @@
 # Cloud Data Quality Engine
 
-[![alpha](https://badgen.net/badge/status/alpha/d8624d)](https://badgen.net/badge/status/alpha/d8624d)
+[![beta](https://badgen.net/badge/status/beta/1E90FF)](https://badgen.net/badge/status/beta/1E90FF)
 [![build-test status](https://github.com/GoogleCloudPlatform/cloud-data-quality/actions/workflows/build-test.yml/badge.svg)](https://github.com/GoogleCloudPlatform/cloud-data-quality/actions/workflows/build-test.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
@@ -193,8 +193,11 @@ For example, from [Cloud Shell](https://shell.cloud.google.com/?show=ide%2Ctermi
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.3.1"
-wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_linux-amd64.zip
+export CLOUDDQ_RELEASE_VERSION="0.4.0"
+export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
+export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
+cd cloud-data-quality
+wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip
 ```
 
 You can then use the CLI by passing the zip into a Python interpreter:
@@ -216,7 +219,7 @@ From either [Cloud Shell](https://shell.cloud.google.com) or a `Ubuntu`/`Debian`
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.3.1"
+export CLOUDDQ_RELEASE_VERSION="0.4.0"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 ```
 
@@ -224,9 +227,11 @@ Then change directory to the git project and get the pre-built executable from G
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.3.1"
+export CLOUDDQ_RELEASE_VERSION="0.4.0"
+export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
+export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
-wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_linux-amd64.zip
+wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip
 ```
 
 Run the following command to authenticate to GCP using application-default credentials. The command will prompt you to login and provide a verification code back into the console.
