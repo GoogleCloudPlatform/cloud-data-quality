@@ -92,6 +92,6 @@ steps:
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
 timeout: 7200s
-# logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
-# options:
-#   machineType: E2_HIGHCPU_8
+logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
+options:
+  machineType: E2_HIGHCPU_8
