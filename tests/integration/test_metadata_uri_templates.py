@@ -25,7 +25,6 @@ from clouddq import lib
 from clouddq import utils
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 
-
 RE_NEWLINES = r"(\n( )*)+"
 RE_CONFIGS_HASHSUM = r"'[\w\d]+' AS configs_hashsum,"
 CONFIGS_HASHSUM_REP = "'' AS configs_hashsum,"
@@ -40,6 +39,13 @@ class TestMetadataUriTemplates:
         """ """
         return lib.load_rule_bindings_config(
             Path(temp_configs_dir / "rule_bindings/team-4-rule-bindings.yml")
+        )
+
+    @pytest.fixture(scope="function")
+    def test_rule_bindings_collection_from_configs_file(self, temp_configs_from_file):
+        """ """
+        return lib.load_rule_bindings_config(
+            Path(temp_configs_from_file)
         )
 
     def test_rule_bindings_class_resolve_configs(
@@ -134,6 +140,103 @@ class TestMetadataUriTemplates:
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             assert output == expected
 
+    def test_rule_bindings_class_resolve_configs_from_file(
+            self,
+            test_default_dataplex_configs_cache_from_file,
+            test_dataplex_metadata_defaults_configs,
+            test_rule_bindings_collection_from_configs_file,
+    ):
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
+            print("rule_binding_id", rule_binding_id)
+            print("rule_binding_configs", rule_binding_configs)
+            rule_binding = DqRuleBinding.from_dict(
+                rule_binding_id=rule_binding_id,
+                kwargs=rule_binding_configs,
+                default_configs=test_dataplex_metadata_defaults_configs)
+            rule_binding.resolve_table_entity_config(configs_cache=test_default_dataplex_configs_cache_from_file)
+            rule_binding.resolve_rule_config_list(configs_cache=test_default_dataplex_configs_cache_from_file)
+            rule_binding.resolve_row_filter_config(configs_cache=test_default_dataplex_configs_cache_from_file)
+            rule_binding.resolve_all_configs_to_dict(configs_cache=test_default_dataplex_configs_cache_from_file)
+
+    def test_prepare_configs_from_configs_file(
+            self,
+            test_rule_bindings_collection_from_configs_file,
+            test_default_dataplex_configs_cache_from_file,
+            test_resources,
+            test_dataplex_metadata_defaults_configs,
+    ):
+        """ """
+        for rule_binding_id, rule_binding_configs in \
+                test_rule_bindings_collection_from_configs_file.items():
+
+            print(rule_binding_id)
+            print(rule_binding_configs)
+
+            env = "DEV"
+            metadata = {"channel": "two"}
+            configs = lib.prepare_configs_from_rule_binding_id(
+                rule_binding_id=rule_binding_id,
+                rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
+                environment=env,
+                metadata=metadata,
+                configs_cache=test_default_dataplex_configs_cache_from_file,
+                default_configs=test_dataplex_metadata_defaults_configs,
+            )
+            logger.info(pformat(json.dumps(configs["configs"])))
+
+            configs["configs"]["rule_binding_id"] = "<dataplex_rule_binding_id>"
+            configs["configs"]["entity_id"] = "<dataplex_entity_id>"
+            configs["configs"]["entity_configs"]["database_name"] = "<your_dataplex_bigquery_dataset_id>"
+            configs["configs"]["entity_configs"]["instance_name"] = "<your-gcp-project-id>"
+            configs["configs"]["entity_configs"]["dataset_name"] = "<your_dataplex_bigquery_dataset_id>"
+            configs["configs"]["entity_configs"]["project_name"] = "<your-gcp-project-id>"
+            configs["configs"]["entity_configs"]["dataplex_name"] = "<your-gcp-dataplex-name>"
+            configs["configs"]["entity_configs"]["dataplex_lake"] = "<your-gcp-dataplex-lake-id>"
+            configs["configs"]["entity_configs"]["dataplex_zone"] = "<your-gcp-dataplex-zone-id>"
+            configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
+            configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
+            configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
+            configs["configs"]["entity_configs"]["dataplex_updateTime"] = "<dataplex_entity_updateTime>"
+
+            with open(test_resources / "dp_metadata_expected_configs.json") as f:
+                expected_configs = json.loads(f.read())
+                assert configs["configs"] == dict(expected_configs)
+            metadata.update(rule_binding_configs["metadata"])
+            assert configs["metadata"] == dict(metadata)
+            assert configs["environment"] == env
+
+    def test_render_run_dq_main_sql_from_configs_file(
+        self,
+        test_rule_bindings_collection_from_configs_file,
+        test_default_dataplex_configs_cache_from_file,
+        test_resources,
+        gcp_project_id,
+        gcp_dataplex_bigquery_dataset_id,
+        gcp_bq_dataset,
+        test_dataplex_metadata_defaults_configs,
+    ):
+        """ """
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
+            with open(test_resources / "dp_metadata_sql_expected.sql") as f:
+                expected = f.read()
+            output = lib.create_rule_binding_view_model(
+                rule_binding_id=rule_binding_id,
+                rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
+                configs_cache=test_default_dataplex_configs_cache_from_file,
+                environment="DEV",
+                debug=True,
+                default_configs=test_dataplex_metadata_defaults_configs,
+            )
+            output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
+                .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
+                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")\
+                .replace(rule_binding_id, "<rule_binding_id>")
+            expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
+            output = re.sub(RE_NEWLINES, '\n', output).strip()
+            output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+            assert output == expected
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))
