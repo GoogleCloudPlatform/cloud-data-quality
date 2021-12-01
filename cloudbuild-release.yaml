@@ -26,11 +26,11 @@ steps:
 
         source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
 
+        make check
+
         make test test_dataplex_metadata
 
         make test test_dataplex_task
-
-        make check
 
         source scripts/install_gcloud.sh
 
