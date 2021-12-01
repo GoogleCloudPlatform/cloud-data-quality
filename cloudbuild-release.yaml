@@ -15,7 +15,8 @@ steps:
       - 'DATAPLEX_TARGET_BQ_DATASET=${_DATAPLEX_TARGET_BQ_DATASET}'
       - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
       - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
-      - TAG_NAME=$TAG_NAME
+      - 'TAG_NAME=$TAG_NAME'
+      - 'GCS_RELEASE_BUCKET=${_GCS_RELEASE_BUCKET}'
     args:
       - '-c'
       - >
@@ -34,14 +35,14 @@ steps:
 
         source scripts/install_gcloud.sh
 
-        gsutil ls gs://$_GCS_BUCKET_NAME
+        gsutil ls gs://$GCS_RELEASE_BUCKET
 
         gsutil cp clouddq_patched.zip
-        gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/`date
+        gs://${GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
         gsutil cp clouddq_patched.zip.hashsum
-        gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/`date
+        gs://${GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
   - name: 'ubuntu:18.04'
@@ -60,7 +61,8 @@ steps:
       - 'DATAPLEX_TARGET_BQ_DATASET=${_DATAPLEX_TARGET_BQ_DATASET}'
       - 'DATAPLEX_TARGET_BQ_TABLE=${_DATAPLEX_TARGET_BQ_TABLE}'
       - 'DATAPLEX_TASK_SA=${_DATAPLEX_TASK_SA}'
-      - TAG_NAME=$TAG_NAME
+      - 'TAG_NAME=$TAG_NAME'
+      - 'GCS_RELEASE_BUCKET=${_GCS_RELEASE_BUCKET}'
     args:
       - '-c'
       - >
@@ -75,14 +77,14 @@ steps:
 
         source scripts/install_gcloud.sh
 
-        gsutil ls gs://$_GCS_BUCKET_NAME
+        gsutil ls gs://$GCS_RELEASE_BUCKET
 
         gsutil cp clouddq_patched.zip
-        gs://${_GCS_BUCKET_NAME}/build-artifacts/ubuntu18.04/python3.8/`date
+        gs://${GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
         gsutil cp clouddq_patched.zip.hashsum
-        gs://${_GCS_BUCKET_NAME}/build-artifacts/ubuntu18.04/python3.8/`date
+        gs://${GCS_RELEASE_BUCKET}/build-artifacts/ubuntu18.04/python3.8/`date
         -I`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
     entrypoint: /bin/bash
 timeout: 7200s
