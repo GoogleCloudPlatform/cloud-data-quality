@@ -134,16 +134,17 @@ class CloudDqDataplexClient:
         else:
             task_labels = {"user-agent": allowed_user_agent_label}
         # Prepare CloudDQ execution argumnets
-        execution_arguments = (f"clouddq-executable.zip, "
-                    "ALL, "
-                    f"{clouddq_configs_gcs_path}, "
-                    f'--gcp_project_id="{clouddq_run_project_id}", '
-                    f'--gcp_region_id="{clouddq_run_bq_region}", '
-                    f'--gcp_bq_dataset_id="{clouddq_run_bq_dataset}", '
-                    f"--target_bigquery_summary_table="
-                    f'"{target_bq_result_project_name}.'
-                    f"{target_bq_result_dataset_name}."
-                    f'{target_bq_result_table_name}",'
+        execution_arguments = (
+            f"clouddq-executable.zip, "
+            "ALL, "
+            f"{clouddq_configs_gcs_path}, "
+            f'--gcp_project_id="{clouddq_run_project_id}", '
+            f'--gcp_region_id="{clouddq_run_bq_region}", '
+            f'--gcp_bq_dataset_id="{clouddq_run_bq_dataset}", '
+            f"--target_bigquery_summary_table="
+            f'"{target_bq_result_project_name}.'
+            f"{target_bq_result_dataset_name}."
+            f'{target_bq_result_table_name}",'
         )
         # Set experimental flags
         if enable_experimental_bigquery_entity_uris:
@@ -159,9 +160,7 @@ class CloudDqDataplexClient:
                 ],
             },
             "execution_spec": {
-                "args": {
-                    "TASK_ARGS": execution_arguments 
-                },
+                "args": {"TASK_ARGS": execution_arguments},
                 "service_account": f"{task_service_account}",
             },
             "trigger_spec": {"type": task_trigger_spec_type},
