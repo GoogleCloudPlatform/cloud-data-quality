@@ -50,8 +50,8 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_1")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"Running test_cli_dbt_path with {gcp_project_id=}, {gcp_bq_dataset=}, {gcp_bq_region=}")
-                logger.info(f"test_cli_dbt_path {gcp_application_credentials=}")
+                logger.info(f"Running test_cli_dbt_path with {gcp_project_id}, {gcp_bq_dataset}, {gcp_bq_region}")
+                logger.info(f"test_cli_dbt_path {gcp_application_credentials}")
                 target_table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
@@ -82,7 +82,7 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_2")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run_dbt_path {gcp_application_credentials=}")
+                logger.info(f"test_cli_dry_run_dbt_path {gcp_application_credentials}")
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
@@ -109,7 +109,7 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_3")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run_oauth_configs {gcp_application_credentials=}")
+                logger.info(f"test_cli_dry_run_oauth_configs {gcp_application_credentials}")
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
@@ -138,7 +138,7 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_4")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"test_last_modified_in_dq_summary {gcp_application_credentials=}")
+                logger.info(f"test_last_modified_in_dq_summary {gcp_application_credentials}")
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
@@ -198,7 +198,7 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_5")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run_sa_key_configs {gcp_application_credentials=}")
+                logger.info(f"test_cli_dry_run_sa_key_configs {gcp_application_credentials}")
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
@@ -235,7 +235,7 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_6")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run_sa_key_and_impersonation {gcp_application_credentials=}")
+                logger.info(f"test_cli_dry_run_sa_key_and_impersonation {gcp_application_credentials}")
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
@@ -272,7 +272,7 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_7")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run_oath_impersonation {gcp_application_credentials=}")
+                logger.info(f"test_cli_dry_run_oath_impersonation {gcp_application_credentials}")
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
@@ -305,7 +305,7 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_8")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run_oath_impersonation {gcp_application_credentials=}")
+                logger.info(f"test_cli_dry_run_oath_impersonation {gcp_application_credentials}")
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
@@ -335,7 +335,7 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_9")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run_missing_project_id_fail {gcp_application_credentials=}")
+                logger.info(f"test_cli_dry_run_missing_project_id_fail {gcp_application_credentials}")
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
@@ -363,7 +363,7 @@ class TestCliIntegration:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_10")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run_dataset_in_wrong_region_fail {gcp_application_credentials=}")
+                logger.info(f"test_cli_dry_run_dataset_in_wrong_region_fail {gcp_application_credentials}")
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
