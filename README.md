@@ -272,7 +272,7 @@ export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export CLOUDDQ_BIGQUERY_REGION=EU
 export CLOUDDQ_BIGQUERY_DATASET=clouddq
 sed -i s/\<your_gcp_project_id\>/${GOOGLE_CLOUD_PROJECT}/g configs/entities/test-data.yml
-sed -i s/<your_bigquery_dataset_id>/${CLOUDDQ_BIGQUERY_DATASET}/g configs/entities/test-data.yml
+sed -i s/\<your_bigquery_dataset_id\>/${CLOUDDQ_BIGQUERY_DATASET}/g configs/entities/test-data.yml
 ```
 
 Using the same Project ID, GCP Region, and BigQuery dataset ID as defined before, we will attempt to execute two `Rule Binding`s with the unique identifers `T2_DQ_1_EMAIL` and `T3_DQ_1_EMAIL_DUPLICATE` from the `configs` directory containing the complete YAML configurations:
