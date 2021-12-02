@@ -183,11 +183,19 @@ class TestLib:
             dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
             os.remove(temp_dir / 'rule.yml')
 
-            
-
-
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_prepare_configs_cache(self):
+        pytest.skip("todo")
+        temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_1")
+        config_path = Path(temp_configs_dir)
+
+        temp_dir.mkdir(parents=True)
+
+        assert os.path.isfile(config_path / 'entities' / 'test-data.yml')
+        shutil.copy(config_path / 'entities' / 'test-data.yml', temp_dir / 'test-data1.yml')
+        shutil.copy(config_path / 'entities' / 'test-data.yml', temp_dir / 'test-data2.yml')
 
 
 if __name__ == "__main__":

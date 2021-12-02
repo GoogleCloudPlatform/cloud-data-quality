@@ -23,6 +23,7 @@ import typing
 
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_configs_cache import DqConfigsCache
+from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 from clouddq.utils import assert_not_none_or_empty
@@ -171,7 +172,15 @@ def prepare_configs_cache(configs_path: Path) -> DqConfigsCache:
     configs_cache.load_all_entities_collection(entities_collection)
     row_filters_collection = load_row_filters_config(configs_path)
     configs_cache.load_all_row_filters_collection(row_filters_collection)
+    rule_dimensions_collection = load_rule_dimensions_config(configs_path)
+    #TODO
+    #configs_cache.load_all_rule_dimensions_collection(rule_dimensions_collection)
     rules_collection = load_rules_config(configs_path)
+
+    # validate rules against dimensions
+    for rule in rules_collection.values():
+        DqRule.validate(rule, rule_dimensions_collection)
+
     configs_cache.load_all_rules_collection(rules_collection)
     rule_binding_collection = load_rule_bindings_config(configs_path)
     configs_cache.load_all_rule_bindings_collection(rule_binding_collection)

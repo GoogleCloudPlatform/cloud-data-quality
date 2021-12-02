@@ -28,6 +28,8 @@ import clouddq.classes
 class DqRuleDimensions:
     """ """
 
+    dimensions: list | None = None    
+
     @classmethod
     def update_config(
         cls: DqRuleDimensions, config_current: dict, config_new: dict
