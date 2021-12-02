@@ -79,8 +79,8 @@ class DqRule:
             }
         
         if self.dimension:
-            d['dimension'] = self.dimension
-        
+            d[self.rule_id]['dimension'] = self.dimension
+            
         return d
 
     def dict_values(self: DqRule) -> dict:
