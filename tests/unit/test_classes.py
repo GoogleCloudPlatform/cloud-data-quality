@@ -315,14 +315,6 @@ class TestClasses:
 
     def test_configs_cache_rules(self, temp_configs_dir):
 
-        rules = lib.load_rules_config(temp_configs_dir)
-
-        rule_id1 = list(rules.keys())[0]
-        rules[rule_id1]['dimension'] = 'completeness'
-
-        cache = DqConfigsCache()
-        cache.load_all_rules_collection(rules)
-
         def assertRulesEqual(rule_id, rule_config, rule_loaded):
 
             print(f"rule ID {rule_id}")
@@ -343,22 +335,35 @@ class TestClasses:
 
             assert rules[rule_id] == loaded_rule_dict_clean, rule_id
 
+
+        rules = lib.load_rules_config(temp_configs_dir)
+
+        # Skip custom SQL because we will be going back and forth
+        # from dicts to objects and we haven't bound SQL params yet
+        complex_types = ['CUSTOM_SQL_EXPR', 'CUSTOM_SQL_STATEMENT']
+        rule_ids = sorted([id for id in rules.keys() if rules[id]['rule_type'] not in complex_types])
+        
+        rule_id1 = rule_ids[0]
+        rule_ids = rule_ids[1:]
+
+        # Give one rule a dimension
+        rules[rule_id1]['dimension'] = 'completeness'
+
+        cache = DqConfigsCache()
+        cache.load_all_rules_collection(rules)
+
         rule_config1 = rules[rule_id1]
         rule_loaded1 = cache.get_rule_id(rule_id1)
         assert rule_loaded1.dimension == 'completeness', rule_id1
         assertRulesEqual(rule_id1, rule_config1, rule_loaded1)
 
-        for rule_id in rules.keys():
+        # test the other rules
+        for rule_id in rule_ids:
 
-            if not rule_id == rule_id1:
-                rule_config = rules[rule_id]
-                rule_loaded = cache.get_rule_id(rule_id)
-                assert rule_loaded.dimension is None, rule_id
-
-                # Skip custom SQL because we will be going back and forth
-                # from dicts to objects and we haven't bound SQL params yet
-                if rule_loaded.rule_type not in [RuleType.CUSTOM_SQL_EXPR, RuleType.CUSTOM_SQL_STATEMENT]:
-                    assertRulesEqual(rule_id, rule_config, rule_loaded)
+            rule_config = rules[rule_id]
+            rule_loaded = cache.get_rule_id(rule_id)
+            assert rule_loaded.dimension is None, rule_id
+            assertRulesEqual(rule_id, rule_config, rule_loaded)
 
 
 if __name__ == "__main__":
