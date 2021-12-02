@@ -25,6 +25,8 @@ from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_format_string_arguments
 from clouddq.utils import get_from_dict_and_assert
 
+import clouddq.classes
+
 
 ENTITY_CUSTOM_CONFIG_MAPPING = {
     "BIGQUERY": {
@@ -101,6 +103,12 @@ class DqEntity:
     dataplex_asset_id: str | None
     dataplex_createTime: str | None
     dataplex_updateTime: str | None
+
+    @classmethod
+    def update_config(
+        cls: DqEntity, config_current: dict, config_new: dict
+    ) -> dict:
+        return clouddq.classes.update_config(config_current, config_new)
 
     def resolve_column_config(self: DqEntity, column_id: str) -> DqEntityColumn:
         """

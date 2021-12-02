@@ -19,6 +19,8 @@ from dataclasses import dataclass
 
 from clouddq.classes.rule_type import RuleType
 
+import clouddq.classes
+
 
 @dataclass
 class DqRule:
@@ -28,8 +30,11 @@ class DqRule:
     rule_type: RuleType
     params: dict | None = None
 
-    def resolve_sql_expr(self: DqRule) -> str:
-        return self.rule_type.to_sql(self.params).safe_substitute()
+    @classmethod
+    def update_config(
+        cls: DqRule, config_current: dict, config_new: dict
+    ) -> dict:
+        return clouddq.classes.update_config(config_current, config_new)
 
     @classmethod
     def from_dict(cls: DqRule, rule_id: str, kwargs: dict) -> DqRule:
@@ -47,17 +52,6 @@ class DqRule:
         rule_type: RuleType = RuleType(kwargs.get("rule_type", ""))
         params: dict = kwargs.get("params", dict())
         return DqRule(rule_id=str(rule_id), rule_type=rule_type, params=params)
-
-    def update_rule_binding_arguments(self, arguments: dict) -> None:
-        params = {"rule_binding_arguments": arguments}
-        if not self.params:
-            self.params = params
-        elif type(self.params) == dict:
-            self.params.update(params)
-        else:
-            raise ValueError(
-                f"DqRule ID: {self.rule_id} has invalid 'params' field:\n {self.params}"
-            )
 
     def to_dict(self: DqRule) -> dict:
         """
@@ -90,3 +84,17 @@ class DqRule:
         """
 
         return dict(self.to_dict().get(self.rule_id))
+
+    def resolve_sql_expr(self: DqRule) -> str:
+        return self.rule_type.to_sql(self.params).safe_substitute()
+
+    def update_rule_binding_arguments(self, arguments: dict) -> None:
+        params = {"rule_binding_arguments": arguments}
+        if not self.params:
+            self.params = params
+        elif type(self.params) == dict:
+            self.params.update(params)
+        else:
+            raise ValueError(
+                f"DqRule ID: {self.rule_id} has invalid 'params' field:\n {self.params}"
+            )

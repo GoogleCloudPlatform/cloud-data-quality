@@ -19,6 +19,8 @@ from dataclasses import dataclass
 
 from clouddq.utils import assert_not_none_or_empty
 
+import clouddq.classes
+
 
 @dataclass
 class DqRowFilter:
@@ -26,6 +28,12 @@ class DqRowFilter:
 
     row_filter_id: str
     filter_sql_expr: str
+
+    @classmethod
+    def update_config(
+        cls: DqRowFilter, config_current: dict, config_new: dict
+    ) -> dict:
+        return clouddq.classes.update_config(config_current, config_new)
 
     @classmethod
     def from_dict(

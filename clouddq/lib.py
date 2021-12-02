@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
+
     if configs_path.is_file():
         yaml_files = [configs_path]
     else:
@@ -46,26 +47,10 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
         config = load_yaml(file, configs_type.value)
         if not config:
             continue
-        intersection = config.keys() & all_configs.keys()
 
-        # The new config defines keys that we have already loaded
-        if intersection:
-            # Verify that objects pointed to by duplicate keys are identical
-            config_i = {}
-            all_configs_i = {}
-            for k in intersection:
-                config_i[k] = config[k]
-                all_configs_i[k] = all_configs[k]
-
-            # == on dicts performs deep compare:
-            if not config_i == all_configs_i:
-                raise ValueError(
-                    f"Detected Duplicated Config ID(s): {intersection} "
-                    f"If a config ID is repeated, it must be for an identical "
-                    f"configuration."
-                )
-
-        all_configs.update(config)
+        all_configs = DqConfigType.to_class(configs_type).update_config(
+            all_configs, config
+        )
 
     if configs_type.is_required():
         assert_not_none_or_empty(
@@ -78,6 +63,10 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
 
 def load_rule_bindings_config(configs_path: Path) -> typing.Dict:
     return load_configs(configs_path, DqConfigType.RULE_BINDINGS)
+
+
+def load_rule_dimensions_config(configs_path: Path) -> list:
+    return load_configs(configs_path, DqConfigType.RULE_DIMENSIONS)
 
 
 def load_entities_config(configs_path: Path) -> typing.Dict:

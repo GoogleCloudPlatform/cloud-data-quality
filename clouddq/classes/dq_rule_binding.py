@@ -30,6 +30,7 @@ from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_from_dict_and_assert
 from clouddq.utils import get_keys_from_dict_and_assert_oneof
 
+import clouddq.classes
 import clouddq.classes.dq_configs_cache as dq_configs_cache
 
 
@@ -48,6 +49,12 @@ class DqRuleBinding:
     incremental_time_filter_column_id: str | None
     rule_ids: list
     metadata: dict | None
+
+    @classmethod
+    def update_config(
+        cls: DqRuleBinding, config_current: dict, config_new: dict
+    ) -> dict:
+        return clouddq.classes.update_config(config_current, config_new)
 
     @classmethod
     def from_dict(
