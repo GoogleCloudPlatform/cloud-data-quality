@@ -115,7 +115,7 @@ class TestLib:
 
             with open(temp_dir / 'rule.yml', 'w') as f:
                 yaml.safe_dump(testconfig, f)
-            
+
             rules = lib.load_configs(temp_dir, DqConfigType.RULES)
             dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
 
@@ -185,17 +185,43 @@ class TestLib:
             shutil.rmtree(temp_dir)
 
     def test_prepare_configs_cache(self, temp_configs_dir):
-
-        lib.prepare_configs_cache(temp_configs_dir)
-
-        temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_1")
         config_path = Path(temp_configs_dir)
 
-        temp_dir.mkdir(parents=True)
+        temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_prepare_configs_cache")
 
-        assert os.path.isfile(config_path / 'entities' / 'test-data.yml')
-        shutil.copy(config_path / 'entities' / 'test-data.yml', temp_dir / 'test-data1.yml')
-        shutil.copy(config_path / 'entities' / 'test-data.yml', temp_dir / 'test-data2.yml')
+        try:
+            temp_dir.mkdir(parents=True)
+            shutil.copytree(config_path, temp_dir / 'configs')
+
+            base_rules = temp_dir / 'configs' / 'rules' / 'base-rules.yml'
+            assert os.path.isfile(base_rules)
+            with (temp_dir / 'configs' / 'rules' / 'base-rules.yml').open() as f:
+                rule_config = yaml.safe_load(f)
+
+            # Add dimension "correctness" to all rules
+
+            for id in rule_config['rules']:
+                rule_config['rules'][id]['dimension'] = 'correctness'
+
+            # Rewrite the file
+            os.remove(base_rules)
+            with open(base_rules, 'w') as f:
+                yaml.safe_dump(rule_config, f)
+
+            #  Expect to raise a ValueError because no rule_dimensions are defined:
+            with pytest.raises(ValueError):
+                lib.prepare_configs_cache(temp_dir)
+
+            # Add the rule dimensions and try again
+            rule_config['rule_dimensions'] = ['correctness', 'conformity', 'completeness']
+            os.remove(base_rules)
+            with open(base_rules, 'w') as f:
+                yaml.safe_dump(rule_config, f)
+
+            lib.prepare_configs_cache(temp_dir)
+
+        finally:
+            shutil.rmtree(temp_dir)
 
 
 if __name__ == "__main__":

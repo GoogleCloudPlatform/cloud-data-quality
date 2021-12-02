@@ -318,8 +318,6 @@ class TestClasses:
         rules = lib.load_rules_config(temp_configs_dir)
 
         rule_id1 = list(rules.keys())[0]
-        rule_id2 = list(rules.keys())[1]
-
         rules[rule_id1]['dimension'] = 'completeness'
 
         cache = DqConfigsCache()
@@ -350,10 +348,17 @@ class TestClasses:
         assert rule_loaded1.dimension == 'completeness', rule_id1
         assertRulesEqual(rule_id1, rule_config1, rule_loaded1)
 
-        rule_config2 = rules[rule_id2]
-        rule_loaded2 = cache.get_rule_id(rule_id2)
-        assert rule_loaded2.dimension is None, rule_id2
-        assertRulesEqual(rule_id2, rule_config2, rule_loaded2)
+        for rule_id in rules.keys():
+
+            if not rule_id == rule_id1:
+                rule_config = rules[rule_id]
+                rule_loaded = cache.get_rule_id(rule_id)
+                assert rule_loaded.dimension is None, rule_id
+
+                # Skip custom SQL because we will be going back and forth
+                # from dicts to objects and we haven't bound SQL params yet
+                if rule_loaded.rule_type not in [RuleType.CUSTOM_SQL_EXPR, RuleType.CUSTOM_SQL_STATEMENT]:
+                    assertRulesEqual(rule_id, rule_config, rule_loaded)
 
 
 if __name__ == "__main__":

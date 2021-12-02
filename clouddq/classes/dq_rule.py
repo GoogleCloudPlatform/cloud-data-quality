@@ -39,8 +39,8 @@ class DqRule:
     def validate(cls: DqRule, config: dict, rule_dims: list) -> None:
         if "dimension" in config and not config["dimension"] in rule_dims:
             raise ValueError(
-                f"Rule is invalid because dimension {config['dimension']}"
-                " is not an allowed value: {rule_dims}"
+                f"Rule is invalid because dimension '{config['dimension']}'"
+                f" does not appear in the list of rule_dimensions: {rule_dims}"
             )
 
     @classmethod
