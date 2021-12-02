@@ -33,7 +33,7 @@ ASSET_ID_REP = "'<your_dataplex_asset_id>' AS dataplex_asset_id,"
 
 logger = logging.getLogger(__name__)
 
-@pytest.mark.dataplex
+
 class TestMetadataUriTemplates:
     """ """
     @pytest.fixture(scope="function")
@@ -101,6 +101,7 @@ class TestMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
+            configs["configs"]["entity_configs"]["dataplex_updateTime"] = "<dataplex_entity_updateTime>"
             with open(test_resources / "dataplex_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
@@ -152,8 +153,6 @@ class TestMetadataUriTemplates:
             test_rule_bindings_collection_from_configs_file,
     ):
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
-            print("rule_binding_id", rule_binding_id)
-            print("rule_binding_configs", rule_binding_configs)
             rule_binding = DqRuleBinding.from_dict(
                 rule_binding_id=rule_binding_id,
                 kwargs=rule_binding_configs,
@@ -171,12 +170,7 @@ class TestMetadataUriTemplates:
             test_dataplex_metadata_defaults_configs,
     ):
         """ """
-        for rule_binding_id, rule_binding_configs in \
-                test_rule_bindings_collection_from_configs_file.items():
-
-            print(rule_binding_id)
-            print(rule_binding_configs)
-
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
             env = "DEV"
             metadata = {"channel": "two"}
             configs = lib.prepare_configs_from_rule_binding_id(
@@ -204,7 +198,7 @@ class TestMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
             configs["configs"]["entity_configs"]["dataplex_updateTime"] = "<dataplex_entity_updateTime>"
 
-            with open(test_resources / "dp_metadata_expected_configs.json") as f:
+            with open(test_resources / "dataplex_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
             metadata.update(rule_binding_configs["metadata"])
@@ -220,10 +214,13 @@ class TestMetadataUriTemplates:
         gcp_dataplex_bigquery_dataset_id,
         gcp_bq_dataset,
         test_dataplex_metadata_defaults_configs,
+        gcp_dataplex_zone_id,
+        gcp_dataplex_lake_name,
+        gcp_dataplex_bigquery_asset_id
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
-            with open(test_resources / "dp_metadata_sql_expected.sql") as f:
+            with open(test_resources / "dataplex_metadata_sql_expected.sql") as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
@@ -237,7 +234,10 @@ class TestMetadataUriTemplates:
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")\
-                .replace(rule_binding_id, "<rule_binding_id>")
+                .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")\
+                .replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")\
+                .replace(rule_binding_id, "<rule_binding_id>")\
+                .replace(gcp_dataplex_bigquery_asset_id, "<your_dataplex_asset_id>")
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
