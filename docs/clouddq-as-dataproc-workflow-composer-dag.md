@@ -72,7 +72,7 @@ Edit the `entities` config to use your [GCP project ID](https://cloud.google.com
 
 ```bash
 sed -i s/\<your_gcp_project_id\>/${PROJECT_ID}/g ./configs/entities/test-data.yml
-sed -i s/dq_test/${CLOUDDQ_BIGQUERY_DATASET}/g ./configs/entities/test-data.yml
+sed -i s/\<your_bigquery_dataset_id\>/${CLOUDDQ_BIGQUERY_DATASET}/g ./configs/entities/test-data.yml
 ```
 
 ## 4. Create Cloud Storage Bucket for CloudDQ
