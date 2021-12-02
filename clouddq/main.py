@@ -397,10 +397,10 @@ def main(  # noqa: C901
         )
         logger.debug(
             "Created CloudDqDataplexClient with arguments: "
-            f"{gcp_credentials=}, "
-            f"{default_dataplex_projects=}, "
-            f"{default_dataplex_lakes=}, "
-            f"{default_dataplex_locations=}, "
+            f"{gcp_credentials}, "
+            f"{default_dataplex_projects}, "
+            f"{default_dataplex_lakes}, "
+            f"{default_dataplex_locations}, "
         )
         # Load all configs into a local cache
         configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
