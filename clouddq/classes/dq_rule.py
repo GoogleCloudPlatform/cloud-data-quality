@@ -28,7 +28,7 @@ class DqRule:
 
     rule_id: str
     rule_type: RuleType
-    #dimension: str | None = None
+    dimension: str | None = None
     params: dict | None = None
 
     @classmethod
@@ -58,9 +58,8 @@ class DqRule:
 
         rule_type: RuleType = RuleType(kwargs.get("rule_type", ""))
         params: dict = kwargs.get("params", dict())
-        #dim: str = kwargs.get("dimension")
-        #return DqRule(rule_id=str(rule_id), rule_type=rule_type, dimension=dim, params=params)
-        return DqRule(rule_id=str(rule_id), rule_type=rule_type, params=params)
+        dim: str = kwargs.get("dimension")
+        return DqRule(rule_id=str(rule_id), rule_type=rule_type, dimension=dim, params=params)
 
     def to_dict(self: DqRule) -> dict:
         """
@@ -72,16 +71,17 @@ class DqRule:
 
         """
 
-        return dict(
-            {
-                f"{self.rule_id}": {
+        d = { f"{self.rule_id}": {
                     "rule_type": self.rule_type.name,
-                    #"dimension": self.dimension,
                     "params": self.params,
                     "rule_sql_expr": self.resolve_sql_expr(),
                 }
             }
-        )
+        
+        if self.dimension:
+            d['dimension'] = self.dimension
+        
+        return d
 
     def dict_values(self: DqRule) -> dict:
         """
