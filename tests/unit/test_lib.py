@@ -86,7 +86,6 @@ class TestLib:
         finally:
             shutil.rmtree(temp_dir)
 
-
     def test_load_configs_dimensions(self, temp_configs_dir):
         try:
             temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_load_configs_dims")
@@ -166,7 +165,6 @@ class TestLib:
             assert 'dimension' not in rules[rule_ids[2]], "test 3"
             os.remove(temp_dir / 'rule.yml')
 
-
             # TEST 4: add an invalid rule dimension to the file
             with open(rule_original) as f:
                 testconfig = yaml.safe_load(f)
@@ -178,7 +176,7 @@ class TestLib:
 
             with open(temp_dir / 'rule.yml', 'w') as f:
                 yaml.safe_dump(testconfig, f)
-            
+
             rules = lib.load_configs(temp_dir, DqConfigType.RULES)
             dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
             os.remove(temp_dir / 'rule.yml')
@@ -187,7 +185,9 @@ class TestLib:
             shutil.rmtree(temp_dir)
 
     def test_prepare_configs_cache(self, temp_configs_dir):
-        pytest.skip("todo")
+
+        lib.prepare_configs_cache(temp_configs_dir)
+
         temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_1")
         config_path = Path(temp_configs_dir)
 

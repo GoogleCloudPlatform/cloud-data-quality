@@ -345,7 +345,6 @@ class TestClasses:
 
             assert rules[rule_id] == loaded_rule_dict_clean, rule_id
 
-
         rule_config1 = rules[rule_id1]
         rule_loaded1 = cache.get_rule_id(rule_id1)
         assert rule_loaded1.dimension == 'completeness', rule_id1
@@ -355,14 +354,6 @@ class TestClasses:
         rule_loaded2 = cache.get_rule_id(rule_id2)
         assert rule_loaded2.dimension is None, rule_id2
         assertRulesEqual(rule_id2, rule_config2, rule_loaded2)
-
-    def test_configs_cache_rule_dimensions(self):
-
-        cache = DqConfigsCache()
-
-        dims = ['a', 'b', 'c']
-        cache.load_all_rules_collection(rules)
-
 
 
 if __name__ == "__main__":
