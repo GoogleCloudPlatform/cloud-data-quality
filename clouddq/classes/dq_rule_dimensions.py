@@ -17,10 +17,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import typing
-
-from clouddq.utils import assert_not_none_or_empty
-
 import clouddq.classes
 
 
@@ -28,7 +24,7 @@ import clouddq.classes
 class DqRuleDimensions:
     """ """
 
-    dimensions: list | None = None    
+    dimensions: list | None = None
 
     @classmethod
     def update_config(

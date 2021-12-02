@@ -32,16 +32,16 @@ class DqRule:
     params: dict | None = None
 
     @classmethod
-    def update_config(
-        cls: DqRule, config_current: dict, config_new: dict
-    ) -> dict:
+    def update_config(cls: DqRule, config_current: dict, config_new: dict) -> dict:
         return clouddq.classes.update_config(config_current, config_new)
 
     @classmethod
     def validate(cls: DqRule, config: dict, rule_dims: list) -> None:
-        if 'dimension' in config and not config['dimension'] in rule_dims:
-            raise ValueError(f"Rule {self.rule_id} is invalid because dimension {self.dimension} is invalid.")
-
+        if "dimension" in config and not config["dimension"] in rule_dims:
+            raise ValueError(
+                f"Rule is invalid because dimension {config['dimension']}"
+                " is not an allowed value: {rule_dims}"
+            )
 
     @classmethod
     def from_dict(cls: DqRule, rule_id: str, kwargs: dict) -> DqRule:
@@ -59,7 +59,9 @@ class DqRule:
         rule_type: RuleType = RuleType(kwargs.get("rule_type", ""))
         params: dict = kwargs.get("params", dict())
         dim: str = kwargs.get("dimension")
-        return DqRule(rule_id=str(rule_id), rule_type=rule_type, dimension=dim, params=params)
+        return DqRule(
+            rule_id=str(rule_id), rule_type=rule_type, dimension=dim, params=params
+        )
 
     def to_dict(self: DqRule) -> dict:
         """
@@ -71,16 +73,17 @@ class DqRule:
 
         """
 
-        d = { f"{self.rule_id}": {
-                    "rule_type": self.rule_type.name,
-                    "params": self.params,
-                    "rule_sql_expr": self.resolve_sql_expr(),
-                }
+        d = {
+            f"{self.rule_id}": {
+                "rule_type": self.rule_type.name,
+                "params": self.params,
+                "rule_sql_expr": self.resolve_sql_expr(),
             }
-        
+        }
+
         if self.dimension:
-            d[self.rule_id]['dimension'] = self.dimension
-            
+            d[self.rule_id]["dimension"] = self.dimension
+
         return d
 
     def dict_values(self: DqRule) -> dict:
@@ -108,4 +111,3 @@ class DqRule:
             raise ValueError(
                 f"DqRule ID: {self.rule_id} has invalid 'params' field:\n {self.params}"
             )
-

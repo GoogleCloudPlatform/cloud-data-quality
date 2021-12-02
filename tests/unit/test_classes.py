@@ -15,11 +15,8 @@
 import logging
 
 import pytest
-import shutil
-from pathlib import Path
-import tempfile
-import os
 
+from clouddq import lib
 from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_entity import get_custom_entity_configs
@@ -27,7 +24,7 @@ from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
-from clouddq import lib
+
 
 logger = logging.getLogger(__name__)
 
@@ -344,10 +341,8 @@ class TestClasses:
             loaded_rule_dict_clean = {}
             for k in loaded_rule_dict:
                 if k in rule_config:
-                    #print(f"Adding {k} to {loaded_rule_dict_clean}")
                     loaded_rule_dict_clean[k] = loaded_rule_dict[k]
 
-            #assert 'dimension' in loaded_rule_dict
             assert rules[rule_id] == loaded_rule_dict_clean, rule_id
 
 
@@ -360,6 +355,13 @@ class TestClasses:
         rule_loaded2 = cache.get_rule_id(rule_id2)
         assert rule_loaded2.dimension is None, rule_id2
         assertRulesEqual(rule_id2, rule_config2, rule_loaded2)
+
+    def test_configs_cache_rule_dimensions(self):
+
+        cache = DqConfigsCache()
+
+        dims = ['a', 'b', 'c']
+        cache.load_all_rules_collection(rules)
 
 
 

@@ -65,8 +65,11 @@ def convert_json_value_to_dict(object: dict, key: str):
             object[key] = {}
         else:
             if key == "dimension":
-                print(f"convert_json_value_to_dict(object, {key}): object[{key}]={object[key]}")
+                print(
+                    f"convert_json_value_to_dict(object, {key}): object[{key}]={object[key]}"
+                )
             object[key] = json.loads(object[key])
+
 
 def get_templates_path(file_path: Path) -> Path:
     template_path = (

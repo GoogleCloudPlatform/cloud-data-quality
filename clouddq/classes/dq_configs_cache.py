@@ -33,6 +33,7 @@ import clouddq.classes.dq_entity_uri as dq_entity_uri
 import clouddq.classes.dq_row_filter as dq_row_filter
 import clouddq.classes.dq_rule as dq_rule
 import clouddq.classes.dq_rule_binding as dq_rule_binding
+import clouddq.classes.dq_rule_dimensions as dq_rule_dimensions
 import clouddq.integration.dataplex.clouddq_dataplex as clouddq_dataplex
 
 
@@ -76,15 +77,15 @@ class DqConfigsCache:
             logger.error(error_message, exc_info=True)
             raise NotFoundError(error_message)
         convert_json_value_to_dict(rule_record, "params")
-        #convert_json_value_to_dict(rule_record, "dimension")
+        # convert_json_value_to_dict(rule_record, "dimension")
         rule = dq_rule.DqRule.from_dict(rule_id, rule_record)
         return rule
 
     def get_rule_dimensions(self) -> dq_rule.DqRuleDimensions:
         try:
-            dims = self._cache_db["rule_dimensions"].get('rule_dimension')
+            dims = self._cache_db["rule_dimensions"].get("rule_dimension")
         except NotFoundError:
-            error_message = f"Rule dimensions not found in config cache."
+            error_message = "Rule dimensions not found in config cache."
             logger.error(error_message, exc_info=True)
             raise NotFoundError(error_message)
         return dq_rule_dimensions.DqRuleDimensions(dims)
@@ -151,12 +152,15 @@ class DqConfigsCache:
             unnest_object_to_list(rules_collection), pk="id"
         )
 
-    def load_all_rule_dimensions_collection(self, rule_dimensions_collection: list) -> None:
+    def load_all_rule_dimensions_collection(
+        self, rule_dimensions_collection: list
+    ) -> None:
         logger.debug(
             f"Loading 'rule_dimensions' configs into cache:\n{pformat(rule_dimensions_collection)}"
         )
         self._cache_db["rule_dimensions"].upsert_all(
-            [{'rule_dimension': dim} for dim in rule_dimensions_collection], pk='rule_dimension'
+            [{"rule_dimension": dim} for dim in rule_dimensions_collection],
+            pk="rule_dimension",
         )
 
     def resolve_dataplex_entity_uris(

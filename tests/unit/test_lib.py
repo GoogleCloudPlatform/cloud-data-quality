@@ -113,7 +113,7 @@ class TestLib:
 
             dims_ref = ['completeness', 'accuracy', 'conformity']
             testconfig[DqConfigType.RULE_DIMENSIONS.value] = dims_ref
-            
+
             with open(temp_dir / 'rule.yml', 'w') as f:
                 yaml.safe_dump(testconfig, f)
             
@@ -130,12 +130,12 @@ class TestLib:
 
             dims_ref = ['completeness', 'accuracy', 'conformity']
             testconfig[DqConfigType.RULE_DIMENSIONS.value] = dims_ref
-            
+
             with open(temp_dir / 'rule1.yml', 'w') as f:
                 yaml.safe_dump(testconfig, f)
             with open(temp_dir / 'rule2.yml', 'w') as f:
                 yaml.safe_dump(testconfig, f)
-            
+
             rules = lib.load_configs(temp_dir, DqConfigType.RULES)
             dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
 
@@ -153,10 +153,10 @@ class TestLib:
             rule_ids = list(testconfig[DqConfigType.RULES.value])
             testconfig[DqConfigType.RULES.value][rule_ids[0]]['dimension'] = dims_ref[0]
             testconfig[DqConfigType.RULES.value][rule_ids[1]]['dimension'] = dims_ref[1]
-            
+
             with open(temp_dir / 'rule.yml', 'w') as f:
                 yaml.safe_dump(testconfig, f)
-            
+
             rules = lib.load_configs(temp_dir, DqConfigType.RULES)
             dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
 
@@ -166,7 +166,7 @@ class TestLib:
             assert 'dimension' not in rules[rule_ids[2]], "test 3"
             os.remove(temp_dir / 'rule.yml')
 
-            
+
             # TEST 4: add an invalid rule dimension to the file
             with open(rule_original) as f:
                 testconfig = yaml.safe_load(f)
@@ -175,7 +175,7 @@ class TestLib:
             # add the first dimension to the first rule and the second dimension to the second one
             rule_ids = list(testconfig[DqConfigType.RULES.value])
             testconfig[DqConfigType.RULES.value][rule_ids[0]]['dimension'] = 'bogus'
-            
+
             with open(temp_dir / 'rule.yml', 'w') as f:
                 yaml.safe_dump(testconfig, f)
             
@@ -186,7 +186,7 @@ class TestLib:
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_prepare_configs_cache(self):
+    def test_prepare_configs_cache(self, temp_configs_dir):
         pytest.skip("todo")
         temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_1")
         config_path = Path(temp_configs_dir)

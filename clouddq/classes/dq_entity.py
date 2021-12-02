@@ -105,9 +105,7 @@ class DqEntity:
     dataplex_updateTime: str | None
 
     @classmethod
-    def update_config(
-        cls: DqEntity, config_current: dict, config_new: dict
-    ) -> dict:
+    def update_config(cls: DqEntity, config_current: dict, config_new: dict) -> dict:
         return clouddq.classes.update_config(config_current, config_new)
 
     def resolve_column_config(self: DqEntity, column_id: str) -> DqEntityColumn:
