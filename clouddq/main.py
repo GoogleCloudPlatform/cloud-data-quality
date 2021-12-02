@@ -190,6 +190,13 @@ coloredlogs.install(logger=logger)
     is_flag=True,
     default=False,
 )
+@click.option(
+    "--enable_experimental_bigquery_entity_uris",
+    help="If True, allows looking up entity_uris with scheme 'bigquery://' "
+    "using Dataplex Metadata API. ",
+    is_flag=True,
+    default=False,
+)
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
@@ -209,6 +216,7 @@ def main(  # noqa: C901
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
     summary_to_stdout: bool = False,
+    enable_experimental_bigquery_entity_uris: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -316,6 +324,9 @@ def main(  # noqa: C901
             bigquery_client.assert_dataset_is_in_region(
                 dataset=dq_summary_dataset, region=gcp_region_id
             )
+            bigquery_client.assert_required_columns_exist_in_table(
+                dq_summary_table_name
+            )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             logger.info(
@@ -338,6 +349,7 @@ def main(  # noqa: C901
             bigquery_client.assert_dataset_is_in_region(
                 dataset=target_dataset_id, region=gcp_region_id
             )
+            bigquery_client.assert_required_columns_exist_in_table(target_table_ref)
         else:
             logger.warning(
                 "CLI --target_bigquery_summary_table is not set. This will become a required argument in v1.0.0."
@@ -385,10 +397,10 @@ def main(  # noqa: C901
         )
         logger.debug(
             "Created CloudDqDataplexClient with arguments: "
-            f"{gcp_credentials=}, "
-            f"{default_dataplex_projects=}, "
-            f"{default_dataplex_lakes=}, "
-            f"{default_dataplex_locations=}, "
+            f"{gcp_credentials}, "
+            f"{default_dataplex_projects}, "
+            f"{default_dataplex_lakes}, "
+            f"{default_dataplex_locations}, "
         )
         # Load all configs into a local cache
         configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
@@ -396,6 +408,7 @@ def main(  # noqa: C901
             client=dataplex_client,
             default_configs=dataplex_registry_defaults,
             target_rule_binding_ids=target_rule_binding_ids,
+            enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
         )
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)

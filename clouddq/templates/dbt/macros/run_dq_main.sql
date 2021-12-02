@@ -18,12 +18,16 @@
 {% set rule_configs_dict = configs.get('rule_configs_dict') -%}
 {% set filter_sql_expr = configs.get('row_filter_configs').get('filter_sql_expr') -%}
 {% set column_name = configs.get('column_configs').get('name') -%}
-{% set instance_name = configs.get('entity_configs').get('instance_name') -%}
-{% set database_name = configs.get('entity_configs').get('database_name') -%}
-{% set table_name = configs.get('entity_configs').get('table_name') -%}
+{% set entity_configs = configs.get('entity_configs') -%}
+{% set dataplex_lake = entity_configs.get('dataplex_lake') -%}
+{% set dataplex_zone = entity_configs.get('dataplex_zone') -%}
+{% set dataplex_asset_id = entity_configs.get('dataplex_asset_id') -%}
+{% set instance_name = entity_configs.get('instance_name') -%}
+{% set database_name = entity_configs.get('database_name') -%}
+{% set table_name = entity_configs.get('table_name') -%}
 {% set incremental_time_filter_column_id = configs.get('incremental_time_filter_column_id') %}
-{% if environment and configs.get('entity_configs').get('environment_override') -%}
-  {% set env_override = configs.get('entity_configs').get('environment_override') %}
+{% if environment and entity_configs.get('environment_override') -%}
+  {% set env_override = entity_configs.get('environment_override') %}
   {% if env_override.get(environment|lower) %}
     {% set override_values = env_override.get(environment|lower) %}
     {% if override_values.get('table_name') -%}
@@ -103,7 +107,22 @@ all_validation_results AS (
     last_mod.last_modified,
     '{{ metadata|tojson }}' AS metadata_json_string,
     '{{ configs_hashsum }}' AS configs_hashsum,
-    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', TIMESTAMP_TRUNC(r.execution_ts, HOUR), '_', {{ progress_watermark }}) AS dq_run_id,
+{%- if dataplex_lake %}
+    '{{ dataplex_lake }}' AS dataplex_lake,
+{%- else %}
+    CAST(NULL AS STRING) AS dataplex_lake,
+{%- endif %}
+{%- if dataplex_zone %}
+    '{{ dataplex_zone }}' AS dataplex_zone,
+{%- else %}
+    CAST(NULL AS STRING) AS dataplex_zone,
+{%- endif %}
+{%- if dataplex_asset_id %}
+    '{{ dataplex_asset_id }}' AS dataplex_asset_id,
+{%- else %}
+    CAST(NULL AS STRING) AS dataplex_asset_id,
+{%- endif %}
+    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', {{ progress_watermark }}) AS dq_run_id,
     {{ progress_watermark|upper }} AS progress_watermark,
   FROM
     validation_results r

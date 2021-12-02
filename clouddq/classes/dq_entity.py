@@ -260,7 +260,6 @@ class DqEntity:
                     "dataplex_location": self.dataplex_location,
                     "dataplex_asset_id": self.dataplex_asset_id,
                     "dataplex_createTime": self.dataplex_createTime,
-                    "dataplex_updateTime": self.dataplex_updateTime,
                 }
             )
         return dict({f"{self.entity_id}": output})

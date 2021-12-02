@@ -87,7 +87,10 @@ all_validation_results AS (
     last_mod.last_modified,
     '{"brand": "one"}' AS metadata_json_string,
     '' AS configs_hashsum,
-    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', TIMESTAMP_TRUNC(r.execution_ts, HOUR), '_', True) AS dq_run_id,
+    '<your_dataplex_lake_id>' AS dataplex_lake,
+    '<your_dataplex_zone_id>' AS dataplex_zone,
+    '<your_dataplex_asset_id>' AS dataplex_asset_id,
+    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', True) AS dq_run_id,
     TRUE AS progress_watermark,
   FROM
     validation_results r

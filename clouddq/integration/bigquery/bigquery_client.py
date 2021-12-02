@@ -24,6 +24,14 @@ from google.api_core.exceptions import Forbidden
 from google.api_core.exceptions import NotFound
 from google.cloud import bigquery
 
+
+REQUIRED_COLUMN_TYPES = {
+    "last_modified": "TIMESTAMP",
+    "dataplex_lake": "STRING",
+    "dataplex_zone": "STRING",
+    "dataplex_asset_id": "STRING",
+}
+
 from clouddq.integration.gcp_credentials import GcpCredentials
 
 
@@ -124,6 +132,31 @@ class BigQueryClient:
             return True
         except NotFound:
             return False
+
+    def assert_required_columns_exist_in_table(
+        self,
+        table: str,
+    ) -> None:
+        try:
+            client = self.get_connection()
+            table_ref = client.get_table(table)
+            column_names = {column.name for column in table_ref.schema}
+            failures = {}
+            for column_name, column_type in REQUIRED_COLUMN_TYPES.items():
+                if column_name not in column_names:
+                    failures[
+                        column_name
+                    ] = f"ALTER TABLE `{table}` ADD COLUMN {column_name} {column_type};\n"
+            if failures:
+                raise ValueError(
+                    f"Cannot find required column '{list(failures.keys())}' in BigQuery table '{table}'.\n"
+                    f"Ensure they are created by running the following SQL script and retry:\n"
+                    "```\n" + "\n".join(failures.values()) + "```"
+                )
+        except NotFound:
+            logging.warning(
+                f"Table {table} does not yet exist. It will be created in this run."
+            )
 
     def table_from_string(self, full_table_id: str) -> bigquery.table.Table:
         return bigquery.table.Table.from_string(full_table_id)

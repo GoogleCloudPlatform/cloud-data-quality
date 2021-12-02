@@ -21,6 +21,8 @@ set -x
 
 GCS_BUCKET_NAME="${GCS_BUCKET_NAME}" || err "Environment variable GCS_BUCKET_NAME is not set." 
 CLOUDDQ_RELEASE_VERSION="${CLOUDDQ_RELEASE_VERSION}" || err "Environment variable CLOUDDQ_RELEASE_VERSION is not set." 
+TARGET_OS="${TARGET_OS}" || err "Environment variable TARGET_OS is not set." 
+TARGET_PYTHON_INTERPRETER="${TARGET_PYTHON_INTERPRETER}" || err "Environment variable TARGET_PYTHON_INTERPRETER is not set." 
 
 function zip_configs_directory_and_upload_to_gcs() {
   zip -r clouddq-configs.zip ./configs
@@ -29,10 +31,10 @@ function zip_configs_directory_and_upload_to_gcs() {
 }
 
 function upload_clouddq_zip_executable_to_gcs() {
-  wget -O /tmp/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_linux-amd64.zip
-  wget -O /tmp/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_linux-amd64.zip.sha256sum
-  gsutil cp /tmp/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip
-  gsutil cp /tmp/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum
+  wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip
+  wget -O clouddq_executable.zip.hashsum https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip.sha256sum
+  gsutil cp clouddq_executable.zip gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip
+  gsutil cp clouddq_executable.zip.hashsum gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum
 }
 
 function main() {

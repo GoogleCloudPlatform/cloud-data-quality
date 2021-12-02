@@ -99,8 +99,8 @@ class TestCli:
         gcp_project_id,
         gcp_bq_dataset,
         gcp_bq_region):
-        logger.info(f"Running test_cli_dbt_path with {gcp_project_id=}, {gcp_bq_dataset=}, {gcp_bq_region=}")
-        logger.info(f"test_cli_dbt_path {gcp_application_credentials=}")
+        logger.info(f"Running test_cli_dbt_path with {gcp_project_id}, {gcp_bq_dataset}, {gcp_bq_region}")
+        logger.info(f"test_cli_dbt_path {gcp_application_credentials}")
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_dry_run_3")
             temp_dir.mkdir(parents=True)

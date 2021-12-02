@@ -27,11 +27,13 @@ from clouddq.classes.dq_rule_binding import DqRuleBinding
 
 RE_NEWLINES = r"(\n( )*)+"
 RE_CONFIGS_HASHSUM = r"'[\w\d]+' AS configs_hashsum,"
+RE_ASSET_ID = r"'[\w-]+' AS dataplex_asset_id,"
 CONFIGS_HASHSUM_REP = "'' AS configs_hashsum,"
+ASSET_ID_REP = "'<your_dataplex_asset_id>' AS dataplex_asset_id,"
 
 logger = logging.getLogger(__name__)
 
-
+@pytest.mark.dataplex
 class TestMetadataUriTemplates:
     """ """
     @pytest.fixture(scope="function")
@@ -99,9 +101,7 @@ class TestMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
-            configs["configs"]["entity_configs"]["dataplex_updateTime"] = "<dataplex_entity_updateTime>"
-
-            with open(test_resources / "dp_metadata_expected_configs.json") as f:
+            with open(test_resources / "dataplex_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
             metadata.update(rule_binding_configs["metadata"])
@@ -117,10 +117,12 @@ class TestMetadataUriTemplates:
         gcp_dataplex_bigquery_dataset_id,
         gcp_bq_dataset,
         test_dataplex_metadata_defaults_configs,
+        gcp_dataplex_zone_id,
+        gcp_dataplex_lake_name,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_4.items():
-            with open(test_resources / "dp_metadata_sql_expected.sql") as f:
+            with open(test_resources / "dataplex_metadata_sql_expected.sql") as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
@@ -134,10 +136,13 @@ class TestMetadataUriTemplates:
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")\
+                .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")\
+                .replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")\
                 .replace(rule_binding_id, "<rule_binding_id>")
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             assert output == expected
 
     def test_rule_bindings_class_resolve_configs_from_file(
