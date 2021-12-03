@@ -20,10 +20,10 @@
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
     {{ column_name }} AS column_value,
-{% if 'dimension' in rule_configs %}
-    CAST('{{ rule_configs.get("dimension") }}' AS STRING) AS dimension,
+{% if rule_configs.get("dimension") %}
+    '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
-    NULL AS dimension,
+    CAST(NULL AS STRING) AS dimension,
 {% endif %}
     num_rows_validated AS num_rows_validated,
     CASE
@@ -49,10 +49,10 @@
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
     NULL AS column_value,
-{% if 'dimension' in rule_configs %}
+{% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
-    NULL AS dimension,
+    CAST(NULL AS STRING) AS dimension,
 {% endif %}
     (select distinct num_rows_validated from data) as num_rows_validated,
     FALSE AS simple_rule_row_is_valid,

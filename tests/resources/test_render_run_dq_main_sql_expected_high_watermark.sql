@@ -51,7 +51,7 @@ SELECT
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
     value AS column_value,
-    CAST('None' AS STRING) AS dimension,
+    CAST(NULL AS STRING) AS dimension,
     num_rows_validated AS num_rows_validated,
     CASE
 
