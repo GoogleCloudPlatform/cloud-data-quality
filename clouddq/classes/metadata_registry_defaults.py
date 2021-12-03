@@ -22,8 +22,6 @@ import logging
 
 from clouddq.classes.entity_uri_schemes import EntityUriScheme
 
-import clouddq.classes
-
 
 DATAPLEX_URI_FIELDS = ["projects", "locations", "lakes", "zones", "entities"]
 BIGQUERY_URI_FIELDS = ["projects", "datasets", "tables"]
@@ -44,14 +42,6 @@ class MetadataRegistryDefaults:
     """ """
 
     default_configs: dict
-
-    @classmethod
-    def update_config(
-        cls: MetadataRegistryDefaults,
-        config_current: dict,
-        config_new: dict,
-    ) -> dict:
-        return clouddq.classes.update_config(config_current, config_new)
 
     @classmethod
     def from_dict(

@@ -64,10 +64,6 @@ def convert_json_value_to_dict(object: dict, key: str):
         if object[key] is None:
             object[key] = {}
         else:
-            if key == "dimension":
-                print(
-                    f"convert_json_value_to_dict(object, {key}): object[{key}]={object[key]}"
-                )
             object[key] = json.loads(object[key])
 
 

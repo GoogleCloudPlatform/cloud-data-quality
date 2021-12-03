@@ -19,8 +19,6 @@ from dataclasses import dataclass
 
 from clouddq.classes.rule_type import RuleType
 
-import clouddq.classes
-
 
 @dataclass
 class DqRule:
@@ -69,7 +67,7 @@ class DqRule:
 
         """
 
-        d = {
+        return {
             f"{self.rule_id}": {
                 "rule_type": self.rule_type.name,
                 "dimension": self.dimension,
@@ -77,8 +75,6 @@ class DqRule:
                 "rule_sql_expr": self.resolve_sql_expr(),
             }
         }
-
-        return d
 
     def dict_values(self: DqRule) -> dict:
         """
