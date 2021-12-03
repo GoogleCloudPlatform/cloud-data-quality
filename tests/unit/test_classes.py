@@ -335,14 +335,13 @@ class TestClasses:
 
             assert rules[rule_id] == loaded_rule_dict_clean, rule_id
 
-
         rules = lib.load_rules_config(temp_configs_dir)
 
         # Skip custom SQL because we will be going back and forth
         # from dicts to objects and we haven't bound SQL params yet
         complex_types = ['CUSTOM_SQL_EXPR', 'CUSTOM_SQL_STATEMENT']
         rule_ids = sorted([id for id in rules.keys() if rules[id]['rule_type'] not in complex_types])
-        
+
         rule_id1 = rule_ids[0]
         rule_ids = rule_ids[1:]
 

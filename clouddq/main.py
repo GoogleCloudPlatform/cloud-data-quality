@@ -349,7 +349,9 @@ def main(  # noqa: C901
             bigquery_client.assert_dataset_is_in_region(
                 dataset=target_dataset_id, region=gcp_region_id
             )
-            bigquery_client.assert_required_columns_exist_in_table(target_bigquery_summary_table)
+            bigquery_client.assert_required_columns_exist_in_table(
+                target_bigquery_summary_table
+            )
         else:
             logger.warning(
                 "CLI --target_bigquery_summary_table is not set. This will become a required argument in v1.0.0."

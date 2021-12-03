@@ -122,7 +122,7 @@ all_validation_results AS (
     r.rule_id AS rule_id,
     r.table_id AS table_id,
     r.column_id AS column_id,
-    r.dimension AS dimension,
+    CAST(r.dimension AS STRING) AS dimension,
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.column_value AS column_value,
