@@ -16,6 +16,8 @@ import logging
 
 import pytest
 
+from clouddq import lib
+from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_entity import get_custom_entity_configs
 from clouddq.classes.dq_row_filter import DqRowFilter
@@ -310,6 +312,57 @@ class TestClasses:
         sql = RuleType.REGEX.to_sql(params).substitute(column="column_name")
         expected = "REGEXP_CONTAINS( CAST( column_name  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
         assert sql == expected
+
+    def test_configs_cache_rules(self, temp_configs_dir):
+
+        def assertRulesEqual(rule_id, rule_config, rule_loaded):
+
+            print(f"rule ID {rule_id}")
+            print(f"  rule: {rule_loaded}")
+            print(f"  dict: {rule_loaded.to_dict()[rule_id]}")
+            print(f"  conf: {rule_config}")
+
+            assert DqRule.from_dict(rule_id, rule_config) == rule_loaded, rule_id
+
+            # To compare the dictionaries, we need to remove the SQL expression.
+            # To avoid relying on the specific key, just compare the keys from
+            # the original dict
+            loaded_rule_dict = rule_loaded.to_dict()[rule_id]
+            loaded_rule_dict_clean = {}
+            for k in loaded_rule_dict:
+                if k in rule_config:
+                    loaded_rule_dict_clean[k] = loaded_rule_dict[k]
+
+            assert rules[rule_id] == loaded_rule_dict_clean, rule_id
+
+        rules = lib.load_rules_config(temp_configs_dir)
+
+        # Skip custom SQL because we will be going back and forth
+        # from dicts to objects and we haven't bound SQL params yet
+        complex_types = ['CUSTOM_SQL_EXPR', 'CUSTOM_SQL_STATEMENT']
+        rule_ids = sorted([id for id in rules.keys() if rules[id]['rule_type'] not in complex_types])
+
+        rule_id1 = rule_ids[0]
+        rule_ids = rule_ids[1:]
+
+        # Give one rule a dimension
+        rules[rule_id1]['dimension'] = 'completeness'
+
+        cache = DqConfigsCache()
+        cache.load_all_rules_collection(rules)
+
+        rule_config1 = rules[rule_id1]
+        rule_loaded1 = cache.get_rule_id(rule_id1)
+        assert rule_loaded1.dimension == 'completeness', rule_id1
+        assertRulesEqual(rule_id1, rule_config1, rule_loaded1)
+
+        # test the other rules
+        for rule_id in rule_ids:
+
+            rule_config = rules[rule_id]
+            rule_loaded = cache.get_rule_id(rule_id)
+            assert rule_loaded.dimension is None, rule_id
+            assertRulesEqual(rule_id, rule_config, rule_loaded)
 
 
 if __name__ == "__main__":

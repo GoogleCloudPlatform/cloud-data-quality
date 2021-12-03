@@ -22,6 +22,7 @@ from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
+from clouddq.classes.dq_rule_dimensions import DqRuleDimensions
 from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 
 
@@ -31,6 +32,7 @@ class DqConfigType(str, Enum):
 
     RULES = "rules"
     RULE_BINDINGS = "rule_bindings"
+    RULE_DIMENSIONS = "rule_dimensions"
     ROW_FILTERS = "row_filters"
     ENTITIES = "entities"
     METADATA_REGISTRY_DEFAULTS = "metadata_registry_defaults"
@@ -42,6 +44,8 @@ class DqConfigType(str, Enum):
             return True
         elif self == DqConfigType.RULE_BINDINGS:
             return True
+        elif self == DqConfigType.RULE_DIMENSIONS:
+            return False
         elif self == DqConfigType.ROW_FILTERS:
             return True
         elif self == DqConfigType.ENTITIES:
@@ -53,13 +57,15 @@ class DqConfigType(str, Enum):
 
     def to_class(
         self: DqConfigType,
-    ) -> type[DqRule] | type[DqRuleBinding] | type[DqRowFilter] | type[DqEntity] | type[
-        MetadataRegistryDefaults
-    ]:
+    ) -> type[DqRule] | type[DqRuleBinding] | type[DqRuleDimensions] | type[
+        DqRowFilter
+    ] | type[DqEntity] | type[MetadataRegistryDefaults]:
         if self == DqConfigType.RULES:
             return DqRule
         elif self == DqConfigType.RULE_BINDINGS:
             return DqRuleBinding
+        elif self == DqConfigType.RULE_DIMENSIONS:
+            return DqRuleDimensions
         elif self == DqConfigType.ROW_FILTERS:
             return DqRowFilter
         elif self == DqConfigType.ENTITIES:

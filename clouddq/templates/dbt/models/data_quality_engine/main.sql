@@ -25,6 +25,7 @@
         rule_id,
         table_id,
         column_id,
+        dimension,
         metadata_json_string,
         configs_hashsum,
         dataplex_lake,
@@ -60,7 +61,7 @@
     FROM
         {{ ref(rule_binding_id) }}
     GROUP BY
-        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
     {% if loop.nextitem is defined %}
     UNION ALL
     {% endif %}

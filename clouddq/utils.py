@@ -59,9 +59,12 @@ def unnest_object_to_list(object: dict) -> list:
     return collection
 
 
-def convert_json_value_to_dict(object, key):
-    if object.get(key, None):
-        object[key] = json.loads(object[key])
+def convert_json_value_to_dict(object: dict, key: str):
+    if key in object:
+        if object[key] is None:
+            object[key] = {}
+        else:
+            object[key] = json.loads(object[key])
 
 
 def get_templates_path(file_path: Path) -> Path:

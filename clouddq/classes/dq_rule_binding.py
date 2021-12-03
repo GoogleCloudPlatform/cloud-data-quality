@@ -29,7 +29,6 @@ from clouddq.classes.dq_rule import DqRule
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_from_dict_and_assert
 from clouddq.utils import get_keys_from_dict_and_assert_oneof
-
 import clouddq.classes.dq_configs_cache as dq_configs_cache
 
 
