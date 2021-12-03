@@ -83,7 +83,6 @@ jobs:
           export DATAPLEX_TARGET_BQ_DATASET="clouddq_test_target_dataset"
           export DATAPLEX_TARGET_BQ_TABLE="dataplex_target_table"
           export DATAPLEX_TASK_SA=${{ secrets.DATAPLEX_TASK_SA }}
-          export DATAPLEX_BIGQUERY_ASSET_ID="clouddq-test-asset-raw"
           ls -la
           find . -not -path '*/\.*' | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
           cat /etc/*-release

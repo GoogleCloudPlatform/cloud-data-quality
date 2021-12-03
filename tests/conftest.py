@@ -213,18 +213,6 @@ def gcp_dataplex_bigquery_dataset_id():
     return gcp_dataplex_bigquery_dataset_id
 
 @pytest.fixture(scope="session")
-def gcp_dataplex_bigquery_asset_id():
-    gcp_dataplex_bigquery_asset_id = os.environ.get('DATAPLEX_BIGQUERY_ASSET_ID', None)
-    if not gcp_dataplex_bigquery_asset_id:
-        logger.fatal("Required test environment variable DATAPLEX_BIGQUERY_ASSET_ID cannot be found. "
-                     "Set this to the Dataplex bigquery asset id used for testing.")
-        # Todo: remove this once test fixture for creating dataplex entities is complete
-        test_asset_id = "clouddq-test-asset-curated-bigquery"
-        logging.warning(f"Defaulting to using test: {test_asset_id}")
-        gcp_dataplex_bigquery_asset_id = test_asset_id
-    return gcp_dataplex_bigquery_asset_id
-
-@pytest.fixture(scope="session")
 def test_dq_dataplex_client(dataplex_endpoint,
                             gcp_dataplex_lake_name,
                             gcp_dataplex_region,

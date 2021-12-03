@@ -215,8 +215,7 @@ class TestMetadataUriTemplates:
         gcp_bq_dataset,
         test_dataplex_metadata_defaults_configs,
         gcp_dataplex_zone_id,
-        gcp_dataplex_lake_name,
-        gcp_dataplex_bigquery_asset_id
+        gcp_dataplex_lake_name
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
@@ -236,11 +235,11 @@ class TestMetadataUriTemplates:
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")\
                 .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")\
                 .replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")\
-                .replace(rule_binding_id, "<rule_binding_id>")\
-                .replace(gcp_dataplex_bigquery_asset_id, "<your_dataplex_asset_id>")
+                .replace(rule_binding_id, "<rule_binding_id>")
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             assert output == expected
 
 if __name__ == "__main__":
