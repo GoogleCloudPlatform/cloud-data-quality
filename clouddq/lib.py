@@ -171,8 +171,7 @@ def prepare_configs_cache(configs_path: Path) -> DqConfigsCache:
     row_filters_collection = load_row_filters_config(configs_path)
     configs_cache.load_all_row_filters_collection(row_filters_collection)
     rule_dimensions_collection = load_rule_dimensions_config(configs_path)
-    # TODO
-    # configs_cache.load_all_rule_dimensions_collection(rule_dimensions_collection)
+    configs_cache.load_all_rule_dimensions_collection(rule_dimensions_collection)
     rules_collection = load_rules_config(configs_path)
 
     # validate rules against dimensions
