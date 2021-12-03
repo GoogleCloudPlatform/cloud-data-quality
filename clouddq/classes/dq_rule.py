@@ -72,13 +72,11 @@ class DqRule:
         d = {
             f"{self.rule_id}": {
                 "rule_type": self.rule_type.name,
+                "dimension": self.dimension,
                 "params": self.params,
                 "rule_sql_expr": self.resolve_sql_expr(),
             }
         }
-
-        if self.dimension:
-            d[self.rule_id]["dimension"] = self.dimension
 
         return d
 

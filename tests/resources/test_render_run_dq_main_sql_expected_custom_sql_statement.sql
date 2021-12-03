@@ -37,7 +37,7 @@ SELECT
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
     NULL AS column_value,
-    NULL AS dimension,
+    'None' AS dimension,
     (select distinct num_rows_validated from data) as num_rows_validated,
     FALSE AS simple_rule_row_is_valid,
     COUNT(*) as complex_rule_validation_errors_count,
@@ -62,7 +62,7 @@ SELECT
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
     value AS column_value,
-    NULL AS dimension,
+    CAST('None' AS STRING) AS dimension,
     num_rows_validated AS num_rows_validated,
     CASE
 

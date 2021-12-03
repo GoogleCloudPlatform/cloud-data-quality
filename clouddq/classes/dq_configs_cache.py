@@ -77,7 +77,6 @@ class DqConfigsCache:
             logger.error(error_message, exc_info=True)
             raise NotFoundError(error_message)
         convert_json_value_to_dict(rule_record, "params")
-        # convert_json_value_to_dict(rule_record, "dimension")
         rule = dq_rule.DqRule.from_dict(rule_id, rule_record)
         return rule
 
@@ -281,9 +280,7 @@ class DqConfigsCache:
         else:
             return DqConfigsCache.update_config_dicts(config_old, config_new)
 
-    def update_config_dicts(
-        config_old: dict, config_new: dict
-    ) -> dict:
+    def update_config_dicts(config_old: dict, config_new: dict) -> dict:
 
         if not config_old and not config_new:
             return {}
