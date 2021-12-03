@@ -51,12 +51,6 @@ class DqRuleBinding:
     metadata: dict | None
 
     @classmethod
-    def update_config(
-        cls: DqRuleBinding, config_current: dict, config_new: dict
-    ) -> dict:
-        return clouddq.classes.update_config(config_current, config_new)
-
-    @classmethod
     def from_dict(
         cls: DqRuleBinding,
         rule_binding_id: str,

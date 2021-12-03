@@ -30,10 +30,6 @@ class DqRowFilter:
     filter_sql_expr: str
 
     @classmethod
-    def update_config(cls: DqRowFilter, config_current: dict, config_new: dict) -> dict:
-        return clouddq.classes.update_config(config_current, config_new)
-
-    @classmethod
     def from_dict(
         cls: DqRowFilter,
         row_filter_id: str,

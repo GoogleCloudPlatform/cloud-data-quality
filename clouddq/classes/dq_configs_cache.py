@@ -272,3 +272,60 @@ class DqConfigsCache:
                 self._cache_db["entities"].upsert_all(
                     resolved_entity, pk="id", alter=True
                 )
+
+    def update_config(configs_type: str, config_old: list | dict, config_new: list | dict) -> list | dict:
+        if configs_type == "rule_dimensions":
+            return DqConfigsCache.update_config_lists(config_old, config_new)
+        else:
+            return DqConfigsCache.update_config_dicts(config_old, config_new)
+
+    def update_config_dicts(config_old: typing.Dict, config_new: typing.Dict) -> typing.Dict:
+
+        if not config_old and not config_new:
+            return {}
+        elif not config_old:
+            return config_new.copy()
+        elif not config_new:
+            return config_old.copy()
+        else:
+            intersection = config_old.keys() & config_new.keys()
+
+            # The new config defines keys that we have already loaded
+            if intersection:
+                # Verify that objects pointed to by duplicate keys are identical
+                config_old_i = {}
+                config_new_i = {}
+                for k in intersection:
+                    config_old_i[k] = config_old[k]
+                    config_new_i[k] = config_new[k]
+
+                # == on dicts performs deep compare:
+                if not config_old_i == config_new_i:
+                    raise ValueError(
+                        f"Detected Duplicated Config ID(s): {intersection} "
+                        f"If a config ID is repeated, it must be for an identical "
+                        f"configuration."
+                    )
+
+            updated = config_old.copy()
+            updated.update(config_new)
+            return updated
+
+
+    def update_config_lists(config_old: list, config_new: list) -> list:
+
+        if not config_old and not config_new:
+            return []
+        elif not config_old:
+            return config_new.copy()
+        elif not config_new:
+            return config_old.copy()
+        else:
+            # Both lists contain data. This is only OK if they are identical.
+            if not sorted(config_old) == sorted(config_new):
+                raise ValueError(
+                    f"Detected Duplicated Config: {config_new}."
+                    f"If a config is repeated, it must be identical."
+                )
+            return config_old.copy()
+

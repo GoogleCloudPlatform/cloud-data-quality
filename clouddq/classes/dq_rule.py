@@ -32,10 +32,6 @@ class DqRule:
     params: dict | None = None
 
     @classmethod
-    def update_config(cls: DqRule, config_current: dict, config_new: dict) -> dict:
-        return clouddq.classes.update_config(config_current, config_new)
-
-    @classmethod
     def validate(cls: DqRule, config: dict, rule_dims: list) -> None:
         if "dimension" in config and not config["dimension"] in rule_dims:
             raise ValueError(
