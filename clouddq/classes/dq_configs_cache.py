@@ -273,13 +273,17 @@ class DqConfigsCache:
                     resolved_entity, pk="id", alter=True
                 )
 
-    def update_config(configs_type: str, config_old: list | dict, config_new: list | dict) -> list | dict:
+    def update_config(
+        configs_type: str, config_old: list | dict, config_new: list | dict
+    ) -> list | dict:
         if configs_type == "rule_dimensions":
             return DqConfigsCache.update_config_lists(config_old, config_new)
         else:
             return DqConfigsCache.update_config_dicts(config_old, config_new)
 
-    def update_config_dicts(config_old: typing.Dict, config_new: typing.Dict) -> typing.Dict:
+    def update_config_dicts(
+        config_old: dict, config_new: dict
+    ) -> dict:
 
         if not config_old and not config_new:
             return {}
@@ -311,7 +315,6 @@ class DqConfigsCache:
             updated.update(config_new)
             return updated
 
-
     def update_config_lists(config_old: list, config_new: list) -> list:
 
         if not config_old and not config_new:
@@ -328,4 +331,3 @@ class DqConfigsCache:
                     f"If a config is repeated, it must be identical."
                 )
             return config_old.copy()
-

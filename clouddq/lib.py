@@ -49,9 +49,7 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
         if not config:
             continue
 
-        all_configs = DqConfigsCache.update_config(
-            configs_type, all_configs, config
-        )
+        all_configs = DqConfigsCache.update_config(configs_type, all_configs, config)
 
     if configs_type.is_required():
         assert_not_none_or_empty(
