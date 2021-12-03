@@ -19,8 +19,6 @@ from dataclasses import dataclass
 
 from clouddq.utils import assert_not_none_or_empty
 
-import clouddq.classes
-
 
 @dataclass
 class DqRowFilter:
