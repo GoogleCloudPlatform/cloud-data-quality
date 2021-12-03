@@ -17,8 +17,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import clouddq.classes
-
 
 @dataclass
 class DqRuleDimensions:
