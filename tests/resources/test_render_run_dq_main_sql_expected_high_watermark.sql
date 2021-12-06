@@ -40,7 +40,7 @@ last_mod AS (
     SELECT
         project_id || '.' || dataset_id || '.' || table_id AS table_id,
         TIMESTAMP_MILLIS(last_modified_time) AS last_modified
-    FROM <your_bigquery_dataset_id>.__TABLES__
+    FROM <your_gcp_project_id>.<your_bigquery_dataset_id>.__TABLES__
 ),
 validation_results AS (
 
