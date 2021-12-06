@@ -23,6 +23,7 @@ import typing
 
 from clouddq.classes.dq_config_type import DqConfigType
 from clouddq.classes.dq_configs_cache import DqConfigsCache
+from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.metadata_registry_defaults import MetadataRegistryDefaults
 from clouddq.utils import assert_not_none_or_empty
@@ -35,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
+
     if configs_path.is_file():
         yaml_files = [configs_path]
     else:
@@ -46,26 +48,8 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
         config = load_yaml(file, configs_type.value)
         if not config:
             continue
-        intersection = config.keys() & all_configs.keys()
 
-        # The new config defines keys that we have already loaded
-        if intersection:
-            # Verify that objects pointed to by duplicate keys are identical
-            config_i = {}
-            all_configs_i = {}
-            for k in intersection:
-                config_i[k] = config[k]
-                all_configs_i[k] = all_configs[k]
-
-            # == on dicts performs deep compare:
-            if not config_i == all_configs_i:
-                raise ValueError(
-                    f"Detected Duplicated Config ID(s): {intersection} "
-                    f"If a config ID is repeated, it must be for an identical "
-                    f"configuration."
-                )
-
-        all_configs.update(config)
+        all_configs = DqConfigsCache.update_config(configs_type, all_configs, config)
 
     if configs_type.is_required():
         assert_not_none_or_empty(
@@ -78,6 +62,10 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
 
 def load_rule_bindings_config(configs_path: Path) -> typing.Dict:
     return load_configs(configs_path, DqConfigType.RULE_BINDINGS)
+
+
+def load_rule_dimensions_config(configs_path: Path) -> list:
+    return load_configs(configs_path, DqConfigType.RULE_DIMENSIONS)
 
 
 def load_entities_config(configs_path: Path) -> typing.Dict:
@@ -182,7 +170,14 @@ def prepare_configs_cache(configs_path: Path) -> DqConfigsCache:
     configs_cache.load_all_entities_collection(entities_collection)
     row_filters_collection = load_row_filters_config(configs_path)
     configs_cache.load_all_row_filters_collection(row_filters_collection)
+    rule_dimensions_collection = load_rule_dimensions_config(configs_path)
+    configs_cache.load_all_rule_dimensions_collection(rule_dimensions_collection)
     rules_collection = load_rules_config(configs_path)
+
+    # validate rules against dimensions
+    for rule in rules_collection.values():
+        DqRule.validate(rule, rule_dimensions_collection)
+
     configs_cache.load_all_rules_collection(rules_collection)
     rule_binding_collection = load_rule_bindings_config(configs_path)
     configs_cache.load_all_rule_bindings_collection(rule_binding_collection)

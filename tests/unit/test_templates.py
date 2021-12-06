@@ -89,6 +89,8 @@ class TestJinjaTemplates:
             value.update({"rule_sql_expr": rule.resolve_sql_expr()})
             if "params" not in value:
                 value.update({"params": {}})
+            if "dimension" not in value:
+                value["dimension"] = None
             assert dict(rule.dict_values()) == dict(value)
 
     def test_filters_class(self, test_row_filters_collection):

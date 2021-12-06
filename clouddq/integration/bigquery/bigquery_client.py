@@ -27,6 +27,7 @@ from google.cloud import bigquery
 
 REQUIRED_COLUMN_TYPES = {
     "last_modified": "TIMESTAMP",
+    "dimension": "STRING",
     "dataplex_lake": "STRING",
     "dataplex_zone": "STRING",
     "dataplex_asset_id": "STRING",

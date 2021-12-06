@@ -33,6 +33,7 @@ import clouddq.classes.dq_entity_uri as dq_entity_uri
 import clouddq.classes.dq_row_filter as dq_row_filter
 import clouddq.classes.dq_rule as dq_rule
 import clouddq.classes.dq_rule_binding as dq_rule_binding
+import clouddq.classes.dq_rule_dimensions as dq_rule_dimensions
 import clouddq.integration.dataplex.clouddq_dataplex as clouddq_dataplex
 
 
@@ -78,6 +79,15 @@ class DqConfigsCache:
         convert_json_value_to_dict(rule_record, "params")
         rule = dq_rule.DqRule.from_dict(rule_id, rule_record)
         return rule
+
+    def get_rule_dimensions(self) -> dq_rule.DqRuleDimensions:
+        try:
+            dims = self._cache_db["rule_dimensions"].get("rule_dimension")
+        except NotFoundError:
+            error_message = "Rule dimensions not found in config cache."
+            logger.error(error_message, exc_info=True)
+            raise NotFoundError(error_message)
+        return dq_rule_dimensions.DqRuleDimensions(dims)
 
     def get_row_filter_id(self, row_filter_id: str) -> dq_row_filter.DqRowFilter:
         row_filter_id = row_filter_id.upper()
@@ -139,6 +149,17 @@ class DqConfigsCache:
         )
         self._cache_db["rules"].upsert_all(
             unnest_object_to_list(rules_collection), pk="id"
+        )
+
+    def load_all_rule_dimensions_collection(
+        self, rule_dimensions_collection: list
+    ) -> None:
+        logger.debug(
+            f"Loading 'rule_dimensions' configs into cache:\n{pformat(rule_dimensions_collection)}"
+        )
+        self._cache_db["rule_dimensions"].upsert_all(
+            [{"rule_dimension": dim} for dim in rule_dimensions_collection],
+            pk="rule_dimension",
         )
 
     def resolve_dataplex_entity_uris(
@@ -250,3 +271,60 @@ class DqConfigsCache:
                 self._cache_db["entities"].upsert_all(
                     resolved_entity, pk="id", alter=True
                 )
+
+    def update_config(
+        configs_type: str, config_old: list | dict, config_new: list | dict
+    ) -> list | dict:
+        if configs_type == "rule_dimensions":
+            return DqConfigsCache.update_config_lists(config_old, config_new)
+        else:
+            return DqConfigsCache.update_config_dicts(config_old, config_new)
+
+    def update_config_dicts(config_old: dict, config_new: dict) -> dict:
+
+        if not config_old and not config_new:
+            return {}
+        elif not config_old:
+            return config_new.copy()
+        elif not config_new:
+            return config_old.copy()
+        else:
+            intersection = config_old.keys() & config_new.keys()
+
+            # The new config defines keys that we have already loaded
+            if intersection:
+                # Verify that objects pointed to by duplicate keys are identical
+                config_old_i = {}
+                config_new_i = {}
+                for k in intersection:
+                    config_old_i[k] = config_old[k]
+                    config_new_i[k] = config_new[k]
+
+                # == on dicts performs deep compare:
+                if not config_old_i == config_new_i:
+                    raise ValueError(
+                        f"Detected Duplicated Config ID(s): {intersection} "
+                        f"If a config ID is repeated, it must be for an identical "
+                        f"configuration."
+                    )
+
+            updated = config_old.copy()
+            updated.update(config_new)
+            return updated
+
+    def update_config_lists(config_old: list, config_new: list) -> list:
+
+        if not config_old and not config_new:
+            return []
+        elif not config_old:
+            return config_new.copy()
+        elif not config_new:
+            return config_old.copy()
+        else:
+            # Both lists contain data. This is only OK if they are identical.
+            if not sorted(config_old) == sorted(config_new):
+                raise ValueError(
+                    f"Detected Duplicated Config: {config_new}."
+                    f"If a config is repeated, it must be identical."
+                )
+            return config_old.copy()

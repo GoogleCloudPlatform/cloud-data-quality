@@ -26,10 +26,16 @@ class DqRule:
 
     rule_id: str
     rule_type: RuleType
+    dimension: str | None = None
     params: dict | None = None
 
-    def resolve_sql_expr(self: DqRule) -> str:
-        return self.rule_type.to_sql(self.params).safe_substitute()
+    @classmethod
+    def validate(cls: DqRule, config: dict, rule_dims: list) -> None:
+        if "dimension" in config and not config["dimension"] in rule_dims:
+            raise ValueError(
+                f"Rule is invalid because dimension '{config['dimension']}'"
+                f" does not appear in the list of rule_dimensions: {rule_dims}"
+            )
 
     @classmethod
     def from_dict(cls: DqRule, rule_id: str, kwargs: dict) -> DqRule:
@@ -46,18 +52,10 @@ class DqRule:
 
         rule_type: RuleType = RuleType(kwargs.get("rule_type", ""))
         params: dict = kwargs.get("params", dict())
-        return DqRule(rule_id=str(rule_id), rule_type=rule_type, params=params)
-
-    def update_rule_binding_arguments(self, arguments: dict) -> None:
-        params = {"rule_binding_arguments": arguments}
-        if not self.params:
-            self.params = params
-        elif type(self.params) == dict:
-            self.params.update(params)
-        else:
-            raise ValueError(
-                f"DqRule ID: {self.rule_id} has invalid 'params' field:\n {self.params}"
-            )
+        dim: str = kwargs.get("dimension")
+        return DqRule(
+            rule_id=str(rule_id), rule_type=rule_type, dimension=dim, params=params
+        )
 
     def to_dict(self: DqRule) -> dict:
         """
@@ -69,15 +67,14 @@ class DqRule:
 
         """
 
-        return dict(
-            {
-                f"{self.rule_id}": {
-                    "rule_type": self.rule_type.name,
-                    "params": self.params,
-                    "rule_sql_expr": self.resolve_sql_expr(),
-                }
+        return {
+            f"{self.rule_id}": {
+                "rule_type": self.rule_type.name,
+                "dimension": self.dimension,
+                "params": self.params,
+                "rule_sql_expr": self.resolve_sql_expr(),
             }
-        )
+        }
 
     def dict_values(self: DqRule) -> dict:
         """
@@ -90,3 +87,17 @@ class DqRule:
         """
 
         return dict(self.to_dict().get(self.rule_id))
+
+    def resolve_sql_expr(self: DqRule) -> str:
+        return self.rule_type.to_sql(self.params).safe_substitute()
+
+    def update_rule_binding_arguments(self, arguments: dict) -> None:
+        params = {"rule_binding_arguments": arguments}
+        if not self.params:
+            self.params = params
+        elif type(self.params) == dict:
+            self.params.update(params)
+        else:
+            raise ValueError(
+                f"DqRule ID: {self.rule_id} has invalid 'params' field:\n {self.params}"
+            )
