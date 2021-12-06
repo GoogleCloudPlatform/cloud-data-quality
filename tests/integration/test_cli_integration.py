@@ -16,7 +16,6 @@ from pathlib import Path
 
 import logging
 import shutil
-import tempfile
 
 import click.testing
 import pytest
@@ -44,10 +43,11 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_bq_region,
         target_bq_result_dataset_name,
-        target_bq_result_table_name
+        target_bq_result_table_name,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_1")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_1")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"Running test_cli_dbt_path with {gcp_project_id}, {gcp_bq_dataset}, {gcp_bq_region}")
@@ -77,9 +77,10 @@ class TestCliIntegration:
         temp_configs_dir,
         test_profiles_dir,
         gcp_application_credentials,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_2")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_2")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_cli_dry_run_dbt_path {gcp_application_credentials}")
@@ -104,9 +105,10 @@ class TestCliIntegration:
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_application_credentials,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_3")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_3")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_cli_dry_run_oauth_configs {gcp_application_credentials}")
@@ -133,9 +135,10 @@ class TestCliIntegration:
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_application_credentials,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_4")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_4")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_last_modified_in_dq_summary {gcp_application_credentials}")
@@ -193,9 +196,10 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_sa_key,
         gcp_application_credentials,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_5")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_5")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_cli_dry_run_sa_key_configs {gcp_application_credentials}")
@@ -230,9 +234,10 @@ class TestCliIntegration:
         gcp_sa_key,
         gcp_impersonation_credentials,
         gcp_application_credentials,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_6")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_6")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_cli_dry_run_sa_key_and_impersonation {gcp_application_credentials}")
@@ -267,9 +272,10 @@ class TestCliIntegration:
         gcp_bq_dataset,
         gcp_impersonation_credentials,
         gcp_application_credentials,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_7")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_7")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_cli_dry_run_oath_impersonation {gcp_application_credentials}")
@@ -300,9 +306,10 @@ class TestCliIntegration:
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_application_credentials,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_8")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_8")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_cli_dry_run_oath_impersonation {gcp_application_credentials}")
@@ -330,9 +337,10 @@ class TestCliIntegration:
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_application_credentials,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_9")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_9")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_cli_dry_run_missing_project_id_fail {gcp_application_credentials}")
@@ -358,9 +366,10 @@ class TestCliIntegration:
         gcp_project_id,
         gcp_bq_dataset,
         gcp_application_credentials,
+        tmp_path
     ):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_cli_integration_10")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_10")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_cli_dry_run_dataset_in_wrong_region_fail {gcp_application_credentials}")

@@ -18,7 +18,6 @@ from pathlib import Path
 import logging
 import os
 import shutil
-import tempfile
 
 import pytest
 import yaml
@@ -31,10 +30,10 @@ logger = logging.getLogger(__name__)
 
 class TestLib:
 
-    def test_load_configs_identical(self, temp_configs_dir):
+    def test_load_configs_identical(self, temp_configs_dir, tmp_path):
         # Load a config directory containing two copies of the same config
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_1")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_lib", "test_lib_1")
             config_path = Path(temp_configs_dir)
 
             temp_dir.mkdir(parents=True)
@@ -50,10 +49,10 @@ class TestLib:
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_load_configs_different(self, temp_configs_dir):
+    def test_load_configs_different(self, temp_configs_dir, tmp_path):
         # Load a config directory containing two different configs defining the same key
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_2")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_lib", "test_lib_2")
             config_path = Path(temp_configs_dir)
 
             temp_dir.mkdir(parents=True)
@@ -86,9 +85,9 @@ class TestLib:
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_load_configs_dimensions(self, temp_configs_dir):
+    def test_load_configs_dimensions(self, temp_configs_dir, tmp_path):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_lib_load_configs_dims")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_lib", "test_lib_load_configs_dims")
             config_path = Path(temp_configs_dir)
 
             temp_dir.mkdir(parents=True)
@@ -184,10 +183,10 @@ class TestLib:
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_prepare_configs_cache(self, temp_configs_dir):
+    def test_prepare_configs_cache(self, temp_configs_dir, tmp_path):
         config_path = Path(temp_configs_dir)
 
-        temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_lib", "test_prepare_configs_cache")
+        temp_dir = Path(tmp_path).joinpath("clouddq_test_lib", "test_prepare_configs_cache")
 
         try:
             temp_dir.mkdir(parents=True)

@@ -22,7 +22,6 @@ import json
 import logging
 import shutil
 import sys
-import tempfile
 import time
 
 import pytest
@@ -41,8 +40,8 @@ logger = logging.getLogger(__name__)
 class TestDataplexIntegration:
 
     @pytest.fixture(scope="session")
-    def configs_archive_path(self):
-        configs_archive_path = Path(tempfile.gettempdir()).joinpath("clouddq_test_artifacts", "archives").absolute()
+    def configs_archive_path(self, tmp_path):
+        configs_archive_path = Path(tmp_path).joinpath("clouddq_test_artifacts", "archives").absolute()
         configs_archive_path.mkdir(parents=True, exist_ok=True)
         return configs_archive_path
 
@@ -114,9 +113,9 @@ class TestDataplexIntegration:
                 configs_file_path.unlink()
 
     @pytest.fixture
-    def temp_configs_files_path(self, temp_configs_dir):
+    def temp_configs_files_path(self, temp_configs_dir, tmp_path):
         print("Invoked 'temp_configs_files_path' fixture.")
-        configs_files_path = Path(tempfile.gettempdir()).joinpath("clouddq_test_artifacts", "files").absolute()
+        configs_files_path = Path(tmp_path).joinpath("clouddq_test_artifacts", "files").absolute()
         configs_files_path.mkdir(parents=True, exist_ok=True)
         with working_directory(configs_files_path):
             # Create single YAML config files for testing
