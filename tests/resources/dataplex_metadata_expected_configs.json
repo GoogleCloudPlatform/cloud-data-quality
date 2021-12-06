@@ -31,8 +31,7 @@
         "dataplex_zone":"<your-gcp-dataplex-zone-id>",
         "dataplex_location":"<your-gcp-dataplex-region-id>",
         "dataplex_asset_id":"<your-gcp-dataplex-asset-id>",
-        "dataplex_createTime":"<dataplex_entity_createTime>",
-        "dataplex_updateTime":"<dataplex_entity_updateTime>"
+        "dataplex_createTime":"<dataplex_entity_createTime>"
     },
     "column_id":"VALUE",
     "column_configs":{
