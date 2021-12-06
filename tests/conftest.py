@@ -249,6 +249,10 @@ def source_configs_path():
     return Path("tests").joinpath("resources", "configs").absolute()
 
 @pytest.fixture(scope="session")
+def source_configs_file_path():
+    return Path("tests").joinpath("resources").joinpath("configs.yml").absolute()
+
+@pytest.fixture(scope="session")
 def test_profiles_dir():
     return Path("tests").joinpath("resources", "test_dbt_profiles_dir").absolute()
 
@@ -323,6 +327,48 @@ def temp_configs_dir(
     yield configs_path.absolute()
     if os.path.exists(temp_clouddq_dir):
         shutil.rmtree(temp_clouddq_dir)
+
+@pytest.fixture(scope="function")
+def temp_configs_from_file(
+        gcp_project_id,
+        gcp_dataplex_bigquery_dataset_id,
+        gcp_dataplex_region,
+        gcp_dataplex_lake_name,
+        gcp_dataplex_zone_id,
+        source_configs_file_path,
+        tmp_path):
+    # Create temp directory
+    temp_clouddq_dir = Path(tmp_path).joinpath("clouddq_test_configs")
+    # Copy over tests/resources/configs
+    registry_defaults = shutil.copyfile(source_configs_file_path, temp_clouddq_dir)
+    # Prepare entity_uri configs
+    with open(registry_defaults) as source_file:
+        lines = source_file.read()
+    with open(registry_defaults, "w") as source_file:
+        lines = lines.replace("<my-gcp-dataplex-lake-id>", gcp_dataplex_lake_name)
+        lines = lines.replace("<my-gcp-dataplex-region-id>", gcp_dataplex_region)
+        lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
+        lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
+        lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
+        source_file.write(lines)
+    yield temp_clouddq_dir.absolute()
+    if os.path.exists(temp_clouddq_dir):
+        os.unlink(temp_clouddq_dir)
+
+@pytest.fixture(scope="function")
+def test_default_dataplex_configs_cache_from_file(temp_configs_from_file,
+                                        test_dq_dataplex_client,
+                                        test_dataplex_metadata_defaults_configs,
+                                        tmp_path):
+    temp_path = Path(tmp_path).joinpath("clouddq_test_configs_cache")
+    temp_path.mkdir()
+    with working_directory(temp_path):
+        configs_cache = prepare_configs_cache(configs_path=temp_configs_from_file)
+        configs_cache.resolve_dataplex_entity_uris(
+            client=test_dq_dataplex_client,
+            default_configs=test_dataplex_metadata_defaults_configs
+        )
+        yield configs_cache
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "dataplex: mark as tests for dataplex integration test.")

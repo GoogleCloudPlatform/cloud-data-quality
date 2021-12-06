@@ -48,6 +48,7 @@
     ],
     "rule_configs_dict":{
         "NO_DUPLICATES_IN_COLUMN_GROUPS":{
+            "dimension": null,
             "rule_type":"CUSTOM_SQL_STATEMENT",
             "params":{
                 "custom_sql_arguments":[
@@ -61,6 +62,7 @@
             "rule_sql_expr":"select a.*\nfrom data a\ninner join (\n  select\n    contact_type,value\n  from data\n  group by contact_type,value\n  having count(*) > 1\n) duplicates\nusing (contact_type,value)"
         },
         "NOT_NULL_SIMPLE":{
+            "dimension": null,
             "rule_type":"NOT_NULL",
             "params":{
                 "rule_binding_arguments":null
