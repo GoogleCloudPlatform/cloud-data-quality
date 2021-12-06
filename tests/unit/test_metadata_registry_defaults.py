@@ -18,7 +18,6 @@ from pathlib import Path
 import logging
 import os
 import shutil
-import tempfile
 
 import pytest
 import yaml
@@ -74,10 +73,10 @@ class TestMetadataRegistryDefaults:
         with pytest.raises(ValueError):
             MetadataRegistryDefaults.from_dict(input_dict)
 
-    def test_load_undefined_configs_ok(self):
+    def test_load_undefined_configs_ok(self, tmp_path):
         # Load a config directory containing two copies of the same config
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_metadata_registry_defaults_0")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_metadata_registry_defaults_0")
             temp_dir.mkdir(parents=True)
 
             loaded_config = load_metadata_registry_default_configs(temp_dir)
@@ -87,10 +86,10 @@ class TestMetadataRegistryDefaults:
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_load_configs_identical(self, source_configs_path, dataplex_expected_defaults):
+    def test_load_configs_identical(self, source_configs_path, dataplex_expected_defaults, tmp_path):
         # Load a config directory containing two copies of the same config
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_metadata_registry_defaults_1")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_metadata_registry_defaults_1")
             config_path = Path(source_configs_path)
 
             temp_dir.mkdir(parents=True)
@@ -105,10 +104,10 @@ class TestMetadataRegistryDefaults:
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_load_configs_different(self, source_configs_path, dataplex_expected_defaults):
+    def test_load_configs_different(self, source_configs_path, dataplex_expected_defaults, tmp_path):
         # Load a config directory containing two different configs defining the same key
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_metadata_registry_defaults_2")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_metadata_registry_defaults_2")
             config_path = Path(source_configs_path)
 
             temp_dir.mkdir(parents=True)

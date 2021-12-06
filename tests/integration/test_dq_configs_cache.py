@@ -17,7 +17,6 @@ from pathlib import Path
 
 import logging
 import shutil
-import tempfile
 
 import pytest
 
@@ -31,9 +30,9 @@ logger = logging.getLogger(__name__)
 @pytest.mark.dataplex
 class TestDqConfigsCache:
 
-    def test_prepare_configs_cache(self, temp_configs_dir):
+    def test_prepare_configs_cache(self, temp_configs_dir, tmp_path):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_configs_cache_1")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_configs_cache_1")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 configs_cache = lib.prepare_configs_cache(temp_configs_dir)
@@ -48,9 +47,10 @@ class TestDqConfigsCache:
     def test_resolve_dataplex_entity_uris(self,
             temp_configs_dir,
             test_dq_dataplex_client,
-            test_dataplex_metadata_defaults_configs):
+            test_dataplex_metadata_defaults_configs,
+            tmp_path):
         try:
-            temp_dir = Path(tempfile.gettempdir()).joinpath("clouddq_test_configs_cache_2")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_configs_cache_2")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 configs_cache = lib.prepare_configs_cache(temp_configs_dir)
