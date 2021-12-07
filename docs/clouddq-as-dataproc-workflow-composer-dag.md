@@ -45,7 +45,7 @@ To use a custom service account for Dataproc, follow the instructions [here for 
 Set environment variables.
 
 ```bash
-export CLOUDDQ_RELEASE_VERSION=0.4.0  # CloudDQ Release Tag version to use for retrieving the relevant artifact
+export CLOUDDQ_RELEASE_VERSION=0.4.1  # CloudDQ Release Tag version to use for retrieving the relevant artifact
 export PROJECT_ID=$(gcloud config list --format 'value(core.project)')  # GCP project ID where the Dataproc cluster and BigQuery dataset will be deployed
 export REGION=<preferred_gcp_region>  # name of the GCP region where the Dataproc cluster is deployed
 export ZONE=<preferred_gcp_zone>  # name of the specific zone inside $REGION where the Dataproc cluster is deployed
@@ -107,7 +107,7 @@ echo "select * from \`${PROJECT_ID}\`.${CLOUDDQ_BIGQUERY_DATASET}.contact_detail
 Run the following from the `cloud-data-quality` directory:
 
 ```bash
-export CLOUDDQ_RELEASE_VERSION="0.4.0"
+export CLOUDDQ_RELEASE_VERSION="0.4.1"
 export TARGET_OS="ubuntu_18"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.8"  # can be either "3.8" or "3.9"
 ./scripts/dataproc-workflow-composer/upload_clouddq_to_gcs.sh
