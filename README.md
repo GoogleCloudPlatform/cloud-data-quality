@@ -193,7 +193,7 @@ For example, from [Cloud Shell](https://shell.cloud.google.com/?show=ide%2Ctermi
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.4.0"
+export CLOUDDQ_RELEASE_VERSION="0.4.1"
 export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
@@ -219,7 +219,7 @@ From either [Cloud Shell](https://shell.cloud.google.com) or a `Ubuntu`/`Debian`
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.4.0"
+export CLOUDDQ_RELEASE_VERSION="0.4.1"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 ```
 
@@ -227,7 +227,7 @@ Then change directory to the git project and get the pre-built executable from G
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.4.0"
+export CLOUDDQ_RELEASE_VERSION="0.4.1"
 export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
