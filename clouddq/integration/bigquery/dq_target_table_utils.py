@@ -14,12 +14,14 @@
 
 from datetime import date
 
+import json
 import logging
 
 from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
+from clouddq.log import JsonEncoderDatetime
 from clouddq.log import get_json_logger
 
 
@@ -31,7 +33,7 @@ def log_summary(summary_data: RowIterator):
     row_count = 0
     for row in summary_data:
         data = {"clouddq_summary_statistics": dict(row.items())}
-        json_logger.info(data)
+        json_logger.info(json.dumps(data, cls=JsonEncoderDatetime))
         row_count += 1
     logger.debug(f"Sending {row_count} summary records to Cloud Logging.")
 
@@ -101,6 +103,7 @@ def load_target_table_from_bigquery(
     logger.info(
         f"Loaded {summary_data.total_rows} rows to {target_bigquery_summary_table}."
     )
+    return summary_data.total_rows
 
 
 class TargetTable:
@@ -118,10 +121,10 @@ class TargetTable:
         target_bigquery_summary_table: str,
         dq_summary_table_name: str,
         summary_to_stdout: bool = False,
-    ):
+    ) -> int:
         try:
 
-            load_target_table_from_bigquery(
+            num_rows = load_target_table_from_bigquery(
                 bigquery_client=self.bigquery_client,
                 invocation_id=self.invocation_id,
                 partition_date=partition_date,
@@ -129,6 +132,7 @@ class TargetTable:
                 dq_summary_table_name=dq_summary_table_name,
                 summary_to_stdout=summary_to_stdout,
             )
+            return num_rows
 
         except Exception as error:
 

@@ -15,6 +15,7 @@
 from datetime import datetime
 from logging import Logger
 
+import dataclasses
 import json
 import logging
 import sys
@@ -32,7 +33,10 @@ LOG_LEVEL = logging._nameToLevel["DEBUG"]
 class JsonEncoderStrFallback(json.JSONEncoder):
     def default(self, obj):
         try:
-            return super().default(obj)
+            if dataclasses.is_dataclass(obj):
+                return dataclasses.asdict(obj)
+            else:
+                return super().default(obj)
         except TypeError as exc:
             if "not JSON serializable" in str(exc):
                 return str(obj)
@@ -52,18 +56,11 @@ class JSONFormatter(logging.Formatter):
         super().__init__()
 
     def format(self, record):
-        record.msg = json.dumps(
-            {
-                "severity": record.levelname,
-                "time": datetime.utcfromtimestamp(record.created)
-                .astimezone()
-                .isoformat()
-                .replace("+00:00", "Z"),
-                "exception": record.exc_info,
-                "message": record.getMessage(),
-            },
-            cls=JsonEncoderDatetime,
-        )
+        try:
+            message = json.loads(record.getMessage())
+        except ValueError:
+            message = record.getMessage()
+        record.msg = json.dumps(message, cls=JsonEncoderDatetime)
         return super().format(record)
 
 

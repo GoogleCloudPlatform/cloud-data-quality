@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.dataplex
 class TestDataplexIntegration:
 
-    @pytest.fixture(scope="session")
+    @pytest.fixture
     def configs_archive_path(self, tmp_path):
         configs_archive_path = Path(tmp_path).joinpath("clouddq_test_artifacts", "archives").absolute()
         configs_archive_path.mkdir(parents=True, exist_ok=True)

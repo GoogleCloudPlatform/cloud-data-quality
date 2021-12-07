@@ -131,7 +131,7 @@ class BigQueryClient:
             client = self.get_connection()
             client.get_table(table)
             return True
-        except NotFound:
+        except (NotFound, KeyError):
             return False
 
     def assert_required_columns_exist_in_table(
@@ -155,9 +155,12 @@ class BigQueryClient:
                     "```\n" + "\n".join(failures.values()) + "```"
                 )
         except NotFound:
-            logging.warning(
+            logger.warning(
                 f"Table {table} does not yet exist. It will be created in this run."
             )
+        except KeyError as error:
+            logger.fatal(f"Input table `{table}` is not valid.", exc_info=True)
+            raise SystemExit(f"\n\nInput table `{table}` is not valid.\n{error}")
 
     def table_from_string(self, full_table_id: str) -> bigquery.table.Table:
         return bigquery.table.Table.from_string(full_table_id)
