@@ -71,15 +71,14 @@ def load_target_table_from_bigquery(
 
     else:
 
-        query_select = f"""SELECT * from `{dq_summary_table_name}`
-        WHERE invocation_id='{invocation_id}'
-        AND DATE(execution_ts)='{partition_date}'"""
-
         query_create_table = f"""CREATE TABLE
         `{target_bigquery_summary_table}`
         PARTITION BY TIMESTAMP_TRUNC(execution_ts, DAY)
         CLUSTER BY table_id, column_id, rule_binding_id, rule_id
-        AS {query_select}"""
+        AS
+        SELECT * from `{dq_summary_table_name}`
+        WHERE invocation_id='{invocation_id}'
+        AND DATE(execution_ts)='{partition_date}'"""
 
         # Create the summary table
         bigquery_client.execute_query(query_string=query_create_table).result()
