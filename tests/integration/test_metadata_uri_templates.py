@@ -25,6 +25,7 @@ from clouddq import lib
 from clouddq import utils
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 
+
 RE_NEWLINES = r"(\n( )*)+"
 RE_CONFIGS_HASHSUM = r"'[\w\d]+' AS configs_hashsum,"
 RE_ASSET_ID = r"'[\w-]+' AS dataplex_asset_id,"
@@ -239,6 +240,7 @@ class TestMetadataUriTemplates:
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             assert output == expected
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

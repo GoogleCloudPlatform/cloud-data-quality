@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """Data Quality Engine for BigQuery."""
-from datetime import date
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 from pprint import pformat
 from typing import Optional
@@ -31,6 +32,7 @@ from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
+from clouddq.log import add_cloud_logging_handler
 from clouddq.log import get_json_logger
 from clouddq.log import get_logger
 from clouddq.runners.dbt.dbt_runner import DbtRunner
@@ -258,8 +260,6 @@ def main(  # noqa: C901
         for handler in logger.handlers:
             handler.setLevel(logging.DEBUG)
             logger.debug("Debug logging enabled")
-    logger.info("Starting CloudDQ run with configs:")
-    json_logger.warning({"run_configs": locals()})
     if dbt_path:
         logger.warning(
             "Passing in dbt models directly via --dbt_path will be "
@@ -290,6 +290,11 @@ def main(  # noqa: C901
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
         )
+        # Set-up cloud logging
+        add_cloud_logging_handler(logger=json_logger)
+        logger.info("Starting CloudDQ run with configs:")
+        logger.info(f"{pformat({'clouddq_run_configs': locals()})}")
+        json_logger.warning({"clouddq_run_configs": locals()})
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
             bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
@@ -471,16 +476,16 @@ def main(  # noqa: C901
                     f"dbt invocation id for current execution " f"is {invocation_id}"
                 )
                 json_logger.info(
-                    json.dumps(
-                        {
+                    {
+                        "clouddq_job_completion_config": {
                             "invocation_id": invocation_id,
                             "target_bigquery_summary_table": target_bigquery_summary_table,
                             "summary_to_stdout": summary_to_stdout,
                             "target_rule_binding_ids": target_rule_binding_ids,
                         }
-                    )
+                    }
                 )
-                partition_date = date.today()
+                partition_date = datetime.now(timezone.utc).date()
                 logger.debug(
                     f"Using partition date is {partition_date} "
                     f"for getting the dq summary "
@@ -508,7 +513,7 @@ def main(  # noqa: C901
                         "'--target_bigquery_summary_table' is provided"
                     )
     except Exception as error:
-        logger.error(error)
+        logger.error(error, exc_info=True)
         json_logger.error(error, exc_info=True)
         raise SystemExit(f"\n\n{error}")
     finally:

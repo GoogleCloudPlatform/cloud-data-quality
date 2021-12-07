@@ -182,14 +182,13 @@ class BigQueryClient:
         """
 
         client = self.get_connection()
-        logger.debug(f"Query string is {query_string}")
-        default_job_config = bigquery.QueryJobConfig(
-            use_query_cache=False, use_legacy_sql=False
-        )
+        logger.debug(f"Query string is:\n```\n{query_string}\n```")
         job_id_prefix = "clouddq-"
 
         if not job_config:
-            job_config = default_job_config
+            job_config = bigquery.QueryJobConfig(
+                use_query_cache=False, use_legacy_sql=False
+            )
 
         query_job = client.query(
             query_string, job_config=job_config, job_id_prefix=job_id_prefix

@@ -13,14 +13,18 @@
 # limitations under the License.
 
 from datetime import datetime
+from logging import Logger
 
 import json
 import logging
 import sys
-import traceback
+
+from google.cloud.logging.handlers import CloudLoggingHandler
+
+import google.cloud.logging  # Don't conflict with standard logging
 
 
-APP_VERSION = "0.4.0"
+APP_VERSION = "0.4.1"
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
 
@@ -55,24 +59,26 @@ class JSONFormatter(logging.Formatter):
                 .astimezone()
                 .isoformat()
                 .replace("+00:00", "Z"),
-                "logging.googleapis.com/sourceLocation": {
-                    "file": record.pathname or record.filename,
-                    "function": record.funcName,
-                    "line": record.lineno,
-                },
                 "exception": record.exc_info,
-                "traceback": traceback.format_exception(*record.exc_info)
-                if record.exc_info
-                else None,
                 "message": record.getMessage(),
-                "logging.googleapis.com/labels": {
-                    "name": APP_NAME,
-                    "releaseId": APP_VERSION,
-                },
             },
             cls=JsonEncoderDatetime,
         )
         return super().format(record)
+
+
+def add_cloud_logging_handler(logger: Logger):
+    client = google.cloud.logging.Client()
+    handler = CloudLoggingHandler(
+        client=client,
+        name="clouddq",
+        labels={
+            "name": APP_NAME,
+            "releaseId": APP_VERSION,
+        },
+    )
+    handler.setFormatter(JSONFormatter())
+    logger.addHandler(handler)
 
 
 def get_json_logger():
