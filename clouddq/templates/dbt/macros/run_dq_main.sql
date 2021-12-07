@@ -78,7 +78,7 @@ last_mod AS (
     SELECT
         project_id || '.' || dataset_id || '.' || table_id AS table_id,
         TIMESTAMP_MILLIS(last_modified_time) AS last_modified
-    FROM {{ instance_name }}.{{ database_name }}.__TABLES__
+    FROM `{{ instance_name }}.{{ database_name }}.__TABLES__`
 ),
 validation_results AS (
 
