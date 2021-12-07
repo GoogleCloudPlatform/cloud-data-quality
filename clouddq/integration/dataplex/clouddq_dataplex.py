@@ -24,6 +24,7 @@ import time
 from requests import Response
 
 from clouddq.classes.dataplex_entity import DataplexEntity
+from clouddq.integration import USER_AGENT_TAG
 from clouddq.integration.dataplex.dataplex_client import DataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
 from clouddq.integration.gcs import upload_blob
@@ -35,7 +36,6 @@ logger = logging.getLogger(__name__)
 TARGET_SCOPES = [
     "https://www.googleapis.com/auth/cloud-platform",
 ]
-USER_AGENT_TAG = "Product_Dataplex/1.0 (GPN:Dataplex_CloudDQ)"
 DEFAULT_GCS_BUCKET_NAME = "dataplex-clouddq-artifacts-{gcp_dataplex_region}"
 
 

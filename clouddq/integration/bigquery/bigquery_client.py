@@ -20,9 +20,12 @@ from string import Template
 import logging
 import re
 
+from google.api_core.client_info import ClientInfo
 from google.api_core.exceptions import Forbidden
 from google.api_core.exceptions import NotFound
 from google.cloud import bigquery
+
+from clouddq.integration import USER_AGENT_TAG
 
 
 REQUIRED_COLUMN_TYPES = {
@@ -80,6 +83,7 @@ class BigQueryClient:
                 default_query_job_config=job_config,
                 credentials=self._gcp_credentials.credentials,
                 project=self._gcp_credentials.project_id,
+                client_info=ClientInfo(user_agent=USER_AGENT_TAG),
             )
             return self._client
         else:
