@@ -162,14 +162,14 @@ class TestCliIntegration:
                             SELECT
                                 project_id || '.' || dataset_id || '.' || table_id AS full_table_id,
                                 TIMESTAMP_MILLIS(last_modified_time) AS last_modified
-                            FROM {gcp_project_id}.{gcp_bq_dataset}.__TABLES__
+                            FROM `{gcp_project_id}.{gcp_bq_dataset}.__TABLES__`
                         )
 
                         SELECT count(*) as errors
-                        FROM {gcp_project_id}.{gcp_bq_dataset}.dq_summary
-                        JOIN last_mod ON last_mod.full_table_id = dq_summary.table_id
-                        WHERE dq_summary.last_modified IS NOT NULL
-                            AND NOT dq_summary.last_modified = last_mod.last_modified
+                        FROM `{gcp_project_id}.{gcp_bq_dataset}.dq_summary` d
+                        JOIN last_mod ON last_mod.full_table_id = d.table_id
+                        WHERE d.last_modified IS NOT NULL
+                            AND NOT d.last_modified = last_mod.last_modified
                     """
                     query_job = client.execute_query(sql)
                     results = query_job.result()

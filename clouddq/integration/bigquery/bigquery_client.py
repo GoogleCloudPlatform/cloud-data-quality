@@ -95,7 +95,11 @@ class BigQueryClient:
 
     def assert_dataset_is_in_region(self, dataset: str, region: str) -> None:
         client = self.get_connection()
-        dataset_info = client.get_dataset(dataset)
+        try:
+            dataset_info = client.get_dataset(dataset)
+        except KeyError as error:
+            logger.fatal(f"Input dataset `{dataset}` is not valid.", exc_info=True)
+            raise KeyError(f"\n\nInput dataset `{dataset}` is not valid.\n{error}")
         if dataset_info.location != region:
             raise AssertionError(
                 f"GCP region for BigQuery jobs in argument --gcp_region_id: "
@@ -164,7 +168,7 @@ class BigQueryClient:
             )
         except KeyError as error:
             logger.fatal(f"Input table `{table}` is not valid.", exc_info=True)
-            raise SystemExit(f"\n\nInput table `{table}` is not valid.\n{error}")
+            raise KeyError(f"\n\nInput table `{table}` is not valid.\n{error}")
 
     def table_from_string(self, full_table_id: str) -> bigquery.table.Table:
         return bigquery.table.Table.from_string(full_table_id)
@@ -174,7 +178,7 @@ class BigQueryClient:
             client = self.get_connection()
             client.get_dataset(dataset)
             return True
-        except NotFound:
+        except (NotFound, KeyError):
             return False
 
     def execute_query(
