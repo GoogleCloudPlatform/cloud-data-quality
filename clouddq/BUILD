@@ -69,6 +69,7 @@ py_library(
         requirement("pyyaml"),
         requirement("jinja2"),
         requirement("dbt-bigquery"),
+        requirement("google-cloud-logging"),
     ],
 )
 

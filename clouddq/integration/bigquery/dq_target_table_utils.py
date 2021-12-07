@@ -21,6 +21,7 @@ from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
+from clouddq.log import JsonEncoderDatetime
 from clouddq.log import get_json_logger
 
 
@@ -29,9 +30,12 @@ logger = logging.getLogger(__name__)
 
 def log_summary(summary_data: RowIterator):
     json_logger = get_json_logger()
+    row_count = 0
     for row in summary_data:
-        data = dict(row.items())
-        json_logger.info(json.dumps(data, default=str))
+        data = {"clouddq_summary_statistics": dict(row.items())}
+        json_logger.info(json.dumps(data, cls=JsonEncoderDatetime))
+        row_count += 1
+    logger.debug(f"Sending {row_count} summary records to Cloud Logging.")
 
 
 def load_target_table_from_bigquery(
@@ -52,17 +56,16 @@ def load_target_table_from_bigquery(
             use_legacy_sql=False,
         )
 
-        query_string = f"""SELECT * FROM `{dq_summary_table_name}`
+        query_string_load = f"""SELECT * FROM `{dq_summary_table_name}`
          WHERE invocation_id='{invocation_id}'
          and DATE(execution_ts)='{partition_date}'"""
 
         # Start the query, passing in the extra configuration.
         # Make an API request and wait for the job to complete
-        summary_data = bigquery_client.execute_query(
-            query_string=query_string, job_config=job_config
+        bigquery_client.execute_query(
+            query_string=query_string_load, job_config=job_config
         ).result()
-        if summary_to_stdout:
-            log_summary(summary_data)
+
         logger.info(
             f"Table {target_bigquery_summary_table} already exists "
             f"and query results are appended to the table."
@@ -70,27 +73,37 @@ def load_target_table_from_bigquery(
 
     else:
 
-        query_select = f"""SELECT * from `{dq_summary_table_name}`
-        WHERE invocation_id='{invocation_id}'
-        AND DATE(execution_ts)='{partition_date}'"""
-
         query_create_table = f"""CREATE TABLE
         `{target_bigquery_summary_table}`
         PARTITION BY TIMESTAMP_TRUNC(execution_ts, DAY)
         CLUSTER BY table_id, column_id, rule_binding_id, rule_id
-        AS {query_select}"""
+        AS
+        SELECT * from `{dq_summary_table_name}`
+        WHERE invocation_id='{invocation_id}'
+        AND DATE(execution_ts)='{partition_date}'"""
 
-        # Run the SELECT to get the summary data
-        summary_data = bigquery_client.execute_query(query_string=query_select).result()
-        # Now create the summary table
+        # Create the summary table
         bigquery_client.execute_query(query_string=query_create_table).result()
 
-        if summary_to_stdout:
-            log_summary(summary_data)
         logger.info(
             f"Table created and dq summary results loaded to the "
             f"table {target_bigquery_summary_table}"
         )
+    # getting loaded rows
+    query_string_affected = f"""SELECT * FROM `{target_bigquery_summary_table}`
+        WHERE invocation_id='{invocation_id}'
+        and DATE(execution_ts)='{partition_date}'"""
+
+    summary_data = bigquery_client.execute_query(
+        query_string=query_string_affected
+    ).result()
+
+    if summary_to_stdout:
+        log_summary(summary_data)
+    logger.info(
+        f"Loaded {summary_data.total_rows} rows to {target_bigquery_summary_table}."
+    )
+    return summary_data.total_rows
 
 
 class TargetTable:
@@ -108,10 +121,10 @@ class TargetTable:
         target_bigquery_summary_table: str,
         dq_summary_table_name: str,
         summary_to_stdout: bool = False,
-    ):
+    ) -> int:
         try:
 
-            load_target_table_from_bigquery(
+            num_rows = load_target_table_from_bigquery(
                 bigquery_client=self.bigquery_client,
                 invocation_id=self.invocation_id,
                 partition_date=partition_date,
@@ -119,6 +132,7 @@ class TargetTable:
                 dq_summary_table_name=dq_summary_table_name,
                 summary_to_stdout=summary_to_stdout,
             )
+            return num_rows
 
         except Exception as error:
 

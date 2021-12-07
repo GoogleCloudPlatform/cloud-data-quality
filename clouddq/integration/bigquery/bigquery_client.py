@@ -131,7 +131,7 @@ class BigQueryClient:
             client = self.get_connection()
             client.get_table(table)
             return True
-        except NotFound:
+        except (NotFound, KeyError):
             return False
 
     def assert_required_columns_exist_in_table(
@@ -155,9 +155,12 @@ class BigQueryClient:
                     "```\n" + "\n".join(failures.values()) + "```"
                 )
         except NotFound:
-            logging.warning(
+            logger.warning(
                 f"Table {table} does not yet exist. It will be created in this run."
             )
+        except KeyError as error:
+            logger.fatal(f"Input table `{table}` is not valid.", exc_info=True)
+            raise SystemExit(f"\n\nInput table `{table}` is not valid.\n{error}")
 
     def table_from_string(self, full_table_id: str) -> bigquery.table.Table:
         return bigquery.table.Table.from_string(full_table_id)
@@ -182,14 +185,13 @@ class BigQueryClient:
         """
 
         client = self.get_connection()
-        logger.debug(f"Query string is {query_string}")
-        default_job_config = bigquery.QueryJobConfig(
-            use_query_cache=False, use_legacy_sql=False
-        )
+        logger.debug(f"Query string is:\n```\n{query_string}\n```")
         job_id_prefix = "clouddq-"
 
         if not job_config:
-            job_config = default_job_config
+            job_config = bigquery.QueryJobConfig(
+                use_query_cache=False, use_legacy_sql=False
+            )
 
         query_job = client.query(
             query_string, job_config=job_config, job_id_prefix=job_id_prefix

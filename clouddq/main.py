@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """Data Quality Engine for BigQuery."""
-from datetime import date
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 from pprint import pformat
 from typing import Optional
@@ -31,6 +32,8 @@ from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
+from clouddq.log import JsonEncoderDatetime
+from clouddq.log import add_cloud_logging_handler
 from clouddq.log import get_json_logger
 from clouddq.log import get_logger
 from clouddq.runners.dbt.dbt_runner import DbtRunner
@@ -258,8 +261,6 @@ def main(  # noqa: C901
         for handler in logger.handlers:
             handler.setLevel(logging.DEBUG)
             logger.debug("Debug logging enabled")
-    logger.info("Starting CloudDQ run with configs:")
-    json_logger.warning({"run_configs": locals()})
     if dbt_path:
         logger.warning(
             "Passing in dbt models directly via --dbt_path will be "
@@ -289,6 +290,12 @@ def main(  # noqa: C901
             gcp_project_id=gcp_project_id,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
+        )
+        # Set-up cloud logging
+        add_cloud_logging_handler(logger=json_logger)
+        logger.info("Starting CloudDQ run with configs:")
+        json_logger.warning(
+            json.dumps({"clouddq_run_configs": locals()}, cls=JsonEncoderDatetime)
         )
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
@@ -470,28 +477,28 @@ def main(  # noqa: C901
                 logger.info(
                     f"dbt invocation id for current execution " f"is {invocation_id}"
                 )
-                json_logger.info(
-                    json.dumps(
-                        {
-                            "invocation_id": invocation_id,
-                            "target_bigquery_summary_table": target_bigquery_summary_table,
-                            "summary_to_stdout": summary_to_stdout,
-                            "target_rule_binding_ids": target_rule_binding_ids,
-                        }
-                    )
-                )
-                partition_date = date.today()
-                logger.debug(
-                    f"Using partition date is {partition_date} "
-                    f"for getting the dq summary "
-                    f"results from intermediate dq_summary table"
-                )
+                partition_date = datetime.now(timezone.utc).date()
                 target_table = TargetTable(invocation_id, bigquery_client)
-                target_table.write_to_target_bq_table(
+                num_rows = target_table.write_to_target_bq_table(
                     partition_date,
                     target_bigquery_summary_table,
                     dq_summary_table_name,
                     summary_to_stdout,
+                )
+                json_logger.info(
+                    json.dumps(
+                        {
+                            "clouddq_job_completion_config": {
+                                "invocation_id": invocation_id,
+                                "target_bigquery_summary_table": target_bigquery_summary_table,
+                                "summary_to_stdout": summary_to_stdout,
+                                "target_rule_binding_ids": target_rule_binding_ids,
+                                "partition_date": partition_date,
+                                "num_rows_loaded_to_target_table": num_rows,
+                            }
+                        },
+                        cls=JsonEncoderDatetime,
+                    )
                 )
                 logger.info("Job completed successfully.")
             else:
@@ -508,7 +515,7 @@ def main(  # noqa: C901
                         "'--target_bigquery_summary_table' is provided"
                     )
     except Exception as error:
-        logger.error(error)
+        logger.error(error, exc_info=True)
         json_logger.error(error, exc_info=True)
         raise SystemExit(f"\n\n{error}")
     finally:
