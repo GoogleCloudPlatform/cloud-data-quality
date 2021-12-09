@@ -1,0 +1,7 @@
+rule_binding_id,rule_id,column_id,dimension,metadata_json_string,progress_watermark,rows_validated,complex_rule_validation_errors_count,success_count,failed_count,null_count
+T2_DQ_1_EMAIL,NOT_BLANK,value,,"{""brand"": ""one""}",TRUE,7,,6,0,1
+T2_DQ_1_EMAIL,NOT_NULL_SIMPLE,value,,"{""brand"": ""one""}",TRUE,7,,6,1,1
+T3_DQ_1_EMAIL_DUPLICATE,NOT_NULL_SIMPLE,value,,"{""brand"": ""one""}",TRUE,7,,6,1,1
+T2_DQ_1_EMAIL,CUSTOM_SQL_LENGTH_LE_30,value,,"{""brand"": ""one""}",TRUE,7,,5,1,1
+T2_DQ_1_EMAIL,REGEX_VALID_EMAIL,value,,"{""brand"": ""one""}",TRUE,7,,3,3,1
+T3_DQ_1_EMAIL_DUPLICATE,NO_DUPLICATES_IN_COLUMN_GROUPS,value,,"{""brand"": ""one""}",TRUE,7,0,7,0,1

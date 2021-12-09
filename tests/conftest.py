@@ -17,6 +17,7 @@ import logging
 import os
 import shutil
 
+import click.testing
 import pytest
 
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
@@ -369,6 +370,10 @@ def test_default_dataplex_configs_cache_from_file(temp_configs_from_file,
             default_configs=test_dataplex_metadata_defaults_configs
         )
         yield configs_cache
+
+@pytest.fixture(scope="session")
+def runner():
+    return click.testing.CliRunner()
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "dataplex: mark as tests for dataplex integration test.")
