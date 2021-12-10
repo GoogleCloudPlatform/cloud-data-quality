@@ -295,8 +295,8 @@ class CloudDqDataplexClient:
         else:
             raise RuntimeError(
                 f"Failed to retrieve Dataplex entity: "
-                f"'/projects/{self._client.gcp_project_id}/locations/{self._client.location_id}"
-                f"/lakes/{self._client.lake_name}/zones/{zone_id}/entities/{entity_id}':\n {response.text}"
+                f"'/projects/{gcp_project_id}/locations/{location_id}"
+                f"/lakes/{lake_name}/zones/{zone_id}/entities/{entity_id}':\n {response.text}"
             )
 
     def list_dataplex_entities(
