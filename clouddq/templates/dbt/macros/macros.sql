@@ -38,7 +38,11 @@
     END AS simple_rule_row_is_valid,
     NULL AS complex_rule_validation_errors_count,
   FROM
+    zero_record
+  LEFT JOIN
     data
+  ON
+    zero_record.rule_binding_id = data.rule_binding_id
 {% endmacro -%}
 
 {% macro validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name ) -%}
@@ -57,7 +61,12 @@
     (select distinct num_rows_validated from data) as num_rows_validated,
     FALSE AS simple_rule_row_is_valid,
     COUNT(*) as complex_rule_validation_errors_count,
-  FROM (
-    {{ rule_configs.get("rule_sql_expr") }}
-  ) custom_sql_statement_validation_errors
+  FROM
+    zero_record
+  LEFT JOIN
+    (
+      {{ rule_configs.get("rule_sql_expr") }}
+    ) custom_sql_statement_validation_errors
+  ON
+    zero_record.rule_binding_id = custom_sql_statement_validation_errors.rule_binding_id
 {% endmacro -%}

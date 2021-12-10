@@ -112,8 +112,7 @@ class DqEntity:
         Returns:
 
         """
-
-        dq_column_config = self.columns.get(column_id, None)
+        dq_column_config = self.columns.get(column_id.upper(), None)
         assert_not_none_or_empty(
             dq_column_config,
             f"Column ID: {column_id} not found in Entity Config: {self.entity_id}.",

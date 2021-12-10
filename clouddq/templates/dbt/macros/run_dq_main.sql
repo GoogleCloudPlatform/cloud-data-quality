@@ -13,7 +13,7 @@
 -- limitations under the License.
 {% from 'macros.sql' import validate_simple_rule -%}
 {% from 'macros.sql' import validate_complex_rule -%}
-{%- macro run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark) -%}
+{%- macro run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -%}
 {% set rule_binding_id = configs.get('rule_binding_id') -%}
 {% set rule_configs_dict = configs.get('rule_configs_dict') -%}
 {% set filter_sql_expr = configs.get('row_filter_configs').get('filter_sql_expr') -%}
@@ -44,7 +44,7 @@
 {% set fully_qualified_table_name = "%s.%s.%s" % (instance_name, database_name, table_name) -%}
 {% set _dummy = metadata.update(configs.get('metadata', '')) -%}
 WITH
-{%- if configs.get('incremental_time_filter_column') -%}
+{%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists -%}
 {% set time_column_id = configs.get('incremental_time_filter_column') %}
 high_watermark_filter AS (
     SELECT
@@ -55,14 +55,19 @@ high_watermark_filter AS (
       AND rule_binding_id = '{{ rule_binding_id }}'
       AND progress_watermark IS TRUE
 ),
+zero_record AS (
+    SELECT
+        '{{ rule_binding_id }}' AS rule_binding_id,
+),
 {% endif %}
 data AS (
     SELECT
       *,
       COUNT(1) OVER () as num_rows_validated,
+      '{{ rule_binding_id }}' AS rule_binding_id,
     FROM
       `{{- fully_qualified_table_name -}}` d
-{%- if configs.get('incremental_time_filter_column') %}
+{%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists %}
       ,high_watermark_filter
     WHERE
       CAST(d.{{ time_column_id }} AS TIMESTAMP)
@@ -104,7 +109,7 @@ all_validation_results AS (
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.column_value AS column_value,
-    r.num_rows_validated AS rows_validated,
+    IFNULL(r.num_rows_validated, 0) AS rows_validated,
     last_mod.last_modified,
     '{{ metadata|tojson }}' AS metadata_json_string,
     '{{ configs_hashsum }}' AS configs_hashsum,
@@ -136,4 +141,4 @@ FROM
 
 {%- endmacro -%}
 
-{{-  run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark) -}}
+{{-  run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -}}

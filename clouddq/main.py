@@ -331,6 +331,9 @@ def main(  # noqa: C901
             bigquery_client.assert_dataset_is_in_region(
                 dataset=dq_summary_dataset, region=gcp_region_id
             )
+            dq_summary_table_exists = bigquery_client.is_table_exists(
+                dq_summary_table_name
+            )
             bigquery_client.assert_required_columns_exist_in_table(
                 dq_summary_table_name
             )
@@ -444,6 +447,7 @@ def main(  # noqa: C901
                 debug=print_sql_queries,
                 progress_watermark=progress_watermark,
                 default_configs=dataplex_registry_defaults,
+                dq_summary_table_exists=dq_summary_table_exists,
             )
             if not skip_sql_validation:
                 logger.debug(
