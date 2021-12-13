@@ -13,10 +13,15 @@
 -- limitations under the License.
 
 WITH
+zero_record AS (
+  SELECT
+    'T2_DQ_1_EMAIL' AS rule_binding_id,
+),
 data AS (
     SELECT
       *,
       COUNT(1) OVER () as num_rows_validated,
+      'T2_DQ_1_EMAIL' AS rule_binding_id,
     FROM
       `<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details` d
     WHERE
@@ -48,7 +53,11 @@ SELECT
     END AS simple_rule_row_is_valid,
     NULL AS complex_rule_validation_errors_count,
   FROM
+    zero_record
+  LEFT JOIN
     data
+  ON
+    zero_record.rule_binding_id = data.rule_binding_id
 
     UNION ALL
     SELECT
@@ -70,7 +79,11 @@ SELECT
     END AS simple_rule_row_is_valid,
     NULL AS complex_rule_validation_errors_count,
   FROM
+    zero_record
+  LEFT JOIN
     data
+  ON
+    zero_record.rule_binding_id = data.rule_binding_id
 
     UNION ALL
     SELECT
@@ -92,7 +105,11 @@ SELECT
     END AS simple_rule_row_is_valid,
     NULL AS complex_rule_validation_errors_count,
   FROM
+    zero_record
+  LEFT JOIN
     data
+  ON
+    zero_record.rule_binding_id = data.rule_binding_id
     UNION ALL
   SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
@@ -113,7 +130,11 @@ SELECT
     END AS simple_rule_row_is_valid,
     NULL AS complex_rule_validation_errors_count,
     FROM
-    data
+      zero_record
+    LEFT JOIN
+      data
+    ON
+      zero_record.rule_binding_id = data.rule_binding_id
 ),
 all_validation_results AS (
   SELECT
@@ -126,7 +147,7 @@ all_validation_results AS (
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.column_value AS column_value,
-    r.num_rows_validated AS rows_validated,
+    IFNULL(r.num_rows_validated, 0) AS rows_validated,
     last_mod.last_modified,
     '{"brand": "one"}' AS metadata_json_string,
     '' AS configs_hashsum,

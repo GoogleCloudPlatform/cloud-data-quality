@@ -325,6 +325,7 @@ def main(  # noqa: C901
             "Writing BigQuery rule_binding views and intermediate "
             f"summary results to BigQuery table: `{dq_summary_table_name}`. "
         )
+        dq_summary_table_exists = False
         if gcp_region_id and not skip_sql_validation:
             dq_summary_dataset = ".".join(dq_summary_table_name.split(".")[:2])
             logger.debug(f"dq_summary_dataset: {dq_summary_dataset}")

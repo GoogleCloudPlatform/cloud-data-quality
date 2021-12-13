@@ -55,11 +55,11 @@ high_watermark_filter AS (
       AND rule_binding_id = '{{ rule_binding_id }}'
       AND progress_watermark IS TRUE
 ),
+{% endif %}
 zero_record AS (
     SELECT
         '{{ rule_binding_id }}' AS rule_binding_id,
 ),
-{% endif %}
 data AS (
     SELECT
       *,
