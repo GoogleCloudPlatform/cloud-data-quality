@@ -31,21 +31,37 @@ class DqRule:
 
     @classmethod
     def validate(cls: DqRule, config_id: str, config: dict, rule_dims: list) -> None:
-        if "dimension" in config and not config["dimension"] in rule_dims:
-            raise ValueError(
-                f"Invalid rule dimension '{config['dimension']}' in "
-                f"rule configurations ID '{config_id}'.\n"
-                f"Ensure it is one of the allowed rule_dimensions: {rule_dims} or add it to"
-                f"the allowed list of dimensions in the 'rule_dimensions' YAML node, e.g.\n"
-                f"```\nrule_dimensions:\n"
-                f"  - consistency\n"
-                f"  - correctness\n"
-                f"  - duplication\n"
-                f"  - completeness\n"
-                f"  - conformance\n"
-                f"  - integrity\n"
-                f"```"
-            )
+        if "dimension" in config:
+            if not rule_dims:
+                raise ValueError(
+                    f"Invalid rule dimension '{config['dimension']}' in "
+                    f"rule configurations ID '{config_id}'.\n"
+                    f"The list of allowed rule_dimensions is empty. You can add '{config['dimension']}' to"
+                    f"the allowed list of dimensions in the 'rule_dimensions' YAML config node, e.g.\n"
+                    f"```\nrule_dimensions:\n"
+                    f"  - consistency\n"
+                    f"  - correctness\n"
+                    f"  - duplication\n"
+                    f"  - completeness\n"
+                    f"  - conformance\n"
+                    f"  - integrity\n"
+                    f"```"
+                )
+            if not config["dimension"] in rule_dims:
+                raise ValueError(
+                    f"Invalid rule dimension '{config['dimension']}' in "
+                    f"rule configurations ID '{config_id}'.\n"
+                    f"Ensure it is one of the allowed rule_dimensions: {rule_dims} or add it to"
+                    f"the allowed list of dimensions in the 'rule_dimensions' YAML config node, e.g.\n"
+                    f"```\nrule_dimensions:\n"
+                    f"  - consistency\n"
+                    f"  - correctness\n"
+                    f"  - duplication\n"
+                    f"  - completeness\n"
+                    f"  - conformance\n"
+                    f"  - integrity\n"
+                    f"```"
+                )
 
     @classmethod
     def from_dict(cls: DqRule, rule_id: str, kwargs: dict) -> DqRule:
