@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from pathlib import Path
+from pprint import pprint
 
 import logging
 import shutil
@@ -21,8 +22,6 @@ from google.cloud import bigquery
 
 import pytest
 
-from clouddq import lib
-from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.main import main
 from clouddq.runners.dbt.dbt_runner import DbtRunner
@@ -98,7 +97,6 @@ class TestDqRules:
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--gcp_region_id={gcp_bq_region}",
                     f"--target_bigquery_summary_table={target_table}",
-                    "--debug",
                     "--enable_experimental_bigquery_entity_uris",
                     ]
                 result = runner.invoke(main, args)
@@ -141,6 +139,10 @@ class TestDqRules:
                     logger.info("Query done")
                     rows = list(results)
                     print(f"Query execution returned {len(rows)} rows")
+                    if len(rows) > 0:
+                        for row in rows:
+                            print("Rows with validation failure:")
+                            pprint(row)
                     assert len(rows) == 0
                 except Exception as exc:
                     logger.fatal(f'Exception in query: {exc}')
