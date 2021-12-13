@@ -13,8 +13,9 @@
 # limitations under the License.
 
 from pathlib import Path
-from pprint import pprint
+from pprint import pformat
 
+import json
 import logging
 import shutil
 
@@ -66,6 +67,7 @@ class TestDqRules:
 
         table = client.get_table(table_id)  # Make an API request.
         print(f"Loaded {table.num_rows} rows and {len(table.schema)} columns to {table_id}")
+        return table_id
 
     def test_dq_rules(
         self,
@@ -119,7 +121,8 @@ class TestDqRules:
                 print(f"Dbt invocation id is {invocation_id}")
                 # Test the DQ expected results
                 try:
-                    sql = f"""SELECT rule_binding_id, rule_id, column_id,
+                    sql = f"""WITH validation_errors AS (
+                    SELECT rule_binding_id, rule_id, column_id,
                     dimension, metadata_json_string, progress_watermark,
                     rows_validated, complex_rule_validation_errors_count,
                     success_count, failed_count, null_count
@@ -131,19 +134,23 @@ class TestDqRules:
                     dimension, metadata_json_string, progress_watermark,
                     rows_validated, complex_rule_validation_errors_count,
                     success_count, failed_count, null_count
-                     FROM `{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}_expected`;
+                     FROM `{create_expected_results_table}`)
+                    SELECT TO_JSON_STRING(validation_errors) from validation_errors;
                     """
-                    print(f"Dq rules validation query string is \n {sql}")
                     query_job = client.execute_query(sql)
                     results = query_job.result()
                     logger.info("Query done")
                     rows = list(results)
-                    print(f"Query execution returned {len(rows)} rows")
-                    if len(rows) > 0:
+                    logger.info(f"Query execution returned {len(rows)} rows")
+                    if len(rows):
+                        logger.warning(
+                            "Rows with values not matching the expected "
+                            "content in 'tests/resources/expected_results.csv':"
+                        )
                         for row in rows:
-                            print("Rows with validation failure:")
-                            pprint(row)
-                    assert len(rows) == 0
+                            record = json.loads(str(row[0]))
+                            logger.warning(f"\n{pformat(record)}")
+                    assert not [row[0] for row in rows]
                 except Exception as exc:
                     logger.fatal(f'Exception in query: {exc}')
                     assert False
