@@ -254,6 +254,10 @@ def source_configs_file_path():
     return Path("tests").joinpath("resources").joinpath("configs.yml").absolute()
 
 @pytest.fixture(scope="session")
+def source_dq_rules_configs_file_path():
+    return Path("tests").joinpath("resources").joinpath("dq_rules_configs.yml").absolute()
+
+@pytest.fixture(scope="session")
 def test_profiles_dir():
     return Path("tests").joinpath("resources", "test_dbt_profiles_dir").absolute()
 
@@ -370,6 +374,33 @@ def test_default_dataplex_configs_cache_from_file(temp_configs_from_file,
             default_configs=test_dataplex_metadata_defaults_configs
         )
         yield configs_cache
+
+@pytest.fixture(scope="function")
+def temp_configs_from_dq_rules_config_file(
+        gcp_project_id,
+        gcp_dataplex_bigquery_dataset_id,
+        gcp_dataplex_region,
+        gcp_dataplex_lake_name,
+        gcp_dataplex_zone_id,
+        source_dq_rules_configs_file_path,
+        tmp_path):
+    # Create temp directory
+    temp_clouddq_dir = Path(tmp_path).joinpath("clouddq_test_dq_rules_configs")
+    # Copy over tests/resources/configs
+    registry_defaults = shutil.copyfile(source_dq_rules_configs_file_path, temp_clouddq_dir)
+    # Prepare entity_uri configs
+    with open(registry_defaults) as source_file:
+        lines = source_file.read()
+    with open(registry_defaults, "w") as source_file:
+        lines = lines.replace("<my-gcp-dataplex-lake-id>", gcp_dataplex_lake_name)
+        lines = lines.replace("<my-gcp-dataplex-region-id>", gcp_dataplex_region)
+        lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
+        lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
+        lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
+        source_file.write(lines)
+    yield temp_clouddq_dir.absolute()
+    if os.path.exists(temp_clouddq_dir):
+        os.unlink(temp_clouddq_dir)
 
 @pytest.fixture(scope="session")
 def runner():

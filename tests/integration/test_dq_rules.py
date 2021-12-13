@@ -21,6 +21,8 @@ from google.cloud import bigquery
 
 import pytest
 
+from clouddq import lib
+from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.main import main
 from clouddq.runners.dbt.dbt_runner import DbtRunner
@@ -69,7 +71,7 @@ class TestDqRules:
     def test_dq_rules(
         self,
         runner,
-        temp_configs_dir,
+        temp_configs_from_dq_rules_config_file,
         gcp_application_credentials,
         gcp_project_id,
         gcp_bq_dataset,
@@ -84,20 +86,20 @@ class TestDqRules:
     ):
 
         try:
-            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_4")
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_dq_rules")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_last_modified_in_dq_summary {gcp_application_credentials}")
                 target_table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
                 args = [
-                    "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
-                    f"{temp_configs_dir}",
+                    "ALL",
+                    f"{temp_configs_from_dq_rules_config_file}",
                     f"--gcp_project_id={gcp_project_id}",
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--gcp_region_id={gcp_bq_region}",
                     f"--target_bigquery_summary_table={target_table}",
                     "--debug",
-                    "--summary_to_stdout",
+                    "--enable_experimental_bigquery_entity_uris",
                     ]
                 result = runner.invoke(main, args)
                 print(result.output)
