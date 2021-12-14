@@ -82,11 +82,17 @@ class TestDqRules:
         gcp_impersonation_credentials,
         gcp_sa_key,
         create_expected_results_table,
+        source_dq_rules_configs_file_path,
     ):
 
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_dq_rules")
             temp_dir.mkdir(parents=True)
+            print("Input yaml:")
+            with open(source_dq_rules_configs_file_path) as input_yaml:
+                lines = input_yaml.readlines()
+                for line in lines:
+                    print(line)
             with working_directory(temp_dir):
                 logger.info(f"test_last_modified_in_dq_summary {gcp_application_credentials}")
                 target_table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
