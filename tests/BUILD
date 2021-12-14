@@ -197,3 +197,11 @@ py_test(
     legacy_create_init = 0,
     deps = DEPS,
 )
+
+py_test(
+    name = "test_dq_rules",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
