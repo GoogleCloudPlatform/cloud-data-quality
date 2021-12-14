@@ -17,7 +17,6 @@ from pathlib import Path
 import logging
 import shutil
 
-import click.testing
 import pytest
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
@@ -29,10 +28,6 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.e2e
 class TestCliIntegration:
-
-    @pytest.fixture(scope="session")
-    def runner(self):
-        return click.testing.CliRunner()
 
     def test_cli_dbt_path(
         self,
