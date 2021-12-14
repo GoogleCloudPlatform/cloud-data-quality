@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from enum import Enum
 from enum import unique
+from pprint import pformat
 from string import Template
 
 import re
@@ -24,14 +25,50 @@ import re
 from clouddq.utils import assert_not_none_or_empty
 
 
-FORBIDDEN_SQL = re.compile(r"([;#]|\-\-|\*\/|\/\*)")
+RE_FORBIDDEN_SQL = re.compile(r"([;#]|\-\-|\*\/|\/\*)")
 NOT_NULL_SQL = Template("$column IS NOT NULL")
 REGEX_SQL = Template("REGEXP_CONTAINS( CAST( $column  AS STRING), '$pattern' )")
 NOT_BLANK_SQL = Template("TRIM($column) != ''")
+SAMPLE_DATA_CTE = """
+WITH
+zero_record AS (
+  SELECT
+    '{{ row_filter_id }}' AS rule_binding_id,
+),
+data AS (
+    SELECT
+      *,
+      COUNT(1) OVER () as num_rows_validated,
+      '{{ rule_binding_id }}' AS rule_binding_id,
+    FROM
+      `{{ entity_id }}` d
+      ,high_watermark_filter
+    WHERE
+      CAST(d.{{ incremental_time_filter_column_id }} AS TIMESTAMP)
+          > high_watermark_filter.high_watermark
+    AND
+      {{ row_filter_id }}
+),
+SELECT
+    CURRENT_TIMESTAMP() AS execution_ts,
+    '{{ rule_binding_id }}' AS rule_binding_id,
+    '{{ rule_id }}' AS rule_id,
+    (select distinct num_rows_validated from data) as num_rows_validated,
+    FALSE AS simple_rule_row_is_valid,
+    COUNT(*) as complex_rule_validation_errors_count,
+    FROM
+        zero_record
+    LEFT JOIN
+    (
+      {{ custom_sql_statement }}
+    ) custom_sql_statement_validation_errors
+    ON
+    zero_record.rule_binding_id = custom_sql_statement_validation_errors.rule_binding_id
+"""
 
 
 def check_for_invalid_sql(rule_type: RuleType, sql_string: str) -> None:
-    if FORBIDDEN_SQL.search(sql_string):
+    if RE_FORBIDDEN_SQL.search(sql_string):
         raise ValueError(
             f"RuleType: {rule_type.name} contains "
             f"invalid characters.\n"
@@ -59,6 +96,15 @@ def to_sql_custom_sql_statement(params: dict) -> Template:
         f"'custom_sql_statement' in 'params'.\n"
         f"Current value: {custom_sql_statement}",
     )
+    if "from data" not in custom_sql_statement.lower():
+        raise ValueError(
+            f"Invalid CUSTOM_SQL_STATEMENT parameter 'custom_sql_statement' in:\n{pformat(params)}\n"
+            "CUSTOM_SQL_STATEMENT parameter 'custom_sql_statement' must select "
+            f"from 'data' CTE by including `from data` in the SQL statement.\n"
+            "The CTE 'data' contains the result of all filterings applied "
+            f"in a rule_binding including any incremental fitlers, e.g.\n```"
+            f"{SAMPLE_DATA_CTE}```"
+        )
     custom_sql_arguments = params.get("custom_sql_arguments", "")
     if custom_sql_arguments:
         for argument in custom_sql_arguments:

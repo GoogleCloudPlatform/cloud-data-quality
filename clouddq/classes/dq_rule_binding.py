@@ -191,6 +191,16 @@ class DqRuleBinding:
             )
         return table_entity
 
+    def resolve_rule_sql_expr(self: DqRuleBinding, rule: DqRule) -> DqRule:
+        try:
+            rule.resolve_sql_expr()
+        except Exception as e:
+            raise ValueError(
+                f"Failed to resolve rule_id '{rule.rule_id}' in "
+                f"rule_binding_id '{self.rule_binding_id}' "
+                f"with error:\n{e}"
+            )
+
     def resolve_rule_config_list(
         self: DqRuleBinding,
         configs_cache: dq_configs_cache.DqConfigsCache,
@@ -224,6 +234,7 @@ class DqRuleBinding:
                 arguments = None
             rule_config = configs_cache.get_rule_id(rule_id.upper())
             rule_config.update_rule_binding_arguments(arguments)
+            self.resolve_rule_sql_expr(rule_config)
             resolved_rule_config_list.append(rule_config)
         assert_not_none_or_empty(
             resolved_rule_config_list,

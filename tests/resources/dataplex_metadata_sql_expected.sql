@@ -46,21 +46,22 @@ SELECT
     (select distinct num_rows_validated from data) as num_rows_validated,
     FALSE AS simple_rule_row_is_valid,
     COUNT(*) as complex_rule_validation_errors_count,
-  FROM
-  zero_record
-  LEFT JOIN (
-    select a.*
-from data a
-inner join (
-  select
-    contact_type,value
-  from data
-  group by contact_type,value
-  having count(*) > 1
-) duplicates
-using (contact_type,value)
-  ) custom_sql_statement_validation_errors
-  ON
+    FROM
+    zero_record
+    LEFT JOIN
+    (
+      select a.*
+      from data a
+      inner join (
+        select
+          contact_type,value
+        from data
+        group by contact_type,value
+        having count(*) > 1
+      ) duplicates
+      using (contact_type,value)
+    ) custom_sql_statement_validation_errors
+    ON
   zero_record.rule_binding_id = custom_sql_statement_validation_errors.rule_binding_id
 
     UNION ALL

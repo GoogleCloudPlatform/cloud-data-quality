@@ -262,6 +262,9 @@ class TestClasses:
             {"custom_sql_expr": "'; drop table Students; select ?;--"},
             {"custom_sql_expr": "'; drop table Students; select ?;#"},
             {"custom_sql_expr": "'; drop table Students; select ?/*"},
+            {"custom_sql_expr": "--"},
+            {"custom_sql_expr": "#"},
+            {"custom_sql_expr": "/*"},
         ],
     )
     def test_rule_type_custom_to_sql_failure(self, params):
@@ -313,6 +316,11 @@ class TestClasses:
         expected = "REGEXP_CONTAINS( CAST( column_name  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
         assert sql == expected
 
+    def test_rule_type_custom_sql_statement_no_data(self):
+        params = {"custom_sql_statement": "select * from table"}
+        with pytest.raises(ValueError):
+            RuleType.CUSTOM_SQL_STATEMENT.to_sql(params)
+
     def test_configs_cache_rules(self, temp_configs_dir):
 
         def assertRulesEqual(rule_id, rule_config, rule_loaded):
@@ -322,7 +330,7 @@ class TestClasses:
             print(f"  dict: {rule_loaded.to_dict()[rule_id]}")
             print(f"  conf: {rule_config}")
 
-            assert DqRule.from_dict(rule_id, rule_config) == rule_loaded, rule_id
+            assert DqRule.from_dict(rule_id, rule_config).to_dict() == rule_loaded.to_dict(), rule_id
 
             # To compare the dictionaries, we need to remove the SQL expression.
             # To avoid relying on the specific key, just compare the keys from
