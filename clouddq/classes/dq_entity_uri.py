@@ -62,6 +62,13 @@ class EntityUri:
     def from_uri(
         cls: EntityUri, uri_string: str, default_configs: dict | None = None
     ) -> EntityUri:
+        if "://" not in uri_string:
+            raise ValueError(
+                f"Invalid entity_uri: {uri_string}\n"
+                "Example valid URI: "
+                "dataplex://projects/project-id/locations/us-central1/"
+                "lakes/lake-id/zones/zone-id/entities/entity-id"
+                )
         uri_scheme, uri_configs_string = uri_string.split("://")
         scheme = EntityUriScheme.from_scheme(uri_scheme)
         default_scheme_configs = None

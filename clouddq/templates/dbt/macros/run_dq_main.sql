@@ -64,6 +64,7 @@ data AS (
     SELECT
       *,
       COUNT(1) OVER () as num_rows_validated,
+      COUNT(1) OVER () - COUNT({{ column_name }}) OVER () as num_null_rows,
       '{{ rule_binding_id }}' AS rule_binding_id,
     FROM
       `{{- fully_qualified_table_name -}}` d
@@ -110,6 +111,7 @@ all_validation_results AS (
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.column_value AS column_value,
     IFNULL(r.num_rows_validated, 0) AS rows_validated,
+    r.num_null_rows,
     last_mod.last_modified,
     '{{ metadata|tojson }}' AS metadata_json_string,
     '{{ configs_hashsum }}' AS configs_hashsum,

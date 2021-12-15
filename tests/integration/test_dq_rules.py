@@ -55,12 +55,11 @@ class TestDqRules:
         table_id = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}_expected"
 
         job_config = bigquery.LoadJobConfig(
-            source_format=bigquery.SourceFormat.CSV,
-            skip_leading_rows=1,
+            source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
             autodetect=True,
             write_disposition="WRITE_TRUNCATE")
 
-        with open(test_resources / "expected_results.csv", "rb") as source_file:
+        with open(test_resources / "expected_results.json", "rb") as source_file:
             job = client.load_table_from_file(source_file, table_id, job_config=job_config)
 
         job.result()  # Waits for the job to complete.
@@ -85,16 +84,11 @@ class TestDqRules:
         gcp_sa_key,
         create_expected_results_table,
         source_dq_rules_configs_file_path,
+        test_resources,
     ):
-
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_dq_rules")
             temp_dir.mkdir(parents=True)
-            print("Input yaml:")
-            with open(source_dq_rules_configs_file_path) as input_yaml:
-                lines = input_yaml.readlines()
-                for line in lines:
-                    print(line)
             with working_directory(temp_dir):
                 logger.info(f"test_last_modified_in_dq_summary {gcp_application_credentials}")
                 target_table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
@@ -108,7 +102,6 @@ class TestDqRules:
                     "--enable_experimental_bigquery_entity_uris",
                     ]
                 result = runner.invoke(main, args)
-                print(result.output)
                 assert result.exit_code == 0
 
                 # Prepare dbt runtime
@@ -126,42 +119,58 @@ class TestDqRules:
                 invocation_id = get_dbt_invocation_id(dbt_path)
                 print(f"Dbt invocation id is {invocation_id}")
                 # Test the DQ expected results
-                try:
-                    sql = f"""WITH validation_errors AS (
-                    SELECT rule_binding_id, rule_id, column_id,
-                    dimension, metadata_json_string, progress_watermark,
-                    rows_validated, complex_rule_validation_errors_count,
-                    success_count, failed_count, null_count
-                     FROM
-                     `{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}`
-                     WHERE invocation_id='{invocation_id}'
-                    EXCEPT DISTINCT
-                    SELECT rule_binding_id, rule_id, column_id,
-                    dimension, metadata_json_string, progress_watermark,
-                    rows_validated, complex_rule_validation_errors_count,
-                    success_count, failed_count, null_count
-                     FROM `{create_expected_results_table}`)
-                    SELECT TO_JSON_STRING(validation_errors) from validation_errors;
-                    """
-                    query_job = client.execute_query(sql)
-                    results = query_job.result()
-                    logger.info("Query done")
-                    rows = list(results)
-                    logger.info(f"Query execution returned {len(rows)} rows")
-                    if len(rows):
-                        logger.warning(
-                            "Rows with values not matching the expected "
-                            "content in 'tests/resources/expected_results.csv':"
-                        )
-                        for row in rows:
-                            record = json.loads(str(row[0]))
-                            logger.warning(f"\n{pformat(record)}")
-                    assert not [row[0] for row in rows]
-                except Exception as exc:
-                    logger.fatal(f'Exception in query: {exc}')
-                    assert False
-                finally:
-                    client.close_connection()
+                sql = f"""
+                WITH validation_errors AS (
+                SELECT rule_binding_id, rule_id, column_id,
+                dimension, metadata_json_string, progress_watermark,
+                rows_validated, complex_rule_validation_errors_count,
+                success_count, failed_count, null_count
+                FROM
+                    `{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}`
+                WHERE
+                    invocation_id='{invocation_id}'
+                EXCEPT DISTINCT
+                SELECT rule_binding_id, rule_id, column_id,
+                dimension, metadata_json_string, progress_watermark,
+                rows_validated, complex_rule_validation_errors_count,
+                success_count, failed_count, null_count
+                FROM
+                    `{create_expected_results_table}`
+                )
+                SELECT TO_JSON_STRING(validation_errors)
+                FROM validation_errors;
+                """
+                query_job = client.execute_query(sql)
+                results = query_job.result()
+                logger.info("Query done")
+                rows = list(results)
+                logger.info(f"Query execution returned {len(rows)} rows")
+                if len(rows):
+                    logger.warning(
+                        "Rows with values not matching the expected "
+                        "content in 'tests/resources/expected_results.csv':"
+                    )
+                    for row in rows:
+                        record = json.loads(str(row[0]))
+                        logger.warning(f"\n{pformat(record)}")
+                        print(f"Input yaml from {source_dq_rules_configs_file_path}:")
+                        with open(source_dq_rules_configs_file_path) as input_yaml:
+                            lines = input_yaml.readlines()
+                            for line in lines:
+                                print(line)
+                failed_rows = [json.loads(row[0]) for row in rows]
+                failed_rows_rule_binding_ids = [row['rule_binding_id'] for row in failed_rows]
+                failed_rows_rule_ids = [row['rule_id'] for row in failed_rows]
+                with open(test_resources / "expected_results.json", "rb") as source_file:
+                    expected_json = []
+                    for line in source_file.readlines():
+                        record = json.loads(line)
+                        print(record)
+                        print(record['rule_binding_id'])
+                        print(record['rule_binding_id'] in failed_rows_rule_binding_ids)
+                        expected_json.append(record)
+                print(expected_json)
+                assert failed_rows == expected_json
         finally:
             shutil.rmtree(temp_dir)
 

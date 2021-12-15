@@ -35,18 +35,19 @@
         progress_watermark,
         rows_validated,
         complex_rule_validation_errors_count,
+        num_null_rows,
         last_modified,
         CASE 
           WHEN rows_validated = 0 THEN NULL
           WHEN complex_rule_validation_errors_count IS NOT NULL
-          THEN rows_validated - complex_rule_validation_errors_count
+          THEN rows_validated - complex_rule_validation_errors_count - num_null_rows
           ELSE COUNTIF(simple_rule_row_is_valid IS TRUE)
         END
         AS success_count,
         CASE 
           WHEN rows_validated = 0 THEN NULL
           WHEN complex_rule_validation_errors_count IS NOT NULL
-          THEN (rows_validated - complex_rule_validation_errors_count) / rows_validated
+          THEN (rows_validated - complex_rule_validation_errors_count - num_null_rows) / rows_validated
           ELSE COUNTIF(simple_rule_row_is_valid IS TRUE) / rows_validated
         END
         AS success_percentage,
@@ -66,18 +67,20 @@
         AS failed_percentage,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          ELSE COUNTIF(column_value IS NULL)
+          WHEN num_null_rows IS NOT NULL THEN num_null_rows
+          ELSE NULL
         END
         AS null_count,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          ELSE COUNTIF(column_value IS NULL) / rows_validated
+          WHEN num_null_rows IS NOT NULL THEN num_null_rows / rows_validated
+          ELSE NULL
         END
         AS null_percentage,
     FROM
         {{ ref(rule_binding_id) }}
     GROUP BY
-        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
     {% if loop.nextitem is defined %}
     UNION ALL
     {% endif %}

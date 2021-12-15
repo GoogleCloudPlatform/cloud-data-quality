@@ -19,13 +19,18 @@
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
-    {{ column_name }} AS column_value,
+    data.{{ column_name }} AS column_value,
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
     CAST(NULL AS STRING) AS dimension,
 {% endif %}
-    num_rows_validated AS num_rows_validated,
+    data.num_rows_validated AS num_rows_validated,
+{%- if rule_configs.get('rule_type') == "NOT_NULL" -%}
+    NULL AS num_null_rows,
+{%- else  -%}
+    data.num_null_rows AS num_null_rows,
+{%- endif -%}
     CASE
 {% if rule_configs.get("rule_type") == "NOT_NULL" %}
       WHEN {{ rule_configs.get("rule_sql_expr") }} THEN TRUE
@@ -52,21 +57,27 @@
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
-    NULL AS column_value,
+    custom_sql_statement_validation_errors.custom_sql_json AS column_value,
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
     CAST(NULL AS STRING) AS dimension,
 {% endif %}
     (select distinct num_rows_validated from data) as num_rows_validated,
+    (select distinct num_null_rows from data) as num_null_rows,
     FALSE AS simple_rule_row_is_valid,
-    COUNT(*) as complex_rule_validation_errors_count,
+    COUNT(custom_sql_statement_validation_errors._rule_binding_id) OVER () as complex_rule_validation_errors_count,
   FROM
     zero_record
   LEFT JOIN
     (
+      SELECT 
+        '{{ rule_binding_id }}' AS _rule_binding_id, 
+        TO_JSON_STRING(custom_sql) as custom_sql_json
+      FROM (
       {{ rule_configs.get("rule_sql_expr") }}
+      ) custom_sql
     ) custom_sql_statement_validation_errors
   ON
-    zero_record.rule_binding_id = custom_sql_statement_validation_errors.rule_binding_id
+    zero_record.rule_binding_id = custom_sql_statement_validation_errors._rule_binding_id
 {% endmacro -%}
