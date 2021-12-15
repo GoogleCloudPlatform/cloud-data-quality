@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pprint import pformat
 
 import logging
 
@@ -115,7 +116,9 @@ class DqEntity:
         dq_column_config = self.columns.get(column_id.upper(), None)
         assert_not_none_or_empty(
             dq_column_config,
-            f"Column ID: {column_id} not found in Entity Config: {self.entity_id}.",
+            f"Column ID '{column_id.upper()}' not found in Entity Config ID '{self.entity_id}'\n"
+            f"Available column_ids:\n{pformat(list(self.columns.keys()))}\n"
+            f"Complete entity configs:\n{pformat(self.dict_values())}.",
         )
         return dq_column_config
 
@@ -160,11 +163,11 @@ class DqEntity:
         columns: dict[str, DqEntityColumn] = dict()
         for column_id, column_config in columns_dict.items():
             column = DqEntityColumn.from_dict(
-                entity_column_id=column_id,
+                entity_column_id=column_id.upper(),
                 kwargs=column_config,
                 entity_source_database=source_database,
             )
-            columns[column_id] = column
+            columns[column_id.upper()] = column
         # validate environment override
         environment_override = dict()
         input_environment_override = kwargs.get("environment_override", None)

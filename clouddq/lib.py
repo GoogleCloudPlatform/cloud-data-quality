@@ -179,8 +179,8 @@ def prepare_configs_cache(configs_path: Path) -> DqConfigsCache:
     rules_collection = load_rules_config(configs_path)
 
     # validate rules against dimensions
-    for rule in rules_collection.values():
-        DqRule.validate(rule, rule_dimensions_collection)
+    for rule_id, rule in rules_collection.items():
+        DqRule.validate(rule_id, rule, rule_dimensions_collection)
 
     configs_cache.load_all_rules_collection(rules_collection)
     rule_binding_collection = load_rule_bindings_config(configs_path)
