@@ -239,6 +239,7 @@ class TestMetadataUriTemplates:
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
+            print(output)
             assert output == expected
 
 

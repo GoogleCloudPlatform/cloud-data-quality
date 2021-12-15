@@ -59,8 +59,9 @@ class TestDqRules:
             autodetect=True,
             write_disposition="WRITE_TRUNCATE")
 
-        with open(test_resources / "expected_results.json", "rb") as source_file:
-            job = client.load_table_from_file(source_file, table_id, job_config=job_config)
+        with open(test_resources / "dq_rules_expected_results.json", "rb") as source_file:
+            json_data = json.loads(source_file.read())
+            job = client.load_table_from_json(json_data, table_id, job_config=job_config)
 
         job.result()  # Waits for the job to complete.
 
@@ -85,7 +86,9 @@ class TestDqRules:
         create_expected_results_table,
         source_dq_rules_configs_file_path,
         test_resources,
+        caplog,
     ):
+        caplog.set_level(logging.INFO, logger="clouddq")
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_dq_rules")
             temp_dir.mkdir(parents=True)
@@ -161,13 +164,14 @@ class TestDqRules:
                 failed_rows = [json.loads(row[0]) for row in rows]
                 failed_rows_rule_binding_ids = [row['rule_binding_id'] for row in failed_rows]
                 failed_rows_rule_ids = [row['rule_id'] for row in failed_rows]
-                with open(test_resources / "expected_results.json", "rb") as source_file:
+                with open(test_resources / "dq_rules_expected_results.json", "rb") as source_file:
                     expected_json = []
-                    for line in source_file.readlines():
-                        record = json.loads(line)
-                        print(record)
-                        print(record['rule_binding_id'])
-                        print(record['rule_binding_id'] in failed_rows_rule_binding_ids)
+                    json_data = json.loads(source_file.read())
+                    for record in json_data:
+                        if record['rule_binding_id'] not in failed_rows_rule_binding_ids:
+                            continue
+                        if record['rule_id'] not in failed_rows_rule_ids:
+                            continue
                         expected_json.append(record)
                 print(expected_json)
                 assert failed_rows == expected_json

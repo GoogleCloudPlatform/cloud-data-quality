@@ -21,7 +21,10 @@ data AS (
     SELECT
       *,
       COUNT(1) OVER () as num_rows_validated,
+      COUNT(1) OVER () - COUNT(value) OVER () as num_null_rows,
       'T3_DQ_1_EMAIL_DUPLICATE' AS rule_binding_id,
+      TO_JSON_STRING(d) as row_json,
+      SHA256(TO_JSON_STRING(d)) as row_json_sha256sum
     FROM
       `<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details` d
     WHERE
@@ -41,28 +44,41 @@ SELECT
     'NO_DUPLICATES_IN_COLUMN_GROUPS' AS rule_id,
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    NULL AS column_value,
+    custom_sql_statement_validation_errors.row_json AS column_value,
+    custom_sql_statement_validation_errors.row_json_sha256sum AS row_json_sha256sum,
     CAST(NULL AS STRING) AS dimension,
     (select distinct num_rows_validated from data) as num_rows_validated,
-    FALSE AS simple_rule_row_is_valid,
-    COUNT(*) as complex_rule_validation_errors_count,
+    NULL as num_null_rows,
+    custom_sql_statement_validation_errors.complex_rule_row_is_row_valid AS row_is_valid,
+    COUNTIF(custom_sql_statement_validation_errors.complex_rule_row_is_row_valid IS FALSE) OVER () AS complex_rule_validation_errors_count,
     FROM
     zero_record
     LEFT JOIN
     (
-      select a.*
-      from data a
-      inner join (
-        select
-          contact_type,value
-        from data
-        group by contact_type,value
-        having count(*) > 1
-      ) duplicates
-      using (contact_type,value)
+      SELECT 
+        'T3_DQ_1_EMAIL_DUPLICATE' AS _rule_binding_id, 
+        data.row_json,
+        data.row_json_sha256sum,
+        CASE WHEN custom_sql.row_json_sha256sum IS NULL THEN TRUE ELSE FALSE END as complex_rule_row_is_row_valid
+      FROM 
+        data
+      LEFT JOIN 
+      (
+        select a.*
+        from data a
+        inner join (
+          select
+            contact_type,value
+          from data
+          group by contact_type,value
+          having count(*) > 1
+        ) duplicates
+        using (contact_type,value)
+      ) custom_sql
+      ON data.row_json_sha256sum = custom_sql.row_json_sha256sum
     ) custom_sql_statement_validation_errors
     ON
-    zero_record.rule_binding_id = custom_sql_statement_validation_errors.rule_binding_id
+    zero_record.rule_binding_id = custom_sql_statement_validation_errors._rule_binding_id
 
     UNION ALL
     SELECT
@@ -71,16 +87,18 @@ SELECT
     'NOT_NULL_SIMPLE' AS rule_id,
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    value AS column_value,
+    data.value AS column_value,
+    data.row_json_sha256sum AS row_json_sha256sum,
     CAST(NULL AS STRING) AS dimension,
-    num_rows_validated AS num_rows_validated,
+    data.num_rows_validated AS num_rows_validated,
+    NULL AS num_null_rows,
     CASE
 
       WHEN value IS NOT NULL THEN TRUE
 
     ELSE
       FALSE
-    END AS simple_rule_row_is_valid,
+    END AS row_is_valid,
     NULL AS complex_rule_validation_errors_count,
   FROM
     zero_record
@@ -97,10 +115,12 @@ all_validation_results AS (
     r.table_id AS table_id,
     r.column_id AS column_id,
     CAST(r.dimension AS STRING) AS dimension,
-    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
+    r.row_is_valid AS row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.column_value AS column_value,
     IFNULL(r.num_rows_validated, 0) AS rows_validated,
+    r.row_json_sha256sum as row_json_sha256sum,
+    r.num_null_rows,
     last_mod.last_modified,
     '{"brand": "one"}' AS metadata_json_string,
     '' AS configs_hashsum,

@@ -39,30 +39,22 @@
         last_modified,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          WHEN complex_rule_validation_errors_count IS NOT NULL
-          THEN rows_validated - complex_rule_validation_errors_count - num_null_rows
-          ELSE COUNTIF(simple_rule_row_is_valid IS TRUE)
+          ELSE COUNTIF(row_is_valid IS TRUE)
         END
         AS success_count,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          WHEN complex_rule_validation_errors_count IS NOT NULL
-          THEN (rows_validated - complex_rule_validation_errors_count - num_null_rows) / rows_validated
-          ELSE COUNTIF(simple_rule_row_is_valid IS TRUE) / rows_validated
+          ELSE COUNTIF(row_is_valid IS TRUE) / rows_validated
         END
         AS success_percentage,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          WHEN complex_rule_validation_errors_count IS NOT NULL
-          THEN complex_rule_validation_errors_count
-          ELSE COUNTIF(simple_rule_row_is_valid IS FALSE)
+          ELSE COUNTIF(row_is_valid IS FALSE)
         END
         AS failed_count,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          WHEN complex_rule_validation_errors_count IS NOT NULL
-          THEN complex_rule_validation_errors_count / rows_validated
-          ELSE COUNTIF(simple_rule_row_is_valid IS FALSE) / rows_validated
+          ELSE COUNTIF(row_is_valid IS FALSE) / rows_validated
         END
         AS failed_percentage,
         CASE 
