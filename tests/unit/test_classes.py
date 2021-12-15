@@ -249,6 +249,21 @@ class TestClasses:
                 kwargs=dq_rule_binding_dict_not_valid,
             )
 
+    def test_dq_rule_binding_invalid_metadata_failure(self):
+        """ """
+        dq_rule_binding_dict_not_valid = {
+            "entity_id": "valid",
+            "column_id": "valid",
+            "row_filter_id": "valid",
+            "rule_ids": ["rule1", "rule2"],
+            "metadata": None,
+        }
+        with pytest.raises(ValueError):
+            DqRuleBinding.from_dict(
+                rule_binding_id="valid",
+                kwargs=dq_rule_binding_dict_not_valid,
+            )
+
     def test_rule_type_not_implemented(self):
         """ """
         with pytest.raises(NotImplementedError):
