@@ -185,10 +185,16 @@ class DqConfigsCache:
                     f"Calling Dataplex Metadata list entities API to retrieve schema "
                     f"for entity_uri:\n{pformat(record)}"
                 )
-                entity_uri = dq_entity_uri.EntityUri.from_uri(
-                    uri_string=record["entity_uri"],
-                    default_configs=default_configs,
-                )
+                try:
+                    entity_uri = dq_entity_uri.EntityUri.from_uri(
+                        uri_string=record["entity_uri"],
+                        default_configs=default_configs,
+                    )
+                except Exception as e:
+                    raise ValueError(
+                        "Failed to parse 'entity_uri' from rule_binding ID "
+                        f"'{record['id']}' with error:\n{e}"
+                    )
                 logger.debug(
                     f"Parsed entity_uri configs:\n{pformat(entity_uri.to_dict())}"
                 )
