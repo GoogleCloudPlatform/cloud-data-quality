@@ -20,29 +20,28 @@
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
     data.{{ column_name }} AS column_value,
-    data.row_json_sha256sum AS row_json_sha256sum,
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
     CAST(NULL AS STRING) AS dimension,
 {% endif %}
-    data.num_rows_validated AS num_rows_validated,
-{% if rule_configs.get('rule_type') == "NOT_NULL" %}
-    NULL AS num_null_rows,
-{% else  %}
-    data.num_null_rows AS num_null_rows,
-{% endif %}
     CASE
 {% if rule_configs.get("rule_type") == "NOT_NULL" %}
       WHEN {{ rule_configs.get("rule_sql_expr") }} THEN TRUE
 {% else %}
-      WHEN {{ column_name }} IS NULL THEN NULL
+      WHEN {{ column_name }} IS NULL THEN CAST(NULL AS BOOLEAN)
       WHEN {{ rule_configs.get("rule_sql_expr") }} THEN TRUE
 {% endif %}
     ELSE
       FALSE
-    END AS row_is_valid,
-    NULL AS complex_rule_validation_errors_count,
+    END AS simple_rule_row_is_valid,
+{% if rule_configs.get("rule_type") == "NOT_NULL" %}
+    TRUE AS skip_null_count,
+{% else %}
+    FALSE AS skip_null_count,
+{% endif %}
+    CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
+    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
   FROM
     zero_record
   LEFT JOIN
@@ -57,34 +56,31 @@
     '{{ rule_binding_id }}' AS rule_binding_id,
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
-    '{{ column_name }}' AS column_id,
-    custom_sql_statement_validation_errors.row_json AS column_value,
-    custom_sql_statement_validation_errors.row_json_sha256sum AS row_json_sha256sum,
+    CAST(NULL AS STRING) AS column_id,
+    NULL AS column_value,
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
     CAST(NULL AS STRING) AS dimension,
 {% endif %}
-    (select distinct num_rows_validated from data) as num_rows_validated,
-    NULL as num_null_rows,
-    custom_sql_statement_validation_errors.complex_rule_row_is_row_valid AS row_is_valid,
-    COUNTIF(custom_sql_statement_validation_errors.complex_rule_row_is_row_valid IS FALSE) OVER () AS complex_rule_validation_errors_count,
+    CAST(NULL AS BOOLEAN) AS simple_rule_row_is_valid,
+    TRUE AS skip_null_count,
+    custom_sql_statement_validation_errors.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    CASE
+      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count IS NULL THEN CAST(NULL AS BOOLEAN)
+      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
+      ELSE FALSE
+    END AS complex_rule_validation_success_flag,
   FROM
     zero_record
   LEFT JOIN
     (
       SELECT 
-        '{{ rule_binding_id }}' AS _rule_binding_id, 
-      data.row_json,
-      data.row_json_sha256sum,
-      CASE WHEN custom_sql.row_json_sha256sum IS NULL THEN TRUE ELSE FALSE END as complex_rule_row_is_row_valid
-      FROM 
-        data
-      LEFT JOIN 
-      (
+        '{{ rule_binding_id }}' AS _rule_binding_id,
+        COUNT(*) AS complex_rule_validation_errors_count,
+      FROM (
       {{ rule_configs.get("rule_sql_expr") }}
       ) custom_sql
-      ON data.row_json_sha256sum = custom_sql.row_json_sha256sum
     ) custom_sql_statement_validation_errors
   ON
     zero_record.rule_binding_id = custom_sql_statement_validation_errors._rule_binding_id

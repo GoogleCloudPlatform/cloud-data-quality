@@ -34,6 +34,7 @@ REQUIRED_COLUMN_TYPES = {
     "dataplex_lake": "STRING",
     "dataplex_zone": "STRING",
     "dataplex_asset_id": "STRING",
+    "complex_rule_validation_success_flag": "BOOLEAN",
 }
 
 from clouddq.integration.gcp_credentials import GcpCredentials

@@ -35,44 +35,51 @@
         progress_watermark,
         rows_validated,
         complex_rule_validation_errors_count,
-        num_null_rows,
+        complex_rule_validation_success_flag,
         last_modified,
+        skip_null_count,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          ELSE COUNTIF(row_is_valid IS TRUE)
+          WHEN complex_rule_validation_errors_count IS NOT NULL THEN NULL
+          ELSE COUNTIF(simple_rule_row_is_valid IS TRUE)
         END
         AS success_count,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          ELSE COUNTIF(row_is_valid IS TRUE) / rows_validated
+          WHEN complex_rule_validation_errors_count IS NOT NULL THEN NULL
+          ELSE COUNTIF(simple_rule_row_is_valid IS TRUE) / rows_validated
         END
         AS success_percentage,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          ELSE COUNTIF(row_is_valid IS FALSE)
+          WHEN complex_rule_validation_errors_count IS NOT NULL THEN NULL
+          ELSE COUNTIF(simple_rule_row_is_valid IS FALSE)
         END
         AS failed_count,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          ELSE COUNTIF(row_is_valid IS FALSE) / rows_validated
+          WHEN complex_rule_validation_errors_count IS NOT NULL THEN NULL
+          ELSE COUNTIF(simple_rule_row_is_valid IS FALSE) / rows_validated
         END
         AS failed_percentage,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          WHEN num_null_rows IS NOT NULL THEN num_null_rows
-          ELSE NULL
+          WHEN complex_rule_validation_errors_count IS NOT NULL THEN NULL
+          WHEN skip_null_count IS TRUE THEN NULL
+          ELSE COUNTIF(simple_rule_row_is_valid IS NULL)
         END
         AS null_count,
         CASE 
           WHEN rows_validated = 0 THEN NULL
-          WHEN num_null_rows IS NOT NULL THEN num_null_rows / rows_validated
-          ELSE NULL
+          WHEN complex_rule_validation_errors_count IS NOT NULL THEN NULL
+          WHEN skip_null_count IS TRUE THEN NULL
+          ELSE COUNTIF(simple_rule_row_is_valid IS NULL) / rows_validated
         END
         AS null_percentage,
     FROM
         {{ ref(rule_binding_id) }}
     GROUP BY
-        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
     {% if loop.nextitem is defined %}
     UNION ALL
     {% endif %}

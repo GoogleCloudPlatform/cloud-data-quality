@@ -177,10 +177,10 @@ class TestJinjaTemplates:
             environment="DEV",
             debug=True,
         )
-        expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
-        output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         print(output)
+        output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+        expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         assert output == expected
 
     def test_render_run_dq_main_sql_env_override(
@@ -221,10 +221,10 @@ class TestJinjaTemplates:
         expected = expected.replace(
             "<your_bigquery_dataset_id>.__TABLES__", "<your_bigquery_dataset_id_2>.__TABLES__"
         )
-        expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         output = re.sub(RE_NEWLINES, '\n', output).strip()
-        output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         print(output)
+        output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+        expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         assert output == expected
 
     def test_render_run_dq_main_sql_high_watermark(
@@ -262,10 +262,10 @@ class TestJinjaTemplates:
             debug=True,
             dq_summary_table_exists=True,
         )
-        expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
-        output = re.sub(RE_NEWLINES, '\n', output).strip()
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         print(output)
+        output = re.sub(RE_NEWLINES, '\n', output).strip()
+        expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         assert output == expected
 
     def test_render_run_dq_main_sql_custom_sql_statement(
@@ -302,10 +302,10 @@ class TestJinjaTemplates:
             environment="DEV",
             debug=True,
         )
-        expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
-        output = re.sub(RE_NEWLINES, '\n', output).strip()
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         print(output)
+        output = re.sub(RE_NEWLINES, '\n', output).strip()
+        expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         assert output == expected
 
     def test_prepare_configs_from_rule_binding(

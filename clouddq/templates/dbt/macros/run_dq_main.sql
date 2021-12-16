@@ -63,11 +63,7 @@ zero_record AS (
 data AS (
     SELECT
       *,
-      COUNT(1) OVER () as num_rows_validated,
-      COUNT(1) OVER () - COUNT({{ column_name }}) OVER () as num_null_rows,
       '{{ rule_binding_id }}' AS rule_binding_id,
-      TO_JSON_STRING(d) as row_json,
-      SHA256(TO_JSON_STRING(d)) as row_json_sha256sum
     FROM
       `{{- fully_qualified_table_name -}}` d
 {%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists %}
@@ -109,12 +105,12 @@ all_validation_results AS (
     r.table_id AS table_id,
     r.column_id AS column_id,
     CAST(r.dimension AS STRING) AS dimension,
-    r.row_is_valid AS row_is_valid,
+    r.skip_null_count AS skip_null_count,
+    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
     r.column_value AS column_value,
-    IFNULL(r.num_rows_validated, 0) AS rows_validated,
-    r.row_json_sha256sum as row_json_sha256sum,
-    r.num_null_rows,
+    (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{{ metadata|tojson }}' AS metadata_json_string,
     '{{ configs_hashsum }}' AS configs_hashsum,

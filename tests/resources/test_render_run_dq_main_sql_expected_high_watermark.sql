@@ -22,18 +22,15 @@ high_watermark_filter AS (
       AND rule_binding_id = 'T1_DQ_1_VALUE_NOT_NULL'
       AND progress_watermark IS TRUE
 ),
+
 zero_record AS (
-  SELECT
-    'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
+    SELECT
+        'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
 ),
 data AS (
     SELECT
       *,
-      COUNT(1) OVER () as num_rows_validated,
-      COUNT(1) OVER () - COUNT(value) OVER () as num_null_rows,
       'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
-      TO_JSON_STRING(d) as row_json,
-      SHA256(TO_JSON_STRING(d)) as row_json_sha256sum
     FROM
       `<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details` d
       ,high_watermark_filter
@@ -58,18 +55,21 @@ SELECT
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
     data.value AS column_value,
-    data.row_json_sha256sum AS row_json_sha256sum,
+
     CAST(NULL AS STRING) AS dimension,
-    data.num_rows_validated AS num_rows_validated,
-    NULL AS num_null_rows,
+
     CASE
 
       WHEN value IS NOT NULL THEN TRUE
 
     ELSE
       FALSE
-    END AS row_is_valid,
-    NULL AS complex_rule_validation_errors_count,
+    END AS simple_rule_row_is_valid,
+
+    TRUE AS skip_null_count,
+
+    CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
+    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
   FROM
     zero_record
   LEFT JOIN
@@ -85,12 +85,12 @@ all_validation_results AS (
     r.table_id AS table_id,
     r.column_id AS column_id,
     CAST(r.dimension AS STRING) AS dimension,
-    r.row_is_valid AS row_is_valid,
+    r.skip_null_count AS skip_null_count,
+    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
     r.column_value AS column_value,
-    IFNULL(r.num_rows_validated, 0) AS rows_validated,
-    r.row_json_sha256sum as row_json_sha256sum,
-    r.num_null_rows,
+    (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{}' AS metadata_json_string,
     '' AS configs_hashsum,

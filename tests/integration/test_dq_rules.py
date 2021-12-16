@@ -66,7 +66,7 @@ class TestDqRules:
         job.result()  # Waits for the job to complete.
 
         table = client.get_table(table_id)  # Make an API request.
-        print(f"Loaded {table.num_rows} rows and {len(table.schema)} columns to {table_id}")
+        logger.info(f"Loaded {table.num_rows} rows and {len(table.schema)} columns to {table_id}")
         return table_id
 
     def test_dq_rules(
@@ -120,13 +120,14 @@ class TestDqRules:
                 )
                 dbt_path = dbt_runner.get_dbt_path()
                 invocation_id = get_dbt_invocation_id(dbt_path)
-                print(f"Dbt invocation id is {invocation_id}")
+                logger.info(f"Dbt invocation id is: {invocation_id}")
                 # Test the DQ expected results
                 sql = f"""
                 WITH validation_errors AS (
                 SELECT rule_binding_id, rule_id, column_id,
                 dimension, metadata_json_string, progress_watermark,
                 rows_validated, complex_rule_validation_errors_count,
+                complex_rule_validation_success_flag,
                 success_count, failed_count, null_count
                 FROM
                     `{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}`
@@ -136,6 +137,7 @@ class TestDqRules:
                 SELECT rule_binding_id, rule_id, column_id,
                 dimension, metadata_json_string, progress_watermark,
                 rows_validated, complex_rule_validation_errors_count,
+                complex_rule_validation_success_flag,
                 success_count, failed_count, null_count
                 FROM
                     `{create_expected_results_table}`
@@ -143,12 +145,17 @@ class TestDqRules:
                 SELECT TO_JSON_STRING(validation_errors)
                 FROM validation_errors;
                 """
+                logger.info(f"SQL query is: {sql}")
                 query_job = client.execute_query(sql)
                 results = query_job.result()
                 logger.info("Query done")
                 rows = list(results)
                 logger.info(f"Query execution returned {len(rows)} rows")
                 if len(rows):
+                    logger.info(f"Input yaml from {source_dq_rules_configs_file_path}:")
+                    with open(source_dq_rules_configs_file_path) as input_yaml:
+                        lines = input_yaml.read()
+                        logger.info(lines)
                     logger.warning(
                         "Rows with values not matching the expected "
                         "content in 'tests/resources/expected_results.csv':"
@@ -156,11 +163,6 @@ class TestDqRules:
                     for row in rows:
                         record = json.loads(str(row[0]))
                         logger.warning(f"\n{pformat(record)}")
-                        print(f"Input yaml from {source_dq_rules_configs_file_path}:")
-                        with open(source_dq_rules_configs_file_path) as input_yaml:
-                            lines = input_yaml.readlines()
-                            for line in lines:
-                                print(line)
                 failed_rows = [json.loads(row[0]) for row in rows]
                 failed_rows_rule_binding_ids = [row['rule_binding_id'] for row in failed_rows]
                 failed_rows_rule_ids = [row['rule_id'] for row in failed_rows]
@@ -173,7 +175,6 @@ class TestDqRules:
                         if record['rule_id'] not in failed_rows_rule_ids:
                             continue
                         expected_json.append(record)
-                print(expected_json)
                 assert failed_rows == expected_json
         finally:
             shutil.rmtree(temp_dir)
