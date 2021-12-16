@@ -197,7 +197,7 @@ class DqRuleBinding:
             )
         return table_entity
 
-    def resolve_rule_sql_expr(self: DqRuleBinding, rule: DqRule) -> DqRule:
+    def resolve_rule_sql_expr(self: DqRuleBinding, rule: DqRule) -> None:
         try:
             rule.resolve_sql_expr()
         except Exception as e:
