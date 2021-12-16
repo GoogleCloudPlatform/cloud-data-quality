@@ -25,7 +25,7 @@ from google.cloud.logging.handlers import CloudLoggingHandler
 import google.cloud.logging  # Don't conflict with standard logging
 
 
-APP_VERSION = "0.4.1"
+APP_VERSION = "0.5.0"
 APP_NAME = "clouddq"
 LOG_LEVEL = logging._nameToLevel["DEBUG"]
 

@@ -105,7 +105,7 @@ We will add more default rule types over time. For the time being, most data qua
 When using `CUSTOM_SQL_STATEMENT`, the table `data` contains rows returned once all `row_filters` and incremental validation logic have been applied. We recommend simply selecting from `data` in `CUSTOM_SQL_STATEMENT` instead of trying to apply your own templating logic to define the target table for validation.
 
 #### Filters
-**Filters**: Defines how each `Rule Binding` can be filtered
+**Filters**: Defines how each `Rule Binding` can be filtered. The content of the `filter_sql_expr` field will be inserted into a SQL `WHERE` clause for filtering your data to the rows for validation.
 ```yaml
 row_filters:
   NONE:
@@ -183,17 +183,26 @@ CloudDQ is currently only tested to run on `Ubuntu`/`Debian` linux distributions
 
 For development or trying out CloudDQ, we recommend using either [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor) or a [Google Cloud Compute Engine VM](https://cloud.google.com/compute) with the [Debian 11 OS distribution](https://cloud.google.com/compute/docs/images/os-details#debian).
 
-CloudDQ requires the command `python3` to point to a Python Interterpreter version 3.8.x or 3.9.x. To install the correct Python version, please refer to the script `scripts/poetry_install.sh` for an interactive installation or `scripts/install_python3.sh` for a non-interactive installation intended for automated build/test processes. 
+CloudDQ requires the command `python3` to point to a Python Interterpreter version 3.8.x or 3.9.x. To install the correct Python version, please refer to the script `scripts/poetry_install.sh` for an interactive installation or `scripts/install_python3.sh` for a non-interactive installation intended for automated build/test processes. For example, on [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor), you could install Python 3.9 by running:
+
+```
+#!/bin/bash
+git clone https://github.com/GoogleCloudPlatform/cloud-data-quality.git
+source cloud-data-quality/scripts/install_python3.sh "3.9.7"
+python3 --version
+```
 
 #### Using Pre-Built Executable
 
 The simplest way to run CloudDQ is to use one of the pre-built executable provided in the Github releases page: https://github.com/GoogleCloudPlatform/cloud-data-quality/releases
 
+We currently provide pre-built executables for Debian 11+Python3.9 built for execution on Dataplex Task/Dataproc Serverless Batches (this executable will also work on Debian 10 in Cloud Shell) and Ubuntu18+Python3.8 built for execution as Dataproc Jobs/Workflows with a compatible Ubuntu18 OS image.
+
 For example, from [Cloud Shell](https://shell.cloud.google.com/?show=ide%2Cterminal), you can download the executable with the following commands:
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.4.1"
+export CLOUDDQ_RELEASE_VERSION="0.5.0"
 export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
@@ -219,7 +228,7 @@ From either [Cloud Shell](https://shell.cloud.google.com) or a `Ubuntu`/`Debian`
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.4.1"
+export CLOUDDQ_RELEASE_VERSION="0.5.0"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 ```
 
@@ -227,7 +236,7 @@ Then change directory to the git project and get the pre-built executable from G
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.4.1"
+export CLOUDDQ_RELEASE_VERSION="0.5.0"
 export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
