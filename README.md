@@ -14,9 +14,19 @@ It takes as input Data Quality validation tests defined using a flexible and reu
 
 **Note:** This project is currently in beta status and may still change in breaking ways.
 
-### Declarative Data Quality Configs
+## License
 
-#### Rule Bindings
+CloudDQ is licensed under the Apache License version 2.0. This is not an official Google product.
+
+## Contributions
+
+We welcome all community contributions, whether by opening Github Issues, updating documentations, or updating the code directly. Please consult the [contribution guide](CONTRIBUTING.md) and [development guide](./README.md#Development) for details on how to contribute. 
+
+Before opening a pull request to suggest a feature change, please open a Github Issue to discuss the use-case and feature proposal with the project maintainers.
+
+## Declarative Data Quality Configs
+
+### Rule Bindings
 **Rule Bindings**:
 Defines a single Data Quality validation routine.
 Each value declared in `entity_id`, `column_id`, `filter_id`, and `rule_id`
@@ -46,9 +56,9 @@ rule_bindings:
     metadata:
       team: team-3
 ```
-Each `rule_binding` must define the fields `entity_id`, `column_id`, `row_filter_id`, and `rule_ids`. `entity_id` refers to the table being validated, `column_id` refers to the column in the table to be validated, `row_filter_id` refers to a filter condition to select rows in-scope for validation, and `rule_ids` refers to the list of data quality validation rules to apply on the selected column and rows.
+Each `rule_binding` must define one of the field `entity_id` or `entity_uri` and all of the fields `column_id`, `row_filter_id`, and `rule_ids`. `entity_id` refers to the table being validated, `entity_uri` is the URI path in a remote metadata registry that references the table being validated, `column_id` refers to the column in the table to be validated, `row_filter_id` refers to a filter condition to select rows in-scope for validation, and `rule_ids` refers to the list of data quality validation rules to apply on the selected column and rows.
 
-If `incremental_time_filter_column_id` is set to a monotonically-increasing timestamp column in an append-only table, `CloudDQ` only each run will only validate rows where the timestamp specified in `incremental_time_filter_column_id` is higher than the timestamp of the last run. This allows CloudDQ to perform incremental validation without scanning the entire table everytime. If `incremental_time_filter_column_id` is not set, `CloudDQ` will validate all rows matching the `row_filter_id` on each run.
+If `incremental_time_filter_column_id` is set to a monotonically-increasing timestamp column in an append-only table, `CloudDQ` on each run will only validate rows where the timestamp specified in `incremental_time_filter_column_id` is higher than the timestamp of the last run. This allows CloudDQ to perform incremental validation without scanning the entire table everytime. If `incremental_time_filter_column_id` is not set, `CloudDQ` will validate all rows matching the `row_filter_id` on each run.
 
 Under the `metadata` config, you may add any key-value pairs that will be added as a JSON on each DQ summary row output. For example, this can be the team responsible for a `rule_binding`, the table type (raw, curated, reference). The JSON allows custom aggregations and drilldowns over the summary data.
 
@@ -56,9 +66,7 @@ On each run, CloudDQ converts each `rule_binding` into a SQL script, create a co
 
 You can then use any dashboarding solution such as Data Studio or Looker to visualize the DQ Summary Statistics table, or use the DQ Summary Statistics table for monitoring and alerting purposes.
 
-**Incremental Validation**:
-
-#### Rule Dimensions
+### Rule Dimensions
 **Rule Dimensions**: defines the allowed list of Data Quality rule dimensions that a Data Quality `Rule` can define in the corresponding `dimension` field.
 
 ```yaml
@@ -72,7 +80,7 @@ rule_dimensions:
 ```
 This list can be customized as is required. CloudDQ throws an error when parsing the YAML if it finds a `rule` with a `dimension` value that is not one of the allowed values.
 
-#### Rules
+### Rules
 **Rules**: Defines reusable sets of validation logic for data quality.
 ```yaml
 rules:
@@ -151,7 +159,7 @@ The SQL code block in `CUSTOM_SQL_STATEMENT` rules must include the string `from
 
 Set-level validation results for `CUSTOM_SQL_STATEMENT` rules are captured in the columns `complex_rule_validation_errors_count` and `complex_rule_validation_success_flag`. `complex_rule_validation_errors_count` contains the count of rows returned by the `custom_sql_statement` bloack. `complex_rule_validation_success_flag` is set to `TRUE` if `complex_rule_validation_errors_count` is equals to 0, `FALSE` if `complex_rule_validation_errors_count` is larger than 0, and `NULL` for all other rule types that are not `CUSTOM_SQL_STATEMENT`.
 
-#### Filters
+### Filters
 **Filters**: Defines how each `Rule Binding` can be filtered. The content of the `filter_sql_expr` field will be inserted into a SQL `WHERE` clause for filtering your data to the rows for validation.
 ```yaml
 row_filters:
@@ -173,7 +181,7 @@ LAST_WEEK:
 
 ```
 
-#### Entities
+### Entities
 **Entities**: defines the target data tables as validation target.
 ```yaml
 entities:
@@ -243,6 +251,7 @@ Instead of manually specifying the `entities` configuration to be referenced in 
 
 `entity_uri` currently supports looking up BigQuery tables using Dataplex Metadata API. The BigQuery dataset containing this table must be registered as a Dataplex Asset and Dataplex Discovery Jobs must have already discovered the table and created a corresponding Dataplex `entity_id`. The Dataplex `entity_id` path can then be referenced with the URI scheme `dataplex://` in the field `entity_uri` inside a `Rule Binding` for `CloudDQ` to automatically look-up the `entity_id` using Dataplex Metadata API to resolve to the table name to be validated.
 
+### Metadata Registry Defaults
 **Metadata Registry Defaults**: define default `entity_uri` values for each scheme.
 ```yaml
 metadata_registry_defaults:
@@ -284,11 +293,14 @@ CloudDQ is currently only tested to run on `Ubuntu`/`Debian` linux distributions
 
 For development or trying out CloudDQ, we recommend using either [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor) or a [Google Cloud Compute Engine VM](https://cloud.google.com/compute) with the [Debian 11 OS distribution](https://cloud.google.com/compute/docs/images/os-details#debian).
 
-CloudDQ requires the command `python3` to point to a Python Interterpreter version 3.8.x or 3.9.x. To install the correct Python version, please refer to the script `scripts/poetry_install.sh` for an interactive installation or `scripts/install_python3.sh` for a non-interactive installation intended for automated build/test processes. For example, on [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor), you could install Python 3.9 by running:
+CloudDQ requires the command `python3` to point to a Python Interterpreter version 3.8.x or 3.9.x. To install the correct Python version, please refer to the script `scripts/poetry_install.sh` for an interactive installation or `scripts/install_python3.sh` for a non-interactive installation intended for automated build/test processes. 
 
-```
+For example, on [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell-editor), you could install Python 3.9 by running:
+
+```bash
 #!/bin/bash
-git clone https://github.com/GoogleCloudPlatform/cloud-data-quality.git
+export CLOUDDQ_RELEASE_VERSION="0.5.0"
+git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 source cloud-data-quality/scripts/install_python3.sh "3.9.7"
 python3 --version
 ```
@@ -308,6 +320,16 @@ export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
 wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip
+```
+
+If you do not have Python 3.9 installed, you could install Python 3.9 on an `Ubuntu` or `Debian` machine by running:
+
+```bash
+#!/bin/bash
+export CLOUDDQ_RELEASE_VERSION="0.5.0"
+git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
+source cloud-data-quality/scripts/install_python3.sh "3.9.7"
+python3 --version
 ```
 
 You can then use the CLI by passing the zip into a Python interpreter:
@@ -342,6 +364,14 @@ export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
 wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip
+```
+
+If you do not have Python 3.9 installed, you could install Python 3.9 on an `Ubuntu` or `Debian` machine by running:
+
+```bash
+#!/bin/bash
+source cloud-data-quality/scripts/install_python3.sh "3.9.7"
+python3 --version
 ```
 
 Run the following command to authenticate to GCP using application-default credentials. The command will prompt you to login and provide a verification code back into the console.
@@ -621,6 +651,3 @@ This suggests that the `glibc` version on your target machine is incompatible wi
 
 For any feedback or questions, please feel free to get in touch  at `clouddq` at `google.com`.
 
-## License
-
-CloudDQ is licensed under the Apache License version 2.0. This is not an official Google product.
