@@ -51,7 +51,6 @@ high_watermark_filter AS (
         IFNULL(MAX(execution_ts), TIMESTAMP("1970-01-01 00:00:00")) as high_watermark
     FROM `{{ dq_summary_table_name }}`
     WHERE table_id = '{{ fully_qualified_table_name }}'
-      AND column_id = '{{ column_name }}'
       AND rule_binding_id = '{{ rule_binding_id }}'
       AND progress_watermark IS TRUE
 ),

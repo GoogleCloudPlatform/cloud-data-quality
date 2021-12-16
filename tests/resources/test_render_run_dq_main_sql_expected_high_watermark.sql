@@ -18,7 +18,6 @@ high_watermark_filter AS (
         IFNULL(MAX(execution_ts), TIMESTAMP("1970-01-01 00:00:00")) as high_watermark
     FROM `<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary`
     WHERE table_id = '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details'
-      AND column_id = 'value'
       AND rule_binding_id = 'T1_DQ_1_VALUE_NOT_NULL'
       AND progress_watermark IS TRUE
 ),
