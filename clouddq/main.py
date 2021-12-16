@@ -243,6 +243,7 @@ def main(  # noqa: C901
       --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
       --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
       --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
+      --target_bigquery_summary_table="${CLOUDDQ_TARGET_BIGQUERY_TABLE}" \\
       --metadata='{"key":"value"}' \\
 
     \b
@@ -252,6 +253,7 @@ def main(  # noqa: C901
       --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
       --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
       --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
+      --target_bigquery_summary_table="${CLOUDDQ_TARGET_BIGQUERY_TABLE}" \\
       --dry_run  \\
       --debug
 

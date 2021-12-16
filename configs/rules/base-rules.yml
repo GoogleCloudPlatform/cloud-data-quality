@@ -15,18 +15,44 @@
 rules:
   NOT_NULL_SIMPLE:
     rule_type: NOT_NULL
+    dimension: completeness
 
   REGEX_VALID_EMAIL:
     rule_type: REGEX
+    dimension: conformance
     params:
       pattern: |-
         ^[^@]+[@]{1}[^@]+$
 
   CUSTOM_SQL_LENGTH_LE_30:
     rule_type: CUSTOM_SQL_EXPR
+    dimension: correctness
     params:
       custom_sql_expr: |-
         LENGTH( $column ) <= 30
 
+  CORRECT_CURRENCY_CODE:
+    rule_type: CUSTOM_SQL_EXPR
+    dimension: conformance
+    params:
+      custom_sql_expr: |-
+        $column in (select distinct currency_code from `<reference_dataset-id>.currency_codes`)
+
+  FOREIGN_KEY_VALID:
+    rule_type: CUSTOM_SQL_EXPR
+    dimension: consistency
+    params:
+      custom_sql_expr: |-
+        $column in (select distinct foreign_key from `<dataset-id>.customer_id`)
+
   NOT_BLANK:
     rule_type: NOT_BLANK
+    dimension: completeness
+
+  VALUE_ZERO_OR_POSITIVE:
+    rule_type: CUSTOM_SQL_EXPR
+    dimension: correctness
+    params:
+      custom_sql_expr: |-
+        $column >= 0
+
