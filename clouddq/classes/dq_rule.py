@@ -26,6 +26,7 @@ class DqRule:
 
     rule_id: str
     rule_type: RuleType
+    rule_sql_expr: str | None = None
     dimension: str | None = None
     params: dict | None = None
 
@@ -92,7 +93,6 @@ class DqRule:
         Returns:
 
         """
-
         return {
             f"{self.rule_id}": {
                 "rule_type": self.rule_type.name,
@@ -115,7 +115,8 @@ class DqRule:
         return dict(self.to_dict().get(self.rule_id))
 
     def resolve_sql_expr(self: DqRule) -> str:
-        return self.rule_type.to_sql(self.params).safe_substitute()
+        self.rule_sql_expr = self.rule_type.to_sql(self.params).safe_substitute()
+        return self.rule_sql_expr
 
     def update_rule_binding_arguments(self, arguments: dict) -> None:
         params = {"rule_binding_arguments": arguments}

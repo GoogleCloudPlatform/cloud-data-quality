@@ -162,7 +162,7 @@ class DqConfigsCache:
             pk="rule_dimension",
         )
 
-    def resolve_dataplex_entity_uris(
+    def resolve_dataplex_entity_uris(  # noqa: C901
         self,
         client: clouddq_dataplex.CloudDqDataplexClient,
         default_configs: dict | None = None,

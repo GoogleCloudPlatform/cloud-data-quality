@@ -229,6 +229,8 @@ class TestMetadataUriTemplates:
                 debug=True,
                 default_configs=test_dataplex_metadata_defaults_configs,
             )
+            output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")\
@@ -236,9 +238,8 @@ class TestMetadataUriTemplates:
                 .replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")\
                 .replace(rule_binding_id, "<rule_binding_id>")
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
+            print(output)
             output = re.sub(RE_NEWLINES, '\n', output).strip()
-            output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
-            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             assert output == expected
 
 

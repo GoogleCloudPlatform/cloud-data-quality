@@ -113,7 +113,6 @@ class DqEntity:
         Returns:
 
         """
-
         dq_column_config = self.columns.get(column_id.upper(), None)
         assert_not_none_or_empty(
             dq_column_config,

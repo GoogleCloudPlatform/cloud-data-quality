@@ -1,93 +1,93 @@
 {
-  "column_configs": {
-    "description": "contact detail",
-    "name": "value",
-    "data_type": "STRING"
-  },
-  "column_id": "VALUE",
-  "entity_configs": {
-    "columns": {
-      "ROW_ID": {
-        "description": "unique identifying id",
-        "name": "row_id",
-        "data_type": "STRING"
+    "column_configs": {
+      "description": "contact detail",
+      "name": "value",
+      "data_type": "STRING"
+    },
+    "column_id": "VALUE",
+    "entity_configs": {
+      "columns": {
+        "ROW_ID": {
+          "description": "unique identifying id",
+          "name": "row_id",
+          "data_type": "STRING"
+        },
+        "CONTACT_TYPE": {
+          "description": "contact detail type",
+          "name": "contact_type",
+          "data_type": "STRING"
+        },
+        "TS": {
+          "description": "updated timestamp",
+          "name": "ts",
+          "data_type": "DATETIME"
+        },
+        "VALUE": {
+          "description": "contact detail",
+          "name": "value",
+          "data_type": "STRING"
+        }
       },
-      "CONTACT_TYPE": {
-        "description": "contact detail type",
-        "name": "contact_type",
-        "data_type": "STRING"
+      "database_name": "<your_bigquery_dataset_id>",
+      "dataset_name": "<your_bigquery_dataset_id>",
+      "environment_override": {
+        "test": {
+          "database_name": "<your_bigquery_dataset_id_2>",
+          "instance_name": "<your_gcp_project_id_2>",
+          "table_name": "contact_details"
+        }
       },
-      "TS": {
-        "description": "updated timestamp",
-        "name": "ts",
-        "data_type": "DATETIME"
+      "instance_name": "<your_gcp_project_id>",
+      "project_name": "<your_gcp_project_id>",
+      "source_database": "BIGQUERY",
+      "table_name": "contact_details"
+    },
+    "entity_id": "TEST_TABLE",
+    "incremental_time_filter_column": null,
+    "row_filter_configs": {
+      "filter_sql_expr": "contact_type = 'email'"
+    },
+    "row_filter_id": "DATA_TYPE_EMAIL",
+    "metadata": {
+      "brand": "one"
+    },
+    "rule_binding_id": "T2_DQ_1_EMAIL",
+    "rule_configs_dict": {
+      "CUSTOM_SQL_LENGTH_LE_30": {
+        "dimension": null,
+        "params": {
+          "custom_sql_expr": "LENGTH( $column ) <= 30",
+          "rule_binding_arguments": null
+        },
+        "rule_sql_expr": "LENGTH( value ) <= 30",
+        "rule_type": "CUSTOM_SQL_EXPR"
       },
-      "VALUE": {
-        "description": "contact detail",
-        "name": "value",
-        "data_type": "STRING"
+      "NOT_NULL_SIMPLE": {
+        "dimension": null,
+        "params": {"rule_binding_arguments": null},
+        "rule_sql_expr": "value IS NOT NULL",
+        "rule_type": "NOT_NULL"
+      },
+      "REGEX_VALID_EMAIL": {
+        "dimension": null,
+        "params": {
+          "pattern": "^[^@]+[@]{1}[^@]+$",
+          "rule_binding_arguments": null
+        },
+        "rule_sql_expr": "REGEXP_CONTAINS( CAST( value  AS STRING), '^[^@]+[@]{1}[^@]+$' )",
+        "rule_type": "REGEX"
+      },
+      "NOT_BLANK": {
+        "dimension": null,
+        "rule_type": "NOT_BLANK",
+        "params": {"rule_binding_arguments": null},
+        "rule_sql_expr": "TRIM(value) != ''"
       }
     },
-    "database_name": "<your_bigquery_dataset_id>",
-    "dataset_name": "<your_bigquery_dataset_id>",
-    "environment_override": {
-      "test": {
-        "database_name": "<your_bigquery_dataset_id_2>",
-        "instance_name": "<your_gcp_project_id_2>",
-        "table_name": "contact_details"
-      }
-    },
-    "instance_name": "<your_gcp_project_id>",
-    "project_name": "<your_gcp_project_id>",
-    "source_database": "BIGQUERY",
-    "table_name": "contact_details"
-  },
-  "entity_id": "TEST_TABLE",
-  "incremental_time_filter_column": null,
-  "row_filter_configs": {
-    "filter_sql_expr": "contact_type = 'email'"
-  },
-  "row_filter_id": "DATA_TYPE_EMAIL",
-  "metadata": {
-    "brand": "one"
-  },
-  "rule_binding_id": "T2_DQ_1_EMAIL",
-  "rule_configs_dict": {
-    "CUSTOM_SQL_LENGTH_LE_30": {
-      "dimension": null,
-      "params": {
-        "custom_sql_expr": "LENGTH( $column ) <= 30",
-        "rule_binding_arguments": null
-      },
-      "rule_sql_expr": "LENGTH( value ) <= 30",
-      "rule_type": "CUSTOM_SQL_EXPR"
-    },
-    "NOT_NULL_SIMPLE": {
-      "dimension": null,
-      "params": {"rule_binding_arguments": null},
-      "rule_sql_expr": "value IS NOT NULL",
-      "rule_type": "NOT_NULL"
-    },
-    "REGEX_VALID_EMAIL": {
-      "dimension": null,
-      "params": {
-        "pattern": "^[^@]+[@]{1}[^@]+$",
-        "rule_binding_arguments": null
-      },
-      "rule_sql_expr": "REGEXP_CONTAINS( CAST( value  AS STRING), '^[^@]+[@]{1}[^@]+$' )",
-      "rule_type": "REGEX"
-    },
-    "NOT_BLANK": {
-      "dimension": null,
-      "rule_type": "NOT_BLANK",
-      "params": {"rule_binding_arguments": null},
-      "rule_sql_expr": "TRIM(value) != ''"
-    }
-  },
-  "rule_ids": [
-    "NOT_NULL_SIMPLE",
-    "REGEX_VALID_EMAIL",
-    "CUSTOM_SQL_LENGTH_LE_30",
-    "NOT_BLANK"
-  ]
-}
+    "rule_ids": [
+      "NOT_NULL_SIMPLE",
+      "REGEX_VALID_EMAIL",
+      "CUSTOM_SQL_LENGTH_LE_30",
+      "NOT_BLANK"
+    ]
+  }

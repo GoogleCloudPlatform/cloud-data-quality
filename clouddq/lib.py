@@ -97,6 +97,7 @@ def create_rule_binding_view_model(
     dq_summary_table_name: str,
     environment: str,
     configs_cache: DqConfigsCache,
+    dq_summary_table_exists: bool = False,
     metadata: typing.Optional[typing.Dict] = None,
     debug: bool = False,
     progress_watermark: bool = True,
@@ -114,11 +115,12 @@ def create_rule_binding_view_model(
         metadata=metadata,
         progress_watermark=progress_watermark,
         default_configs=default_configs,
+        dq_summary_table_exists=dq_summary_table_exists,
     )
     sql_string = template.render(configs)
     if debug:
         configs.update({"generated_sql_string": sql_string})
-        logger.debug(pformat(configs))
+        logger.info(pformat(configs))
     return sql_string
 
 
@@ -135,6 +137,7 @@ def prepare_configs_from_rule_binding_id(
     dq_summary_table_name: str,
     environment: typing.Optional[str],
     configs_cache: DqConfigsCache,
+    dq_summary_table_exists: bool = False,
     metadata: typing.Optional[typing.Dict] = None,
     progress_watermark: bool = True,
     default_configs: typing.Optional[typing.Dict] = None,
@@ -156,6 +159,7 @@ def prepare_configs_from_rule_binding_id(
         metadata.update(rule_binding_configs["metadata"])
     configs.update({"dq_summary_table_name": dq_summary_table_name})
     configs.update({"metadata": metadata})
+    configs.update({"dq_summary_table_exists": dq_summary_table_exists})
     configs.update(
         {"configs_hashsum": sha256_digest(json.dumps(resolved_rule_binding_configs))}
     )
