@@ -14,10 +14,6 @@ It takes as input Data Quality validation tests defined using a flexible and reu
 
 **Note:** This project is currently in beta status and may still change in breaking ways.
 
-## License
-
-CloudDQ is licensed under the Apache License version 2.0. This is not an official Google product.
-
 ## Contributions
 
 We welcome all community contributions, whether by opening Github Issues, updating documentations, or updating the code directly. Please consult the [contribution guide](CONTRIBUTING.md) and [development guide](./README.md#Development) for details on how to contribute. 
@@ -651,3 +647,7 @@ This suggests that the `glibc` version on your target machine is incompatible wi
 
 For any feedback or questions, please feel free to get in touch  at `clouddq` at `google.com`.
 
+
+## License
+
+CloudDQ is licensed under the Apache License version 2.0. This is not an official Google product.
