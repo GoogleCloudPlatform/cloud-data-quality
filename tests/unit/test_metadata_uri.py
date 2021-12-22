@@ -23,6 +23,11 @@ class TestEntityURI:
         "entity_uri,error_type",
         [
             pytest.param(
+                "not_a_uri",
+                ValueError,
+                id="not_a_uri"
+            ),
+            pytest.param(
                 "dataplex://",
                 ValueError,
                 id="incomplete_dataplex"

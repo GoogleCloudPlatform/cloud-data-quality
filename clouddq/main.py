@@ -243,6 +243,7 @@ def main(  # noqa: C901
       --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
       --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
       --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
+      --target_bigquery_summary_table="${CLOUDDQ_TARGET_BIGQUERY_TABLE}" \\
       --metadata='{"key":"value"}' \\
 
     \b
@@ -252,6 +253,7 @@ def main(  # noqa: C901
       --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
       --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
       --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
+      --target_bigquery_summary_table="${CLOUDDQ_TARGET_BIGQUERY_TABLE}" \\
       --dry_run  \\
       --debug
 
@@ -417,11 +419,15 @@ def main(  # noqa: C901
             "Writing BigQuery rule_binding views and intermediate "
             f"summary results to BigQuery table: `{dq_summary_table_name}`. "
         )
+        dq_summary_table_exists = False
         if gcp_region_id and not skip_sql_validation:
             dq_summary_dataset = ".".join(dq_summary_table_name.split(".")[:2])
             logger.debug(f"dq_summary_dataset: {dq_summary_dataset}")
             bigquery_client.assert_dataset_is_in_region(
                 dataset=dq_summary_dataset, region=gcp_region_id
+            )
+            dq_summary_table_exists = bigquery_client.is_table_exists(
+                dq_summary_table_name
             )
             bigquery_client.assert_required_columns_exist_in_table(
                 dq_summary_table_name
@@ -489,6 +495,7 @@ def main(  # noqa: C901
                 debug=print_sql_queries,
                 progress_watermark=progress_watermark,
                 default_configs=dataplex_registry_defaults,
+                dq_summary_table_exists=dq_summary_table_exists,
                 spark_runner=spark_runner,
             )
             if not skip_sql_validation:

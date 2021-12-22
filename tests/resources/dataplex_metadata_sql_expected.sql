@@ -13,10 +13,14 @@
 -- limitations under the License.
 
 WITH
+zero_record AS (
+    SELECT
+        '<rule_binding_id>' AS rule_binding_id,
+),
 data AS (
     SELECT
       *,
-      COUNT(1) OVER () as num_rows_validated,
+      '<rule_binding_id>' AS rule_binding_id,
     FROM
       `<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details` d
     WHERE
@@ -35,14 +39,28 @@ SELECT
     '<rule_binding_id>' AS rule_binding_id,
     'NO_DUPLICATES_IN_COLUMN_GROUPS' AS rule_id,
     '<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
-    'value' AS column_id,
+    CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
+
     CAST(NULL AS STRING) AS dimension,
-    (select distinct num_rows_validated from data) as num_rows_validated,
-    FALSE AS simple_rule_row_is_valid,
-    COUNT(*) as complex_rule_validation_errors_count,
-  FROM (
-    select a.*
+
+    CAST(NULL AS BOOLEAN) AS simple_rule_row_is_valid,
+    TRUE AS skip_null_count,
+    custom_sql_statement_validation_errors.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    CASE
+      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count IS NULL THEN CAST(NULL AS BOOLEAN)
+      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
+      ELSE FALSE
+    END AS complex_rule_validation_success_flag,
+  FROM
+    zero_record
+  LEFT JOIN
+    (
+      SELECT 
+        '<rule_binding_id>' AS _rule_binding_id,
+        COUNT(*) AS complex_rule_validation_errors_count,
+      FROM (
+      select a.*
 from data a
 inner join (
   select
@@ -52,7 +70,10 @@ inner join (
   having count(*) > 1
 ) duplicates
 using (contact_type,value)
-  ) custom_sql_statement_validation_errors
+      ) custom_sql
+    ) custom_sql_statement_validation_errors
+  ON
+    zero_record.rule_binding_id = custom_sql_statement_validation_errors._rule_binding_id
 
     UNION ALL
     SELECT
@@ -61,9 +82,10 @@ using (contact_type,value)
     'NOT_NULL_SIMPLE' AS rule_id,
     '<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    value AS column_value,
+    data.value AS column_value,
+
     CAST(NULL AS STRING) AS dimension,
-    num_rows_validated AS num_rows_validated,
+
     CASE
 
       WHEN value IS NOT NULL THEN TRUE
@@ -71,9 +93,17 @@ using (contact_type,value)
     ELSE
       FALSE
     END AS simple_rule_row_is_valid,
-    NULL AS complex_rule_validation_errors_count,
+
+    TRUE AS skip_null_count,
+
+    CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
+    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
   FROM
+    zero_record
+  LEFT JOIN
     data
+  ON
+    zero_record.rule_binding_id = data.rule_binding_id
 ),
 all_validation_results AS (
   SELECT
@@ -83,10 +113,12 @@ all_validation_results AS (
     r.table_id AS table_id,
     r.column_id AS column_id,
     CAST(r.dimension AS STRING) AS dimension,
+    r.skip_null_count AS skip_null_count,
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
     r.column_value AS column_value,
-    r.num_rows_validated AS rows_validated,
+    (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{"brand": "one"}' AS metadata_json_string,
     '' AS configs_hashsum,

@@ -26,16 +26,43 @@ class DqRule:
 
     rule_id: str
     rule_type: RuleType
+    rule_sql_expr: str | None = None
     dimension: str | None = None
     params: dict | None = None
 
     @classmethod
-    def validate(cls: DqRule, config: dict, rule_dims: list) -> None:
-        if "dimension" in config and not config["dimension"] in rule_dims:
-            raise ValueError(
-                f"Rule is invalid because dimension '{config['dimension']}'"
-                f" does not appear in the list of rule_dimensions: {rule_dims}"
-            )
+    def validate(cls: DqRule, config_id: str, config: dict, rule_dims: list) -> None:
+        if "dimension" in config:
+            if not rule_dims:
+                raise ValueError(
+                    f"Invalid rule dimension '{config['dimension']}' in "
+                    f"rule configurations ID '{config_id}'.\n"
+                    f"The list of allowed rule_dimensions is empty. You can add '{config['dimension']}' to"
+                    f"the allowed list of dimensions in the 'rule_dimensions' YAML config node, e.g.\n"
+                    f"```\nrule_dimensions:\n"
+                    f"  - consistency\n"
+                    f"  - correctness\n"
+                    f"  - duplication\n"
+                    f"  - completeness\n"
+                    f"  - conformance\n"
+                    f"  - integrity\n"
+                    f"```"
+                )
+            if not config["dimension"] in rule_dims:
+                raise ValueError(
+                    f"Invalid rule dimension '{config['dimension']}' in "
+                    f"rule configurations ID '{config_id}'.\n"
+                    f"Ensure it is one of the allowed rule_dimensions: {rule_dims} or add it to"
+                    f"the allowed list of dimensions in the 'rule_dimensions' YAML config node, e.g.\n"
+                    f"```\nrule_dimensions:\n"
+                    f"  - consistency\n"
+                    f"  - correctness\n"
+                    f"  - duplication\n"
+                    f"  - completeness\n"
+                    f"  - conformance\n"
+                    f"  - integrity\n"
+                    f"```"
+                )
 
     @classmethod
     def from_dict(cls: DqRule, rule_id: str, kwargs: dict) -> DqRule:
@@ -66,7 +93,6 @@ class DqRule:
         Returns:
 
         """
-
         return {
             f"{self.rule_id}": {
                 "rule_type": self.rule_type.name,
@@ -89,7 +115,8 @@ class DqRule:
         return dict(self.to_dict().get(self.rule_id))
 
     def resolve_sql_expr(self: DqRule) -> str:
-        return self.rule_type.to_sql(self.params).safe_substitute()
+        self.rule_sql_expr = self.rule_type.to_sql(self.params).safe_substitute()
+        return self.rule_sql_expr
 
     def update_rule_binding_arguments(self, arguments: dict) -> None:
         params = {"rule_binding_arguments": arguments}

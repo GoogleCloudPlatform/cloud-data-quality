@@ -110,6 +110,12 @@ class DqRuleBinding:
         if incremental_time_filter_column_id:
             incremental_time_filter_column_id.upper()
         metadata: dict | None = kwargs.get("metadata", dict())
+        if type(metadata) != dict:
+            raise ValueError(
+                f"Rule Binding ID: '{rule_binding_id}' has invalid "
+                f"metadata field with type {type(metadata)} and values: {metadata}\n"
+                "'metadata' must be of type dictionary."
+            )
         return DqRuleBinding(
             rule_binding_id=str(rule_binding_id).upper(),
             entity_id=entity_id,
@@ -191,6 +197,16 @@ class DqRuleBinding:
             )
         return table_entity
 
+    def resolve_rule_sql_expr(self: DqRuleBinding, rule: DqRule) -> None:
+        try:
+            rule.resolve_sql_expr()
+        except Exception as e:
+            raise ValueError(
+                f"Failed to resolve rule_id '{rule.rule_id}' in "
+                f"rule_binding_id '{self.rule_binding_id}' "
+                f"with error:\n{e}"
+            )
+
     def resolve_rule_config_list(
         self: DqRuleBinding,
         configs_cache: dq_configs_cache.DqConfigsCache,
@@ -224,6 +240,7 @@ class DqRuleBinding:
                 arguments = None
             rule_config = configs_cache.get_rule_id(rule_id.upper())
             rule_config.update_rule_binding_arguments(arguments)
+            self.resolve_rule_sql_expr(rule_config)
             resolved_rule_config_list.append(rule_config)
         assert_not_none_or_empty(
             resolved_rule_config_list,
@@ -253,57 +270,61 @@ class DqRuleBinding:
         Returns:
 
         """
-
-        # Resolve table configs
-        table_entity: DqEntity = self.resolve_table_entity_config(configs_cache)
-        # Resolve column configs
-        column_configs: DqEntityColumn = table_entity.resolve_column_config(
-            self.column_id.upper()
-        )
-        incremental_time_filter_column = None
-        if self.incremental_time_filter_column_id:
-            incremental_time_filter_column_config: DqEntityColumn = (
-                table_entity.resolve_column_config(
-                    self.incremental_time_filter_column_id
-                )
+        try:
+            # Resolve table configs
+            table_entity: DqEntity = self.resolve_table_entity_config(configs_cache)
+            # Resolve column configs
+            column_configs: DqEntityColumn = table_entity.resolve_column_config(
+                self.column_id.upper()
             )
-            incremental_time_filter_column_type: str = (
-                incremental_time_filter_column_config.get_column_type_value()
+            incremental_time_filter_column = None
+            if self.incremental_time_filter_column_id:
+                incremental_time_filter_column_config: DqEntityColumn = (
+                    table_entity.resolve_column_config(
+                        self.incremental_time_filter_column_id.upper()
+                    )
+                )
+                incremental_time_filter_column_type: str = (
+                    incremental_time_filter_column_config.get_column_type_value()
+                )
+                if incremental_time_filter_column_type not in ("TIMESTAMP", "DATETIME"):
+                    raise ValueError(
+                        f"incremental_time_filter_column_id: "
+                        f"{self.incremental_time_filter_column_id} "
+                        f"must have type TIMESTAMP or DATETIME.\n"
+                        f"Current type: {incremental_time_filter_column_type}."
+                    )
+                incremental_time_filter_column = dict(
+                    incremental_time_filter_column_config.dict_values()
+                ).get("name")
+            # Resolve rules configs
+            rule_configs_dict = dict()
+            for rule in self.resolve_rule_config_list(configs_cache):
+                for rule_id, rule_config in rule.to_dict().items():
+                    rule_id = rule_id.upper()
+                    rule_sql_expr = Template(
+                        rule_config["rule_sql_expr"]
+                    ).safe_substitute(column=column_configs.column_name)
+                    rule_config["rule_sql_expr"] = rule_sql_expr
+                    rule_configs_dict[rule_id] = rule_config
+            # Resolve filter configs
+            row_filter_config = self.resolve_row_filter_config(configs_cache)
+            return dict(
+                {
+                    "rule_binding_id": self.rule_binding_id,
+                    "entity_id": self.entity_id,
+                    "entity_configs": dict(table_entity.dict_values()),
+                    "column_id": self.column_id,
+                    "column_configs": dict(column_configs.dict_values()),
+                    "rule_ids": list(self.rule_ids),
+                    "rule_configs_dict": rule_configs_dict,
+                    "row_filter_id": self.row_filter_id,
+                    "row_filter_configs": dict(row_filter_config.dict_values()),
+                    "incremental_time_filter_column": incremental_time_filter_column,
+                    "metadata": self.metadata,
+                }
             )
-            if incremental_time_filter_column_type not in ("TIMESTAMP", "DATETIME"):
-                raise ValueError(
-                    f"incremental_time_filter_column_id: "
-                    f"{self.incremental_time_filter_column_id} "
-                    f"must have type TIMESTAMP or DATETIME.\n"
-                    f"Current type: {incremental_time_filter_column_type}."
-                )
-            incremental_time_filter_column = dict(
-                incremental_time_filter_column_config.dict_values()
-            ).get("name")
-        # Resolve rules configs
-        rule_configs_dict = dict()
-        for rule in self.resolve_rule_config_list(configs_cache):
-            for rule_id, rule_config in rule.to_dict().items():
-                rule_id = rule_id.upper()
-                rule_sql_expr = Template(rule_config["rule_sql_expr"]).safe_substitute(
-                    column=column_configs.column_name
-                )
-                rule_config["rule_sql_expr"] = rule_sql_expr
-                rule_configs_dict[rule_id] = rule_config
-        # Resolve filter configs
-        row_filter_config = self.resolve_row_filter_config(configs_cache)
-        return dict(
-            {
-                "rule_binding_id": self.rule_binding_id,
-                "entity_id": self.entity_id,
-                "entity_configs": dict(table_entity.dict_values()),
-                "column_id": self.column_id,
-                "column_configs": dict(column_configs.dict_values()),
-                "rule_ids": list(self.rule_ids),
-                "rule_configs_dict": rule_configs_dict,
-                "row_filter_id": self.row_filter_id,
-                "row_filter_configs": dict(row_filter_config.dict_values()),
-                "incremental_time_filter_column": incremental_time_filter_column,
-                "metadata": self.metadata,
-            }
-        )
+        except Exception as error:
+            raise ValueError(
+                f"Failed to resolve Rule Binding ID '{self.rule_binding_id}' with error:\n{error}"
+            )
