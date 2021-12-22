@@ -97,14 +97,23 @@ def create_rule_binding_view_model(
     dq_summary_table_name: str,
     environment: str,
     configs_cache: DqConfigsCache,
+    spark_runner: bool,
     metadata: typing.Optional[typing.Dict] = None,
     debug: bool = False,
     progress_watermark: bool = True,
     default_configs: typing.Optional[typing.Dict] = None,
 ) -> str:
-    template = load_jinja_template(
-        template_path=Path("dbt", "macros", "run_dq_main.sql")
-    )
+    print("Into create view model")
+    print("spark runner is", spark_runner)
+
+    if spark_runner:
+        template = load_jinja_template(
+            template_path=Path("dbt", "spark", "macros", "run_dq_main.sql")
+        )
+    else:
+        template = load_jinja_template(
+            template_path=Path("dbt", "bigquery", "macros", "run_dq_main.sql")
+        )
     configs = prepare_configs_from_rule_binding_id(
         rule_binding_id=rule_binding_id,
         rule_binding_configs=rule_binding_configs,

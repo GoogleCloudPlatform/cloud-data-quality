@@ -300,8 +300,83 @@ def main(  # noqa: C901
         if not skip_sql_validation:
             # Create BigQuery client for query dry-runs
             bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
+        # Load metadata
+        metadata = json.loads(metadata)
+        # Load Rule Bindings
+        configs_path = Path(rule_binding_config_path)
+        logger.debug(f"Loading rule bindings from: {configs_path.absolute()}")
+        all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
+        # Prepare list of Rule Bindings in-scope for run
+        target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
+        if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
+            target_rule_binding_ids = list(all_rule_bindings.keys())
+        logger.info(f"Preparing SQL for rule bindings: {target_rule_binding_ids}")
+        # Load default configs for metadata registries
+        registry_defaults: MetadataRegistryDefaults = (
+            lib.load_metadata_registry_default_configs(Path(configs_path))
+        )
+        default_dataplex_projects = registry_defaults.get_dataplex_registry_defaults(
+            "projects"
+        )
+        default_dataplex_locations = registry_defaults.get_dataplex_registry_defaults(
+            "locations"
+        )
+        default_dataplex_lakes = registry_defaults.get_dataplex_registry_defaults(
+            "lakes"
+        )
+        dataplex_registry_defaults = registry_defaults.get_dataplex_registry_defaults()
+        # Prepare Dataplex Client from metadata registry defaults
+        dataplex_client = CloudDqDataplexClient(
+            gcp_credentials=gcp_credentials,
+            gcp_project_id=default_dataplex_projects,
+            gcp_dataplex_lake_name=default_dataplex_lakes,
+            gcp_dataplex_region=default_dataplex_locations,
+        )
+        logger.debug(
+            "Created CloudDqDataplexClient with arguments: "
+            f"{gcp_credentials}, "
+            f"{default_dataplex_projects}, "
+            f"{default_dataplex_lakes}, "
+            f"{default_dataplex_locations}, "
+        )
+        # Load all configs into a local cache
+        configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
+        configs_cache.resolve_dataplex_entity_uris(
+            client=dataplex_client,
+            default_configs=dataplex_registry_defaults,
+            target_rule_binding_ids=target_rule_binding_ids,
+            enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
+        )
+
+        logger.debug("Target BQ rule bindings")
+        bq_target_rule_bindings = configs_cache.get_bq_rule_bindings()
+        for bq_rule_binding in bq_target_rule_bindings:
+            logger.debug(bq_rule_binding)
+
+        logger.debug("Target Spark rule bindings")
+        spark_target_rule_bindings = configs_cache.get_spark_rule_bindings()
+        for spark_rule_binding in spark_target_rule_bindings:
+            logger.debug(spark_rule_binding)
+
+        spark_runner = False
+        spark_dbt_runner = None
+        if spark_target_rule_bindings:
+            spark_runner = True
+            # Prepare spark dbt runtime
+            spark_dbt_runner = DbtRunner(
+                dbt_path=dbt_path,
+                dbt_profiles_dir=dbt_profiles_dir,
+                environment_target=environment_target,
+                gcp_project_id=gcp_project_id,
+                gcp_region_id=gcp_region_id,
+                gcp_bq_dataset_id=gcp_bq_dataset_id,
+                gcp_service_account_key_path=gcp_service_account_key_path,
+                gcp_impersonation_credentials=gcp_impersonation_credentials,
+                spark_runner=spark_runner,
+            )
+
         # Prepare dbt runtime
-        dbt_runner = DbtRunner(
+        bq_dbt_runner = DbtRunner(
             dbt_path=dbt_path,
             dbt_profiles_dir=dbt_profiles_dir,
             environment_target=environment_target,
@@ -311,15 +386,32 @@ def main(  # noqa: C901
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
         )
-        dbt_path = dbt_runner.get_dbt_path()
-        dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
-        dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir()
-        environment_target = dbt_runner.get_dbt_environment_target()
+        print("BQ DBT Runner")
+        print(bq_dbt_runner.connection_config)
+        bq_dbt_path = bq_dbt_runner.get_dbt_path(spark_runner=False)
+        print("DBT path is", bq_dbt_path)
+        bq_dbt_rule_binding_views_path = bq_dbt_runner.get_rule_binding_view_path()
+        print("DBT rule binding views  path is", bq_dbt_rule_binding_views_path)
+        bq_dbt_profiles_dir = bq_dbt_runner.get_dbt_profiles_dir()
+        print("DBT profiles directory", bq_dbt_profiles_dir)
+        bq_environment_target = bq_dbt_runner.get_dbt_environment_target()
+
+        print("Spark DBT Runner")
+        print(spark_dbt_runner.connection_config)
+        spark_dbt_path = spark_dbt_runner.get_dbt_path(spark_runner=True)
+        print("Spark DBT path is", spark_dbt_path)
+        spark_dbt_rule_binding_views_path = spark_dbt_runner.get_rule_binding_view_path()
+        print("Spark DBT rule binding views  path is", spark_dbt_rule_binding_views_path)
+        spark_dbt_profiles_dir = spark_dbt_runner.get_dbt_profiles_dir()
+        print("Spark DBT profiles directory", spark_dbt_profiles_dir)
+        spark_environment_target = spark_dbt_runner.get_dbt_environment_target()
+
         # Prepare DQ Summary Table
         dq_summary_table_name = get_bigquery_dq_summary_table_name(
             dbt_path=Path(dbt_path),
             dbt_profiles_dir=Path(dbt_profiles_dir),
             environment_target=environment_target,
+            spark_runner=spark_runner,
         )
         logger.info(
             "Writing BigQuery rule_binding views and intermediate "
@@ -372,53 +464,6 @@ def main(  # noqa: C901
                 "--summary_to_stdout is True but --target_bigquery_summary_table is not set. "
                 "No summary logs will be logged to stdout."
             )
-        # Load metadata
-        metadata = json.loads(metadata)
-        # Load Rule Bindings
-        configs_path = Path(rule_binding_config_path)
-        logger.debug(f"Loading rule bindings from: {configs_path.absolute()}")
-        all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
-        # Prepare list of Rule Bindings in-scope for run
-        target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
-        if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
-            target_rule_binding_ids = list(all_rule_bindings.keys())
-        logger.info(f"Preparing SQL for rule bindings: {target_rule_binding_ids}")
-        # Load default configs for metadata registries
-        registry_defaults: MetadataRegistryDefaults = (
-            lib.load_metadata_registry_default_configs(Path(configs_path))
-        )
-        default_dataplex_projects = registry_defaults.get_dataplex_registry_defaults(
-            "projects"
-        )
-        default_dataplex_locations = registry_defaults.get_dataplex_registry_defaults(
-            "locations"
-        )
-        default_dataplex_lakes = registry_defaults.get_dataplex_registry_defaults(
-            "lakes"
-        )
-        dataplex_registry_defaults = registry_defaults.get_dataplex_registry_defaults()
-        # Prepare Dataplex Client from metadata registry defaults
-        dataplex_client = CloudDqDataplexClient(
-            gcp_credentials=gcp_credentials,
-            gcp_project_id=default_dataplex_projects,
-            gcp_dataplex_lake_name=default_dataplex_lakes,
-            gcp_dataplex_region=default_dataplex_locations,
-        )
-        logger.debug(
-            "Created CloudDqDataplexClient with arguments: "
-            f"{gcp_credentials}, "
-            f"{default_dataplex_projects}, "
-            f"{default_dataplex_lakes}, "
-            f"{default_dataplex_locations}, "
-        )
-        # Load all configs into a local cache
-        configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
-        configs_cache.resolve_dataplex_entity_uris(
-            client=dataplex_client,
-            default_configs=dataplex_registry_defaults,
-            target_rule_binding_ids=target_rule_binding_ids,
-            enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
-        )
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
@@ -444,6 +489,7 @@ def main(  # noqa: C901
                 debug=print_sql_queries,
                 progress_watermark=progress_watermark,
                 default_configs=dataplex_registry_defaults,
+                spark_runner=spark_runner,
             )
             if not skip_sql_validation:
                 logger.debug(
@@ -460,47 +506,129 @@ def main(  # noqa: C901
                 sql_string=sql_string,
                 dbt_rule_binding_views_path=dbt_rule_binding_views_path,
             )
-        # clean up old rule_bindings
-        for view in dbt_rule_binding_views_path.glob("*.sql"):
-            if view.stem not in target_rule_binding_ids:
-                view.unlink()
+            # clean up old bq rule_bindings
+            for view in bq_dbt_rule_binding_views_path.glob("*.sql"):
+                if view.stem not in bq_target_rule_bindings:
+                    view.unlink()
+
+        for rule_binding_id in spark_target_rule_bindings:
+            rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
+            assert_not_none_or_empty(
+                rule_binding_configs,
+                f"Target Rule Binding Id: {rule_binding_id} not found "
+                f"in config path {configs_path.absolute()}.",
+            )
+            if debug:
+                logger.debug(
+                    f"Creating sql string from configs for rule binding: "
+                    f"{rule_binding_id}"
+                )
+                logger.debug(
+                    f"Rule binding config json:\n{pformat(rule_binding_configs)}"
+                )
+            sql_string = lib.create_rule_binding_view_model(
+                rule_binding_id=rule_binding_id,
+                rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name=dq_summary_table_name,
+                configs_cache=configs_cache,
+                environment=spark_environment_target,
+                metadata=metadata,
+                debug=print_sql_queries,
+                progress_watermark=progress_watermark,
+                default_configs=dataplex_registry_defaults,
+                spark_runner=spark_runner,
+            )
+            logger.debug(
+                f"*** Writing sql to {spark_dbt_rule_binding_views_path.absolute()}/"
+                f"{rule_binding_id}.sql",
+            )
+            lib.write_sql_string_as_dbt_model(
+                rule_binding_id=rule_binding_id,
+                sql_string=sql_string,
+                dbt_rule_binding_views_path=spark_dbt_rule_binding_views_path,
+            )
+            # clean up old spark rule_bindings
+            for view in spark_dbt_rule_binding_views_path.glob("*.sql"):
+                if view.stem not in spark_target_rule_bindings:
+                    view.unlink()
+
         # create dbt configs json for the main.sql loop and run dbt
-        configs = {"target_rule_binding_ids": target_rule_binding_ids}
-        dbt_runner.run(
-            configs=configs,
+        bq_configs = {"target_rule_binding_ids": bq_target_rule_bindings}
+        bq_dbt_runner.run_bq(
+            configs=bq_configs,
             debug=debug,
             dry_run=dry_run,
         )
+
+        # create dbt configs json for the main.sql loop and run dbt
+        spark_configs = {"target_rule_binding_ids": spark_target_rule_bindings}
+        spark_dbt_runner.run_spark(
+            configs=spark_configs,
+            debug=debug,
+            dry_run=dry_run,
+        )
+
         if not dry_run:
             if target_bigquery_summary_table:
-                invocation_id = get_dbt_invocation_id(dbt_path)
-                logger.info(
-                    f"dbt invocation id for current execution " f"is {invocation_id}"
-                )
-                partition_date = datetime.now(timezone.utc).date()
-                target_table = TargetTable(invocation_id, bigquery_client)
-                num_rows = target_table.write_to_target_bq_table(
-                    partition_date,
-                    target_bigquery_summary_table,
-                    dq_summary_table_name,
-                    summary_to_stdout,
-                )
-                json_logger.info(
-                    json.dumps(
-                        {
-                            "clouddq_job_completion_config": {
-                                "invocation_id": invocation_id,
-                                "target_bigquery_summary_table": target_bigquery_summary_table,
-                                "summary_to_stdout": summary_to_stdout,
-                                "target_rule_binding_ids": target_rule_binding_ids,
-                                "partition_date": partition_date,
-                                "num_rows_loaded_to_target_table": num_rows,
-                            }
-                        },
-                        cls=JsonEncoderDatetime,
+                if not spark_runner:
+                    invocation_id = get_dbt_invocation_id(bq_dbt_path)
+                    logger.info(
+                        f"bq dbt invocation id for current execution " f"is {invocation_id}"
                     )
-                )
-                logger.info("Job completed successfully.")
+                    partition_date = datetime.now(timezone.utc).date()
+                    target_table = TargetTable(invocation_id, bigquery_client)
+                    num_rows = target_table.write_to_target_bq_table(
+                        partition_date,
+                        target_bigquery_summary_table,
+                        dq_summary_table_name,
+                        summary_to_stdout,
+                    )
+                    json_logger.info(
+                        json.dumps(
+                            {
+                                "clouddq_job_completion_config": {
+                                    "invocation_id": invocation_id,
+                                    "target_bigquery_summary_table": target_bigquery_summary_table,
+                                    "summary_to_stdout": summary_to_stdout,
+                                    "target_rule_binding_ids": bq_target_rule_bindings,
+                                    "partition_date": partition_date,
+                                    "num_rows_loaded_to_target_table": num_rows,
+                                }
+                            },
+                            cls=JsonEncoderDatetime,
+                        )
+                    )
+                    logger.info("Job completed successfully.")
+                else:
+                    invocation_id = get_dbt_invocation_id(spark_dbt_path)
+                    logger.info(
+                        f"spark dbt invocation id for current execution " f"is {invocation_id}"
+                    )
+                    partition_date = datetime.now(timezone.utc).date()
+                    target_table = TargetTable(invocation_id, bigquery_client)
+                    num_rows = target_table.write_to_target_bq_table(
+                        partition_date,
+                        target_bigquery_summary_table,
+                        dq_summary_table_name,
+                        summary_to_stdout,
+                        spark_runner=spark_runner,
+                    )
+                    json_logger.info(
+                        json.dumps(
+                            {
+                                "clouddq_job_completion_config": {
+                                    "invocation_id": invocation_id,
+                                    "target_bigquery_summary_table": target_bigquery_summary_table,
+                                    "summary_to_stdout": summary_to_stdout,
+                                    "target_rule_binding_ids": spark_target_rule_bindings,
+                                    "partition_date": partition_date,
+                                    "num_rows_loaded_to_target_table": num_rows,
+                                }
+                            },
+                            cls=JsonEncoderDatetime,
+                        )
+                    )
+                    logger.info("Job completed successfully.")
             else:
                 logger.warning(
                     "'--target_bigquery_summary_table' was not provided. "

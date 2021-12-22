@@ -114,6 +114,7 @@ def get_bigquery_dq_summary_table_name(
     dbt_path: Path,
     dbt_profiles_dir: Path,
     environment_target: str,
+    spark_runner: bool,
     table_name: str = "dq_summary",
 ) -> str:
     # Get bigquery project and dataset for dq_summary table names
@@ -124,16 +125,25 @@ def get_bigquery_dq_summary_table_name(
             "input path {dbt_project_path}."
         )
     dbt_profiles_key = load_yaml(dbt_project_path, "profile")
+    print("dbt_profiles_key", dbt_profiles_key)
     dbt_profiles_config = load_yaml(dbt_profiles_dir / "profiles.yml", dbt_profiles_key)
     logger.debug(f"Content of dbt_profiles.yml:\n {pformat(dbt_profiles_config)}")
-    dbt_profile = dbt_profiles_config["outputs"][environment_target]
-    dbt_project = dbt_profile["project"]
-    if "{{" in dbt_project:
-        dbt_project = extract_dbt_env_var(dbt_project)
-    dbt_dataset = dbt_profile["dataset"]
-    if "{{" in dbt_dataset:
-        dbt_dataset = extract_dbt_env_var(dbt_dataset)
-    dq_summary_table_name = f"{dbt_project}.{dbt_dataset}.{table_name}"
+    if not spark_runner:
+        dbt_profile = dbt_profiles_config["outputs"][environment_target]
+        dbt_project = dbt_profile["project"]
+        if "{{" in dbt_project:
+            dbt_project = extract_dbt_env_var(dbt_project)
+        dbt_dataset = dbt_profile["dataset"]
+        if "{{" in dbt_dataset:
+            dbt_dataset = extract_dbt_env_var(dbt_dataset)
+        dq_summary_table_name = f"{dbt_project}.{dbt_dataset}.{table_name}"
+    else:
+        spark_dbt_profiles_config = load_yaml(dbt_profiles_dir / "spark_profiles.yml", dbt_profiles_key)
+        logger.debug(f"Content of dbt_profiles.yml:\n {pformat(spark_dbt_profiles_config)}")
+        spark_dbt_profile = spark_dbt_profiles_config["outputs"][environment_target]
+        print(spark_dbt_profile)
+        dq_summary_table_name = f"{spark_dbt_profile['schema']}.{table_name}"
+
     return dq_summary_table_name
 
 

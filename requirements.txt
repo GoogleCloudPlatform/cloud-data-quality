@@ -2,7 +2,10 @@ click==7.1.2
 coloredlogs==15.0.1
 jinja2==2.11.3
 pyyaml==5.4.1
-dbt-bigquery==0.20.2
+dbt-bigquery==0.21.1
+dbt-spark[PyHive]==0.21.1
+sasl
+thrift-sasl
 pytest==6.2.2
 black==21.5b0
 pyupgrade==2.10.1

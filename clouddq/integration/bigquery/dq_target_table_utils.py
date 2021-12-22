@@ -121,17 +121,21 @@ class TargetTable:
         target_bigquery_summary_table: str,
         dq_summary_table_name: str,
         summary_to_stdout: bool = False,
+        spark_runner: bool = False,
     ) -> int:
         try:
 
-            num_rows = load_target_table_from_bigquery(
-                bigquery_client=self.bigquery_client,
-                invocation_id=self.invocation_id,
-                partition_date=partition_date,
-                target_bigquery_summary_table=target_bigquery_summary_table,
-                dq_summary_table_name=dq_summary_table_name,
-                summary_to_stdout=summary_to_stdout,
-            )
+            if spark_runner:
+                raise NotImplementedError(f"Write to target table for spark is not implemented")
+            else:
+                num_rows = load_target_table_from_bigquery(
+                    bigquery_client=self.bigquery_client,
+                    invocation_id=self.invocation_id,
+                    partition_date=partition_date,
+                    target_bigquery_summary_table=target_bigquery_summary_table,
+                    dq_summary_table_name=dq_summary_table_name,
+                    summary_to_stdout=summary_to_stdout,
+                )
             return num_rows
 
         except Exception as error:

@@ -13,11 +13,82 @@
 # limitations under the License.
 
 entities:
-  TEST_TABLE:
+  TEST_TABLE_BQ:
     source_database: BIGQUERY
     table_name: contact_details
-    dataset_name: <your_bigquery_dataset_id>
-    project_name: <your_gcp_project_id>
+    dataset_name: dataplex_clouddq_dev_us_central1
+    project_name: dataplex-clouddq
+    resource_type: BIGQUERY
+    columns:
+      ROW_ID:
+        name: row_id
+        data_type: STRING
+        description: |-
+          unique identifying id
+      CONTACT_TYPE:
+        name: contact_type
+        data_type: STRING
+        description: |-
+          contact detail type
+      VALUE:
+        name: value
+        data_type: STRING
+        description: |-
+          contact detail
+      TS:
+        name: ts
+        data_type: DATETIME
+        description: |-
+          updated timestamp
+
+#  TEST_TABLE:
+#    source_database: DATAPLEX
+#    table_name: asset_bucket
+#    lake_name: <your-gcp-dataplex-lake-id>
+#    zone_name: <your-gcp-dataplex-zone-id>
+#    resource_type: STORAGE_BUCKET
+#    dataset_name: <your-gcp-dataplex-lake-id>_<your-gcp-dataplex-zone-id>
+#    project_name: <your_gcp_project_id>
+#    columns:
+#      ROW_ID:
+#        name: row_id
+#        data_type: STRING
+#        description: |-
+#          unique identifying id
+#      CONTACT_TYPE:
+#        name: contact_type
+#        data_type: STRING
+#        description: |-
+#          contact detail type
+#      VALUE:
+#        name: value
+#        data_type: STRING
+#        description: |-
+#          contact detail
+#      TS:
+#        name: ts
+#        data_type: DATETIME
+#        description: |-
+#          updated timestamp
+
+  TEST_TABLE_DP:
+    source_database: DATAPLEX
+    table_name: asset_bucket
+    lake_name: amandeep-dev-lake
+    zone_name: raw
+    resource_type: STORAGE_BUCKET
+    dataset_name: rawzone
+    project_name: dataplex-clouddq
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          table_name: <table_name_2>
+          lake_name: <lake_name_2>
+          zone_name: <zone_name_2>
+          resource_type: <resource_type_2>
+          dataset_name: <your_dataset_id_2>
+          project_name: <your_project_id_2>
     columns:
       ROW_ID:
         name: row_id

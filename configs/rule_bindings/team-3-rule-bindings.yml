@@ -14,7 +14,7 @@
 
 rule_bindings:
   T3_DQ_1_EMAIL_DUPLICATE:
-    entity_id: TEST_TABLE
+    entity_id: TEST_TABLE_BQ
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
     rule_ids:

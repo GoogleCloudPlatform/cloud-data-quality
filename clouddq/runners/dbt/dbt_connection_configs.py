@@ -45,6 +45,10 @@ class DbtBigQueryConnectionMethod(str, Enum):
     OAUTH = auto()
     SERVICE_ACCOUNT_KEY = auto()
 
+@unique
+class DbtSparkConnectionMethod(str, Enum):
+    """Defines supported connection method to Spark via dbt-spark"""
+    THRIFT = "thrift"
 
 @dataclass
 class DbtConnectionConfig(ABC):
@@ -54,7 +58,7 @@ class DbtConnectionConfig(ABC):
     def to_dbt_profiles_dict(self) -> Dict:
         pass
 
-    def to_dbt_profiles_yml(
+    def to_bq_dbt_profiles_yml(
         self,
         target_directory: Optional[Path] = None,
         environment_target: str = DEFAULT_DBT_ENVIRONMENT_TARGET,
@@ -68,6 +72,19 @@ class DbtConnectionConfig(ABC):
                 yaml.dump(template, f)
         return yaml.dump(template)
 
+    def to_spark_dbt_profiles_yml(
+        self,
+        target_directory: Optional[Path] = None,
+        environment_target: str = DEFAULT_DBT_ENVIRONMENT_TARGET,
+    ) -> str:
+        template = DBT_PROFILES_YML_TEMPLATE
+        profiles_content = self.to_dbt_profiles_dict()
+        template["default"]["target"] = environment_target
+        template["default"]["outputs"][environment_target] = profiles_content
+        if target_directory:
+            with open(Path(target_directory).joinpath("profiles.yml"), "w") as f:
+                yaml.dump(template, f)
+        return yaml.dump(template)
 
 @dataclass
 class GcpDbtConnectionConfig(DbtConnectionConfig):
@@ -152,4 +169,34 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
             profiles_configs[
                 "impersonate_service_account"
             ] = self.service_account_gcp_impersonation_credentials
+        return profiles_configs
+
+
+@dataclass
+class SparkDbtConnectionConfig(DbtConnectionConfig):
+    """Data class for dbt connection profiles configurations to Spark."""
+
+    # schema: str = "clouddq_staging_schema"
+    schema: str = "amandeep_dev_lake_raw"
+    # connection_method: str = DbtSparkConnectionMethod.THRIFT
+    connection_method: str = "thrift"
+    threads: int = 1
+    host: str = "127.0.0.1"
+    port: int = 10005
+    timeout_seconds: int = 3600
+    retries: int = 1
+
+    def to_dbt_profiles_dict(self) -> Dict:
+
+        profiles_configs = {
+            "type": "spark",
+            "method": self.connection_method,
+            "schema": self.schema,
+            "host": self.host,
+            "port": self.port,
+            "threads": self.threads,
+            "timeout_seconds": self.timeout_seconds,
+            "retries": self.retries,
+        }
+
         return profiles_configs

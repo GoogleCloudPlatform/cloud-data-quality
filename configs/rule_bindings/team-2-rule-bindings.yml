@@ -14,7 +14,7 @@
 
 rule_bindings:
   T2_DQ_1_EMAIL:
-    entity_id: TEST_TABLE
+    entity_id: TEST_TABLE_DP
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
     rule_ids:

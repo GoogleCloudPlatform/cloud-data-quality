@@ -14,7 +14,7 @@
 
 rule_bindings:
   T1_DQ_1_VALUE_NOT_NULL:
-    entity_id: TEST_TABLE
+    entity_id: TEST_TABLE_BQ
     column_id: VALUE
     row_filter_id: NONE
     rule_ids:

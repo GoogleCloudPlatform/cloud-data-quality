@@ -70,6 +70,10 @@ py_library(
         requirement("jinja2"),
         requirement("dbt-bigquery"),
         requirement("google-cloud-logging"),
+        requirement("dbt-spark"),
+        requirement("pyhive"),
+        requirement("sasl"),
+        requirement("thrift-sasl"),
     ],
 )
 
@@ -91,6 +95,10 @@ py_library(
         ":clouddq_lib",
         requirement("dbt-bigquery"),
         requirement("pyyaml"),
+        requirement("dbt-spark"),
+        requirement("pyhive"),
+        requirement("sasl"),
+        requirement("thrift-sasl"),
     ],
 )
 

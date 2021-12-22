@@ -21,6 +21,7 @@ import logging
 from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_DBT_ENVIRONMENT_TARGET
 from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig
 from clouddq.runners.dbt.dbt_connection_configs import GcpDbtConnectionConfig
+from clouddq.runners.dbt.dbt_connection_configs import SparkDbtConnectionConfig
 from clouddq.runners.dbt.dbt_utils import run_dbt
 from clouddq.utils import write_templated_file_to_path
 
@@ -28,10 +29,16 @@ from clouddq.utils import write_templated_file_to_path
 logger = logging.getLogger(__name__)
 
 DBT_TEMPLATED_FILE_LOCATIONS = {
-    "profiles.yml": Path("dbt", "profiles.yml"),
-    "dbt_project.yml": Path("dbt", "dbt_project.yml"),
-    "main.sql": Path("dbt", "models", "data_quality_engine", "main.sql"),
-    "dq_summary.sql": Path("dbt", "models", "data_quality_engine", "dq_summary.sql"),
+    "profiles.yml": Path("dbt", "bigquery", "profiles.yml"),
+    "dbt_project.yml": Path("dbt", "bigquery", "dbt_project.yml"),
+    "main.sql": Path("dbt", "bigquery", "models", "data_quality_engine", "main.sql"),
+    "dq_summary.sql": Path("dbt", "bigquery", "models", "data_quality_engine", "dq_summary.sql"),
+}
+DBT_SPARK_TEMPLATED_FILE_LOCATIONS = {
+    "profiles.yml": Path("dbt", "spark", "profiles.yml"),
+    "dbt_project.yml": Path("dbt", "spark", "dbt_project.yml"),
+    "main.sql": Path("dbt", "spark", "models", "data_quality_engine", "main.sql"),
+    "dq_summary.sql": Path("dbt", "spark", "models", "data_quality_engine", "dq_summary.sql"),
 }
 
 
@@ -52,6 +59,7 @@ class DbtRunner:
         gcp_bq_dataset_id: Optional[str],
         gcp_service_account_key_path: Optional[Path],
         gcp_impersonation_credentials: Optional[str],
+        spark_runner: bool = False,
         create_paths_if_not_exists: bool = True,
     ):
         # Prepare local dbt environment
@@ -59,28 +67,52 @@ class DbtRunner:
             dbt_path=dbt_path,
             create_paths_if_not_exists=create_paths_if_not_exists,
             write_log=True,
+            spark_runner=spark_runner,
         )
-        self._prepare_dbt_project_path()
-        self._prepare_dbt_main_path()
+        self._prepare_dbt_project_path(spark_runner=spark_runner)
+        self._prepare_dbt_main_path(spark_runner=spark_runner)
         self._prepare_rule_binding_view_path(write_log=True)
-        # Prepare connection configurations
-        self._resolve_connection_configs(
-            dbt_profiles_dir=dbt_profiles_dir,
-            environment_target=environment_target,
-            gcp_project_id=gcp_project_id,
-            gcp_region_id=gcp_region_id,
-            gcp_bq_dataset_id=gcp_bq_dataset_id,
-            gcp_service_account_key_path=gcp_service_account_key_path,
-            gcp_impersonation_credentials=gcp_impersonation_credentials,
-        )
+
+        if spark_runner:
+            # Prepare spark connection configurations
+            self._resolve_spark_connection_configs(
+                dbt_profiles_dir=dbt_profiles_dir,
+                environment_target=environment_target,
+            )
+        else:
+            # Prepare bq connection configurations
+            self._resolve_bq_connection_configs(
+                dbt_profiles_dir=dbt_profiles_dir,
+                environment_target=environment_target,
+                gcp_project_id=gcp_project_id,
+                gcp_region_id=gcp_region_id,
+                gcp_bq_dataset_id=gcp_bq_dataset_id,
+                gcp_service_account_key_path=gcp_service_account_key_path,
+                gcp_impersonation_credentials=gcp_impersonation_credentials,
+            )
         logger.debug(f"Using 'dbt_profiles_dir': {self.dbt_profiles_dir}")
 
-    def run(
+    def run_bq(
         self, configs: Dict, debug: bool = False, dry_run: bool = False
     ) -> None:
         logger.debug(f"Running dbt in path: {self.dbt_path}")
         if debug:
             self.test_dbt_connection()
+        run_dbt(
+            dbt_path=self.dbt_path,
+            dbt_profile_dir=self.dbt_profiles_dir,
+            configs=configs,
+            environment=self.environment_target,
+            debug=False,
+            dry_run=dry_run,
+        )
+
+    def run_spark(
+        self, configs: Dict, debug: bool = False, dry_run: bool = False
+    ) -> None:
+        logger.debug(f"Running dbt in path: {self.dbt_path}")
+        if debug:
+            self.test_spark_dbt_connection()
         run_dbt(
             dbt_path=self.dbt_path,
             dbt_profile_dir=self.dbt_profiles_dir,
@@ -99,8 +131,11 @@ class DbtRunner:
             dry_run=True,
         )
 
-    def get_dbt_path(self) -> Path:
-        self._resolve_dbt_path(self.dbt_path)
+    def test_spark_dbt_connection(self):
+        pass
+
+    def get_dbt_path(self, spark_runner: bool) -> Path:
+        self._resolve_dbt_path(self.dbt_path, spark_runner)
         return Path(self.dbt_path)
 
     def get_rule_binding_view_path(self) -> Path:
@@ -108,20 +143,20 @@ class DbtRunner:
         return Path(self.dbt_rule_binding_views_path)
 
     def get_dbt_profiles_dir(self) -> Path:
-        self._resolve_connection_configs(
+        self._resolve_bq_connection_configs(
             dbt_profiles_dir=self.dbt_profiles_dir,
             environment_target=self.environment_target,
         )
         return Path(self.dbt_profiles_dir)
 
     def get_dbt_environment_target(self) -> str:
-        self._resolve_connection_configs(
+        self._resolve_bq_connection_configs(
             dbt_profiles_dir=self.dbt_profiles_dir,
             environment_target=self.environment_target,
         )
         return self.environment_target
 
-    def _resolve_connection_configs(
+    def _resolve_bq_connection_configs(
         self,
         dbt_profiles_dir: Optional[str],
         environment_target: Optional[str],
@@ -142,14 +177,14 @@ class DbtRunner:
             self.environment_target = environment_target
         else:
             # create GcpDbtConnectionConfig
-            connection_config = GcpDbtConnectionConfig(
+            bigquery_connection_config = GcpDbtConnectionConfig(
                 gcp_project_id=gcp_project_id,
                 gcp_region_id=gcp_region_id,
                 gcp_bq_dataset_id=gcp_bq_dataset_id,
                 gcp_service_account_key_path=gcp_service_account_key_path,
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
-            self.connection_config = connection_config
+            self.connection_config = bigquery_connection_config
             self.dbt_profiles_dir = Path(self.dbt_path)
             logger.debug(
                 "Writing user input GCP connection profile to dbt profiles.yml "
@@ -158,33 +193,81 @@ class DbtRunner:
             if environment_target:
                 logger.debug(f"Using `environment_target`: {environment_target}")
                 self.environment_target = environment_target
-                self.connection_config.to_dbt_profiles_yml(
+                self.connection_config.to_bq_dbt_profiles_yml(
                     target_directory=self.dbt_profiles_dir,
                     environment_target=self.environment_target,
                 )
             else:
                 self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
-                self.connection_config.to_dbt_profiles_yml(
+                self.connection_config.to_bq_dbt_profiles_yml(
+                    target_directory=self.dbt_profiles_dir
+                )
+
+    def _resolve_spark_connection_configs(
+        self,
+        dbt_profiles_dir: Optional[str],
+        environment_target: Optional[str],
+    ) -> None:
+        if dbt_profiles_dir:
+            dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
+            if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
+                raise ValueError(
+                    f"Cannot find connection `profiles.yml` configurations at "
+                    f"`dbt_profiles_dir` path: {dbt_profiles_dir}"
+                )
+            self.dbt_profiles_dir = dbt_profiles_dir
+            self.environment_target = environment_target
+        else:
+            print("Into create SparkDbtConnectionConfig ")
+            # create SparkDbtConnectionConfig
+            spark_connection_config = SparkDbtConnectionConfig()
+            self.connection_config = spark_connection_config
+            self.dbt_profiles_dir = Path(self.dbt_path)
+            logger.debug(
+                "Writing user input Spark connection profile to dbt profiles.yml "
+                f"at path: {self.dbt_profiles_dir}",
+            )
+            if environment_target:
+                logger.debug(f"Using `environment_target`: {environment_target}")
+                self.environment_target = environment_target
+                self.connection_config.to_spark_dbt_profiles_yml(
+                    target_directory=self.dbt_profiles_dir,
+                    environment_target=self.environment_target,
+                )
+            else:
+                self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
+                self.connection_config.to_spark_dbt_profiles_yml(
                     target_directory=self.dbt_profiles_dir
                 )
 
     def _resolve_dbt_path(
         self,
         dbt_path: str,
+        spark_runner: bool,
         create_paths_if_not_exists: bool = False,
         write_log: bool = False,
     ) -> Path:
         logger.debug(f"Current working directory: {Path().cwd()}")
         if not dbt_path:
-            dbt_path = Path().cwd().joinpath("dbt").absolute()
+            if spark_runner:
+                dbt_path = Path().cwd().joinpath("dbt", "spark").absolute()
+            else:
+                dbt_path = Path().cwd().joinpath("dbt", "bigquery").absolute()
             logger.debug(
                 "No argument 'dbt_path' provided. Defaulting to use "
                 f"'dbt' directory in current working directory at: {dbt_path}"
             )
         else:
             dbt_path = Path(dbt_path).absolute()
-            if dbt_path.name != "dbt":
-                dbt_path = dbt_path / "dbt"
+            print("******", dbt_path.name)
+            print(spark_runner)
+            if spark_runner:
+                if dbt_path.name != "spark":
+                    dbt_path = dbt_path / "spark"
+            else:
+                if dbt_path.name != "bigquery":
+                         dbt_path = dbt_path / "bigquery"
+
         if not dbt_path.is_dir():
             if create_paths_if_not_exists:
                 logger.debug(f"Creating a new dbt directory at 'dbt_path': {dbt_path}")
@@ -195,26 +278,37 @@ class DbtRunner:
             logger.debug(f"Using 'dbt_path': {dbt_path}")
         return dbt_path
 
-    def _prepare_dbt_project_path(self) -> None:
+    def _prepare_dbt_project_path(self, spark_runner: bool) -> None:
         dbt_project_path = self.dbt_path.absolute().joinpath("dbt_project.yml")
         if not dbt_project_path.is_file():
             logger.debug(
                 f"Cannot find `dbt_project.yml` in path: {dbt_project_path} \n"
-                f"Writing templated file to: {dbt_project_path}/dbt_project.yml"
+                f"Writing templated file to: {dbt_project_path}"
             )
-            write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
+            if spark_runner:
+                write_templated_file_to_path(dbt_project_path, DBT_SPARK_TEMPLATED_FILE_LOCATIONS)
+            else:
+                 write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
         logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
 
-    def _prepare_dbt_main_path(self) -> None:
+    def _prepare_dbt_main_path(self, spark_runner: bool) -> None:
         assert self.dbt_path.is_dir()
         dbt_main_path = self.dbt_path / "models" / "data_quality_engine"
         dbt_main_path.mkdir(parents=True, exist_ok=True)
-        write_templated_file_to_path(
-            dbt_main_path.joinpath("main.sql"), DBT_TEMPLATED_FILE_LOCATIONS
-        )
-        write_templated_file_to_path(
-            dbt_main_path.joinpath("dq_summary.sql"), DBT_TEMPLATED_FILE_LOCATIONS
-        )
+        if spark_runner:
+            write_templated_file_to_path(
+                dbt_main_path.joinpath("main.sql"), DBT_SPARK_TEMPLATED_FILE_LOCATIONS
+            )
+            write_templated_file_to_path(
+                dbt_main_path.joinpath("dq_summary.sql"), DBT_SPARK_TEMPLATED_FILE_LOCATIONS
+            )
+        else:
+            write_templated_file_to_path(
+                dbt_main_path.joinpath("main.sql"), DBT_TEMPLATED_FILE_LOCATIONS
+            )
+            write_templated_file_to_path(
+                dbt_main_path.joinpath("dq_summary.sql"), DBT_TEMPLATED_FILE_LOCATIONS
+            )
 
     def _prepare_rule_binding_view_path(self, write_log: bool = False) -> None:
         assert self.dbt_path.is_dir()
