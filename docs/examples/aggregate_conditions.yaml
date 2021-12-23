@@ -43,6 +43,30 @@ rules:
         group by $column
         having count(*) > 1
 
+  UNIQUE_MULTIPLE:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+      - columns
+    params:
+      custom_sql_statement: |-
+        select $columns from data
+        group by $columns
+        having count(*) > 1
+
+  GAP:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+      max_gap
+    params:
+      custom_sql_statement: |-
+        with lagged_data as (
+          select $column, lag($column) over (order by $column ASC) as prev 
+          from data
+        )
+        select $column from lagged_data 
+        where prev is not null and datetime_diff($column, prev, HOUR) > $max_gap
+ 
+
 rule_bindings:
   UNIQUENESS:
     entity_id: TEST_DATA
@@ -50,4 +74,20 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - UNIQUE:
-          abc: 1
+          dummy: 0 # Due to bug, a CUSTOM_SQL_STATEMENT requires at least one parameter. Will be fixed in the next version.
+
+  UNIQUENESS_MULTIPLE:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - UNIQUE_MULTIPLE:
+          columns: unique_key, date
+
+  MAX_GAP:
+    entity_id: TEST_DATA
+    column_id: TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - GAP:
+          max_gap: 24

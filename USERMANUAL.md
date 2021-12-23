@@ -225,8 +225,12 @@ rule_bindings:
     column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
-      - UNIQUE
+      - UNIQUE:
+          dummy: 0 # Due to bug, a CUSTOM_SQL_STATEMENT requires at least one parameter. Will be fixed in the next version.
 ```
+
+Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
+
 
 #### Unique Composed Value Constraint (over multiple columns)
 
@@ -247,19 +251,23 @@ rules:
         having count(*) > 1
         
 rule_bindings:
-  UNIQUENESS:
+  UNIQUENESS_MULTIPLE:
     entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
       - UNIQUE_MULTIPLE:
           columns: unique_key, date
 ```
 
+Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
+
+
 #### Maximum Gap
 
 Do not allow the gap between two subsequent values to be greater than a threshold.
 
-In this example, “two subsequent values” are two rows that are subsequent when sorting by the column. This works well for example when the column is a message timestamp, and we don’t want the time between messages to be too big.
+In this example, “two subsequent values” are two rows that are subsequent when sorting by the column. This works well for example when the column is a message timestamp, and we don’t want the time between messages to be too big. The example also assumes that the column being inspected is of type `TIMESTAMP`, wich requires the function `DATETIME_DIFF` to calculate the interval.
 
 But if we have a value, for example, current, at different points in time, and we don’t want the current to jump more than a threshold value between two measurements, we need to change the order by clause in the custom_sql_statement, to order by the time column.
 
@@ -271,19 +279,24 @@ rules:
       max_gap
     params:
       custom_sql_statement: |-
-        select $column, lag($column) over (order by $column ASC) as prev, $column - prev as gap 
-        from data
-        where gap <= max_gap
+        with lagged_data as (
+          select $column, lag($column) over (order by $column ASC) as prev 
+          from data
+        )
+        select $column from lagged_data 
+        where prev is not null and datetime_diff($column, prev, HOUR) > $max_gap
         
 rule_bindings:
-  MAX_GAP:
     entity_id: TEST_DATA
     column_id: TIMESTAMP
     row_filter_id: NONE
     rule_ids:
       - GAP:
-          max_gap: 3600
+          max_gap: 24
 ```
+
+Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
+
 
 ### Referential Integrity
 
@@ -334,7 +347,7 @@ Full example: [rule](docs/examples/referential_integrity.yaml#37) and [rule bind
 
 ### Row-by-row Dataset Comparison
 
-#### Equality of two columsn
+#### Equality of two columns
 
 In  this test we check that two columns have an equal set of values. In this example we do not consider the ordering, meaning that if one column has `[a, a, b, b, c]` and another has `[a, b, c, a, b]`, then we will consider them equal.
 
@@ -342,35 +355,38 @@ In  this test we check that two columns have an equal set of values. In this exa
 rules:
   EQUAL_COLUMNS:
     rule_type: CUSTOM_SQL_STATEMENT
-     custom_sql_arguments:
-ref_table_id
-ref_column_id
+    custom_sql_arguments:
+       - ref_table_id
+       - ref_column_id
     params:
       custom_sql_statement: |-
-      with t1 as (
-        select $column as col, count(*) as t1_n 
-        from data
-        group by $column),
-     t2 as (
-        select $ref_column_id as col, count(*) as t2_n 
-        from $ref_table_id
-        group by $ref_column_id
-    )
-   select t1.*, t2.*
-   from t1 
-   outer join t2  using(col)
-   having not t1_n = t2_n 
-
+        with t1 as (
+          select $column as col, count(*) as t1_n 
+          from data
+          group by $column),
+        t2 as (
+          select $ref_column_id as col, count(*) as t2_n 
+          from `<dataset_id>.$ref_table_id`
+          group by $ref_column_id
+        )
+        select t1.*, t2.t2_n
+        from t1 
+        full outer join t2 using(col)
+        where not t1_n = t2_n 
+        
 rule_bindings:
   EQUAL_COLUMNS:
     entity_id: TEST_DATA
-    column_id: TX_ID
+    column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
       - EQUAL_COLUMNS:
           ref_table_id: <reference_table_id>
           ref_column_id: <reference_column_id>
 ```
+
+Full example: [Rule](docs/examples/row_by_row.yaml) and [rule binding](docs/examples/row_by_row.yaml)
+
 
 #### Equality of two columns (special case: columns do not contain repeated values)
 
@@ -380,36 +396,40 @@ For this test we compare two columns that we know have distinct values (for exam
 rules:
   EQUAL_COLUMNS_UNIQUE_VALUES:
     rule_type: CUSTOM_SQL_STATEMENT
-     custom_sql_arguments:
-ref_table_id
-ref_column_id
+    custom_sql_arguments:
+        - ref_table_id
+        - ref_column_id
     params:
       custom_sql_statement: |-
-      with t1 as (
-        select 
+        with t1 as (
+          select 
             $column as t1_col, 
-           row_number() over (order by $column) as n 
-        from data
-        Order by $column),
-     t2 as (
-        select 
-            $column as t2_col, 
-           row_number() over (order by $column) as n 
-    )
-   select t1.*, t2.*
-   from t1 
-   outer join t2 using(n)
-   having t1_col is null or t2_col is null 
+            row_number() over (order by $column) as n 
+          from data),
+        t2 as (
+          select 
+            $ref_column_id as t2_col, 
+            row_number() over (order by $ref_column_id) as n 
+            from `<dataset_id>.$ref_table_id`
+        )
+        select t1.t1_col, t2.t2_col
+        from t1 
+        full outer join t2 using(n)
+        where not t1_col = t2_col 
+
 rule_bindings:
   EQUAL_COLUMNS:
     entity_id: TEST_DATA
-    column_id: TIMESTAMP
+    column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
       - EQUAL_COLUMNS_UNIQUE_VALUES:
           ref_table_id: <reference_table_id>
           ref_column_id: <reference_column_id>
 ```
+
+Full example: [Rule](docs/examples/row_by_row.yaml) and [rule binding](docs/examples/row_by_row.yaml)
+
 
 #### Equality of an aggregate
 

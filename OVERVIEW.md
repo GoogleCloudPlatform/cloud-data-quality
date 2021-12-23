@@ -13,13 +13,24 @@
 
 The CloudDQ framework defines 5 basic types of rules:
 
-* NOT_NULL
-* NOT_BLANK
-* REGEX
-* CUSTOM_SQL_EXPRESSION
-* CUSTOM_SQL_STATEMENT
+* `NOT_NULL`
+* `NOT_BLANK`
+* `REGEX`
+* `CUSTOM_SQL_EXPRESSION`
+* `CUSTOM_SQL_STATEMENT`
 
-The following table describes the details of these rules and how to use them.
+Of these rules, the first four support row-level validation and the last one supports set-level validation. We will begin by explaining this difference before proceeding to explain each rule type in detail.
+
+#### Row-level Versus Set-level Validation
+
+Row-level validation checks attributes of individual rows or elements of the data: For example whether the value is in a given range, or whether all fields are internally consistent. There are also validation checks that cannot be performed by just inspecting one row or element. We call this "set-level validation". Possibly the simplest example of set-level validation is a check on the total row count.
+
+An important difference between row-level and set-level validation is that in the case of set-level validation, in general, one cannot say which rows cause a check to fail. Also, in some cases it's not possible to say how many rows fail the check. With row-level validation on the other hand, we can connect each validation error to a specific row. This difference in reflected in the `CloudDQ` output. For row-level validation, `CloudDQ` reports the number of rows validated, how many were successful, how many produced errors and how many were null. For set-level checks, `CloudDQ` only provides how many rows the check was run on, how many errors were generated, plus an overall success or failure flag.
+
+The number of errors from set-level validation may or may not have a relation to a number of rows, depending on how the check is coded. For example, for a check on uniqueness, the number of errors may equal the number of duplicated rows, the number of elements that are duplicated, or something else entirely.
+
+As mentioned, of the built-in rule types, only `CUSTOM_SQL_STATEMENT` is intended for set-level validation. That means that any check implemented using this rule type will produce output that can be expected from set-level validation. This is independent of the nature of the check -- it's certainly feasible to implement row-level checks using rules of the `CUSTOM_SQL_STATEMENT` type.
+
 
 #### Rule Type `NOT_NULL`
 
@@ -97,11 +108,16 @@ rule_bindings:
 
 #### Rule Type `CUSTOM_SQL_EXPRESSION`
 
-This rule type allows the specification of a condition using SQL (as in a WHERE clause). The validation fails when the condition is violated.
+This rule type allows the specification of an SQL expression (as in a WHERE clause). The validation fails when the expression returns `TRUE`.
 
-The example condition performs a SELECT on a reference table to compare to a list of known currencies.
+This rule, contrary to `CUSTOM_SQL_STATEMENT` supports row-level validation (see preceding section on the differences between row-level and
+set-leve validation). This implies it has access to the row-level context of the table defined as "entity", meaning that all columns of the
+same row can be accessed.
 
-The SQL condition references a parameter $column, which is set through the rule binding.
+The below example of this rule performs a SELECT on a reference table to compare to a list of known currencies.
+
+The SQL condition references a parameter `$column`, which is set through the rule binding. At present, this is all the parametrization that
+rules of this type allow.
 
 ```yaml
 rules:
@@ -132,7 +148,7 @@ The SQL statement references the source data as “data”. The dataset is defin
 
 The SQL statement can also be parametrized using custom SQL arguments as shown in the example. The example provides a way to check the range of values in a column. 
 
-This rule type is intended for set-level validation: To check properties of a set, such as the total row count, or the standard deviation of a column. Therefore, while we reported the number of rows returned as the number of failures, the reporting varies from the other rule types.
+This rule type is intended for set-level validation. See the paragraph on the row-level and set-level validation at the start of this section for more information.
 
 ```yaml
 rules:

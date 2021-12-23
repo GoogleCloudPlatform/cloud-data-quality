@@ -36,13 +36,21 @@ rule_bindings:
     metadata:
       team: team-3
 ```
-Each `rule_binding` must define one of the field `entity_id` or `entity_uri` and all of the fields `column_id`, `row_filter_id`, and `rule_ids`. `entity_id` refers to the table being validated, `entity_uri` is the URI path in a remote metadata registry that references the table being validated, `column_id` refers to the column in the table to be validated, `row_filter_id` refers to a filter condition to select rows in-scope for validation, and `rule_ids` refers to the list of data quality validation rules to apply on the selected column and rows.
+Each `rule_binding` must define one of the fields: 
+
+- `entity_id` or `entity_uri` and 
+- all of the fields `column_id`, `row_filter_id`, and `rule_ids`.
+
+`entity_id` refers to the table being validated, `entity_uri` is the URI path in a remote metadata registry that references the table being validated, `column_id` refers to the column in the table to be validated, `row_filter_id` refers to a filter condition to select rows in-scope for validation, and `rule_ids` refers to the list of data quality validation rules to apply on the selected column and rows.
 
 If `incremental_time_filter_column_id` is set to a monotonically-increasing timestamp column in an append-only table, `CloudDQ` on each run will only validate rows where the timestamp specified in `incremental_time_filter_column_id` is higher than the timestamp of the last run. This allows CloudDQ to perform incremental validation without scanning the entire table everytime. If `incremental_time_filter_column_id` is not set, `CloudDQ` will validate all rows matching the `row_filter_id` on each run.
 
-Under the `metadata` config, you may add any key-value pairs that will be added as a JSON on each DQ summary row output. For example, this can be the team responsible for a `rule_binding`, the table type (raw, curated, reference). The JSON allows custom aggregations and drilldowns over the summary data.
+Under the `metadata` config, you may add any key-value pairs that will be added as a JSON on each [DQ summary output record](OVERVIEW.md#consuming-clouddq-outputs). For example, this can be the team responsible for a `rule_binding`, the table type (raw, curated, reference). The JSON allows custom aggregations and drilldowns over the summary data.
+
+> TODO Rephrase the above
 
 #### Rule Dimensions
+
 **Rule Dimensions**: defines the allowed list of Data Quality rule dimensions that a Data Quality `Rule` can define in the corresponding `dimension` field.
 
 ```yaml
@@ -57,7 +65,9 @@ rule_dimensions:
 This list can be customized as is required. CloudDQ throws an error when parsing the YAML if it finds a `rule` with a `dimension` value that is not one of the allowed values.
 
 #### Rules
-**Rules**: Defines reusable sets of validation logic for data quality.
+
+**Rules**: Defines reusable logic for data quality validation.
+
 ```yaml
 rules:
   NOT_NULL_SIMPLE:
@@ -132,11 +142,8 @@ For both `CUSTOM_SQL_EXPR` and `CUSTOM_SQL_STATEMENT`, the templated parameter `
 
 The SQL code block in `CUSTOM_SQL_STATEMENT` rules must include the string `from data` in the `custom_sql_statement` block, i.e. it must validate data returned by a `data` common table expression (CTE). The common table expression `data` contains rows returned once all `row_filters` and incremental validation logic have been applied.
 
-> TODO Note Andrew: the user can choose to read from the underlying entity (for ex. when they want to ignore incremental logic. We need to explain various usage scenarios and best practices here
+> TODO ?? the user can choose to read from the underlying entity (for ex. when they want to ignore incremental logic. We need to explain various usage scenarios and best practices here
 
-`CloudDQ` reports validation summary statistics for each `rule_binding` and `rule` by appending to the target BigQuery table specified in the CLI argument `--target_bigquery_summary_table`. Record-level validation statistics are captured the in columns `success_count`, `success_percentage`, `failed_count`, `failed_percentage`, `null_count`, `null_percentage`. The rule type `NOT_NULL` reports the count of `NULL`s present in the input `column-id` in the columns `failed_count`, `failed_percentage`, and always set the columns `null_count` and `null_percentage` to `NULL`. `CUSTOM_SQL_STATEMENT` rules do not report record-level validation statistics and therefore will set the content of the columns `success_count`, `success_percentage`, `failed_count`, `failed_percentage`, `null_count`, `null_percentage` to `NULL`.
-
-Set-level validation results for `CUSTOM_SQL_STATEMENT` rules are captured in the columns `complex_rule_validation_errors_count` and `complex_rule_validation_success_flag`. `complex_rule_validation_errors_count` contains the count of rows returned by the `custom_sql_statement` block. `complex_rule_validation_success_flag` is set to `TRUE` if `complex_rule_validation_errors_count` is equals to 0, `FALSE` if `complex_rule_validation_errors_count` is larger than 0, and `NULL` for all other rule types that are not `CUSTOM_SQL_STATEMENT`.
 
 #### Filters
 **Filters**: Defines how each `Rule Binding` can be filtered. The content of the `filter_sql_expr` field will be inserted into a SQL `WHERE` clause for filtering your data to the rows for validation.
