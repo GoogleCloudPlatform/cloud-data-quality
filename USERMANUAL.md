@@ -584,8 +584,6 @@ rule_bindings:
 ```
 
 
-
-
 ## Deployment Best Practices
 
 ### Authentication
