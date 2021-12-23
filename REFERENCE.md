@@ -2,8 +2,6 @@
 
 ## Configuration Specification
 
-(This text is copied from the original README.md, carrying over the notes from [our Google Doc](https://docs.google.com/document/d/1HP65B3VZDOMeSpNMYgXz73bMdpeMb0siixKs3U4JvaM/edit#))
-
 ### Declarative Data Quality Configs
 
 #### Rule Bindings
@@ -144,9 +142,12 @@ The SQL code block in `CUSTOM_SQL_STATEMENT` rules must include the string `from
 
 > TODO ?? the user can choose to read from the underlying entity (for ex. when they want to ignore incremental logic. We need to explain various usage scenarios and best practices here
 
-
 #### Filters
-**Filters**: Defines how each `Rule Binding` can be filtered. The content of the `filter_sql_expr` field will be inserted into a SQL `WHERE` clause for filtering your data to the rows for validation.
+
+**Filters**: Defines a filtering condition for data extracted from the respective entity to generate a sub-set of data for validation
+
+The content of the `filter_sql_expr` field will be inserted into a SQL `WHERE` clause for filtering your data to the rows for validation.
+
 ```yaml
 row_filters:
   NONE:
@@ -168,7 +169,9 @@ LAST_WEEK:
 ```
 
 #### Entities
-**Entities**: defines the target data tables as validation target.
+
+**Entities**: Captures static metadata for entities that are referenced from rule bindings.
+
 ```yaml
 entities:
   TEST_TABLE:
@@ -223,6 +226,7 @@ Ensure you have sufficient IAM privileges to create BigQuery datasets and tables
 If you are testing CloudDQ with the provided configs, ensure you update the `<your_gcp_project_id>` field with the [GCP project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) and the `<your_bigquery_dataset_id>` field with the BigQuery dataset containing the `contact_details` table.
 
 **Entity URI**: defined a URI to look up an existing table entity in a remote metadata registry such as Dataplex.
+
 ```yaml
 rule_bindings:
  TRANSACTIONS_UNIQUE:
@@ -238,7 +242,9 @@ Instead of manually specifying the `entities` configuration to be referenced in 
 `entity_uri` currently supports looking up BigQuery tables using Dataplex Metadata API. The BigQuery dataset containing this table must be registered as a Dataplex Asset and Dataplex Discovery Jobs must have already discovered the table and created a corresponding Dataplex `entity_id`. The Dataplex `entity_id` path can then be referenced with the URI scheme `dataplex://` in the field `entity_uri` inside a `Rule Binding` for `CloudDQ` to automatically look-up the `entity_id` using Dataplex Metadata API to resolve to the table name to be validated.
 
 #### Metadata Registry Defaults
+
 **Metadata Registry Defaults**: define default `entity_uri` values for each scheme.
+
 ```yaml
 metadata_registry_defaults:
  dataplex: # replace variables in <angle brackets> with your own configs
