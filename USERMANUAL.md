@@ -310,10 +310,10 @@ rules:
     rule_type: CUSTOM_SQL_EXPR
     params:
       custom_sql_expr: |-
-        $column in (select allowed_value from `<dataset_id>.<ref_table_id>`)
+        $column in (select unique_key from `<dataset_id>.<ref_table_id>` where timestamp >= '2016-01-01')
 ```
 
-[Complete Example](https://github.com/GoogleCloudPlatform/cloud-data-quality/blob/docs_common_rules/docs/examples/reference_subquery.yaml)
+Full example: [rule](docs/examples/referential_integrity.yaml#37) and [rule binding](docs/examples/referential_integrity.yaml#56)
 
 #### Foreign Key Constraint
 
@@ -329,6 +329,8 @@ rules:
       custom_sql_expr: |-
         $column in (select distinct unique_key from `<dataset_id>.<pk_table_id>`)
 ```
+
+Full example: [rule](docs/examples/referential_integrity.yaml#37) and [rule binding](docs/examples/referential_integrity.yaml#56)
 
 ### Row-by-row Dataset Comparison
 

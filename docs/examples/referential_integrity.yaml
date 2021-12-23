@@ -1,9 +1,9 @@
 entities:
   TEST_DATA:
     source_database: BIGQUERY
-    table_name: austin_crime
+    table_name: <table_id>
     dataset_name: <dataset_id>
-    project_name: clouddq-pbalm
+    project_name: <project_id>
     columns:
       UNIQUE_KEY:
         name: unique_key
@@ -35,11 +35,24 @@ entities:
         
 
 rules:
-  R_FOREIGN_KEY_VALID:
+  ACCEPTED_CURRENCY:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (‘USD’, ‘EUR’,  ‘CNY’)
+
+  REF_SUBQUERY:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (select unique_key from `<dataset_id>.<ref_table_id>` where timestamp >= '2016-01-01')
+
+  FOREIGN_KEY_VALID:
     rule_type: CUSTOM_SQL_EXPR
     params:
       custom_sql_expr: |-
         $column in (select distinct unique_key from `<dataset_id>.<pk_ref_table_id>`)
+
 
 row_filters:
   NONE:
@@ -47,11 +60,18 @@ row_filters:
       True
         
 rule_bindings:
+  REF_SUBQUERY:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - REF_SUBQUERY
+      
   FOREIGN_KEY_VALID:
     entity_id: TEST_DATA
     column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
-      - R_FOREIGN_KEY_VALID
+      - FOREIGN_KEY_VALID
       
       
