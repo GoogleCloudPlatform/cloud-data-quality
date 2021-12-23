@@ -2,7 +2,7 @@
 
 ## High-Level: What does it do and why do I need it?
 
-TODO
+> TODO
 
 ## Concepts
 
@@ -27,7 +27,7 @@ Violated if any row in the given column contains null.
 
 The rule is applied to a column in a table (an “entity”)  through a rule binding.
 
-```
+```yaml
 rules:
   NOT_NULL_SIMPLE:
     rule_type: NOT_NULL
@@ -41,7 +41,7 @@ rule_bindings:
       - NOT_NULL_SIMPLE
 ```
 
-Complete example TODO
+> Complete example TODO
 
 
 #### Rule Type `NOT_BLANK`
@@ -50,7 +50,7 @@ Violated if any row in the given column contains null.
 
 The rule is applied to a column in a table (an “entity”)  through a rule binding.
  
-```
+```yaml
 rules:
   NOT_NULL_SIMPLE:
     rule_type: NOT_NULL
@@ -64,7 +64,7 @@ rule_bindings:
       - NOT_NULL_SIMPLE
 ```
 
-Complete example TODO
+> Complete example TODO
 
 
 #### Rule Type `REGEX`
@@ -75,7 +75,7 @@ The example shows a check for a valid email address.
 
 The rule is applied to a column in a table through a rule binding.
 
-```
+```yaml
 rules:
   VALID_EMAIL:
     rule_type: REGEX
@@ -93,7 +93,7 @@ rule_bindings:
       - VALID_EMAIL
 ```
 
-Complete example TODO
+> Complete example TODO
 
 #### Rule Type `CUSTOM_SQL_EXPRESSION`
 
@@ -103,7 +103,7 @@ The example condition performs a SELECT on a reference table to compare to a lis
 
 The SQL condition references a parameter $column, which is set through the rule binding.
 
-```
+```yaml
 rules:
   CORRECT_CURRENCY_CODE:
     rule_type: CUSTOM_SQL_EXPR
@@ -121,7 +121,7 @@ rule_bindings:
       - CORRECT_CURRENCY_CODE
 ```
 
-Complete example TODO
+> Complete example TODO
 
 
 #### Rule Type `CUSTOM_SQL_STATEMENT`
@@ -134,7 +134,7 @@ The SQL statement can also be parametrized using custom SQL arguments as shown i
 
 This rule type is intended for set-level validation: To check properties of a set, such as the total row count, or the standard deviation of a column. Therefore, while we reported the number of rows returned as the number of failures, the reporting varies from the other rule types.
 
-```
+```yaml
 rules:
   VALUE_RANGE:
     rule_type: CUSTOM_SQL_STATEMENT
@@ -157,7 +157,7 @@ rule_bindings:
           upper: 30.4188298
 ```
 
-TODO Complete example
+> TODO Complete example
 
 
 ### CloudDQ Execution
@@ -172,7 +172,7 @@ On each run, CloudDQ converts each `rule_binding` into a SQL script, create a co
 
 ### Consuming CloudDQ Outputs
 
-TODO: Explains how CloudDQ outputs are captured and can be accessed.
+> TODO: Explains how CloudDQ outputs are captured and can be accessed.
 
 From original README:
 

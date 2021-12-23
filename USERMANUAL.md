@@ -1,6 +1,8 @@
 # User Manual
 
-## Usage Guide from README
+## Tutorials
+
+> Note: This test originates from the Usage Guide from README
 
 ### Overview
 
@@ -195,11 +197,392 @@ export CLOUDDQ_BIGQUERY_DATASET=clouddq
 bq show --view ${CLOUDDQ_BIGQUERY_DATASET}.T3_DQ_1_EMAIL_DUPLICATE
 ```
 
-## Tutorials
-
 
 
 ## Example Use Cases
+
+In this section, we will provide some example implementations of data quality checks that are common requirements.
+
+### Aggregate Conditions
+
+#### Unique Values Constraint
+
+Ensures that all values in a column are unique.
+
+```yaml
+rules:
+  UNIQUE:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_statement: |-
+        select $column from data
+        group by $column
+        having count(*) > 1
+
+rule_bindings:
+  UNIQUENESS:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - UNIQUE
+```
+
+#### Unique Composed Value Constraint (over multiple columns)
+
+Ensures that the combination of values from several columns are all unique across the table.
+
+Note that the row count that is reported for this rule will be the number of elements that are duplicated. If one element is duplicated three times, the row count returned will be 1.
+
+```yaml
+rules:
+  UNIQUE_MULTIPLE:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+      - columns
+    params:
+      custom_sql_statement: |-
+        select $columns from data
+        group by $columns
+        having count(*) > 1
+        
+rule_bindings:
+  UNIQUENESS:
+    entity_id: TEST_DATA
+    row_filter_id: NONE
+    rule_ids:
+      - UNIQUE_MULTIPLE:
+          columns: unique_key, date
+```
+
+#### Maximum Gap
+
+Do not allow the gap between two subsequent values to be greater than a threshold.
+
+In this example, “two subsequent values” are two rows that are subsequent when sorting by the column. This works well for example when the column is a message timestamp, and we don’t want the time between messages to be too big.
+
+But if we have a value, for example, current, at different points in time, and we don’t want the current to jump more than a threshold value between two measurements, we need to change the order by clause in the custom_sql_statement, to order by the time column.
+
+```yaml
+rules:
+  GAP:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+      max_gap
+    params:
+      custom_sql_statement: |-
+        select $column, lag($column) over (order by $column ASC) as prev, $column - prev as gap 
+        from data
+        where gap <= max_gap
+        
+rule_bindings:
+  MAX_GAP:
+    entity_id: TEST_DATA
+    column_id: TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - GAP:
+          max_gap: 3600
+```
+
+### Referential Integrity
+
+#### Reference against fixed set
+
+The fixed set of allowed values is hardcoded into the rule.
+
+```yaml
+rules:
+  ACCEPTED_CURRENCY:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (‘USD’, ‘EUR’,  ‘CNY’)
+```
+
+#### Reference against subquery
+
+The subquery is coded into the `custom_sql_expr` field. This example assumes a reference table with a column with allowed values, but the query could be any that returns a list of values.
+
+```yaml
+rules:
+  REF_SUBQUERY:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (select allowed_value from `<dataset_id>.<ref_table_id>`)
+```
+
+[Complete Example](https://github.com/GoogleCloudPlatform/cloud-data-quality/blob/docs_common_rules/docs/examples/reference_subquery.yaml)
+
+#### Foreign Key Constraint
+
+Check that all values in the referenced column exist in a column in another table (which can be interpreted as the primary key).
+
+This is a special case of the previous example.
+
+```yaml
+rules:
+  FOREIGN_KEY_VALID:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (select distinct unique_key from `<dataset_id>.<pk_table_id>`)
+```
+
+### Row-by-row Dataset Comparison
+
+#### Equality of two columsn
+
+In  this test we check that two columns have an equal set of values. In this example we do not consider the ordering, meaning that if one column has `[a, a, b, b, c]` and another has `[a, b, c, a, b]`, then we will consider them equal.
+
+```yaml
+rules:
+  EQUAL_COLUMNS:
+    rule_type: CUSTOM_SQL_STATEMENT
+     custom_sql_arguments:
+ref_table_id
+ref_column_id
+    params:
+      custom_sql_statement: |-
+      with t1 as (
+        select $column as col, count(*) as t1_n 
+        from data
+        group by $column),
+     t2 as (
+        select $ref_column_id as col, count(*) as t2_n 
+        from $ref_table_id
+        group by $ref_column_id
+    )
+   select t1.*, t2.*
+   from t1 
+   outer join t2  using(col)
+   having not t1_n = t2_n 
+
+rule_bindings:
+  EQUAL_COLUMNS:
+    entity_id: TEST_DATA
+    column_id: TX_ID
+    row_filter_id: NONE
+    rule_ids:
+      - EQUAL_COLUMNS:
+          ref_table_id: <reference_table_id>
+          ref_column_id: <reference_column_id>
+```
+
+#### Equality of two columns (special case: columns do not contain repeated values)
+
+For this test we compare two columns that we know have distinct values (for example because we have checked this separately).
+
+```yaml
+rules:
+  EQUAL_COLUMNS_UNIQUE_VALUES:
+    rule_type: CUSTOM_SQL_STATEMENT
+     custom_sql_arguments:
+ref_table_id
+ref_column_id
+    params:
+      custom_sql_statement: |-
+      with t1 as (
+        select 
+            $column as t1_col, 
+           row_number() over (order by $column) as n 
+        from data
+        Order by $column),
+     t2 as (
+        select 
+            $column as t2_col, 
+           row_number() over (order by $column) as n 
+    )
+   select t1.*, t2.*
+   from t1 
+   outer join t2 using(n)
+   having t1_col is null or t2_col is null 
+rule_bindings:
+  EQUAL_COLUMNS:
+    entity_id: TEST_DATA
+    column_id: TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - EQUAL_COLUMNS_UNIQUE_VALUES:
+          ref_table_id: <reference_table_id>
+          ref_column_id: <reference_column_id>
+```
+
+#### Equality of an aggregate
+
+In this example we check that the aggregate in one table equals a value in another table. For instance, the sum over line items in an order should be equal to the total invoice amount in another table.
+
+This example uses a rule of type CUSTOM_SQL_STATEMENT with 5 parameters. We assume there are two tables, one where we will aggregated based on some key, and sum a value column, and another table that has the totals for each key. The parameters are 
+1. the column ID for the key and 
+1. the value that we are aggregated, 
+1. the column ID for the key and 
+1. the value in table that contains the totals, and 
+1. the table ID of the table containing the totals.
+
+As we specified everything that we need through the above “custom SQL arguments”, the column_id field in the rule binding has no effect. 
+
+```yaml
+rules:
+  EQUAL_AGGREGATE:
+    rule_type: CUSTOM_SQL_STATEMENT
+     custom_sql_arguments:
+key_column_id
+value_column_id
+ref_table_id
+ref_key_column_id
+ref_value_column_id
+    params:
+      custom_sql_statement: |-
+      with t1 as (
+        select $key_column_id as key, sum($value_column_id) as total
+        from data
+        group by $key_column_id),
+     t2 as (
+        select $ref_key_column_id as key, sum($ref_value_column_id) as ref_total
+        from $ref_table_id
+        group by $ref_key_column_id
+    )
+   select t1.*, t2.*
+   from t1 
+   outer join t2  using(key)
+   having not total = ref_total 
+
+rule_bindings:
+  EQUAL_COLUMNS:
+    entity_id: TEST_DATA
+    column_id: TX_ID
+    row_filter_id: NONE
+    rule_ids:
+      - EQUAL_COLUMNS_UNIQUE_VALUES:
+          key_column_id: <key_column_id>
+          value_column_id: <value_column_id>
+          ref_table_id: <reference_table_id>
+          ref_key_column_id: <ref_key_column_id>
+          ref_value_column_id: <ref_value_column_id>
+```
+
+### Business Logic
+
+#### Row-level business logic
+
+Sometimes there is business logic that can be validated at the row-level. For example, a transaction with status “completed” should have an amount greater or equal than zero.
+
+```yaml
+rules:
+  COMPLETED_TRANSACTION_AMOUNT:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        ($column is null or $column < 0) and status = ‘completed’
+
+rule_bindings:
+  COMPLETED_TRANSACTION_AMOUNT:
+    entity_id: TEST_DATA
+    column_id: AMOUNT
+    row_filter_id: NONE
+    rule_ids:
+      - COMPLETED_TRANSACTION_AMOUNT
+```
+
+#### Outliers by z-score
+
+The z-score is the deviation from the mean in units of the standard deviation. If the values in a column have a mean of 10 and  a standard deviation of 2, then a value of 16 in this column has a z-score of (10-16)/2 = 3.
+
+The z-score is frequently used to identify outliers.
+
+```yaml
+rules:
+  Z_SCORE_OUTLIER:
+    rule_type: CUSTOM_SQL_STATEMENT
+     custom_sql_arguments:
+z_limit
+    params:
+      custom_sql_statement: |-
+        with stats as (
+             select avg($column) as mu, stddev($column) as sigma
+            from data)
+     select abs(mu - $column)/$sigma as z
+     from data
+     join stats on true
+     where z > z_limit
+
+rule_bindings:
+  OUTLIER_DETECTION:
+    entity_id: TEST_DATA
+    column_id: AMOUNT
+    row_filter_id: NONE
+    rule_ids:
+      - Z_SCORE_OUTLIER:
+          z_limit: 3
+```
+
+### Set-based Validation
+
+Set-based validation tests the properties of sets, such as the total row count, the average, etc.
+
+#### Total row count
+
+The total row count is a set-level validation because it is not violated or met by any row, it is only violated or met by the set as a whole.
+
+This set-based validation will not report the “number of failed rows”, like is done for row-based checks, but only a true/false success result will be returned.
+
+Note that rows where the given column has NULL are counted as well.
+
+```yaml
+rules:
+  ROW_COUNT:
+    rule_type: CUSTOM_SQL_STATEMENT
+     custom_sql_arguments:
+n_max
+    params:
+      custom_sql_statement: |-
+             select 
+                count(
+                    case when $column is null then 0
+                    else $column
+                    end) as n
+            from data
+            where n > n_max
+
+rule_bindings:
+  ROW_COUNT:
+    entity_id: TEST_DATA
+    column_id: TX_ID
+    row_filter_id: NONE
+    rule_ids:
+      - ROW_COUNT:
+          n_max: 1000
+```
+
+#### Number of unique values
+
+Similar to the total row count, but for unique values.
+
+Note that this example will not count “NULL” as one of the distinct values.
+
+```yaml
+rules:
+  DISTINCT_VALUES:
+    rule_type: CUSTOM_SQL_STATEMENT
+     custom_sql_arguments:
+n_max
+    params:
+      custom_sql_statement: |-
+             select count(distinct $column) as n
+            from data
+            where n > n_max
+
+rule_bindings:
+  DISTINCT_VALUES:
+    entity_id: TEST_DATA
+    column_id: TX_ID
+    row_filter_id: NONE
+    rule_ids:
+      - DISTINCT_VALUES:
+          n_max: 1000
+```
+
 
 
 
