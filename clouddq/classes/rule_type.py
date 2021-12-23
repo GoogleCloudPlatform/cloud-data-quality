@@ -120,9 +120,11 @@ def to_sql_custom_sql_statement(params: dict) -> Template:
                     f"custom_sql_arguments '{argument}' not found in "
                     f"input parameters:\n {params}"
                 )
-    custom_sql_statement = Template(custom_sql_statement).safe_substitute(
-        params.get("rule_binding_arguments")
-    )
+
+    if params.get("rule_binding_arguments"):
+        custom_sql_statement = Template(custom_sql_statement).safe_substitute(
+            params.get("rule_binding_arguments")
+        )
     check_for_invalid_sql(RuleType.CUSTOM_SQL_STATEMENT, custom_sql_statement)
     return Template(custom_sql_statement)
 
