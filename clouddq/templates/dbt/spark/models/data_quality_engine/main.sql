@@ -43,7 +43,7 @@
         AS success_count,
         CASE WHEN complex_rule_validation_errors_count IS NOT NULL
           THEN (rows_validated - complex_rule_validation_errors_count) / rows_validated
-          ELSE COUNTIF(simple_rule_row_is_valid IS TRUE) / rows_validated
+          ELSE SUM(IF(simple_rule_row_is_valid IS TRUE, 1, 0)) / rows_validated
         END
         AS success_percentage,
         CASE WHEN complex_rule_validation_errors_count IS NOT NULL
