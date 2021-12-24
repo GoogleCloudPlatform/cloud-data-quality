@@ -29,11 +29,19 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_DBT_ENVIRONMENT_TARGET = "dev"
+DEFAULT_BQ_DBT_ENVIRONMENT_TARGET = "dev"
+DEFAULT_SPARK_DBT_ENVIRONMENT_TARGET = "spark_thrift"
 DBT_PROFILES_YML_TEMPLATE = {
     "default": {
-        "target": DEFAULT_DBT_ENVIRONMENT_TARGET,
-        "outputs": {DEFAULT_DBT_ENVIRONMENT_TARGET: {}},
+        "target": DEFAULT_BQ_DBT_ENVIRONMENT_TARGET,
+        "outputs": {DEFAULT_BQ_DBT_ENVIRONMENT_TARGET: {}},
+    }
+}
+
+DBT_SPARK_PROFILES_YML_TEMPLATE = {
+    "default": {
+        "target": DEFAULT_SPARK_DBT_ENVIRONMENT_TARGET,
+        "outputs": {DEFAULT_SPARK_DBT_ENVIRONMENT_TARGET: {}},
     }
 }
 
@@ -61,7 +69,7 @@ class DbtConnectionConfig(ABC):
     def to_bq_dbt_profiles_yml(
         self,
         target_directory: Optional[Path] = None,
-        environment_target: str = DEFAULT_DBT_ENVIRONMENT_TARGET,
+        environment_target: str = DEFAULT_BQ_DBT_ENVIRONMENT_TARGET,
     ) -> str:
         template = DBT_PROFILES_YML_TEMPLATE
         profiles_content = self.to_dbt_profiles_dict()
@@ -75,9 +83,9 @@ class DbtConnectionConfig(ABC):
     def to_spark_dbt_profiles_yml(
         self,
         target_directory: Optional[Path] = None,
-        environment_target: str = DEFAULT_DBT_ENVIRONMENT_TARGET,
+        environment_target: str = DEFAULT_SPARK_DBT_ENVIRONMENT_TARGET,
     ) -> str:
-        template = DBT_PROFILES_YML_TEMPLATE
+        template = DBT_SPARK_PROFILES_YML_TEMPLATE
         profiles_content = self.to_dbt_profiles_dict()
         template["default"]["target"] = environment_target
         template["default"]["outputs"][environment_target] = profiles_content

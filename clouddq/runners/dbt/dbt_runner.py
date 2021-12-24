@@ -18,7 +18,8 @@ from typing import Optional
 
 import logging
 
-from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_DBT_ENVIRONMENT_TARGET
+from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_BQ_DBT_ENVIRONMENT_TARGET
+from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_SPARK_DBT_ENVIRONMENT_TARGET
 from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig
 from clouddq.runners.dbt.dbt_connection_configs import GcpDbtConnectionConfig
 from clouddq.runners.dbt.dbt_connection_configs import SparkDbtConnectionConfig
@@ -198,7 +199,7 @@ class DbtRunner:
                     environment_target=self.environment_target,
                 )
             else:
-                self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
+                self.environment_target = DEFAULT_BQ_DBT_ENVIRONMENT_TARGET
                 self.connection_config.to_bq_dbt_profiles_yml(
                     target_directory=self.dbt_profiles_dir
                 )
@@ -235,7 +236,7 @@ class DbtRunner:
                     environment_target=self.environment_target,
                 )
             else:
-                self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
+                self.environment_target = DEFAULT_SPARK_DBT_ENVIRONMENT_TARGET
                 self.connection_config.to_spark_dbt_profiles_yml(
                     target_directory=self.dbt_profiles_dir
                 )

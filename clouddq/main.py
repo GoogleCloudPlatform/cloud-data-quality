@@ -38,6 +38,7 @@ from clouddq.log import get_json_logger
 from clouddq.log import get_logger
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
+from clouddq.runners.dbt.dbt_utils import get_spark_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import assert_not_none_or_empty
 
@@ -351,14 +352,21 @@ def main(  # noqa: C901
         )
 
         logger.debug("Target BQ rule bindings")
-        bq_target_rule_bindings = configs_cache.get_bq_rule_bindings()
-        for bq_rule_binding in bq_target_rule_bindings:
+        bq_rule_bindings = configs_cache.get_bq_rule_bindings()
+        bq_target_rule_bindings = []
+        for bq_rule_binding in bq_rule_bindings:
             logger.debug(bq_rule_binding)
+            if bq_rule_binding in target_rule_binding_ids:
+                bq_target_rule_bindings.append(bq_rule_binding)
+
 
         logger.debug("Target Spark rule bindings")
-        spark_target_rule_bindings = configs_cache.get_spark_rule_bindings()
-        for spark_rule_binding in spark_target_rule_bindings:
+        spark_rule_bindings = configs_cache.get_spark_rule_bindings()
+        spark_target_rule_bindings = []
+        for spark_rule_binding in spark_rule_bindings:
             logger.debug(spark_rule_binding)
+            if spark_rule_binding in target_rule_binding_ids:
+                spark_target_rule_bindings.append(spark_rule_binding)
 
         spark_runner = False
         spark_dbt_runner = None
@@ -368,7 +376,7 @@ def main(  # noqa: C901
             spark_dbt_runner = DbtRunner(
                 dbt_path=dbt_path,
                 dbt_profiles_dir=dbt_profiles_dir,
-                environment_target=environment_target,
+                environment_target="spark_thrift",
                 gcp_project_id=gcp_project_id,
                 gcp_region_id=gcp_region_id,
                 gcp_bq_dataset_id=gcp_bq_dataset_id,
@@ -376,6 +384,16 @@ def main(  # noqa: C901
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
                 spark_runner=spark_runner,
             )
+
+            print("Spark DBT Runner")
+            print(spark_dbt_runner.connection_config)
+            spark_dbt_path = spark_dbt_runner.get_dbt_path(spark_runner=True)
+            print("Spark DBT path is", spark_dbt_path)
+            spark_dbt_rule_binding_views_path = spark_dbt_runner.get_rule_binding_view_path()
+            print("Spark DBT rule binding views  path is", spark_dbt_rule_binding_views_path)
+            spark_dbt_profiles_dir = spark_dbt_runner.get_dbt_profiles_dir()
+            print("Spark DBT profiles directory", spark_dbt_profiles_dir)
+            spark_environment_target = spark_dbt_runner.get_dbt_environment_target()
 
         # Prepare dbt runtime
         bq_dbt_runner = DbtRunner(
@@ -398,39 +416,42 @@ def main(  # noqa: C901
         print("DBT profiles directory", bq_dbt_profiles_dir)
         bq_environment_target = bq_dbt_runner.get_dbt_environment_target()
 
-        print("Spark DBT Runner")
-        print(spark_dbt_runner.connection_config)
-        spark_dbt_path = spark_dbt_runner.get_dbt_path(spark_runner=True)
-        print("Spark DBT path is", spark_dbt_path)
-        spark_dbt_rule_binding_views_path = spark_dbt_runner.get_rule_binding_view_path()
-        print("Spark DBT rule binding views  path is", spark_dbt_rule_binding_views_path)
-        spark_dbt_profiles_dir = spark_dbt_runner.get_dbt_profiles_dir()
-        print("Spark DBT profiles directory", spark_dbt_profiles_dir)
-        spark_environment_target = spark_dbt_runner.get_dbt_environment_target()
+
 
         # Prepare DQ Summary Table
-        dq_summary_table_name = get_bigquery_dq_summary_table_name(
-            dbt_path=Path(dbt_path),
-            dbt_profiles_dir=Path(dbt_profiles_dir),
-            environment_target=environment_target,
-            spark_runner=spark_runner,
+        bq_dq_summary_table_name = get_bigquery_dq_summary_table_name(
+            dbt_path=Path(bq_dbt_path),
+            dbt_profiles_dir=Path(bq_dbt_profiles_dir),
+            environment_target=bq_environment_target,
         )
+
         logger.info(
             "Writing BigQuery rule_binding views and intermediate "
-            f"summary results to BigQuery table: `{dq_summary_table_name}`. "
+            f"summary results to BigQuery table: `{bq_dq_summary_table_name}`. "
         )
+        if spark_runner:
+            # Prepare Spark DQ Summary Table
+            spark_dq_summary_table_name = get_spark_dq_summary_table_name(
+                dbt_path=Path(spark_dbt_path),
+                dbt_profiles_dir=Path(spark_dbt_profiles_dir),
+                environment_target=spark_environment_target,
+            )
+            logger.info(
+                "Writing Spark  rule_binding views and intermediate "
+                f"summary results to SPark DQ Summary  table: `{spark_dq_summary_table_name}`. "
+            )
         dq_summary_table_exists = False
         if gcp_region_id and not skip_sql_validation:
-            dq_summary_dataset = ".".join(dq_summary_table_name.split(".")[:2])
+            dq_summary_dataset = ".".join(bq_dq_summary_table_name.split(".")[:2])
             logger.debug(f"dq_summary_dataset: {dq_summary_dataset}")
             bigquery_client.assert_dataset_is_in_region(
                 dataset=dq_summary_dataset, region=gcp_region_id
             )
             dq_summary_table_exists = bigquery_client.is_table_exists(
-                dq_summary_table_name
+                bq_dq_summary_table_name
             )
             bigquery_client.assert_required_columns_exist_in_table(
-                dq_summary_table_name
+                bq_dq_summary_table_name
             )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
@@ -470,7 +491,7 @@ def main(  # noqa: C901
                 "--summary_to_stdout is True but --target_bigquery_summary_table is not set. "
                 "No summary logs will be logged to stdout."
             )
-        for rule_binding_id in target_rule_binding_ids:
+        for rule_binding_id in bq_target_rule_bindings:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
                 rule_binding_configs,
@@ -488,15 +509,14 @@ def main(  # noqa: C901
             sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
-                dq_summary_table_name=dq_summary_table_name,
+                dq_summary_table_name=bq_dq_summary_table_name,
                 configs_cache=configs_cache,
-                environment=environment_target,
+                environment=bq_environment_target,
                 metadata=metadata,
                 debug=print_sql_queries,
                 progress_watermark=progress_watermark,
                 default_configs=dataplex_registry_defaults,
                 dq_summary_table_exists=dq_summary_table_exists,
-                spark_runner=spark_runner,
             )
             if not skip_sql_validation:
                 logger.debug(
@@ -505,13 +525,13 @@ def main(  # noqa: C901
                 )
                 bigquery_client.check_query_dry_run(query_string=sql_string)
             logger.debug(
-                f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
+                f"*** Writing sql to {bq_dbt_rule_binding_views_path.absolute()}/"
                 f"{rule_binding_id}.sql",
             )
             lib.write_sql_string_as_dbt_model(
                 rule_binding_id=rule_binding_id,
                 sql_string=sql_string,
-                dbt_rule_binding_views_path=dbt_rule_binding_views_path,
+                dbt_rule_binding_views_path=bq_dbt_rule_binding_views_path,
             )
             # clean up old bq rule_bindings
             for view in bq_dbt_rule_binding_views_path.glob("*.sql"):
@@ -536,7 +556,7 @@ def main(  # noqa: C901
             sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
-                dq_summary_table_name=dq_summary_table_name,
+                dq_summary_table_name=spark_dq_summary_table_name,
                 configs_cache=configs_cache,
                 environment=spark_environment_target,
                 metadata=metadata,
@@ -560,20 +580,21 @@ def main(  # noqa: C901
                     view.unlink()
 
         # create dbt configs json for the main.sql loop and run dbt
-        bq_configs = {"target_rule_binding_ids": bq_target_rule_bindings}
-        bq_dbt_runner.run_bq(
-            configs=bq_configs,
-            debug=debug,
-            dry_run=dry_run,
-        )
-
-        # create dbt configs json for the main.sql loop and run dbt
-        spark_configs = {"target_rule_binding_ids": spark_target_rule_bindings}
-        spark_dbt_runner.run_spark(
-            configs=spark_configs,
-            debug=debug,
-            dry_run=dry_run,
-        )
+        if bq_target_rule_bindings:
+            bq_configs = {"target_rule_binding_ids": bq_target_rule_bindings}
+            bq_dbt_runner.run_bq(
+                configs=bq_configs,
+                debug=debug,
+                dry_run=dry_run,
+            )
+        if spark_target_rule_bindings:
+            # create dbt configs json for the main.sql loop and run dbt
+            spark_configs = {"target_rule_binding_ids": spark_target_rule_bindings}
+            spark_dbt_runner.run_spark(
+                configs=spark_configs,
+                debug=debug,
+                dry_run=dry_run,
+            )
 
         if not dry_run:
             if target_bigquery_summary_table:
@@ -587,7 +608,7 @@ def main(  # noqa: C901
                     num_rows = target_table.write_to_target_bq_table(
                         partition_date,
                         target_bigquery_summary_table,
-                        dq_summary_table_name,
+                        bq_dq_summary_table_name,
                         summary_to_stdout,
                     )
                     json_logger.info(
@@ -616,7 +637,7 @@ def main(  # noqa: C901
                     num_rows = target_table.write_to_target_bq_table(
                         partition_date,
                         target_bigquery_summary_table,
-                        dq_summary_table_name,
+                        spark_dq_summary_table_name,
                         summary_to_stdout,
                         spark_runner=spark_runner,
                     )
