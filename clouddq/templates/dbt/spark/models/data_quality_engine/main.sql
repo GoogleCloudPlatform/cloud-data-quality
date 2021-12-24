@@ -38,7 +38,7 @@
         last_modified,
         CASE WHEN complex_rule_validation_errors_count IS NOT NULL
           THEN rows_validated - complex_rule_validation_errors_count
-          ELSE COUNTIF(simple_rule_row_is_valid IS TRUE)
+          ELSE SUM(IF(simple_rule_row_is_valid IS TRUE, 1, 0)) / rows_validated
         END
         AS success_count,
         CASE WHEN complex_rule_validation_errors_count IS NOT NULL
@@ -48,16 +48,16 @@
         AS success_percentage,
         CASE WHEN complex_rule_validation_errors_count IS NOT NULL
           THEN complex_rule_validation_errors_count
-          ELSE COUNTIF(simple_rule_row_is_valid IS FALSE)
+          ELSE SUM(IF(simple_rule_row_is_valid IS FALSE, 1, 0))
         END
         AS failed_count,
         CASE WHEN complex_rule_validation_errors_count IS NOT NULL
           THEN complex_rule_validation_errors_count / rows_validated
-          ELSE COUNTIF(simple_rule_row_is_valid IS FALSE) / rows_validated
+          ELSE SUM(IF(simple_rule_row_is_valid IS FALSE, 1, 0)) / rows_validated
         END
         AS failed_percentage,
-        COUNTIF(column_value IS NULL) AS null_count,
-        COUNTIF(column_value IS NULL) / rows_validated AS null_percentage
+        SUM(IF((column_value IS NULL OR TRIM(column_value) = ''), 1, 0)) AS null_count,
+        SUM(IF((column_value IS NULL OR TRIM(column_value) = ''), 1, 0)) / rows_validated AS null_percentage
     FROM
         {{ ref(rule_binding_id) }}
     GROUP BY
