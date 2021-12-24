@@ -28,6 +28,9 @@ from clouddq.utils import assert_not_none_or_empty
 RE_FORBIDDEN_SQL = re.compile(r"([;#]|\-\-|\*\/|\/\*)")
 NOT_NULL_SQL = Template("$column IS NOT NULL")
 REGEX_SQL = Template("REGEXP_CONTAINS( CAST( $column  AS STRING), '$pattern' )")
+REGEX_SPARK_SQL = Template(
+    "LENGTH(REGEXP_EXTRACT(TRIM(CAST( $column  AS STRING)), '$pattern', 0))>0"
+)
 NOT_BLANK_SQL = Template("TRIM($column) != ''")
 SAMPLE_DATA_CTE = """
 WITH
@@ -127,7 +130,7 @@ def to_sql_custom_sql_statement(params: dict) -> Template:
     return Template(custom_sql_statement)
 
 
-def to_sql_regex(params: dict) -> Template:
+def to_sql_regex(params: dict, resource_type: str) -> Template:
     pattern = params.get("pattern", "")
     assert_not_none_or_empty(
         pattern,
@@ -135,6 +138,14 @@ def to_sql_regex(params: dict) -> Template:
         f"'pattern' in 'params'.\n"
         f"Current value: {pattern}",
     )
+
+    assert_not_none_or_empty(
+        resource_type,
+        f"RuleType: {RuleType.REGEX} must define "
+        f"'resource_type'.\n"
+        f"Current value: {resource_type}",
+    )
+
     try:
         re.compile(pattern)
     except re.error:
@@ -147,7 +158,20 @@ def to_sql_regex(params: dict) -> Template:
     # escape dollar signs in regex
     # to avoid conflict with python string Template
     pattern = pattern.replace("$", "$$")
-    return Template(REGEX_SQL.safe_substitute(pattern=pattern))
+
+    if resource_type == "BIGQUERY":
+        return Template(REGEX_SQL.safe_substitute(pattern=pattern))
+
+    elif resource_type == "STORAGE_BUCKET":
+        return Template(REGEX_SPARK_SQL.safe_substitute(pattern=pattern))
+
+
+def not_null_sql(resource_type: str) -> Template:
+
+    if resource_type == "STORAGE_BUCKET":
+        return NOT_BLANK_SQL
+    else:
+        return NOT_NULL_SQL
 
 
 @unique
@@ -160,15 +184,15 @@ class RuleType(str, Enum):
     REGEX = "REGEX"
     NOT_BLANK = "NOT_BLANK"
 
-    def to_sql(self: RuleType, params: dict | None) -> Template:
+    def to_sql(self: RuleType, params: dict | None, resource_type: str) -> Template:
         if self == RuleType.CUSTOM_SQL_EXPR:
             return to_sql_custom_sql_expr(params)
         elif self == RuleType.CUSTOM_SQL_STATEMENT:
             return to_sql_custom_sql_statement(params)
         elif self == RuleType.NOT_NULL:
-            return NOT_NULL_SQL
+            return not_null_sql(resource_type)
         elif self == RuleType.REGEX:
-            return to_sql_regex(params)
+            return to_sql_regex(params, resource_type)
         elif self == RuleType.NOT_BLANK:
             return NOT_BLANK_SQL
         else:
