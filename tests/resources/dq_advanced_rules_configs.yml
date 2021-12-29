@@ -90,6 +90,57 @@ entities:
         data_type: STRING
         description: |-
           sales manager id
+  COMPLEX_RULES_TABLE_OK:
+    source_database: BIGQUERY
+    table_name: complex_rules_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      INVOICE_GROSS_TOTAL_AMOUNT:
+        name: dInvoiceGrossTotalAmount
+        data_type: NUMERIC
+        description: |-
+          invoice gross total amount
+  COMPLEX_RULES_TABLE_NOT_OK:
+    source_database: BIGQUERY
+    table_name: complex_rules_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      INVOICE_GROSS_TOTAL_AMOUNT:
+        name: dInvoiceGrossTotalAmount
+        data_type: NUMERIC
+        description: |-
+          invoice gross total amount
+  DIFFERENT_VOLUMES_PER_PERIOD:
+    source_database: BIGQUERY
+    table_name: different_volumes_per_period
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      DANA_INGESTION_TIMESTAMP:
+        name: dana_ingestion_timestamp
+        data_type: TIMESTAMP
+        description: |-
+          Ingestion Timestamp
 rule_bindings:
   T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_FAIL:
     entity_id: INGESTION_TABLE_DAY_LEVEL
@@ -108,7 +159,7 @@ rule_bindings:
     rule_ids:
       - NO_DELAYED_INGESTION_DAY_LEVEL:
           ingestion_date_day: date_of_day
-          elapsed_time_days: 10
+          elapsed_time_days: 20
     metadata:
       brand: one
   T2_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_SUCCEED:
@@ -151,6 +202,58 @@ rule_bindings:
           elapsed_time_hours: 10
     metadata:
       brand: one
+  T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED:
+    entity_id: COMPLEX_RULES_TABLE_OK
+    column_id: INVOICE_GROSS_TOTAL_AMOUNT
+    row_filter_id: NONE
+    rule_ids:
+      - NO_COMPLEX_RULES_MISMATCH
+    metadata:
+      brand: one
+  T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_FAIL:
+    entity_id: COMPLEX_RULES_TABLE_NOT_OK
+    column_id: INVOICE_GROSS_TOTAL_AMOUNT
+    row_filter_id: NONE
+    rule_ids:
+      - NO_COMPLEX_RULES_MISMATCH
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-29 00:00:00 UTC"
+          interval: day
+          threshold: 100
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: day
+          threshold: 100
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_MONTH_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-29 00:00:00 UTC"
+          interval: month
+          threshold: 4000
+    metadata:
+      brand: one
 rules:
   NO_DELAYED_INGESTION_DAY_LEVEL:
     rule_type: CUSTOM_SQL_STATEMENT
@@ -191,4 +294,28 @@ rules:
           where $ingestion_timestamp >= timestamp_sub(current_timestamp(), interval $elapsed_time_hours hour) 
         )
         where n = 0
-
+  NO_COMPLEX_RULES_MISMATCH:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        (select
+            sum(SaleLine.dItemTotalNetAmount) + sum(SaleLine.dVatAmount)
+          from
+            unnest(SaleLineList.SaleLine) as SaleLine
+        ) between $column - 0.03 and $column + 0.03
+  NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_arguments:
+        - ts_column
+        - as_at_ts
+        - interval
+        - threshold
+      custom_sql_statement: |-
+        select *
+        from
+          (select count(*) as n 
+          from data
+          where timestamp_trunc($ts_column, $interval) = timestamp_trunc(parse_timestamp("%F %T %Z", "$as_at_ts"), $interval)
+          )
+        where  n <= $threshold

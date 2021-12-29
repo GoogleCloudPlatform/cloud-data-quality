@@ -29,6 +29,7 @@ from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import working_directory
 
+import pandas
 
 logger = logging.getLogger(__name__)
 
