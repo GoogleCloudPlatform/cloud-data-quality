@@ -141,6 +141,108 @@ entities:
         data_type: TIMESTAMP
         description: |-
           Ingestion Timestamp
+  REFERENCE_DATA_CHECK_NOT_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      ART_NO:
+        name: art_no
+        data_type: INTEGER
+        description: |-
+          Art no
+  REFERENCE_DATA_CHECK_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      ART_NO:
+        name: art_no
+        data_type: INTEGER
+        description: |-
+          Art no
+  REFERENCE_DATA_CHECK_SUBQUERY_NOT_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_subquery_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      SALE_LINE_LIST:
+        name: SaleLineList
+        data_type: INTEGER
+        description: |-
+          Sale Line List
+  REFERENCE_DATA_CHECK_SUBQUERY_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_subquery_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      SALE_LINE_LIST:
+        name: SaleLineList
+        data_type: INTEGER
+        description: |-
+          Sale Line List
+  REFERENCE_DATA_CHECK_SUBQUERY2_NOT_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_subquery2_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      YCCOUNTIQENTIYIERS:
+        name: yccountIqentiyiers
+        data_type: INTEGER
+        description: |-
+          Record item
+  REFERENCE_DATA_CHECK_SUBQUERY2_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_subquery2_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      YCCOUNTIQENTIYIERS:
+        name: yccountIqentiyiers
+        data_type: INTEGER
+        description: |-
+          Record item
 rule_bindings:
   T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_FAIL:
     entity_id: INGESTION_TABLE_DAY_LEVEL
@@ -254,6 +356,174 @@ rule_bindings:
           threshold: 4000
     metadata:
       brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          avg_from_ts: "2021-12-01 00:00:00 UTC"
+          interval: day
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-22 00:00:00 UTC"
+          avg_from_ts: "2021-12-01 00:00:00 UTC"
+          interval: day
+          deviation_threshold_pct: 15
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_MONTH_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-22 00:00:00 UTC"
+          avg_from_ts: "2021-12-01 00:00:00 UTC"
+          interval: month
+          deviation_threshold_pct: 0.01
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-22 00:00:00 UTC"
+          interval: day
+          N_periods_back: 1
+          deviation_threshold_pct: 30
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: day
+          N_periods_back: 2
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_PERIOD_TOO_OLD_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: day
+          N_periods_back: 10
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_MONTH_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: month
+          N_periods_back: 1
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one
+  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_YEAR_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: year
+          N_periods_back: 1
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one
+  T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_NOT_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR
+    metadata:
+      brand: one
+  T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR
+    metadata:
+      brand: one
+  T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_NOT_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR
+    metadata:
+      brand: one
+  T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR
+    metadata:
+      brand: one
+  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY_NOT_OK
+    column_id: SALE_LINE_LIST
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY
+    metadata:
+      brand: one
+  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY_OK
+    column_id: SALE_LINE_LIST
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY
+    metadata:
+      brand: one
+  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_NOT_OK
+    column_id: YCCOUNTIQENTIYIERS
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
+    metadata:
+      brand: one
+  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_OK
+    column_id: YCCOUNTIQENTIYIERS
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
+    metadata:
+      brand: one
 rules:
   NO_DELAYED_INGESTION_DAY_LEVEL:
     rule_type: CUSTOM_SQL_STATEMENT
@@ -316,6 +586,72 @@ rules:
         from
           (select count(*) as n 
           from data
-          where timestamp_trunc($ts_column, $interval) = timestamp_trunc(parse_timestamp("%F %T %Z", "$as_at_ts"), $interval)
+          where date_trunc(cast($ts_column as date), $interval) = date_trunc(cast(parse_timestamp("%F %T %Z", "$as_at_ts") as date), $interval)
           )
         where  n <= $threshold
+  NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_arguments:
+        - ts_column
+        - as_at_ts
+        - interval
+        - avg_from_ts
+        - deviation_threshold_pct
+      custom_sql_statement: |-
+        select *
+        from
+          (select count(*) as n
+          from data
+          where date_trunc(cast($ts_column as date), $interval) = date_trunc(cast(parse_timestamp("%F %T %Z", "$as_at_ts") as date), $interval)
+          )
+        where ifnull(safe_divide(n, (select avg(count_by_interval)
+          from (
+            select count(*) as count_by_interval
+            from data
+            where
+            date_trunc(cast($ts_column as date), $interval) >= date_trunc(cast(parse_timestamp("%F %T %Z", "$avg_from_ts") as date), $interval)
+            group by date_trunc(cast($ts_column as date), $interval)
+          )
+        )), cast('inf' as float64)) not between (1 - ($deviation_threshold_pct / 100)) and (1 + ($deviation_threshold_pct / 100))
+  NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_arguments:
+        - ts_column
+        - as_at_ts
+        - interval
+        - N_periods_back
+        - deviation_threshold_pct
+      custom_sql_statement: |-
+        select *
+        from
+          (select count(*) as n
+          from data
+          where date_trunc(cast($ts_column as date), $interval) = date_trunc(cast(parse_timestamp("%F %T %Z", "$as_at_ts") as date), $interval)
+          )
+        where ifnull(safe_divide(n, (select count(*) as count_by_interval
+          from data
+          where
+          date_trunc(cast($ts_column as date), $interval) = date_sub(cast(timestamp_trunc("$as_at_ts", $interval) as date), interval $N_periods_back $interval)
+        )), cast('inf' as float64)) not between (1 - ($deviation_threshold_pct / 100)) and (1 + ($deviation_threshold_pct / 100))
+  NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (select art_no from clouddq_integration_tests_input_data.reference_data)
+  NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        exists (select 1 from clouddq_integration_tests_input_data.reference_data r where r.art_no = data.$column)
+  NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        exists (select 1 from unnest($column.saleline) sl inner join clouddq_integration_tests_input_data.reference_data_subquery r on sl.litemnumber = r.subsys_item)
+  NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        exists (select 1 from unnest($column) t inner join clouddq_integration_tests_input_data.reference_data_subquery2 r on t.iq = r.id and t.type = r.type and t.qyty = r.data)
