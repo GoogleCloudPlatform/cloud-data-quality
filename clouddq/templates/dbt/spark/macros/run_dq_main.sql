@@ -57,12 +57,12 @@ high_watermark_filter AS (
 {% endif %}
 zero_record AS (
     SELECT
-        '{{ rule_binding_id }}' AS rule_binding_id,
+        '{{ rule_binding_id }}' AS rule_binding_id
 ),
 data AS (
     SELECT
       *,
-      '{{ rule_binding_id }}' AS rule_binding_id,
+      '{{ rule_binding_id }}' AS rule_binding_id
     FROM
       {{- fully_qualified_table_name -}} d
 {%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists %}
@@ -129,7 +129,7 @@ all_validation_results AS (
     CAST(NULL AS STRING) AS dataplex_asset_id,
 {%- endif %}
     CONCAT(r.rule_binding_id, '_', r.rule_id, '_', to_utc_timestamp(to_date(r.execution_ts), 'US/Pacific'), '_', {{ progress_watermark }}) AS dq_run_id,
-    {{ progress_watermark|upper }} AS progress_watermark,
+    {{ progress_watermark|upper }} AS progress_watermark
   FROM
     validation_results r
 --  JOIN last_mod USING(table_id)

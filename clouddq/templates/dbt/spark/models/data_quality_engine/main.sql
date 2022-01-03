@@ -75,7 +75,7 @@
           WHEN skip_null_count IS TRUE THEN NULL
           ELSE SUM(IF(simple_rule_row_is_valid IS NULL, 1, 0)) / rows_validated
         END
-        AS null_percentage,
+        AS null_percentage
     FROM
         {{ ref(rule_binding_id) }}
     GROUP BY
