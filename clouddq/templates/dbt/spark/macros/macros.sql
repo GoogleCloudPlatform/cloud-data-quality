@@ -40,7 +40,7 @@
 {% else %}
     FALSE AS skip_null_count,
 {% endif %}
-    CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
+    CAST(NULL AS INTEGER) AS complex_rule_validation_errors_count,
     CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag
   FROM
     zero_record
