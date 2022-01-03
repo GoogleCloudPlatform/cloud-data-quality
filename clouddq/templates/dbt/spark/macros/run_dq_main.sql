@@ -64,7 +64,7 @@ data AS (
       *,
       '{{ rule_binding_id }}' AS rule_binding_id
     FROM
-    {{- fully_qualified_table_name -}} d
+    {{ fully_qualified_table_name }} d
 {%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists %}
       ,high_watermark_filter
     WHERE
