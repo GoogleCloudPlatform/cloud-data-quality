@@ -12,33 +12,42 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-{% macro validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, resource_type ) -%}
+{% macro validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name ) -%}
   SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     '{{ rule_binding_id }}' AS rule_binding_id,
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
-    {{ column_name }} AS column_value,
-    num_rows_validated AS num_rows_validated,
+    data.{{ column_name }} AS column_value,
+{% if rule_configs.get("dimension") %}
+    '{{ rule_configs.get("dimension") }}' AS dimension,
+{% else %}
+    CAST(NULL AS STRING) AS dimension,
+{% endif %}
     CASE
 {% if rule_configs.get("rule_type") == "NOT_NULL" %}
       WHEN {{ rule_configs.get("rule_sql_expr") }} THEN TRUE
 {% else %}
-      WHEN {{ column_name }} IS NULL THEN NULL
+      WHEN {{ column_name }} IS NULL THEN CAST(NULL AS BOOLEAN)
       WHEN {{ rule_configs.get("rule_sql_expr") }} THEN TRUE
 {% endif %}
     ELSE
       FALSE
     END AS simple_rule_row_is_valid,
-{% if resource_type == "STORAGE_BUCKET" %}
-    CAST(NULL AS STRING) AS complex_rule_validation_errors_count
+{% if rule_configs.get("rule_type") == "NOT_NULL" %}
+    TRUE AS skip_null_count,
 {% else %}
-    NULL AS complex_rule_validation_errors_count
+    FALSE AS skip_null_count,
 {% endif %}
-
+    CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
+    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
   FROM
+    zero_record
+  LEFT JOIN
     data
+  ON
+    zero_record.rule_binding_id = data.rule_binding_id
 {% endmacro -%}
 
 {% macro validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name ) -%}
@@ -47,28 +56,32 @@
     '{{ rule_binding_id }}' AS rule_binding_id,
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
-    '{{ column_name }}' AS column_id,
-    {{ column_name }} AS column_value,
-    (select distinct num_rows_validated from data) as num_rows_validated,
-    FALSE AS simple_rule_row_is_valid,
-    COUNT(1) OVER() as complex_rule_validation_errors_count
-  FROM (
-    {{ rule_configs.get("rule_sql_expr") }}
-  ) custom_sql_statement_validation_errors
+    CAST(NULL AS STRING) AS column_id,
+    NULL AS column_value,
+{% if rule_configs.get("dimension") %}
+    '{{ rule_configs.get("dimension") }}' AS dimension,
+{% else %}
+    CAST(NULL AS STRING) AS dimension,
+{% endif %}
+    CAST(NULL AS BOOLEAN) AS simple_rule_row_is_valid,
+    TRUE AS skip_null_count,
+    custom_sql_statement_validation_errors.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    CASE
+      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count IS NULL THEN CAST(NULL AS BOOLEAN)
+      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
+      ELSE FALSE
+    END AS complex_rule_validation_success_flag,
+  FROM
+    zero_record
+  LEFT JOIN
+    (
+      SELECT
+        '{{ rule_binding_id }}' AS _rule_binding_id,
+        COUNT(*) AS complex_rule_validation_errors_count,
+      FROM (
+      {{ rule_configs.get("rule_sql_expr") }}
+      ) custom_sql
+    ) custom_sql_statement_validation_errors
+  ON
+    zero_record.rule_binding_id = custom_sql_statement_validation_errors._rule_binding_id
 {% endmacro -%}
-
-{% macro generate_table_name(resource_type, instance_name, database_name, table_name) -%}
-    {%- if resource_type == "STORAGE_BUCKET" -%}
-        {{ database_name }}.{{ table_name }}
-    {%- else -%}
-        {{ instance_name }}.{{ database_name }}.{{ table_name }}
-    {%- endif -%}
-{%- endmacro %}
-
-{% macro generate_dq_run_id(resource_type, progress_watermark) -%}
-    {%- if resource_type == "STORAGE_BUCKET" -%}
-        CONCAT(r.rule_binding_id, '_', r.rule_id, '_', to_utc_timestamp(to_date(r.execution_ts), 'US/Pacific'), '_', {{ progress_watermark }}) AS dq_run_id,
-    {%- else -%}
-        CONCAT(r.rule_binding_id, '_', r.rule_id, '_', TIMESTAMP_TRUNC(r.execution_ts, HOUR), '_', {{ progress_watermark }}) AS dq_run_id,
-    {%- endif -%}
-{%- endmacro %}

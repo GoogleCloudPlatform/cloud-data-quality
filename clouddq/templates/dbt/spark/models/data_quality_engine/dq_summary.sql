@@ -27,7 +27,32 @@
 
 with dq_summary as (
 
-    select * from {{ ref('main') }}
+    select
+      invocation_id,
+      execution_ts,
+      rule_binding_id,
+      rule_id,
+      table_id,
+      column_id,
+      dimension,
+      metadata_json_string,
+      configs_hashsum,
+      dataplex_lake,
+      dataplex_zone,
+      dataplex_asset_id,
+      dq_run_id,
+      progress_watermark,
+      rows_validated,
+      complex_rule_validation_errors_count,
+      complex_rule_validation_success_flag,
+      last_modified,
+      success_count,
+      success_percentage,
+      failed_count,
+      failed_percentage,
+      null_count,
+      null_percentage
+    from {{ ref('main') }}
 
 )
 

@@ -13,21 +13,21 @@
 -- limitations under the License.
 {% from 'macros.sql' import validate_simple_rule -%}
 {% from 'macros.sql' import validate_complex_rule -%}
-{% from 'macros.sql' import generate_table_name -%}
-{% from 'macros.sql' import generate_dq_run_id -%}
-{%- macro run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark) -%}
+{%- macro run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -%}
 {% set rule_binding_id = configs.get('rule_binding_id') -%}
 {% set rule_configs_dict = configs.get('rule_configs_dict') -%}
 {% set filter_sql_expr = configs.get('row_filter_configs').get('filter_sql_expr') -%}
 {% set column_name = configs.get('column_configs').get('name') -%}
-{% set instance_name = configs.get('entity_configs').get('instance_name') -%}
-{% set database_name = configs.get('entity_configs').get('database_name') -%}
-{% set table_name = configs.get('entity_configs').get('table_name') -%}
-{% set source_database = configs.get('entity_configs').get('source_database') -%}
-{% set resource_type = configs.get('entity_configs').get('resource_type') -%}
+{% set entity_configs = configs.get('entity_configs') -%}
+{% set dataplex_lake = entity_configs.get('dataplex_lake') -%}
+{% set dataplex_zone = entity_configs.get('dataplex_zone') -%}
+{% set dataplex_asset_id = entity_configs.get('dataplex_asset_id') -%}
+{% set instance_name = entity_configs.get('instance_name') -%}
+{% set database_name = entity_configs.get('database_name') -%}
+{% set table_name = entity_configs.get('table_name') -%}
 {% set incremental_time_filter_column_id = configs.get('incremental_time_filter_column_id') %}
-{% if environment and configs.get('entity_configs').get('environment_override') -%}
-  {% set env_override = configs.get('entity_configs').get('environment_override') %}
+{% if environment and entity_configs.get('environment_override') -%}
+  {% set env_override = entity_configs.get('environment_override') %}
   {% if env_override.get(environment|lower) %}
     {% set override_values = env_override.get(environment|lower) %}
     {% if override_values.get('table_name') -%}
@@ -36,34 +36,36 @@
     {% if override_values.get('database_name') -%}
         {% set database_name = override_values.get('database_name') -%}
     {% endif -%}
-    {% if override_values.get('instance_name') -%}
-        {% set instance_name = override_values.get('instance_name') -%}
-    {% endif -%}
+--    {% if override_values.get('instance_name') -%}
+--        {% set instance_name = override_values.get('instance_name') -%}
+--    {% endif -%}
   {% endif %}
 {% endif -%}
-{% set fully_qualified_table_name = generate_table_name(resource_type, instance_name, database_name, table_name) -%}
-
+{% set fully_qualified_table_name = "%s.%s" % (database_name, table_name) -%}
 {% set _dummy = metadata.update(configs.get('metadata', '')) -%}
 WITH
-{%- if configs.get('incremental_time_filter_column') -%}
+{%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists -%}
 {% set time_column_id = configs.get('incremental_time_filter_column') %}
 high_watermark_filter AS (
     SELECT
         IFNULL(MAX(execution_ts), TIMESTAMP("1970-01-01 00:00:00")) as high_watermark
     FROM {{ dq_summary_table_name }}
     WHERE table_id = '{{ fully_qualified_table_name }}'
-      AND column_id = '{{ column_name }}'
       AND rule_binding_id = '{{ rule_binding_id }}'
       AND progress_watermark IS TRUE
 ),
 {% endif %}
+zero_record AS (
+    SELECT
+        '{{ rule_binding_id }}' AS rule_binding_id,
+),
 data AS (
     SELECT
       *,
-      COUNT(1) OVER () as num_rows_validated
+      '{{ rule_binding_id }}' AS rule_binding_id,
     FROM
-        {{ fully_qualified_table_name }}  d
-{%- if configs.get('incremental_time_filter_column') %}
+      {{- fully_qualified_table_name -}} d
+{%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists %}
       ,high_watermark_filter
     WHERE
       CAST(d.{{ time_column_id }} AS TIMESTAMP)
@@ -75,13 +77,19 @@ data AS (
       {{ filter_sql_expr }}
 {% endif -%}
 ),
+--last_mod AS (
+--    SELECT
+--        project_id || '.' || dataset_id || '.' || table_id AS table_id,
+--        TIMESTAMP_MILLIS(last_modified_time) AS last_modified
+--    FROM `{{ instance_name }}.{{ database_name }}.__TABLES__`
+--),
 validation_results AS (
 
 {% for rule_id, rule_configs in rule_configs_dict.items() %}
     {%- if rule_configs.get('rule_type') == "CUSTOM_SQL_STATEMENT" -%}
       {{ validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name) }}
     {%- else -%}
-      {{ validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, resource_type) }}
+      {{ validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name) }}
     {%- endif -%}
     {% if loop.nextitem is defined %}
     UNION ALL
@@ -95,21 +103,42 @@ all_validation_results AS (
     r.rule_id AS rule_id,
     r.table_id AS table_id,
     r.column_id AS column_id,
+    CAST(r.dimension AS STRING) AS dimension,
+    r.skip_null_count AS skip_null_count,
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
     r.column_value AS column_value,
-    r.num_rows_validated AS rows_validated,
+    (SELECT COUNT(*) FROM data) AS rows_validated,
+--    last_mod.last_modified,
     '{{ metadata|tojson }}' AS metadata_json_string,
     '{{ configs_hashsum }}' AS configs_hashsum,
-    {{generate_dq_run_id(resource_type, progress_watermark)}}
-    {{ progress_watermark|upper }} AS progress_watermark
+{%- if dataplex_lake %}
+    '{{ dataplex_lake }}' AS dataplex_lake,
+{%- else %}
+    CAST(NULL AS STRING) AS dataplex_lake,
+{%- endif %}
+{%- if dataplex_zone %}
+    '{{ dataplex_zone }}' AS dataplex_zone,
+{%- else %}
+    CAST(NULL AS STRING) AS dataplex_zone,
+{%- endif %}
+{%- if dataplex_asset_id %}
+    '{{ dataplex_asset_id }}' AS dataplex_asset_id,
+{%- else %}
+    CAST(NULL AS STRING) AS dataplex_asset_id,
+{%- endif %}
+    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', to_utc_timestamp(to_date(r.execution_ts), 'US/Pacific'), '_', {{ progress_watermark }}) AS dq_run_id,
+    {{ progress_watermark|upper }} AS progress_watermark,
   FROM
     validation_results r
+--  JOIN last_mod USING(table_id)
 )
 SELECT
   *
 FROM
   all_validation_results
+
 {%- endmacro -%}
 
-{{-  run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark) -}}
+{{-  run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -}}
