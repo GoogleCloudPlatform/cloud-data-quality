@@ -41,7 +41,7 @@
     FALSE AS skip_null_count,
 {% endif %}
     CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
-    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
+    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag
   FROM
     zero_record
   LEFT JOIN
@@ -70,7 +70,7 @@
       WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count IS NULL THEN CAST(NULL AS BOOLEAN)
       WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
       ELSE FALSE
-    END AS complex_rule_validation_success_flag,
+    END AS complex_rule_validation_success_flag
   FROM
     zero_record
   LEFT JOIN
