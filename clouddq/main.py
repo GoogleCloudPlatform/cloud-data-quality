@@ -38,8 +38,8 @@ from clouddq.log import get_json_logger
 from clouddq.log import get_logger
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import get_bigquery_dq_summary_table_name
-from clouddq.runners.dbt.dbt_utils import get_spark_dq_summary_table_name
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
+from clouddq.runners.dbt.dbt_utils import get_spark_dq_summary_table_name
 from clouddq.utils import assert_not_none_or_empty
 
 
@@ -359,7 +359,6 @@ def main(  # noqa: C901
             if bq_rule_binding in target_rule_binding_ids:
                 bq_target_rule_bindings.append(bq_rule_binding)
 
-
         logger.debug("Target Spark rule bindings")
         spark_rule_bindings = configs_cache.get_spark_rule_bindings()
         spark_target_rule_bindings = []
@@ -389,8 +388,13 @@ def main(  # noqa: C901
             print(spark_dbt_runner.connection_config)
             spark_dbt_path = spark_dbt_runner.get_dbt_path(spark_runner=True)
             print("Spark DBT path is", spark_dbt_path)
-            spark_dbt_rule_binding_views_path = spark_dbt_runner.get_rule_binding_view_path()
-            print("Spark DBT rule binding views  path is", spark_dbt_rule_binding_views_path)
+            spark_dbt_rule_binding_views_path = (
+                spark_dbt_runner.get_rule_binding_view_path()
+            )
+            print(
+                "Spark DBT rule binding views  path is",
+                spark_dbt_rule_binding_views_path,
+            )
             spark_dbt_profiles_dir = spark_dbt_runner.get_dbt_profiles_dir()
             print("Spark DBT profiles directory", spark_dbt_profiles_dir)
             spark_environment_target = spark_dbt_runner.get_dbt_environment_target()
@@ -599,7 +603,8 @@ def main(  # noqa: C901
                 if not spark_runner:
                     invocation_id = get_dbt_invocation_id(bq_dbt_path)
                     logger.info(
-                        f"bq dbt invocation id for current execution " f"is {invocation_id}"
+                        f"bq dbt invocation id for current execution "
+                        f"is {invocation_id}"
                     )
                     partition_date = datetime.now(timezone.utc).date()
                     target_table = TargetTable(invocation_id, bigquery_client)
@@ -628,9 +633,11 @@ def main(  # noqa: C901
                 else:
                     invocation_id = get_dbt_invocation_id(spark_dbt_path)
                     logger.info(
-                        f"spark dbt invocation id for current execution " f"is {invocation_id}"
+                        f"spark dbt invocation id for current execution "
+                        f"is {invocation_id}"
                     )
                     partition_date = datetime.now(timezone.utc).date()
+                    logger.info(f"Partition date is {partition_date}")
                     target_table = TargetTable(invocation_id, bigquery_client)
                     num_rows = target_table.write_to_target_bq_table(
                         partition_date,

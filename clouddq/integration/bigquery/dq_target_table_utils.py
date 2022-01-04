@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import closing
 from datetime import date
 
+import csv
 import json
 import logging
 
 from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator
+from pyhive import hive
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.log import JsonEncoderDatetime
@@ -106,6 +109,72 @@ def load_target_table_from_bigquery(
     return summary_data.total_rows
 
 
+def load_target_table_from_hive(
+    bigquery_client: BigQueryClient,
+    invocation_id: str,
+    partition_date: date,
+    target_bigquery_summary_table: str,
+    dq_summary_table_name: str,
+    summary_to_stdout: bool = False,
+):
+
+    query = f"""SELECT * FROM {dq_summary_table_name} 
+                 WHERE invocation_id='{invocation_id}'
+                 AND DATE(execution_ts)='{partition_date}';"""
+
+    connection = hive.connect(
+        host="localhost", port=10005, database="amandeep_dev_lake_raw"
+    )
+
+    with closing(connection):
+        cursor = connection.cursor()
+        cursor.execute(query)
+        rows = list(cursor.fetchall())
+
+        print(f"We have {len(rows)} rows")
+        print("Printing rows:")
+        for ele in rows:
+            print(ele)
+        headers = [col[0] for col in cursor.description]  # get headers
+        rows.insert(0, tuple(headers))
+        fp = open("/tmp/dq_summary.csv", "w", newline="")
+        myFile = csv.writer(fp, lineterminator="\n")
+        myFile.writerows(rows)
+        fp.close()
+
+    job_config = bigquery.LoadJobConfig(
+        source_format=bigquery.SourceFormat.CSV,
+        autodetect=True,
+        skip_leading_rows=1,
+        write_disposition="WRITE_APPEND",
+    )
+
+    with open("/tmp/dq_summary.csv", "rb") as source_file:
+        job = bigquery_client.get_connection().load_table_from_file(
+            file_obj=source_file,
+            destination=target_bigquery_summary_table,
+            job_config=job_config,
+        )
+    job.result()  # Waits for the job to complete.
+
+    # getting loaded rows
+    query_string_affected = f"""SELECT * FROM `{target_bigquery_summary_table}`
+        WHERE invocation_id='{invocation_id}'
+        and DATE(execution_ts)='{partition_date}'"""
+
+    summary_data = bigquery_client.execute_query(
+        query_string=query_string_affected
+    ).result()
+
+    if summary_to_stdout:
+        log_summary(summary_data)
+    logger.info(
+        f"Loaded {summary_data.total_rows} rows to {target_bigquery_summary_table}."
+    )
+
+    return summary_data.total_rows
+
+
 class TargetTable:
 
     invocation_id: str = None
@@ -126,7 +195,14 @@ class TargetTable:
         try:
 
             if spark_runner:
-                raise NotImplementedError(f"Write to target table for spark is not implemented")
+                num_rows = load_target_table_from_hive(
+                    bigquery_client=self.bigquery_client,
+                    invocation_id=self.invocation_id,
+                    partition_date=partition_date,
+                    target_bigquery_summary_table=target_bigquery_summary_table,
+                    dq_summary_table_name=dq_summary_table_name,
+                    summary_to_stdout=summary_to_stdout,
+                )
             else:
                 num_rows = load_target_table_from_bigquery(
                     bigquery_client=self.bigquery_client,
