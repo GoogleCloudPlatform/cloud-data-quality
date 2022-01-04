@@ -416,8 +416,6 @@ def main(  # noqa: C901
         print("DBT profiles directory", bq_dbt_profiles_dir)
         bq_environment_target = bq_dbt_runner.get_dbt_environment_target()
 
-
-
         # Prepare DQ Summary Table
         bq_dq_summary_table_name = get_bigquery_dq_summary_table_name(
             dbt_path=Path(bq_dbt_path),
@@ -437,22 +435,22 @@ def main(  # noqa: C901
                 environment_target=spark_environment_target,
             )
             logger.info(
-                "Writing Spark  rule_binding views and intermediate "
-                f"summary results to SPark DQ Summary  table: `{spark_dq_summary_table_name}`. "
+                f"Preparing Spark DQ Summary table: `{spark_dq_summary_table_name}`. "
             )
-        dq_summary_table_exists = False
-        if gcp_region_id and not skip_sql_validation:
-            dq_summary_dataset = ".".join(bq_dq_summary_table_name.split(".")[:2])
-            logger.debug(f"dq_summary_dataset: {dq_summary_dataset}")
-            bigquery_client.assert_dataset_is_in_region(
-                dataset=dq_summary_dataset, region=gcp_region_id
-            )
-            dq_summary_table_exists = bigquery_client.is_table_exists(
-                bq_dq_summary_table_name
-            )
-            bigquery_client.assert_required_columns_exist_in_table(
-                bq_dq_summary_table_name
-            )
+        if not spark_runner:
+            dq_summary_table_exists = False
+            if gcp_region_id and not skip_sql_validation:
+                dq_summary_dataset = ".".join(bq_dq_summary_table_name.split(".")[:2])
+                logger.debug(f"dq_summary_dataset: {dq_summary_dataset}")
+                bigquery_client.assert_dataset_is_in_region(
+                    dataset=dq_summary_dataset, region=gcp_region_id
+                )
+                dq_summary_table_exists = bigquery_client.is_table_exists(
+                    bq_dq_summary_table_name
+                )
+                bigquery_client.assert_required_columns_exist_in_table(
+                    bq_dq_summary_table_name
+                )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             logger.info(

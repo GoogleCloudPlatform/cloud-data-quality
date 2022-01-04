@@ -36,7 +36,7 @@
         rows_validated,
         complex_rule_validation_errors_count,
         complex_rule_validation_success_flag,
---        last_modified,
+        last_modified,
         skip_null_count,
         CASE
           WHEN rows_validated = 0 THEN NULL
@@ -79,8 +79,8 @@
     FROM
         {{ ref(rule_binding_id) }}
     GROUP BY
-          1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
-        --1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 (with last modified field)
+--          1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
     {% if loop.nextitem is defined %}
     UNION ALL
     {% endif %}

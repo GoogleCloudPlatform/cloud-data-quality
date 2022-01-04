@@ -111,6 +111,7 @@ all_validation_results AS (
     r.column_value AS column_value,
     (SELECT COUNT(*) FROM data) AS rows_validated,
 --    last_mod.last_modified,
+    CAST(NULL AS STRING) as last_modified,
     '{{ metadata|tojson }}' AS metadata_json_string,
     '{{ configs_hashsum }}' AS configs_hashsum,
 {%- if dataplex_lake %}
@@ -128,7 +129,7 @@ all_validation_results AS (
 {%- else %}
     CAST(NULL AS STRING) AS dataplex_asset_id,
 {%- endif %}
-    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', to_utc_timestamp(to_date(r.execution_ts), 'US/Pacific'), '_', {{ progress_watermark }}) AS dq_run_id,
+    CONCAT('spark', r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', {{ progress_watermark }}) AS dq_run_id,
     {{ progress_watermark|upper }} AS progress_watermark
   FROM
     validation_results r

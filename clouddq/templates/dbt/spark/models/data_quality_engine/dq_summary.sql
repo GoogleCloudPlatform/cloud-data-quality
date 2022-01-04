@@ -16,7 +16,9 @@
   config(
     materialized = 'incremental',
     incremental_strategy = 'append',
-    pre_hook = ["SET hive.exec.dynamic.partition = true;", "SET hive.exec.dynamic.partition.mode = nonstrict;"],
+    pre_hook = ["SET hive.exec.dynamic.partition = true;",
+                "SET hive.exec.dynamic.partition.mode = nonstrict;"
+               ],
     partition_by = ['execution_ts'],
     unique_key = 'dq_run_id',
     cluster_by = ['table_id', 'column_id', 'rule_binding_id', 'rule_id'],
@@ -43,7 +45,7 @@ with dq_summary as (
       rows_validated,
       complex_rule_validation_errors_count,
       complex_rule_validation_success_flag,
---      last_modified,
+      last_modified,
       success_count,
       success_percentage,
       failed_count,
