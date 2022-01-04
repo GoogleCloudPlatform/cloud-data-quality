@@ -118,7 +118,7 @@ def load_target_table_from_hive(
     summary_to_stdout: bool = False,
 ):
 
-    query = f"""SELECT * FROM {dq_summary_table_name} 
+    query = f"""SELECT * FROM {dq_summary_table_name}
                  WHERE invocation_id='{invocation_id}'
                  AND DATE(execution_ts)='{partition_date}';"""
 

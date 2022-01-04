@@ -19,7 +19,9 @@ from typing import Optional
 import logging
 
 from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_BQ_DBT_ENVIRONMENT_TARGET
-from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_SPARK_DBT_ENVIRONMENT_TARGET
+from clouddq.runners.dbt.dbt_connection_configs import (
+    DEFAULT_SPARK_DBT_ENVIRONMENT_TARGET,
+)
 from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig
 from clouddq.runners.dbt.dbt_connection_configs import GcpDbtConnectionConfig
 from clouddq.runners.dbt.dbt_connection_configs import SparkDbtConnectionConfig
