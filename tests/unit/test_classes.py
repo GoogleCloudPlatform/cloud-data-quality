@@ -299,6 +299,23 @@ class TestClasses:
         sql = RuleType.CUSTOM_SQL_EXPR.to_sql(params).substitute(column="column_name")
         assert sql == params["custom_sql_expr"]
 
+    def test_rule_type_custom_parametrized_to_sql(self):
+        """ """
+        params = {
+            "custom_sql_expr": "length(column_name) < $upper_bound and length(column_name) > $lower_bound",
+            "custom_sql_arguments": [
+                "upper_bound",
+                "lower_bound",
+            ],
+            "rule_binding_arguments": {
+                "upper_bound": 10,
+                "lower_bound": 0,
+            }
+        }
+        expected = "length(column_name) < 10 and length(column_name) > 0"
+        sql = RuleType.CUSTOM_SQL_EXPR.to_sql(params).substitute(column="column_name")
+        assert sql == expected
+
     def test_rule_type_not_null(self):
         """ """
         expected = "column_name IS NOT NULL"

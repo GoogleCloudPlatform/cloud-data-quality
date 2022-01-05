@@ -28,5 +28,12 @@ rules:
       custom_sql_expr: |-
         LENGTH( $column ) <= 30
 
+  CUSTOM_SQL_LENGTH_LE_PARAMETRIZED:
+    params:
+      custom_sql_arguments:
+        - upper_bound
+      custom_sql_expr: LENGTH( $column ) <= $upper_bound
+    rule_type: CUSTOM_SQL_EXPR
+
   NOT_BLANK:
     rule_type: NOT_BLANK

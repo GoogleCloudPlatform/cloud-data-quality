@@ -62,6 +62,12 @@
         "rule_sql_expr": "LENGTH( value ) <= 30",
         "rule_type": "CUSTOM_SQL_EXPR"
       },
+      "CUSTOM_SQL_LENGTH_LE_PARAMETRIZED": {"dimension": null,
+                                            "params": {"custom_sql_arguments": ["upper_bound"],
+                                                        "custom_sql_expr": "LENGTH( $column ) <= $upper_bound",
+                                                        "rule_binding_arguments": {"upper_bound": 0}},
+                                            "rule_sql_expr": "LENGTH( value ) <= 0",
+                                            "rule_type": "CUSTOM_SQL_EXPR"},
       "NOT_NULL_SIMPLE": {
         "dimension": null,
         "params": {"rule_binding_arguments": null},
@@ -88,6 +94,7 @@
       "NOT_NULL_SIMPLE",
       "REGEX_VALID_EMAIL",
       "CUSTOM_SQL_LENGTH_LE_30",
+      {"CUSTOM_SQL_LENGTH_LE_PARAMETRIZED": {"upper_bound": 0}},
       "NOT_BLANK"
     ]
   }
