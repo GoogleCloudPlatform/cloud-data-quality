@@ -1,4 +1,4 @@
-entities:
+entities:        
   TAXI_TRIPS:
     source_database: BIGQUERY
     table_name: <table_id>
@@ -41,26 +41,52 @@ entities:
       DROPOFF_LOCATION:
         name: dropoff_location
         data_type: STRING
-    
-
-row_filters:
-  NONE:
-    filter_sql_expr: |-
-      True
-
+ 
 
 rules:
-  TRIP_AMOUNT_NO_CHARGE:
-    rule_type: CUSTOM_SQL_EXPR
+  DISTINCT_VALUES:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+      n_max
     params:
-      custom_sql_expr: |-
-        payment_type = 'No Charge' and ($column is not null or $column > 0)
+      custom_sql_statement: |-
+        select count(distinct $column) as n
+        from data
+        having n > $n_max
+
+  Z_SCORE_OUTLIER:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+      z_limit
+    params:
+      custom_sql_statement: |-
+        with stats as (
+          select avg($column) as mu, stddev($column) as sigma
+          from data
+        ),
+        z_scores as (
+          select $column, mu, sigma, abs(mu - $column)/sigma as z
+          from data
+          join stats on true
+        )
+        select * 
+        from z_scores
+        where z > $z_limit
 
 
 rule_bindings:
-  TRIP_AMOUNT_NO_CHARGE:
-    entity_id: TAXI_TRIPS
-    column_id: TRIP_TOTAL
+  DISTINCT_VALUES:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
-      - TRIP_AMOUNT_NO_CHARGE
+      - DISTINCT_VALUES:
+          n_max: 1000
+
+  OUTLIER_DETECTION:
+    entity_id: TAXI_TRIPS
+    column_id: TIPS
+    row_filter_id: NONE
+    rule_ids:
+      - Z_SCORE_OUTLIER:
+          z_limit: 3

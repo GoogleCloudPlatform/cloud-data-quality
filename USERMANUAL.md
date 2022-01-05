@@ -203,100 +203,6 @@ bq show --view ${CLOUDDQ_BIGQUERY_DATASET}.T3_DQ_1_EMAIL_DUPLICATE
 
 In this section, we will provide some example implementations of data quality checks that are common requirements.
 
-### Aggregate Conditions
-
-#### Unique Values Constraint
-
-Ensures that all values in a column are unique.
-
-```yaml
-rules:
-  UNIQUE:
-    rule_type: CUSTOM_SQL_STATEMENT
-    params:
-      custom_sql_statement: |-
-        select $column from data
-        group by $column
-        having count(*) > 1
-
-rule_bindings:
-  UNIQUENESS:
-    entity_id: TEST_DATA
-    column_id: UNIQUE_KEY
-    row_filter_id: NONE
-    rule_ids:
-      - UNIQUE:
-          dummy: 0 # Due to bug, a CUSTOM_SQL_STATEMENT requires at least one parameter. Will be fixed in the next version.
-```
-
-Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
-
-
-#### Unique Composed Value Constraint (over multiple columns)
-
-Ensures that the combination of values from several columns are all unique across the table.
-
-Note that the row count that is reported for this rule will be the number of elements that are duplicated. If one element is duplicated three times, the row count returned will be 1.
-
-```yaml
-rules:
-  UNIQUE_MULTIPLE:
-    rule_type: CUSTOM_SQL_STATEMENT
-    custom_sql_arguments:
-      - columns
-    params:
-      custom_sql_statement: |-
-        select $columns from data
-        group by $columns
-        having count(*) > 1
-        
-rule_bindings:
-  UNIQUENESS_MULTIPLE:
-    entity_id: TEST_DATA
-    column_id: UNIQUE_KEY
-    row_filter_id: NONE
-    rule_ids:
-      - UNIQUE_MULTIPLE:
-          columns: unique_key, date
-```
-
-Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
-
-
-#### Maximum Gap
-
-Do not allow the gap between two subsequent values to be greater than a threshold.
-
-In this example, “two subsequent values” are two rows that are subsequent when sorting by the column. This works well for example when the column is a message timestamp, and we don’t want the time between messages to be too big. The example also assumes that the column being inspected is of type `TIMESTAMP`, wich requires the function `DATETIME_DIFF` to calculate the interval.
-
-But if we have a value, for example, current, at different points in time, and we don’t want the current to jump more than a threshold value between two measurements, we need to change the order by clause in the custom_sql_statement, to order by the time column.
-
-```yaml
-rules:
-  GAP:
-    rule_type: CUSTOM_SQL_STATEMENT
-    custom_sql_arguments:
-      max_gap
-    params:
-      custom_sql_statement: |-
-        with lagged_data as (
-          select $column, lag($column) over (order by $column ASC) as prev 
-          from data
-        )
-        select $column from lagged_data 
-        where prev is not null and datetime_diff($column, prev, HOUR) > $max_gap
-        
-rule_bindings:
-    entity_id: TEST_DATA
-    column_id: TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - GAP:
-          max_gap: 24
-```
-
-Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
-
 
 ### Referential Integrity
 
@@ -448,41 +354,44 @@ As we specified everything that we need through the above “custom SQL argument
 rules:
   EQUAL_AGGREGATE:
     rule_type: CUSTOM_SQL_STATEMENT
-     custom_sql_arguments:
-key_column_id
-value_column_id
-ref_table_id
-ref_key_column_id
-ref_value_column_id
+    custom_sql_arguments: 
+      key_column_id
+      value_column_id
+      ref_table_id
+      ref_key_column_id
+      ref_value_column_id
     params:
       custom_sql_statement: |-
-      with t1 as (
-        select $key_column_id as key, sum($value_column_id) as total
-        from data
-        group by $key_column_id),
-     t2 as (
-        select $ref_key_column_id as key, sum($ref_value_column_id) as ref_total
-        from $ref_table_id
-        group by $ref_key_column_id
-    )
-   select t1.*, t2.*
-   from t1 
-   outer join t2  using(key)
-   having not total = ref_total 
+        with t1 as (
+          select $key_column_id as key, sum($value_column_id) as total
+          from data
+          group by $key_column_id),
+        t2 as (
+          select $ref_key_column_id as key, sum($ref_value_column_id) as ref_total
+          from <dataset_id>.$ref_table_id
+          group by $ref_key_column_id
+        )
+        select t1.*, t2.*
+        from t1 
+        full outer join t2 using(key)
+        where not total = ref_total 
 
 rule_bindings:
-  EQUAL_COLUMNS:
-    entity_id: TEST_DATA
-    column_id: TX_ID
+  EQUAL_AGGREGATE:
+    entity_id: TAXI_TRIPS
+    column_id: TAXI_ID
     row_filter_id: NONE
     rule_ids:
-      - EQUAL_COLUMNS_UNIQUE_VALUES:
+      - EQUAL_AGGREGATE:
           key_column_id: <key_column_id>
           value_column_id: <value_column_id>
           ref_table_id: <reference_table_id>
-          ref_key_column_id: <ref_key_column_id>
-          ref_value_column_id: <ref_value_column_id>
+          ref_key_column_id: <reference_key_column_id>
+          ref_value_column_id: <reference_value_column_id>
 ```
+
+Full example: [Rule](docs/examples/row_by_row.yaml) and [rule binding](docs/examples/row_by_row.yaml)
+
 
 ### Business Logic
 
@@ -514,39 +423,6 @@ Full example: [Rule](docs/examples/business_logic.yaml) and [rule binding](docs/
 
 Set-based validation tests the properties of sets, such as the total row count, the average, etc.
 
-#### Total row count
-
-The total row count is a set-level validation because it is not violated or met by any row, it is only violated or met by the set as a whole.
-
-This set-based validation will not report the “number of failed rows”, like is done for row-based checks, but only a true/false success result will be returned.
-
-Note that rows where the given column has NULL are counted as well.
-
-```yaml
-rules:
-  ROW_COUNT:
-    rule_type: CUSTOM_SQL_STATEMENT
-     custom_sql_arguments:
-n_max
-    params:
-      custom_sql_statement: |-
-             select 
-                count(
-                    case when $column is null then 0
-                    else $column
-                    end) as n
-            from data
-            where n > n_max
-
-rule_bindings:
-  ROW_COUNT:
-    entity_id: TEST_DATA
-    column_id: TX_ID
-    row_filter_id: NONE
-    rule_ids:
-      - ROW_COUNT:
-          n_max: 1000
-```
 
 #### Number of unique values
 
@@ -558,23 +434,119 @@ Note that this example will not count “NULL” as one of the distinct values.
 rules:
   DISTINCT_VALUES:
     rule_type: CUSTOM_SQL_STATEMENT
-     custom_sql_arguments:
-n_max
+    custom_sql_arguments:
+      n_max
     params:
       custom_sql_statement: |-
-             select count(distinct $column) as n
-            from data
-            where n > n_max
+        select count(distinct $column) as n
+        from data
+        having n > $n_max
 
 rule_bindings:
   DISTINCT_VALUES:
     entity_id: TEST_DATA
-    column_id: TX_ID
+    column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
       - DISTINCT_VALUES:
           n_max: 1000
 ```
+
+Full example: [Rule](docs/examples/set_based.yaml) and [rule binding](docs/examples/set_based.yaml)
+
+
+#### Unique Values Constraint
+
+Ensures that all values in a column are unique.
+
+```yaml
+rules:
+  UNIQUE:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_statement: |-
+        select $column from data
+        group by $column
+        having count(*) > 1
+
+rule_bindings:
+  UNIQUENESS:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - UNIQUE:
+          dummy: 0 # Due to bug, a CUSTOM_SQL_STATEMENT requires at least one parameter. Will be fixed in the next version.
+```
+
+Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
+
+
+#### Unique Composed Value Constraint (over multiple columns)
+
+Ensures that the combination of values from several columns are all unique across the table.
+
+Note that the row count that is reported for this rule will be the number of elements that are duplicated. If one element is duplicated three times, the row count returned will be 1.
+
+```yaml
+rules:
+  UNIQUE_MULTIPLE:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+      - columns
+    params:
+      custom_sql_statement: |-
+        select $columns from data
+        group by $columns
+        having count(*) > 1
+        
+rule_bindings:
+  UNIQUENESS_MULTIPLE:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - UNIQUE_MULTIPLE:
+          columns: unique_key, date
+```
+
+Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
+
+
+
+#### Maximum Gap
+
+Do not allow the gap between two subsequent values to be greater than a threshold.
+
+In this example, “two subsequent values” are two rows that are subsequent when sorting by the column. This works well for example when the column is a message timestamp, and we don’t want the time between messages to be too big. The example also assumes that the column being inspected is of type `TIMESTAMP`, wich requires the function `DATETIME_DIFF` to calculate the interval.
+
+But if we have a value, for example, current, at different points in time, and we don’t want the current to jump more than a threshold value between two measurements, we need to change the order by clause in the custom_sql_statement, to order by the time column.
+
+```yaml
+rules:
+  GAP:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+      max_gap
+    params:
+      custom_sql_statement: |-
+        with lagged_data as (
+          select $column, lag($column) over (order by $column ASC) as prev 
+          from data
+        )
+        select $column from lagged_data 
+        where prev is not null and datetime_diff($column, prev, HOUR) > $max_gap
+        
+rule_bindings:
+    entity_id: TEST_DATA
+    column_id: TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - GAP:
+          max_gap: 24
+```
+
+Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
 
 
 
@@ -588,27 +560,35 @@ The z-score is frequently used to identify outliers.
 rules:
   Z_SCORE_OUTLIER:
     rule_type: CUSTOM_SQL_STATEMENT
-     custom_sql_arguments:
-z_limit
+    custom_sql_arguments:
+      z_limit
     params:
       custom_sql_statement: |-
         with stats as (
-             select avg($column) as mu, stddev($column) as sigma
-            from data)
-     select abs(mu - $column)/$sigma as z
-     from data
-     join stats on true
-     where z > z_limit
+          select avg($column) as mu, stddev($column) as sigma
+          from data
+        ),
+        z_scores as (
+          select $column, mu, sigma, abs(mu - $column)/sigma as z
+          from data
+          join stats on true
+        )
+        select * 
+        from z_scores
+        where z > $z_limit
 
 rule_bindings:
   OUTLIER_DETECTION:
-    entity_id: TEST_DATA
-    column_id: AMOUNT
+    entity_id: TAXI_TRIPS
+    column_id: TIPS
     row_filter_id: NONE
     rule_ids:
       - Z_SCORE_OUTLIER:
           z_limit: 3
 ```
+
+Full example: [Rule](docs/examples/set_based.yaml) and [rule binding](docs/examples/set_based.yaml)
+
 
 ## Deployment Best Practices
 

@@ -43,9 +43,8 @@ Each `rule_binding` must define one of the fields:
 
 If `incremental_time_filter_column_id` is set to a monotonically-increasing timestamp column in an append-only table, `CloudDQ` on each run will only validate rows where the timestamp specified in `incremental_time_filter_column_id` is higher than the timestamp of the last run. This allows CloudDQ to perform incremental validation without scanning the entire table everytime. If `incremental_time_filter_column_id` is not set, `CloudDQ` will validate all rows matching the `row_filter_id` on each run.
 
-Under the `metadata` config, you may add any key-value pairs that will be added as a JSON on each [DQ summary output record](OVERVIEW.md#consuming-clouddq-outputs). For example, this can be the team responsible for a `rule_binding`, the table type (raw, curated, reference). The JSON allows custom aggregations and drilldowns over the summary data.
+Under the `metadata` node, you can add any custom key-value pairs. These are propagated to the [DQ output summary table](OVERVIEW.md#consuming-clouddq-outputs) in JSON format, which allows filtering, or drill-down, in dashboards that show the validation output. This can be useful, for example, to capture the team that is responsible for a given rule binding.
 
-> TODO Rephrase the above
 
 #### Rule Dimensions
 
