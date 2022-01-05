@@ -77,7 +77,6 @@ entities:
     lake_name: amandeep-dev-lake
     zone_name: raw
     resource_type: STORAGE_BUCKET
-    dataset_name: amandeep_dev_lake_raw
     project_name: dataplex-clouddq
     environment_override:
       TEST:
