@@ -17,11 +17,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pprint import pformat
-from typing import List
 
 import logging
 import sqlite3
-import typing
 
 from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
@@ -340,9 +338,9 @@ class DqConfigsCache:
     def get_bq_rule_bindings(self) -> list:
         target_bq_rule_bindings = []
         try:
-            logger.debug(f"Attempting to get bq rule bindings from configs cache")
+            logger.debug("Attempting to get bq rule bindings from configs cache")
             records = self._cache_db.query(
-                f"""select distinct rb.id from rule_bindings as rb
+                """select distinct rb.id from rule_bindings as rb
                     Left Join
                     (select id, resource_type from entities) as entities
                     on
@@ -355,7 +353,7 @@ class DqConfigsCache:
                 target_bq_rule_bindings.append(record.get("id"))
 
         except NotFoundError:
-            error_message = f"Not found 'rule_bindings' in config cache."
+            error_message = "Not found 'rule_bindings' in config cache."
             raise NotFoundError(error_message)
 
         return target_bq_rule_bindings
@@ -363,9 +361,9 @@ class DqConfigsCache:
     def get_spark_rule_bindings(self) -> list:
         target_spark_rule_bindings = []
         try:
-            logger.debug(f"Attempting to get spark rule bindings from configs cache")
+            logger.debug("Attempting to get spark rule bindings from configs cache")
             records = self._cache_db.query(
-                f"""select distinct rb.id from rule_bindings as rb
+                """select distinct rb.id from rule_bindings as rb
                     Left Join
                     (select id, resource_type from entities) as entities
                     on
@@ -378,7 +376,7 @@ class DqConfigsCache:
                 target_spark_rule_bindings.append(record.get("id"))
 
         except NotFoundError:
-            error_message = f"Not found 'rule_bindings' in config cache."
+            error_message = "Not found 'rule_bindings' in config cache."
             raise NotFoundError(error_message)
 
         return target_spark_rule_bindings

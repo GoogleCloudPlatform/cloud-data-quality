@@ -147,10 +147,9 @@ def get_spark_dq_summary_table_name(
 ) -> str:
     dbt_project_path = dbt_path.joinpath("dbt_project.yml")
     if not dbt_project_path.is_file():
-        raise ValueError(
-           f"Not able to find 'dbt_project.yml' config file at "
-           f"input path {dbt_project_path}."
-        )
+        raise ValueError(f"Not able to find 'dbt_project.yml' "
+                         f"config file at input path {dbt_project_path}."
+                         )
     dbt_profiles_key = load_yaml(dbt_project_path, "profile")
     print("dbt_profiles_key", dbt_profiles_key)
     spark_dbt_profiles_config = load_yaml(dbt_profiles_dir / "profiles.yml", dbt_profiles_key)

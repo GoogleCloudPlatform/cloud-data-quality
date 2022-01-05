@@ -123,23 +123,22 @@ def load_target_table_from_hive(
                  AND DATE(execution_ts)='{partition_date}';"""
 
     connection = hive.connect(
-        host="localhost", port=10005, database="amandeep_dev_lake_raw"
+        host="localhost", port=10005, database=dq_summary_table_name.split(".")[0]
     )
 
     with closing(connection):
         cursor = connection.cursor()
         cursor.execute(query)
         rows = list(cursor.fetchall())
-
-        print(f"We have {len(rows)} rows")
-        print("Printing rows:")
+        logger.debug(f"We have {len(rows)} rows")
+        logger.debug("Printing the rows returned from query execution:")
         for ele in rows:
-            print(ele)
+            logger.debug(ele)
         headers = [col[0] for col in cursor.description]  # get headers
         rows.insert(0, tuple(headers))
         fp = open("/tmp/dq_summary.csv", "w", newline="")
-        myFile = csv.writer(fp, lineterminator="\n")
-        myFile.writerows(rows)
+        file_obj = csv.writer(fp, lineterminator="\n")
+        file_obj.writerows(rows)
         fp.close()
 
     job_config = bigquery.LoadJobConfig(

@@ -269,7 +269,7 @@ class DbtRunner:
                     dbt_path = dbt_path / "spark"
             else:
                 if dbt_path.name != "bigquery":
-                         dbt_path = dbt_path / "bigquery"
+                    dbt_path = dbt_path / "bigquery"
 
         if not dbt_path.is_dir():
             if create_paths_if_not_exists:
@@ -291,7 +291,7 @@ class DbtRunner:
             if spark_runner:
                 write_templated_file_to_path(dbt_project_path, DBT_SPARK_TEMPLATED_FILE_LOCATIONS)
             else:
-                 write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
+                write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
         logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
 
     def _prepare_dbt_main_path(self, spark_runner: bool) -> None:
