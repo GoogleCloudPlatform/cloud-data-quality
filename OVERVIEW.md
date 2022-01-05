@@ -152,28 +152,29 @@ This rule type is intended for set-level validation. See the paragraph on the ro
 
 ```yaml
 rules:
-  VALUE_RANGE:
+  ROW_COUNT:
     rule_type: CUSTOM_SQL_STATEMENT
-    custom_sql_arguments:
-      - lower
-      - upper
+     custom_sql_arguments:
+n_max
     params:
       custom_sql_statement: |-
-        select * from data
-        where $column < $lower or $column > $upper
+             select 
+                count(
+                    case when $column is null then 0
+                    else $column
+                    end) as n
+            from data
+            where n > n_max
 
 rule_bindings:
-  LOCATION_LAT:
+  ROW_COUNT:
     entity_id: TEST_DATA
-    column_id: LATIITUDE
+    column_id: TX_ID
     row_filter_id: NONE
     rule_ids:
-      - VALUE_RANGE:
-          lower: 30.1859265
-          upper: 30.4188298
+      - ROW_COUNT:
+          n_max: 1000
 ```
-
-> TODO Complete example, change the example for SQL_STATEMENT to a set-level check, change this example to SQL_EXPR and move it to a different section
 
 
 ### CloudDQ Execution

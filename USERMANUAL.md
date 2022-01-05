@@ -488,56 +488,27 @@ rule_bindings:
 
 #### Row-level business logic
 
-Sometimes there is business logic that can be validated at the row-level. For example, a transaction with status “completed” should have an amount greater or equal than zero.
+Sometimes there is business logic that can be validated at the row-level. For example, a transaction with payment  “completed” should have an amount greater or equal than zero.
 
 ```yaml
 rules:
-  COMPLETED_TRANSACTION_AMOUNT:
+  TRIP_AMOUNT_NO_CHARGE:
     rule_type: CUSTOM_SQL_EXPR
     params:
       custom_sql_expr: |-
-        ($column is null or $column < 0) and status = ‘completed’
+        payment_type = 'No Charge' and ($column is not null or $column > 0)
 
 rule_bindings:
-  COMPLETED_TRANSACTION_AMOUNT:
-    entity_id: TEST_DATA
-    column_id: AMOUNT
+  TRIP_AMOUNT_NO_CHARGE:
+    entity_id: TAXI_TRIPS
+    column_id: TRIP_TOTAL
     row_filter_id: NONE
     rule_ids:
-      - COMPLETED_TRANSACTION_AMOUNT
+      - TRIP_AMOUNT_NO_CHARGE
 ```
 
-#### Outliers by z-score
+Full example: [Rule](docs/examples/business_logic.yaml) and [rule binding](docs/examples/business_logic.yaml)
 
-The z-score is the deviation from the mean in units of the standard deviation. If the values in a column have a mean of 10 and  a standard deviation of 2, then a value of 16 in this column has a z-score of (10-16)/2 = 3.
-
-The z-score is frequently used to identify outliers.
-
-```yaml
-rules:
-  Z_SCORE_OUTLIER:
-    rule_type: CUSTOM_SQL_STATEMENT
-     custom_sql_arguments:
-z_limit
-    params:
-      custom_sql_statement: |-
-        with stats as (
-             select avg($column) as mu, stddev($column) as sigma
-            from data)
-     select abs(mu - $column)/$sigma as z
-     from data
-     join stats on true
-     where z > z_limit
-
-rule_bindings:
-  OUTLIER_DETECTION:
-    entity_id: TEST_DATA
-    column_id: AMOUNT
-    row_filter_id: NONE
-    rule_ids:
-      - Z_SCORE_OUTLIER:
-          z_limit: 3
-```
 
 ### Set-based Validation
 
@@ -605,6 +576,39 @@ rule_bindings:
           n_max: 1000
 ```
 
+
+
+#### Outliers by z-score
+
+The z-score is the deviation from the mean in units of the standard deviation. If the values in a column have a mean of 10 and  a standard deviation of 2, then a value of 16 in this column has a z-score of (10-16)/2 = 3.
+
+The z-score is frequently used to identify outliers.
+
+```yaml
+rules:
+  Z_SCORE_OUTLIER:
+    rule_type: CUSTOM_SQL_STATEMENT
+     custom_sql_arguments:
+z_limit
+    params:
+      custom_sql_statement: |-
+        with stats as (
+             select avg($column) as mu, stddev($column) as sigma
+            from data)
+     select abs(mu - $column)/$sigma as z
+     from data
+     join stats on true
+     where z > z_limit
+
+rule_bindings:
+  OUTLIER_DETECTION:
+    entity_id: TEST_DATA
+    column_id: AMOUNT
+    row_filter_id: NONE
+    rule_ids:
+      - Z_SCORE_OUTLIER:
+          z_limit: 3
+```
 
 ## Deployment Best Practices
 
