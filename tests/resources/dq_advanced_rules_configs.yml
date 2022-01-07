@@ -243,6 +243,74 @@ entities:
         data_type: INTEGER
         description: |-
           Record item
+  CONFORMITY_CHECK_NOT_OK:
+    source_database: BIGQUERY
+    table_name: conformity_check_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      DATA:
+        name: data
+        data_type: STRING
+        description: |-
+          email address
+  CONFORMITY_CHECK_OK:
+    source_database: BIGQUERY
+    table_name: conformity_check_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      DATA:
+        name: data
+        data_type: STRING
+        description: |-
+          email address
+  COMPLETNESS_CHECK_NOT_OK:
+    source_database: BIGQUERY
+    table_name: completness_check_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      DATA:
+        name: data
+        data_type: STRING
+        description: |-
+          email address
+  COMPLETNESS_CHECK_OK:
+    source_database: BIGQUERY
+    table_name: completness_check_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      DATA:
+        name: data
+        data_type: STRING
+        description: |-
+          email address
 rule_bindings:
   T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_FAIL:
     entity_id: INGESTION_TABLE_DAY_LEVEL
@@ -261,7 +329,7 @@ rule_bindings:
     rule_ids:
       - NO_DELAYED_INGESTION_DAY_LEVEL:
           ingestion_date_day: date_of_day
-          elapsed_time_days: 20
+          elapsed_time_days: 40
     metadata:
       brand: one
   T2_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_SUCCEED:
@@ -524,6 +592,62 @@ rule_bindings:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
     metadata:
       brand: one
+  T8_CONFORMITY_CHECK_SHOULD_FAIL:
+    entity_id: CONFORMITY_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_INVALID_EMAIL
+    metadata:
+      brand: one
+  T8_CONFORMITY_CHECK_SHOULD_SUCCEED:
+    entity_id: CONFORMITY_CHECK_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_INVALID_EMAIL
+    metadata:
+      brand: one
+  T9_COMPLETNESS_CHECK_SHOULD_FAIL:
+    entity_id: COMPLETNESS_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ISSUES_WITH_COMPLETNESS:
+          condition: data.data IS NOT NULL
+          threshold_pct: 100
+    metadata:
+      brand: one
+  T9_COMPLETNESS_CHECK_SHOULD_FAIL2:
+    entity_id: COMPLETNESS_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ISSUES_WITH_COMPLETNESS:
+          condition: data.data IS NOT NULL
+          threshold_pct: 98
+    metadata:
+      brand: one
+  T9_COMPLETNESS_CHECK_SHOULD_SUCCEED:
+    entity_id: COMPLETNESS_CHECK_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ISSUES_WITH_COMPLETNESS:
+          condition: data.data IS NOT NULL
+          threshold_pct: 100
+    metadata:
+      brand: one
+  T9_COMPLETNESS_CHECK_SHOULD_SUCCEED2:
+    entity_id: COMPLETNESS_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ISSUES_WITH_COMPLETNESS:
+          condition: data.data IS NOT NULL
+          threshold_pct: 97
+    metadata:
+      brand: one
 rules:
   NO_DELAYED_INGESTION_DAY_LEVEL:
     rule_type: CUSTOM_SQL_STATEMENT
@@ -655,3 +779,21 @@ rules:
     params:
       custom_sql_expr: |-
         exists (select 1 from unnest($column) t inner join clouddq_integration_tests_input_data.reference_data_subquery2 r on t.iq = r.id and t.type = r.type and t.qyty = r.data)
+  NO_INVALID_EMAIL:
+    rule_type: REGEX
+    params:
+      pattern: |-
+        ^[\\w\\.-]+@([\\w-]+\\.)+[\\w-]{2,4}$
+  NO_ISSUES_WITH_COMPLETNESS:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_arguments:
+        - threshold_pct
+        - condition
+      custom_sql_statement: |-
+        select *
+        from
+          (select sum(case when $condition then 1 else 0 end) * 100 / count(*) as pct 
+          from data
+          )
+        where  pct < $threshold_pct
