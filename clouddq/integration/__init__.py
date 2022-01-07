@@ -13,4 +13,4 @@
 # limitations under the License.
 
 
-USER_AGENT_TAG = "Product_Dataplex_CloudDQ/1.0. (GPN:Dataplex)"
+USER_AGENT_TAG = "Product_Dataplex_CloudDQ/1.0 (GPN:Dataplex)"
