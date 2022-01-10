@@ -14,7 +14,7 @@
 
 {{
   config(
-    materialized = 'incremental',
+    materialized = 'table',
     incremental_strategy = 'append',
     pre_hook = ["SET hive.exec.dynamic.partition = true;",
                 "SET hive.exec.dynamic.partition.mode = nonstrict;"

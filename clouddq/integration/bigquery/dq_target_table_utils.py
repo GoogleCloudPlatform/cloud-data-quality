@@ -118,9 +118,8 @@ def load_target_table_from_hive(
     summary_to_stdout: bool = False,
 ):
 
-    query = f"""SELECT * FROM {dq_summary_table_name}
-                 WHERE invocation_id='{invocation_id}'
-                 AND DATE(execution_ts)='{partition_date}';"""
+    query = f"""SELECT * FROM {dq_summary_table_name} 
+     WHERE invocation_id='{invocation_id}' AND DATE(execution_ts)='{partition_date}';"""
 
     connection = hive.connect(
         host="localhost", port=10005, database=dq_summary_table_name.split(".")[0]
@@ -134,6 +133,7 @@ def load_target_table_from_hive(
         logger.debug("Printing the rows returned from query execution:")
         for ele in rows:
             logger.debug(ele)
+        logger.debug("export completed")
         headers = [col[0] for col in cursor.description]  # get headers
         rows.insert(0, tuple(headers))
         fp = open("/tmp/dq_summary.csv", "w", newline="")
@@ -142,8 +142,34 @@ def load_target_table_from_hive(
         fp.close()
 
     job_config = bigquery.LoadJobConfig(
+        schema=[
+            bigquery.SchemaField("invocation_id", "STRING"),
+            bigquery.SchemaField("rule_binding_id", "STRING"),
+            bigquery.SchemaField("rule_id", "STRING"),
+            bigquery.SchemaField("table_id", "STRING"),
+            bigquery.SchemaField("column_id", "STRING"),
+            bigquery.SchemaField("dimension", "STRING"),
+            bigquery.SchemaField("metadata_json_string", "STRING"),
+            bigquery.SchemaField("configs_hashsum", "STRING"),
+            bigquery.SchemaField("dataplex_lake", "STRING"),
+            bigquery.SchemaField("dataplex_zone", "STRING"),
+            bigquery.SchemaField("dataplex_asset_id", "STRING"),
+            bigquery.SchemaField("dq_run_id", "STRING"),
+            bigquery.SchemaField("progress_watermark", "BOOLEAN"),
+            bigquery.SchemaField("rows_validated", "INTEGER"),
+            bigquery.SchemaField("complex_rule_validation_errors_count", "INTEGER"),
+            bigquery.SchemaField("complex_rule_validation_success_flag", "BOOLEAN"),
+            bigquery.SchemaField("last_modified", "TIMESTAMP"),
+            bigquery.SchemaField("success_count", "INTEGER"),
+            bigquery.SchemaField("success_percentage", "FLOAT"),
+            bigquery.SchemaField("failed_count", "INTEGER"),
+            bigquery.SchemaField("failed_percentage", "FLOAT"),
+            bigquery.SchemaField("null_count", "INTEGER"),
+            bigquery.SchemaField("null_percentage", "FLOAT"),
+            bigquery.SchemaField("execution_ts", "TIMESTAMP"),
+        ],
         source_format=bigquery.SourceFormat.CSV,
-        autodetect=True,
+        autodetect=False,
         skip_leading_rows=1,
         write_disposition="WRITE_APPEND",
     )

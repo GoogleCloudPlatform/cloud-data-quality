@@ -14,7 +14,7 @@
 
 {{
   config(
-    materialized = 'ephemeral',
+    materialized = 'table',
   )
 }}
 {%- for rule_binding_id in var('target_rule_binding_ids') -%}
@@ -79,7 +79,6 @@
     FROM
         {{ ref(rule_binding_id) }}
     GROUP BY
---          1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
         1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
     {% if loop.nextitem is defined %}
     UNION ALL
