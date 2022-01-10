@@ -34,7 +34,7 @@ fix_tmp_path() {
     exit 1
   fi
   if [[ $(grep -c "f'dbt-{dbt_version}'" "${TEMP_PATH}"/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py) == 1 ]]; then
-    sed -i "s/f'dbt-{dbt_version}'/'Product_Dataplex\/1.0 (GPN:Dataplex_CloudDQ)'/g" "${TEMP_PATH}"/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py
+    sed -i "s/f'dbt-{dbt_version}'/'Product_Dataplex_CloudDQ\/1.0 (GPN:Dataplex)'/g" "${TEMP_PATH}"/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py
   else
     err "Failed to file ${TEMP_PATH}/runfiles/py_deps/pypi__dbt_bigquery/dbt/adapters/bigquery/connections.py. Expected string to replace not found: f'dbt-{dbt_version}'"
     exit 1
