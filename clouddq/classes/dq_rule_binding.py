@@ -240,7 +240,9 @@ class DqRuleBinding:
                 arguments = None
             rule_config = configs_cache.get_rule_id(rule_id.upper())
             rule_config.update_rule_binding_arguments(arguments)
-            rule_config.resource_type = configs_cache.get_table_entity_id(self.entity_id).resource_type
+            rule_config.resource_type = configs_cache.get_table_entity_id(
+                self.entity_id
+            ).resource_type
             self.resolve_rule_sql_expr(rule_config)
             resolved_rule_config_list.append(rule_config)
         assert_not_none_or_empty(
