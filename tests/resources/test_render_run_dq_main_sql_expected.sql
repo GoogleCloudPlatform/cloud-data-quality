@@ -129,6 +129,33 @@ SELECT
     SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     'T2_DQ_1_EMAIL' AS rule_binding_id,
+    'CUSTOM_SQL_LENGTH_LE_PARAMETRIZED' AS rule_id,
+    
+    '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
+    'value' AS column_id,
+    data.value AS column_value,
+    CAST(NULL AS STRING) AS dimension,
+    CASE
+
+      WHEN value IS NULL THEN CAST(NULL AS BOOLEAN)
+      WHEN LENGTH( value ) <= 0 THEN TRUE
+
+    ELSE
+    FALSE
+    END AS simple_rule_row_is_valid,
+    FALSE AS skip_null_count,
+    CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
+    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
+    FROM
+      zero_record
+    LEFT JOIN
+      data
+    ON
+      zero_record.rule_binding_id = data.rule_binding_id
+    UNION ALL
+    SELECT
+    CURRENT_TIMESTAMP() AS execution_ts,
+    'T2_DQ_1_EMAIL' AS rule_binding_id,
     'NOT_BLANK' AS rule_id,
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
