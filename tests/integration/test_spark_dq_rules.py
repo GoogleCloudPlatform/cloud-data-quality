@@ -32,7 +32,7 @@ from clouddq.utils import working_directory
 
 logger = logging.getLogger(__name__)
 
-class TestDqRules:
+class TestSparkDqRules:
 
     @pytest.fixture(scope="session")
     def client(self):
