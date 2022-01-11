@@ -60,7 +60,7 @@
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     CAST(NULL AS STRING) AS column_id,
-    NULL AS column_value,
+    CAST(NULL AS STRING)  AS column_value,
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
