@@ -6,7 +6,7 @@
 
 ## Concepts
 
-* Andrew: Reuse and update "Introductions" section from [top level README](readme.md)
+> TODO For this section, reuse and update "Introductions" section from [top level README](readme.md)
 
 
 ### Built-in Rule Types
@@ -25,18 +25,16 @@ Of these rules, the first four support row-level validation and the last one sup
 
 Row-level validation checks attributes of individual rows or elements of the data: For example whether the value is in a given range, or whether all fields are internally consistent. There are also validation checks that cannot be performed by just inspecting one row or element. We call this "set-level validation". Possibly the simplest example of set-level validation is a check on the total row count.
 
-An important difference between row-level and set-level validation is that in the case of set-level validation, in general, one cannot say which rows cause a check to fail. Also, in some cases it's not possible to say how many rows fail the check. With row-level validation on the other hand, we can connect each validation error to a specific row. This difference in reflected in the `CloudDQ` output. For row-level validation, `CloudDQ` reports the number of rows validated, how many were successful, how many produced errors and how many were null. For set-level checks, `CloudDQ` only provides how many rows the check was run on, how many errors were generated, plus an overall success or failure flag.
+An important difference between row-level and set-level validation is that in the case of set-level validation, in general, one cannot say which rows cause a check to fail. Also, in some cases it's not possible to say how many rows fail the check. With row-level validation on the other hand, we can connect each validation error to a specific row. This difference is reflected in the `CloudDQ` output. For row-level validation, `CloudDQ` reports the number of rows validated, how many were successful, how many produced errors and how many were null. For set-level checks, `CloudDQ` only provides how many rows the check was run on, how many errors were generated, plus an overall success or failure flag.
 
 The number of errors from set-level validation may or may not have a relation to a number of rows, depending on how the check is coded. For example, for a check on uniqueness, the number of errors may equal the number of duplicated rows, the number of elements that are duplicated, or something else entirely.
 
-As mentioned, of the built-in rule types, only `CUSTOM_SQL_STATEMENT` is intended for set-level validation. That means that any check implemented using this rule type will produce output that can be expected from set-level validation. This is independent of the nature of the check -- it's certainly feasible to implement row-level checks using rules of the `CUSTOM_SQL_STATEMENT` type.
+Of the built-in rule types, `CUSTOM_SQL_STATEMENT` is intended for set-level validation. That means that any check implemented using this rule type will produce output that can be expected from set-level validation.
 
 
 #### Rule Type `NOT_NULL`
 
 Violated if any row in the given column contains null.
-
-The rule is applied to a column in a table (an “entity”)  through a rule binding.
 
 ```yaml
 rules:
@@ -52,14 +50,12 @@ rule_bindings:
       - NOT_NULL_SIMPLE
 ```
 
-> Complete example TODO
+Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-1-bindings.yml)
 
 
 #### Rule Type `NOT_BLANK`
 
 Violated if any row in the given column contains null.
-
-The rule is applied to a column in a table (an “entity”)  through a rule binding.
  
 ```yaml
 rules:
@@ -75,7 +71,7 @@ rule_bindings:
       - NOT_NULL_SIMPLE
 ```
 
-> Complete example TODO
+Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-2-bindings.yml)
 
 
 #### Rule Type `REGEX`
@@ -83,8 +79,6 @@ rule_bindings:
 For `STRING` columns. This rule type allows the specification of a Python regular expression to define allowed patterns.
 
 The example shows a check for a valid email address.
-
-The rule is applied to a column in a table through a rule binding.
 
 ```yaml
 rules:
@@ -104,11 +98,11 @@ rule_bindings:
       - VALID_EMAIL
 ```
 
-> Complete example TODO
+Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-2-bindings.yml)
 
 #### Rule Type `CUSTOM_SQL_EXPRESSION`
 
-This rule type allows the specification of an SQL expression (as in a WHERE clause). The validation fails when the expression returns `TRUE`.
+This rule type allows the specification of an SQL expression returning a boolean. The validation fails when the expression returns `TRUE`.
 
 This rule, contrary to `CUSTOM_SQL_STATEMENT` supports row-level validation (see preceding section on the differences between row-level and
 set-leve validation). This implies it has access to the row-level context of the table defined as "entity", meaning that all columns of the
@@ -116,7 +110,7 @@ same row can be accessed.
 
 The below example of this rule performs a SELECT on a reference table to compare to a list of known currencies.
 
-The SQL condition references a parameter `$column`, which is set through the rule binding. At present, this is all the parametrization that
+The SQL condition can be parametrized using `custom_sql_parameters` (see the `CUSTOM_SQL_LENGTH_LE_PARAMETRIZED` [example configuration](configs/)) `$column`, which is set through the rule binding. At present, this is all the parametrization that
 rules of this type allow.
 
 ```yaml
@@ -137,7 +131,7 @@ rule_bindings:
       - CORRECT_CURRENCY_CODE
 ```
 
-> Complete example TODO
+Example rules can be found in [base-rules.yml](configs/rules/base-rules.yml).
 
 
 #### Rule Type `CUSTOM_SQL_STATEMENT`
@@ -154,17 +148,17 @@ This rule type is intended for set-level validation. See the paragraph on the ro
 rules:
   ROW_COUNT:
     rule_type: CUSTOM_SQL_STATEMENT
-     custom_sql_arguments:
-n_max
+    custom_sql_arguments:
+      n_max
     params:
       custom_sql_statement: |-
-             select 
-                count(
-                    case when $column is null then 0
-                    else $column
-                    end) as n
-            from data
-            where n > n_max
+        select 
+          count(
+              case when $column is null then 0
+              else $column
+              end) as n
+        from data
+        where n > n_max
 
 rule_bindings:
   ROW_COUNT:
@@ -176,10 +170,12 @@ rule_bindings:
           n_max: 1000
 ```
 
+Complete example: [Rule](configs/rules/complex-rules.yml) and [rule binding](configs/rule_bindings/team-3-bindings.yml)
+
 
 ### CloudDQ Execution
 
-TODO: Explains the mechanics of how rule_bindings are ultimately applied to the data (info about rule_bindings translated to sql and pushed down to bq etc.)
+> TODO: Explains the mechanics of how rule_bindings are ultimately applied to the data (info about rule_bindings translated to sql and pushed down to bq etc.)
 
 From original README:
 
