@@ -348,9 +348,10 @@ class DqConfigsCache:
                     where
                     entities.resource_type='BIGQUERY';"""
             )
-            for record in records:
-                logger.debug(record)
-                target_bq_rule_bindings.append(record.get("id"))
+            if records:
+                for record in records:
+                    logger.debug(record)
+                    target_bq_rule_bindings.append(record.get("id"))
 
         except NotFoundError:
             error_message = "Not found 'rule_bindings' in config cache."
@@ -371,9 +372,10 @@ class DqConfigsCache:
                     where
                     entities.resource_type='STORAGE_BUCKET';"""
             )
-            for record in records:
-                logger.debug(record)
-                target_spark_rule_bindings.append(record.get("id"))
+            if records:
+                for record in records:
+                    logger.debug(record)
+                    target_spark_rule_bindings.append(record.get("id"))
 
         except NotFoundError:
             error_message = "Not found 'rule_bindings' in config cache."
