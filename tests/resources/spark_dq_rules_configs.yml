@@ -1,0 +1,135 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+metadata_registry_defaults:
+  dataplex:
+    projects: <my-gcp-project-id>
+    locations: <my-gcp-dataplex-region-id>
+    lakes: <my-gcp-dataplex-lake-id>
+    zones: <my-gcp-dataplex-zone-id>
+
+row_filters:
+  DATA_TYPE_EMAIL:
+    filter_sql_expr: contact_type = 'email'
+  NONE:
+    filter_sql_expr: 'True'
+  NO_ROWS:
+    filter_sql_expr: 'FALSE'
+
+TEST_TABLE:
+  source_database: DATAPLEX
+  table_name: asset_bucket
+  lake_name: <my-gcp-dataplex-lake-id>
+  zone_name: <my-gcp-dataplex-zone-id>
+  resource_type: STORAGE_BUCKET
+  project_name: <my-gcp-project-id>
+  environment_override:
+    TEST:
+      environment: test
+      override:
+        table_name: <table_name_2>
+        lake_name: <my_gcp_dataplex_lake_id_2>
+        zone_name: <my_gcp_dataplex_zone_id_2>
+        resource_type: <resource_type_2>
+        project_name: <my_gcp_project_id_2>
+  columns:
+    ROW_ID:
+      name: row_id
+      data_type: STRING
+      description: |-
+        unique identifying id
+    CONTACT_TYPE:
+      name: contact_type
+      data_type: STRING
+      description: |-
+        contact detail type
+    VALUE:
+      name: value
+      data_type: STRING
+      description: |-
+        contact detail
+    TS:
+      name: ts
+      data_type: DATETIME
+      description: |-
+        updated timestamp
+
+rule_bindings:
+  T1_DQ_1_VALUE_NOT_NULL:
+    entity_id: TEST_TABLE
+    column_id: VALUE
+    row_filter_id: NONE
+    rule_ids:
+      - NOT_NULL_SIMPLE
+  T2_DQ_1_EMAIL:
+    entity_id: TEST_TABLE
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - NOT_NULL_SIMPLE
+      - REGEX_VALID_EMAIL
+      - CUSTOM_SQL_LENGTH_LE_30
+      - NOT_BLANK
+    metadata:
+      brand: one
+  T3_DQ_1_EMAIL_DUPLICATE_NONE:
+    entity_id: TEST_TABLE
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: "contact_type,value"
+    metadata:
+      brand: one
+  UNIQUENESS:
+    entity_id: TEST_TABLE
+    column_id: ROW_ID
+    row_filter_id: NONE
+    rule_ids:
+      - UNIQUE
+
+rules:
+
+  CUSTOM_SQL_LENGTH_LE_30:
+    params:
+      custom_sql_expr: LENGTH( $column ) <= 30
+    rule_type: CUSTOM_SQL_EXPR
+
+  NOT_BLANK:
+    rule_type: NOT_BLANK
+
+  NOT_NULL_SIMPLE:
+    rule_type: NOT_NULL
+
+  NO_DUPLICATES_IN_COLUMN_GROUPS:
+    params:
+      custom_sql_arguments:
+      - column_names
+      custom_sql_statement: "select a.*\nfrom data a\ninner join (\n  select\n   \
+        \ $column_names\n  from data\n  group by $column_names\n  having count(*)\
+        \ > 1\n) duplicates\nusing ($column_names)"
+    rule_type: CUSTOM_SQL_STATEMENT
+
+  REGEX_VALID_EMAIL:
+    params:
+      pattern: ^[^@]+[@]{1}[^@]+$
+    rule_type: REGEX
+
+  UNIQUE:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_statement: |-
+        select $column from data
+        group by $column
+        having count(*) > 1
