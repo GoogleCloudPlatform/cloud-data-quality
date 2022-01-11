@@ -118,7 +118,7 @@ class TestDqRules:
                     gcp_service_account_key_path=gcp_sa_key,
                     gcp_impersonation_credentials=gcp_impersonation_credentials,
                 )
-                dbt_path = dbt_runner.get_dbt_path()
+                dbt_path = dbt_runner.get_dbt_path(spark_runner=False)
                 invocation_id = get_dbt_invocation_id(dbt_path)
                 logger.info(f"Dbt invocation id is: {invocation_id}")
                 # Test the DQ expected results
