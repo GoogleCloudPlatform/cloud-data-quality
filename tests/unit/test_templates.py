@@ -84,6 +84,9 @@ class TestJinjaTemplates:
         for key, value in test_rules_collection.items():
             if value["rule_type"] == RuleType.CUSTOM_SQL_STATEMENT:
                 continue
+            if value["rule_type"] == RuleType.CUSTOM_SQL_EXPR and \
+                value.get("params", {}).get("custom_sql_arguments", None):
+                continue
             rule = DqRule.from_dict(rule_id=key, kwargs=value)
             assert key in rule.to_dict()
             value.update({"rule_sql_expr": rule.resolve_sql_expr()})
