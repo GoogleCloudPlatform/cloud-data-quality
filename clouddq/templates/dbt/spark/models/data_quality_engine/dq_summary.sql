@@ -19,7 +19,6 @@
     pre_hook = ["SET hive.exec.dynamic.partition = true;",
                 "SET hive.exec.dynamic.partition.mode = nonstrict;"
                ],
-    partition_by = ['execution_ts'],
     unique_key = 'dq_run_id',
     cluster_by = ['table_id', 'column_id', 'rule_binding_id', 'rule_id'],
   )
