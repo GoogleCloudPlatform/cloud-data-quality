@@ -140,11 +140,11 @@ Example rules can be found in [base-rules.yml](configs/rules/base-rules.yml).
 
 #### Rule Type `CUSTOM_SQL_STATEMENT`
 
-The “custom SQL statement” allows you to specify a complete SQL statement. Any rows selected by the statement are considered violations of the rule.
+The “custom SQL statement” allows you to specify set-level validation through a custom SQL statement returning a dataset (i.e. `SELECT ... FROM ...`). The statement should indicate a violation of the rule through returning a non-empty set of records.
 
 The SQL statement references the source data as “data”. The dataset is defined through the entity_id field in the rule binding.
 
-The SQL statement can also be parametrized using custom SQL arguments as shown in the example. The example provides a way to check the range of values in a column. 
+The SQL statement can also be parametrized using an implicit parameter `column` and custom SQL arguments, as shown in the example below. The rule binding sets the value of the `column` parameter through the `column_id` field and the custom parameters are set explicitly by listing them on each rule reference.
 
 This rule type is intended for set-level validation. See the paragraph on the row-level and set-level validation at the start of this section for more information.
 
