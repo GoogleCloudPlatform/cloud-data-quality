@@ -179,7 +179,7 @@ Complete example: [Rule](configs/rules/complex-rules.yml) and [rule binding](con
 
 ### CloudDQ Execution
 
-On each run, CloudDQ converts each `rule_binding` into a SQL script, create a corresponding [view](https://cloud.google.com/bigquery/docs/views) in BigQuery, and aggregate the validation results summary per `rule_binding` and `rule` for each CloudDQ run into a DQ Summary Statistics table in a BigQuery table specified in the CLI argument `--target_bigquery_summary_table`.
+On each run, CloudDQ converts each `rule_binding` into a SQL script, which creates a corresponding [view](https://cloud.google.com/bigquery/docs/views) in BigQuery, and aggregates the validation results summary per `rule_binding` and `rule` for each CloudDQ run into a DQ Summary Statistics table in a BigQuery table specified in the CLI argument `--target_bigquery_summary_table`.
 
 
 
