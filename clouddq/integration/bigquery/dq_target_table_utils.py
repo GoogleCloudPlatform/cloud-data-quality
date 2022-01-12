@@ -144,6 +144,7 @@ def load_target_table_from_hive(
     job_config = bigquery.LoadJobConfig(
         schema=[
             bigquery.SchemaField("invocation_id", "STRING"),
+            bigquery.SchemaField("execution_ts", "TIMESTAMP"),
             bigquery.SchemaField("rule_binding_id", "STRING"),
             bigquery.SchemaField("rule_id", "STRING"),
             bigquery.SchemaField("table_id", "STRING"),
@@ -166,7 +167,6 @@ def load_target_table_from_hive(
             bigquery.SchemaField("failed_percentage", "FLOAT"),
             bigquery.SchemaField("null_count", "INTEGER"),
             bigquery.SchemaField("null_percentage", "FLOAT"),
-            bigquery.SchemaField("execution_ts", "TIMESTAMP"),
         ],
         source_format=bigquery.SourceFormat.CSV,
         autodetect=False,
