@@ -30,7 +30,7 @@ row_filters:
 entities:
   TEST_TABLE:
     source_database: DATAPLEX
-    table_name: asset_bucket
+    table_name: clouddq_asset_bucket
     lake_name: <my-gcp-dataplex-lake-id>
     zone_name: <my-gcp-dataplex-zone-id>
     resource_type: STORAGE_BUCKET

@@ -73,9 +73,9 @@ entities:
 
   TEST_TABLE_DP:
     source_database: DATAPLEX
-    table_name: asset_bucket
-    lake_name: amandeep-dev-lake
-    zone_name: raw
+    table_name: clouddq_asset_bucket
+    lake_name: clouddq
+    zone_name: dq_raw
     resource_type: STORAGE_BUCKET
     project_name: dataplex-clouddq
     environment_override:

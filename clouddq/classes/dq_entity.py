@@ -36,7 +36,7 @@ ENTITY_CUSTOM_CONFIG_MAPPING = {
     },
     "DATAPLEX": {
         "table_name": "{table_name}",
-        "database_name": "{lake_name}_{zone_name}",
+        "database_name": "{zone_name}",
         "instance_name": "{project_name}",
         "resource_type": "{resource_type}",
     },
