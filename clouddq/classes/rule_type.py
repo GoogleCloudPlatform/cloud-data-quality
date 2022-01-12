@@ -114,7 +114,7 @@ def to_sql_custom_sql_statement(params: dict) -> Template:
                     f"custom_sql_arguments '${argument}' not found in "
                     f"custom_sql_statement:\n {custom_sql_statement}"
                 )
-            if not params.get("rule_binding_arguments", {}).get(argument, None):
+            if params.get("rule_binding_arguments", {}).get(argument, None) is None:
                 raise ValueError(
                     f"RuleType: {RuleType.CUSTOM_SQL_STATEMENT} "
                     f"custom_sql_arguments '{argument}' not found in "
