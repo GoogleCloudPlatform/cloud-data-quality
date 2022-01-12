@@ -2,11 +2,16 @@
 
 ## High-Level: What does it do and why do I need it?
 
-> TODO
+`CloudDQ` is a solution component of Data Quality management that supports ongoing Data Quality evaluation of evolving data assets within live data environments, driven by a declarative configuration:
+
+* “ongoing evaluation” –  repeated, frequent (in application to the same data assets) – as opposed to one-off
+* “evolving data assets” – data assets that mutate and grow over time – as opposed to constant/static data assets
+* “live data environments” – environments supporting production data operations – as opposed to migration or dev/test environments
+* “declarative configuration” – specifies intended goals (what) of DQ evaluation from an end user perspective – as opposed to imperative (how) approach
+
+
 
 ## Concepts
-
-> TODO For this section, reuse and update "Introductions" section from [top level README](readme.md)
 
 
 ### Built-in Rule Types
@@ -110,8 +115,7 @@ same row can be accessed.
 
 The below example of this rule performs a SELECT on a reference table to compare to a list of known currencies.
 
-The SQL condition can be parametrized using `custom_sql_parameters` (see the `CUSTOM_SQL_LENGTH_LE_PARAMETRIZED` [example configuration](configs/)) `$column`, which is set through the rule binding. At present, this is all the parametrization that
-rules of this type allow.
+The SQL condition can be parametrized using `custom_sql_parameters` (see the `CUSTOM_SQL_LENGTH` [example rule](configs/base-rules.yml) and [how it's used](configs/rule_bindings/team-2-rule-bindings.yml)). The SQL condition can also use an implicit parameter `$column`, to identify the column that the condition should be applied to.
 
 ```yaml
 rules:
@@ -175,21 +179,13 @@ Complete example: [Rule](configs/rules/complex-rules.yml) and [rule binding](con
 
 ### CloudDQ Execution
 
-> TODO: Explains the mechanics of how rule_bindings are ultimately applied to the data (info about rule_bindings translated to sql and pushed down to bq etc.)
-
-From original README:
-
 On each run, CloudDQ converts each `rule_binding` into a SQL script, create a corresponding [view](https://cloud.google.com/bigquery/docs/views) in BigQuery, and aggregate the validation results summary per `rule_binding` and `rule` for each CloudDQ run into a DQ Summary Statistics table in a BigQuery table specified in the CLI argument `--target_bigquery_summary_table`.
 
 
 
 ### Consuming CloudDQ Outputs
 
-> TODO: Explains how CloudDQ outputs are captured and can be accessed.
-
-From original README:
-
-You can then use any dashboarding solution such as Data Studio or Looker to visualize the DQ Summary Statistics table, or use the DQ Summary Statistics table for monitoring and alerting purposes.
+`CloudDQ` will generate a summary table called `dq_summary`, and a view for each rule binding. You can visualize the results using any dashboarding solution such as Data Studio or Looker to visualize the DQ Summary Statistics table, or use the DQ Summary Statistics table for monitoring and alerting purposes.
 
 `CloudDQ` reports validation summary statistics for each `rule_binding` and `rule` by appending to the target BigQuery table specified in the CLI argument `--target_bigquery_summary_table`. Record-level validation statistics are captured the in columns `success_count`, `success_percentage`, `failed_count`, `failed_percentage`, `null_count`, `null_percentage`. The rule type `NOT_NULL` reports the count of `NULL`s present in the input `column-id` in the columns `failed_count`, `failed_percentage`, and always set the columns `null_count` and `null_percentage` to `NULL`. `CUSTOM_SQL_STATEMENT` rules do not report record-level validation statistics and therefore will set the content of the columns `success_count`, `success_percentage`, `failed_count`, `failed_percentage`, `null_count`, `null_percentage` to `NULL`.
 

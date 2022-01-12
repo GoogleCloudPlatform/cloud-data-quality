@@ -131,15 +131,12 @@ rules:
 
 `CUSTOM_SQL_EXPR` will apply the SQL expression logic defined in `custom_sql_expr` to every record and flag any row where `custom_sql_expr` evaluated to False as a failure. `CUSTOM_SQL_EXPR` rules are meant for record-level validation and will report success/failure counts at the record level. 
 
-`CUSTOM_SQL_STATEMENT` is meant for set-level validation and instead accepts a complete SQL statement in the field `custom_sql_statement`. If the SQL statement returns 0 rows, `CloudDQ` considers the rule a success. If the SQL statement returns any row, `CloudDQ` will report the rule as a failure and include the returned row counts in the validation summary.
-
-> TODO Note Andrew: Suggest we bring up more clearly the distinction between row- and set-level validations, following with how custom_sql_expr/statement (and built-in rules) support them
+`CUSTOM_SQL_STATEMENT` is meant for set-level validation and instead accepts a complete SQL statement in the field `custom_sql_statement`. If the SQL statement returns 0 rows, `CloudDQ` considers the rule a success. If the SQL statement returns any row, `CloudDQ` will report the rule as a failure and include the returned row counts in the validation summary. 
 
 For both `CUSTOM_SQL_EXPR` and `CUSTOM_SQL_STATEMENT`, the templated parameter `$column` in the `custom_sql_expr` and `custom_sql_statement` blocks will be substituted with the `column_id` specified in each `rule_binding`. `CUSTOM_SQL_STATEMENT` additionally supports custom parameterized variables in the `custom_sql_arguments` block. These parameters can be bound separately in each `rule_binding`, allowing `CUSTOM_SQL_STATEMENT` to be defined once to be reused across multiple `rule_binding`s with different input arguments.
 
 The SQL code block in `CUSTOM_SQL_STATEMENT` rules must include the string `from data` in the `custom_sql_statement` block, i.e. it must validate data returned by a `data` common table expression (CTE). The common table expression `data` contains rows returned once all `row_filters` and incremental validation logic have been applied.
 
-> TODO ?? the user can choose to read from the underlying entity (for ex. when they want to ignore incremental logic. We need to explain various usage scenarios and best practices here
 
 #### Filters
 
@@ -271,7 +268,3 @@ rule_bindings:
 Instead of providing the full URI path for every `Rule Binding`, you can define the default values you would like to use in each `entity_uri` scheme (e.g. `dataplex://`) under the `metadata_registry_defaults:` YAML node.
 
 Once `metadata_registry_defaults` is defined, you can omit the corresponding variable in the `entity_uri` to use the default values specified when resolving each `entity_uri` to a table name. You can additionally override the default by providing the variable directly in the `entity_uri`.
-
-
-
-## Library Reference
