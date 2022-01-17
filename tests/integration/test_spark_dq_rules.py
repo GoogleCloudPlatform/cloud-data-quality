@@ -102,6 +102,7 @@ class TestSparkDqRules:
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--gcp_region_id={gcp_bq_region}",
                     f"--target_bigquery_summary_table={target_table}",
+                    f"--debug",
                     ]
                 result = runner.invoke(main, args)
                 assert result.exit_code == 0
