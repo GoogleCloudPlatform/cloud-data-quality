@@ -115,7 +115,7 @@ class DbtRunner:
     ) -> None:
         logger.debug(f"Running dbt in path: {self.dbt_path}")
         if debug:
-            self.test_spark_dbt_connection()
+            self.test_dbt_connection()
         run_dbt(
             dbt_path=self.dbt_path,
             dbt_profile_dir=self.dbt_profiles_dir,
@@ -133,9 +133,6 @@ class DbtRunner:
             debug=True,
             dry_run=True,
         )
-
-    def test_spark_dbt_connection(self):
-        pass
 
     def get_dbt_path(self, spark_runner: bool) -> Path:
         self._resolve_dbt_path(self.dbt_path, spark_runner)
@@ -221,7 +218,7 @@ class DbtRunner:
             self.dbt_profiles_dir = dbt_profiles_dir
             self.environment_target = environment_target
         else:
-            print("Into create SparkDbtConnectionConfig ")
+            logger.debug("Into create SparkDbtConnectionConfig ")
             # create SparkDbtConnectionConfig
             spark_connection_config = SparkDbtConnectionConfig()
             self.connection_config = spark_connection_config
@@ -262,8 +259,6 @@ class DbtRunner:
             )
         else:
             dbt_path = Path(dbt_path).absolute()
-            print("******", dbt_path.name)
-            print(spark_runner)
             if spark_runner:
                 if dbt_path.name != "spark":
                     dbt_path = dbt_path / "spark"
