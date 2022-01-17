@@ -73,7 +73,7 @@ entities:
 
   TEST_TABLE_DP:
     source_database: DATAPLEX
-    table_name: clouddq_asset_bucket
+    table_name: clouddq_avro_asset
     lake_name: clouddq
     zone_name: dq_raw
     resource_type: STORAGE_BUCKET
