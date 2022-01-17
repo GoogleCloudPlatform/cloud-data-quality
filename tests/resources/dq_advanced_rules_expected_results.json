@@ -460,5 +460,33 @@
     "success_count": null,
     "failed_count": null,
     "null_count": null
+  },
+  {
+    "rule_binding_id": "T10_UNIQUENESS_CHECK_SHOULD_FAIL",
+    "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
+    "column_id": null,
+    "dimension": null,
+    "metadata_json_string": "{\"brand\": \"one\"}",
+    "progress_watermark": true,
+    "rows_validated": 12348,
+    "complex_rule_validation_errors_count": 4696,
+    "complex_rule_validation_success_flag": false,
+    "success_count": null,
+    "failed_count": null,
+    "null_count": null
+  },
+  {
+    "rule_binding_id": "T10_UNIQUENESS_CHECK_SHOULD_SUCCEED",
+    "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
+    "column_id": null,
+    "dimension": null,
+    "metadata_json_string": "{\"brand\": \"one\"}",
+    "progress_watermark": true,
+    "rows_validated": 10000,
+    "complex_rule_validation_errors_count": 0,
+    "complex_rule_validation_success_flag": true,
+    "success_count": null,
+    "failed_count": null,
+    "null_count": null
   }
 ]

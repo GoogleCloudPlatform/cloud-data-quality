@@ -311,303 +311,357 @@ entities:
         data_type: STRING
         description: |-
           email address
+  UNIQUENESS_CHECK_NOT_OK:
+    source_database: BIGQUERY
+    table_name: uniqueness_check_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      DATA:
+        name: data
+        data_type: INTEGER
+        description: |-
+          data field
+      ID:
+        name: id
+        data_type: STRING
+        description: |-
+          id field
+      TYPE:
+        name: type
+        data_type: STRING
+        description: |-
+          type field
+  UNIQUENESS_CHECK_OK:
+    source_database: BIGQUERY
+    table_name: uniqueness_check_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      DATA:
+        name: data
+        data_type: INTEGER
+        description: |-
+          data field
+      ID:
+        name: id
+        data_type: STRING
+        description: |-
+          id field
+      TYPE:
+        name: type
+        data_type: STRING
+        description: |-
+          type field
 rule_bindings:
-  T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_FAIL:
-    entity_id: INGESTION_TABLE_DAY_LEVEL
-    column_id: INVOICE_ID
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DELAYED_INGESTION_DAY_LEVEL:
-          ingestion_date_day: date_of_day
-          elapsed_time_days: 1
-    metadata:
-      brand: one
-  T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_SUCCEED:
-    entity_id: INGESTION_TABLE_DAY_LEVEL
-    column_id: INVOICE_ID
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DELAYED_INGESTION_DAY_LEVEL:
-          ingestion_date_day: date_of_day
-          elapsed_time_days: 40
-    metadata:
-      brand: one
-  T2_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_SUCCEED:
-    entity_id: INGESTION_TABLE_MONTH_LEVEL
-    column_id: CLIENT_CD
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DELAYED_INGESTION_MONTH_LEVEL:
-          ingestion_date_month: month_id
-          elapsed_time_months: 5
-    metadata:
-      brand: one
-  T2_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_FAIL:
-    entity_id: INGESTION_TABLE_MONTH_LEVEL
-    column_id: CLIENT_CD
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DELAYED_INGESTION_MONTH_LEVEL:
-          ingestion_date_month: month_id
-          elapsed_time_months: 0
-    metadata:
-      brand: one
-  T3_NO_DELAYED_INGESTION_TIMESTAMP_LEVEL_SHOULD_SUCCEED:
-    entity_id: INGESTION_TABLE_TIMESTAMP_LEVEL
-    column_id: SALES_MANAGER_ID
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DELAYED_INGESTION_TIMESTAMP_LEVEL:
-          ingestion_timestamp: dana_ingestion_timestamp
-          elapsed_time_hours: 10000
-    metadata:
-      brand: one
-  T3_NO_DELAYED_INGESTION_TIMESTAMP_LEVEL_SHOULD_FAIL:
-    entity_id: INGESTION_TABLE_TIMESTAMP_LEVEL
-    column_id: SALES_MANAGER_ID
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DELAYED_INGESTION_TIMESTAMP_LEVEL:
-          ingestion_timestamp: dana_ingestion_timestamp
-          elapsed_time_hours: 10
-    metadata:
-      brand: one
-  T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED:
-    entity_id: COMPLEX_RULES_TABLE_OK
-    column_id: INVOICE_GROSS_TOTAL_AMOUNT
-    row_filter_id: NONE
-    rule_ids:
-      - NO_COMPLEX_RULES_MISMATCH
-    metadata:
-      brand: one
-  T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_FAIL:
-    entity_id: COMPLEX_RULES_TABLE_NOT_OK
-    column_id: INVOICE_GROSS_TOTAL_AMOUNT
-    row_filter_id: NONE
-    rule_ids:
-      - NO_COMPLEX_RULES_MISMATCH
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_FAIL:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-29 00:00:00 UTC"
-          interval: day
-          threshold: 100
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_SUCCEED:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-23 00:00:00 UTC"
-          interval: day
-          threshold: 100
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_MONTH_SHOULD_SUCCEED:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-29 00:00:00 UTC"
-          interval: month
-          threshold: 4000
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_FAIL:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-23 00:00:00 UTC"
-          avg_from_ts: "2021-12-01 00:00:00 UTC"
-          interval: day
-          deviation_threshold_pct: 10
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_SUCCEED:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-22 00:00:00 UTC"
-          avg_from_ts: "2021-12-01 00:00:00 UTC"
-          interval: day
-          deviation_threshold_pct: 15
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_MONTH_SHOULD_SUCCEED:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-22 00:00:00 UTC"
-          avg_from_ts: "2021-12-01 00:00:00 UTC"
-          interval: month
-          deviation_threshold_pct: 0.01
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_SUCCEED:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-22 00:00:00 UTC"
-          interval: day
-          N_periods_back: 1
-          deviation_threshold_pct: 30
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_FAIL:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-23 00:00:00 UTC"
-          interval: day
-          N_periods_back: 2
-          deviation_threshold_pct: 10
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_PERIOD_TOO_OLD_SHOULD_FAIL:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-23 00:00:00 UTC"
-          interval: day
-          N_periods_back: 10
-          deviation_threshold_pct: 10
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_MONTH_SHOULD_FAIL:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-23 00:00:00 UTC"
-          interval: month
-          N_periods_back: 1
-          deviation_threshold_pct: 10
-    metadata:
-      brand: one
-  T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_YEAR_SHOULD_FAIL:
-    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
-    column_id: DANA_INGESTION_TIMESTAMP
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
-          ts_column: dana_ingestion_timestamp
-          as_at_ts: "2021-12-23 00:00:00 UTC"
-          interval: year
-          N_periods_back: 1
-          deviation_threshold_pct: 10
-    metadata:
-      brand: one
-  T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_FAIL:
-    entity_id: REFERENCE_DATA_CHECK_NOT_OK
-    column_id: ART_NO
-    row_filter_id: NONE
-    rule_ids:
-      - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR
-    metadata:
-      brand: one
-  T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED:
-    entity_id: REFERENCE_DATA_CHECK_OK
-    column_id: ART_NO
-    row_filter_id: NONE
-    rule_ids:
-      - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR
-    metadata:
-      brand: one
-  T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_FAIL:
-    entity_id: REFERENCE_DATA_CHECK_NOT_OK
-    column_id: ART_NO
-    row_filter_id: NONE
-    rule_ids:
-      - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR
-    metadata:
-      brand: one
-  T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED:
-    entity_id: REFERENCE_DATA_CHECK_OK
-    column_id: ART_NO
-    row_filter_id: NONE
-    rule_ids:
-      - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR
-    metadata:
-      brand: one
-  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_FAIL:
-    entity_id: REFERENCE_DATA_CHECK_SUBQUERY_NOT_OK
-    column_id: SALE_LINE_LIST
-    row_filter_id: NONE
-    rule_ids:
-      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY
-    metadata:
-      brand: one
-  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_SUCCEED:
-    entity_id: REFERENCE_DATA_CHECK_SUBQUERY_OK
-    column_id: SALE_LINE_LIST
-    row_filter_id: NONE
-    rule_ids:
-      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY
-    metadata:
-      brand: one
-  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_FAIL:
-    entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_NOT_OK
-    column_id: YCCOUNTIQENTIYIERS
-    row_filter_id: NONE
-    rule_ids:
-      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
-    metadata:
-      brand: one
-  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_SUCCEED:
-    entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_OK
-    column_id: YCCOUNTIQENTIYIERS
-    row_filter_id: NONE
-    rule_ids:
-      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
-    metadata:
-      brand: one
-  T8_CONFORMITY_CHECK_SHOULD_FAIL:
-    entity_id: CONFORMITY_CHECK_NOT_OK
-    column_id: DATA
-    row_filter_id: NONE
-    rule_ids:
-      - NO_INVALID_EMAIL
-    metadata:
-      brand: one
-  T8_CONFORMITY_CHECK_SHOULD_SUCCEED:
-    entity_id: CONFORMITY_CHECK_OK
-    column_id: DATA
-    row_filter_id: NONE
-    rule_ids:
-      - NO_INVALID_EMAIL
-    metadata:
-      brand: one
+  # T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_FAIL:
+  #   entity_id: INGESTION_TABLE_DAY_LEVEL
+  #   column_id: INVOICE_ID
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DELAYED_INGESTION_DAY_LEVEL:
+  #         ingestion_date_day: date_of_day
+  #         elapsed_time_days: 1
+  #   metadata:
+  #     brand: one
+  # T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_SUCCEED:
+  #   entity_id: INGESTION_TABLE_DAY_LEVEL
+  #   column_id: INVOICE_ID
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DELAYED_INGESTION_DAY_LEVEL:
+  #         ingestion_date_day: date_of_day
+  #         elapsed_time_days: 40
+  #   metadata:
+  #     brand: one
+  # T2_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_SUCCEED:
+  #   entity_id: INGESTION_TABLE_MONTH_LEVEL
+  #   column_id: CLIENT_CD
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DELAYED_INGESTION_MONTH_LEVEL:
+  #         ingestion_date_month: month_id
+  #         elapsed_time_months: 5
+  #   metadata:
+  #     brand: one
+  # T2_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_FAIL:
+  #   entity_id: INGESTION_TABLE_MONTH_LEVEL
+  #   column_id: CLIENT_CD
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DELAYED_INGESTION_MONTH_LEVEL:
+  #         ingestion_date_month: month_id
+  #         elapsed_time_months: 0
+  #   metadata:
+  #     brand: one
+  # T3_NO_DELAYED_INGESTION_TIMESTAMP_LEVEL_SHOULD_SUCCEED:
+  #   entity_id: INGESTION_TABLE_TIMESTAMP_LEVEL
+  #   column_id: SALES_MANAGER_ID
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DELAYED_INGESTION_TIMESTAMP_LEVEL:
+  #         ingestion_timestamp: dana_ingestion_timestamp
+  #         elapsed_time_hours: 10000
+  #   metadata:
+  #     brand: one
+  # T3_NO_DELAYED_INGESTION_TIMESTAMP_LEVEL_SHOULD_FAIL:
+  #   entity_id: INGESTION_TABLE_TIMESTAMP_LEVEL
+  #   column_id: SALES_MANAGER_ID
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DELAYED_INGESTION_TIMESTAMP_LEVEL:
+  #         ingestion_timestamp: dana_ingestion_timestamp
+  #         elapsed_time_hours: 10
+  #   metadata:
+  #     brand: one
+  # T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED:
+  #   entity_id: COMPLEX_RULES_TABLE_OK
+  #   column_id: INVOICE_GROSS_TOTAL_AMOUNT
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_COMPLEX_RULES_MISMATCH
+  #   metadata:
+  #     brand: one
+  # T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_FAIL:
+  #   entity_id: COMPLEX_RULES_TABLE_NOT_OK
+  #   column_id: INVOICE_GROSS_TOTAL_AMOUNT
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_COMPLEX_RULES_MISMATCH
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_FAIL:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-29 00:00:00 UTC"
+  #         interval: day
+  #         threshold: 100
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_SUCCEED:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-23 00:00:00 UTC"
+  #         interval: day
+  #         threshold: 100
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_MONTH_SHOULD_SUCCEED:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-29 00:00:00 UTC"
+  #         interval: month
+  #         threshold: 4000
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_FAIL:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-23 00:00:00 UTC"
+  #         avg_from_ts: "2021-12-01 00:00:00 UTC"
+  #         interval: day
+  #         deviation_threshold_pct: 10
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_SUCCEED:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-22 00:00:00 UTC"
+  #         avg_from_ts: "2021-12-01 00:00:00 UTC"
+  #         interval: day
+  #         deviation_threshold_pct: 15
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_MONTH_SHOULD_SUCCEED:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-22 00:00:00 UTC"
+  #         avg_from_ts: "2021-12-01 00:00:00 UTC"
+  #         interval: month
+  #         deviation_threshold_pct: 0.01
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_SUCCEED:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-22 00:00:00 UTC"
+  #         interval: day
+  #         N_periods_back: 1
+  #         deviation_threshold_pct: 30
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_FAIL:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-23 00:00:00 UTC"
+  #         interval: day
+  #         N_periods_back: 2
+  #         deviation_threshold_pct: 10
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_PERIOD_TOO_OLD_SHOULD_FAIL:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-23 00:00:00 UTC"
+  #         interval: day
+  #         N_periods_back: 10
+  #         deviation_threshold_pct: 10
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_MONTH_SHOULD_FAIL:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-23 00:00:00 UTC"
+  #         interval: month
+  #         N_periods_back: 1
+  #         deviation_threshold_pct: 10
+  #   metadata:
+  #     brand: one
+  # T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_YEAR_SHOULD_FAIL:
+  #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+  #   column_id: DANA_INGESTION_TIMESTAMP
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+  #         ts_column: dana_ingestion_timestamp
+  #         as_at_ts: "2021-12-23 00:00:00 UTC"
+  #         interval: year
+  #         N_periods_back: 1
+  #         deviation_threshold_pct: 10
+  #   metadata:
+  #     brand: one
+  # T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_FAIL:
+  #   entity_id: REFERENCE_DATA_CHECK_NOT_OK
+  #   column_id: ART_NO
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR
+  #   metadata:
+  #     brand: one
+  # T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED:
+  #   entity_id: REFERENCE_DATA_CHECK_OK
+  #   column_id: ART_NO
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR
+  #   metadata:
+  #     brand: one
+  # T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_FAIL:
+  #   entity_id: REFERENCE_DATA_CHECK_NOT_OK
+  #   column_id: ART_NO
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR
+  #   metadata:
+  #     brand: one
+  # T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED:
+  #   entity_id: REFERENCE_DATA_CHECK_OK
+  #   column_id: ART_NO
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR
+  #   metadata:
+  #     brand: one
+  # T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_FAIL:
+  #   entity_id: REFERENCE_DATA_CHECK_SUBQUERY_NOT_OK
+  #   column_id: SALE_LINE_LIST
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY
+  #   metadata:
+  #     brand: one
+  # T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_SUCCEED:
+  #   entity_id: REFERENCE_DATA_CHECK_SUBQUERY_OK
+  #   column_id: SALE_LINE_LIST
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY
+  #   metadata:
+  #     brand: one
+  # T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_FAIL:
+  #   entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_NOT_OK
+  #   column_id: YCCOUNTIQENTIYIERS
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
+  #   metadata:
+  #     brand: one
+  # T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_SUCCEED:
+  #   entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_OK
+  #   column_id: YCCOUNTIQENTIYIERS
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
+  #   metadata:
+  #     brand: one
+  # T8_CONFORMITY_CHECK_SHOULD_FAIL:
+  #   entity_id: CONFORMITY_CHECK_NOT_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_INVALID_EMAIL
+  #   metadata:
+  #     brand: one
+  # T8_CONFORMITY_CHECK_SHOULD_SUCCEED:
+  #   entity_id: CONFORMITY_CHECK_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_INVALID_EMAIL
+  #   metadata:
+  #     brand: one
   T9_COMPLETNESS_CHECK_SHOULD_FAIL:
     entity_id: COMPLETNESS_CHECK_NOT_OK
     column_id: DATA
@@ -625,7 +679,7 @@ rule_bindings:
     rule_ids:
       - NO_ISSUES_WITH_COMPLETNESS:
           condition: data.data IS NOT NULL
-          threshold_pct: 98
+          threshold_pct: 99
     metadata:
       brand: one
   T9_COMPLETNESS_CHECK_SHOULD_SUCCEED:
@@ -646,6 +700,26 @@ rule_bindings:
       - NO_ISSUES_WITH_COMPLETNESS:
           condition: data.data IS NOT NULL
           threshold_pct: 97
+    metadata:
+      brand: one
+  T10_UNIQUENESS_CHECK_SHOULD_FAIL:
+    entity_id: UNIQUENESS_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: data.data, id, type
+          group_by_statement: data, id, type
+    metadata:
+      brand: one
+  T10_UNIQUENESS_CHECK_SHOULD_SUCCEED:
+    entity_id: UNIQUENESS_CHECK_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: data.data, id, type
+          group_by_statement: data, id, type
     metadata:
       brand: one
 rules:
@@ -796,4 +870,21 @@ rules:
           (select sum(case when $condition then 1 else 0 end) * 100 / count(*) as pct 
           from data
           )
-        where  pct < $threshold_pct
+        where pct < $threshold_pct
+  NO_DUPLICATES_IN_COLUMN_GROUPS:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_arguments:
+        - column_names
+        - group_by_statement
+      custom_sql_statement: |-
+        select a.*
+        from data a
+        inner join (
+          select
+            $column_names
+          from data
+          group by $group_by_statement
+          having count(*) > 1
+        ) duplicates
+        using ($group_by_statement)
