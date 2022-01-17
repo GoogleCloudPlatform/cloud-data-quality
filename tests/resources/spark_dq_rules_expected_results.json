@@ -24,8 +24,8 @@
     "complex_rule_validation_errors_count": null,
     "complex_rule_validation_success_flag": null,
     "success_count": "5",
-    "failed_count": "2",
-    "null_count": "0"
+    "failed_count": "1",
+    "null_count": "1"
   },
   {
     "rule_binding_id": "T2_DQ_1_EMAIL",
@@ -77,7 +77,7 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": "7",
-    "complex_rule_validation_errors_count": "7",
+    "complex_rule_validation_errors_count": "0",
     "complex_rule_validation_success_flag": true,
     "success_count": null,
     "failed_count": null,
