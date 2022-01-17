@@ -365,6 +365,87 @@ entities:
         data_type: STRING
         description: |-
           type field
+  ACCURACY_CHECK_SIMPLE:
+    source_database: BIGQUERY
+    table_name: accuracy_check_simple
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      FULL_NAME:
+        name: fullName
+        data_type: STRING
+        description: |-
+          full name
+      GENDER:
+        name: gender
+        data_type: STRING
+        description: |-
+          gender
+      DATE_OF_BIRTH:
+        name: dateOfBirth
+        data_type: DATE
+        description: |-
+          date of birth
+  ACCURACY_CHECK_DISTRIBUTION_NOT_OK:
+    source_database: BIGQUERY
+    table_name: accuracy_check_distribution_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      FULL_NAME:
+        name: fullName
+        data_type: STRING
+        description: |-
+          full name
+      GENDER:
+        name: gender
+        data_type: STRING
+        description: |-
+          gender
+      DATE_OF_BIRTH:
+        name: dateOfBirth
+        data_type: DATE
+        description: |-
+          date of birth
+  ACCURACY_CHECK_DISTRIBUTION_OK:
+    source_database: BIGQUERY
+    table_name: accuracy_check_distribution_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <my_bigquery_dataset_id_2>
+          project_name: <my-gcp-project-id-2>
+    columns:
+      FULL_NAME:
+        name: fullName
+        data_type: STRING
+        description: |-
+          full name
+      GENDER:
+        name: gender
+        data_type: STRING
+        description: |-
+          gender
+      DATE_OF_BIRTH:
+        name: dateOfBirth
+        data_type: DATE
+        description: |-
+          date of birth
 rule_bindings:
   # T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_FAIL:
   #   entity_id: INGESTION_TABLE_DAY_LEVEL
@@ -662,46 +743,46 @@ rule_bindings:
   #     - NO_INVALID_EMAIL
   #   metadata:
   #     brand: one
-  T9_COMPLETNESS_CHECK_SHOULD_FAIL:
-    entity_id: COMPLETNESS_CHECK_NOT_OK
-    column_id: DATA
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ISSUES_WITH_COMPLETNESS:
-          condition: data.data IS NOT NULL
-          threshold_pct: 100
-    metadata:
-      brand: one
-  T9_COMPLETNESS_CHECK_SHOULD_FAIL2:
-    entity_id: COMPLETNESS_CHECK_NOT_OK
-    column_id: DATA
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ISSUES_WITH_COMPLETNESS:
-          condition: data.data IS NOT NULL
-          threshold_pct: 99
-    metadata:
-      brand: one
-  T9_COMPLETNESS_CHECK_SHOULD_SUCCEED:
-    entity_id: COMPLETNESS_CHECK_OK
-    column_id: DATA
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ISSUES_WITH_COMPLETNESS:
-          condition: data.data IS NOT NULL
-          threshold_pct: 100
-    metadata:
-      brand: one
-  T9_COMPLETNESS_CHECK_SHOULD_SUCCEED2:
-    entity_id: COMPLETNESS_CHECK_NOT_OK
-    column_id: DATA
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ISSUES_WITH_COMPLETNESS:
-          condition: data.data IS NOT NULL
-          threshold_pct: 97
-    metadata:
-      brand: one
+  # T9_COMPLETNESS_CHECK_SHOULD_FAIL:
+  #   entity_id: COMPLETNESS_CHECK_NOT_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ISSUES_WITH_COMPLETNESS:
+  #         condition: data.data IS NOT NULL
+  #         threshold_pct: 100
+  #   metadata:
+  #     brand: one
+  # T9_COMPLETNESS_CHECK_SHOULD_FAIL2:
+  #   entity_id: COMPLETNESS_CHECK_NOT_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ISSUES_WITH_COMPLETNESS:
+  #         condition: data.data IS NOT NULL
+  #         threshold_pct: 99
+  #   metadata:
+  #     brand: one
+  # T9_COMPLETNESS_CHECK_SHOULD_SUCCEED:
+  #   entity_id: COMPLETNESS_CHECK_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ISSUES_WITH_COMPLETNESS:
+  #         condition: data.data IS NOT NULL
+  #         threshold_pct: 100
+  #   metadata:
+  #     brand: one
+  # T9_COMPLETNESS_CHECK_SHOULD_SUCCEED2:
+  #   entity_id: COMPLETNESS_CHECK_NOT_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ISSUES_WITH_COMPLETNESS:
+  #         condition: data.data IS NOT NULL
+  #         threshold_pct: 97
+  #   metadata:
+  #     brand: one
   T10_UNIQUENESS_CHECK_SHOULD_FAIL:
     entity_id: UNIQUENESS_CHECK_NOT_OK
     column_id: DATA
@@ -720,6 +801,64 @@ rule_bindings:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: data.data, id, type
           group_by_statement: data, id, type
+    metadata:
+      brand: one
+  T11_ACCURACY_CHECK_SIMPLE_SHOULD_FAIL:
+    entity_id: ACCURACY_CHECK_SIMPLE
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_SIMPLE:
+          deviation_threshold_pct: 2
+    metadata:
+      brand: one
+  T11_ACCURACY_CHECK_SIMPLE_SHOULD_SUCCEED:
+    entity_id: ACCURACY_CHECK_SIMPLE
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_SIMPLE:
+          deviation_threshold_pct: 25
+    metadata:
+      brand: one
+  T11_ACCURACY_CHECK_DISTRIBUTION_SHOULD_FAIL:
+    entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_DISTRIBUTION:
+          standard_deviation_threshold: 2
+          bucket_ratio: 10
+    metadata:
+      brand: one
+  T11_ACCURACY_CHECK_DISTRIBUTION_HIGH_STD_DEV_SHOULD_FAIL:
+    entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_DISTRIBUTION:
+          standard_deviation_threshold: 1
+          bucket_ratio: 10
+    metadata:
+      brand: one
+  T11_ACCURACY_CHECK_DISTRIBUTION_SHOULD_SUCCEED:
+    entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_DISTRIBUTION:
+          standard_deviation_threshold: 2
+          bucket_ratio: 10
+    metadata:
+      brand: one
+  T11_ACCURACY_CHECK_DISTRIBUTION_HIGH_BUCKET_RATE_SHOULD_SUCCEED:
+    entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_DISTRIBUTION:
+          standard_deviation_threshold: 2
+          bucket_ratio: 4244
     metadata:
       brand: one
 rules:
@@ -888,3 +1027,46 @@ rules:
           having count(*) > 1
         ) duplicates
         using ($group_by_statement)
+  NO_ACCURACY_ISSUES_SIMPLE:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_arguments:
+        - deviation_threshold_pct
+      custom_sql_statement: |-
+        select
+          *
+        from (
+          select
+            countif(gender in ('MALE', 'FEMALE')) as n
+          from data
+          )
+        where
+          ifnull(safe_divide(n,
+              (
+              select
+                count(*)
+              from data
+              )),
+            cast('inf' as float64)) < (1 - ($deviation_threshold_pct / 100))
+  NO_ACCURACY_ISSUES_DISTRIBUTION:
+    rule_type: CUSTOM_SQL_STATEMENT
+    params:
+      custom_sql_arguments:
+        - standard_deviation_threshold
+        - bucket_ratio
+      custom_sql_statement: |-
+        select *
+        from (
+          select
+            stddev_pop(num_inst) as std_dev,
+            avg(num_inst) as avg_bucket_size,
+            any_value(dist_buckets) as dist_buckets,
+            safe_divide(avg(num_inst), any_value(dist_buckets)) as bucket_ratio
+          from (
+            select
+              dateOfBirth, count(*) over (partition by dateOfBirth) as num_inst, count(distinct dateOfBirth) over () as dist_buckets
+            from data
+            )
+        )
+        where std_dev > $standard_deviation_threshold or bucket_ratio > $bucket_ratio
+          
