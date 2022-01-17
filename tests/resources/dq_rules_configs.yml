@@ -151,13 +151,26 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - UNIQUE
-
+  CUSTOM_SQL_EXPR_PARAMETRIZED:
+    entity_id: TEST_TABLE
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - CUSTOM_SQL_LENGTH_LE_PARAMETRIZED:
+          upper_bound: 30
 
 rules:
 
   CUSTOM_SQL_LENGTH_LE_30:
     params:
       custom_sql_expr: LENGTH( $column ) <= 30
+    rule_type: CUSTOM_SQL_EXPR
+
+  CUSTOM_SQL_LENGTH_LE_PARAMETRIZED:
+    params:
+      custom_sql_arguments:
+        - upper_bound
+      custom_sql_expr: LENGTH( $column ) <= $upper_bound
     rule_type: CUSTOM_SQL_EXPR
 
   NOT_BLANK:

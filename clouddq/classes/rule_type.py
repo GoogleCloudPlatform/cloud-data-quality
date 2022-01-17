@@ -87,6 +87,26 @@ def to_sql_custom_sql_expr(params: dict) -> Template:
         f"'custom_sql_expr' in 'params'.\n"
         f"Current value: {custom_sql_expr}",
     )
+    custom_sql_arguments = params.get("custom_sql_arguments", "")
+    if custom_sql_arguments:
+        for argument in custom_sql_arguments:
+            if f"${argument}" not in custom_sql_expr:
+                raise ValueError(
+                    f"RuleType: {RuleType.CUSTOM_SQL_EXPR} "
+                    f"custom_sql_arguments '${argument}' not found in "
+                    f"custom_sql_statement:\n {pformat(custom_sql_expr)}"
+                )
+            if params.get("rule_binding_arguments", {}).get(argument, None) is None:
+                raise ValueError(
+                    f"RuleType: {RuleType.CUSTOM_SQL_EXPR} "
+                    f"custom_sql_arguments '{argument}' not found in "
+                    f"input parameters:\n {pformat(params.get('rule_binding_arguments', {}))}"
+                )
+
+    if params.get("rule_binding_arguments"):
+        custom_sql_expr = Template(custom_sql_expr).safe_substitute(
+            params.get("rule_binding_arguments")
+        )
     check_for_invalid_sql(RuleType.CUSTOM_SQL_EXPR, custom_sql_expr)
     return Template(custom_sql_expr)
 
@@ -115,13 +135,13 @@ def to_sql_custom_sql_statement(params: dict) -> Template:
                 raise ValueError(
                     f"RuleType: {RuleType.CUSTOM_SQL_STATEMENT} "
                     f"custom_sql_arguments '${argument}' not found in "
-                    f"custom_sql_statement:\n {custom_sql_statement}"
+                    f"custom_sql_statement:\n {pformat(custom_sql_statement)}"
                 )
-            if not params.get("rule_binding_arguments", {}).get(argument, None):
+            if params.get("rule_binding_arguments", {}).get(argument, None) is None:
                 raise ValueError(
                     f"RuleType: {RuleType.CUSTOM_SQL_STATEMENT} "
                     f"custom_sql_arguments '{argument}' not found in "
-                    f"input parameters:\n {params}"
+                    f"input parameters:\n {pformat(params.get('rule_binding_arguments', {}))}"
                 )
 
     if params.get("rule_binding_arguments"):

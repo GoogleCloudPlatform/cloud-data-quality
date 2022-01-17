@@ -101,7 +101,7 @@ class TestLib:
             rules = lib.load_configs(temp_dir, DqConfigType.RULES)
             dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
 
-            assert len(rules) == 4
+            assert len(rules) == 5
             assert dims == {}
             os.remove(temp_dir / 'rule.yml')
 
@@ -118,7 +118,7 @@ class TestLib:
             rules = lib.load_configs(temp_dir, DqConfigType.RULES)
             dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
 
-            assert len(rules) == 4, "test 2"
+            assert len(rules) == 5, "test 2"
             assert sorted(dims) == sorted(dims_ref), "test 2"
             os.remove(temp_dir / 'rule.yml')
 
@@ -137,7 +137,7 @@ class TestLib:
             rules = lib.load_configs(temp_dir, DqConfigType.RULES)
             dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
 
-            assert len(rules) == 4, "test 2b"
+            assert len(rules) == 5, "test 2b"
             assert sorted(dims) == sorted(dims_ref), "test 2b"
             os.remove(temp_dir / 'rule1.yml')
             os.remove(temp_dir / 'rule2.yml')
@@ -158,7 +158,7 @@ class TestLib:
             rules = lib.load_configs(temp_dir, DqConfigType.RULES)
             dims = lib.load_configs(temp_dir, DqConfigType.RULE_DIMENSIONS)
 
-            assert len(rules) == 4, "test 3"
+            assert len(rules) == 5, "test 3"
             assert rules[rule_ids[0]]['dimension'] == dims_ref[0], "test 3"
             assert rules[rule_ids[1]]['dimension'] == dims_ref[1], "test 3"
             assert 'dimension' not in rules[rule_ids[2]], "test 3"
