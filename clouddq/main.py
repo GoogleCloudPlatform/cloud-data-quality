@@ -201,6 +201,12 @@ coloredlogs.install(logger=logger)
     is_flag=True,
     default=False,
 )
+@click.option(
+    "--enable_experimental_pyspark_runner",
+    help="If True, allows running pyspark clouddq job",
+    is_flag=True,
+    default=False,
+)
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
@@ -221,6 +227,7 @@ def main(  # noqa: C901
     skip_sql_validation: bool = False,
     summary_to_stdout: bool = False,
     enable_experimental_bigquery_entity_uris: bool = False,
+    enable_experimental_pyspark_runner: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -359,45 +366,46 @@ def main(  # noqa: C901
             if bq_rule_binding in target_rule_binding_ids:
                 bq_target_rule_bindings.append(bq_rule_binding)
 
-        logger.debug("Target Spark rule bindings")
-        spark_rule_bindings = configs_cache.get_spark_rule_bindings()
-        spark_target_rule_bindings = []
-        for spark_rule_binding in spark_rule_bindings:
-            logger.debug(spark_rule_binding)
-            if spark_rule_binding in target_rule_binding_ids:
-                spark_target_rule_bindings.append(spark_rule_binding)
-
         spark_runner = False
         spark_dbt_runner = None
-        if spark_target_rule_bindings:
-            spark_runner = True
-            # Prepare spark dbt runtime
-            spark_dbt_runner = DbtRunner(
-                dbt_path=dbt_path,
-                dbt_profiles_dir=dbt_profiles_dir,
-                environment_target="spark_thrift",
-                gcp_project_id=gcp_project_id,
-                gcp_region_id=gcp_region_id,
-                gcp_bq_dataset_id=gcp_bq_dataset_id,
-                gcp_service_account_key_path=gcp_service_account_key_path,
-                gcp_impersonation_credentials=gcp_impersonation_credentials,
-                spark_runner=spark_runner,
-            )
+        if enable_experimental_pyspark_runner:
+            logger.debug("Target Spark rule bindings")
+            spark_rule_bindings = configs_cache.get_spark_rule_bindings()
+            spark_target_rule_bindings = []
+            for spark_rule_binding in spark_rule_bindings:
+                logger.debug(spark_rule_binding)
+                if spark_rule_binding in target_rule_binding_ids:
+                    spark_target_rule_bindings.append(spark_rule_binding)
 
-            print("Spark DBT Runner")
-            print(spark_dbt_runner.connection_config)
-            spark_dbt_path = spark_dbt_runner.get_dbt_path(spark_runner=True)
-            print("Spark DBT path is", spark_dbt_path)
-            spark_dbt_rule_binding_views_path = (
-                spark_dbt_runner.get_rule_binding_view_path()
-            )
-            print(
-                "Spark DBT rule binding views  path is",
-                spark_dbt_rule_binding_views_path,
-            )
-            spark_dbt_profiles_dir = spark_dbt_runner.get_dbt_profiles_dir()
-            print("Spark DBT profiles directory", spark_dbt_profiles_dir)
-            spark_environment_target = spark_dbt_runner.get_dbt_environment_target()
+            if spark_target_rule_bindings:
+                spark_runner = True
+                # Prepare spark dbt runtime
+                spark_dbt_runner = DbtRunner(
+                    dbt_path=dbt_path,
+                    dbt_profiles_dir=dbt_profiles_dir,
+                    environment_target="spark_thrift",
+                    gcp_project_id=gcp_project_id,
+                    gcp_region_id=gcp_region_id,
+                    gcp_bq_dataset_id=gcp_bq_dataset_id,
+                    gcp_service_account_key_path=gcp_service_account_key_path,
+                    gcp_impersonation_credentials=gcp_impersonation_credentials,
+                    spark_runner=spark_runner,
+                )
+
+                print("Spark DBT Runner")
+                print(spark_dbt_runner.connection_config)
+                spark_dbt_path = spark_dbt_runner.get_dbt_path(spark_runner=True)
+                print("Spark DBT path is", spark_dbt_path)
+                spark_dbt_rule_binding_views_path = (
+                    spark_dbt_runner.get_rule_binding_view_path()
+                )
+                print(
+                    "Spark DBT rule binding views  path is",
+                    spark_dbt_rule_binding_views_path,
+                )
+                spark_dbt_profiles_dir = spark_dbt_runner.get_dbt_profiles_dir()
+                print("Spark DBT profiles directory", spark_dbt_profiles_dir)
+                spark_environment_target = spark_dbt_runner.get_dbt_environment_target()
 
         # Prepare dbt runtime
         bq_dbt_runner = DbtRunner(
@@ -431,16 +439,17 @@ def main(  # noqa: C901
             "Writing BigQuery rule_binding views and intermediate "
             f"summary results to BigQuery table: `{bq_dq_summary_table_name}`. "
         )
-        if spark_runner:
-            # Prepare Spark DQ Summary Table
-            spark_dq_summary_table_name = get_spark_dq_summary_table_name(
-                dbt_path=Path(spark_dbt_path),
-                dbt_profiles_dir=Path(spark_dbt_profiles_dir),
-                environment_target=spark_environment_target,
-            )
-            logger.info(
-                f"Preparing Spark DQ Summary table: `{spark_dq_summary_table_name}`. "
-            )
+        if enable_experimental_pyspark_runner:
+            if spark_runner:
+                # Prepare Spark DQ Summary Table
+                spark_dq_summary_table_name = get_spark_dq_summary_table_name(
+                    dbt_path=Path(spark_dbt_path),
+                    dbt_profiles_dir=Path(spark_dbt_profiles_dir),
+                    environment_target=spark_environment_target,
+                )
+                logger.info(
+                    f"Preparing Spark DQ Summary table: `{spark_dq_summary_table_name}`. "
+                )
         if not spark_runner:
             dq_summary_table_exists = False
             if gcp_region_id and not skip_sql_validation:
@@ -540,46 +549,47 @@ def main(  # noqa: C901
                 if view.stem not in bq_target_rule_bindings:
                     view.unlink()
 
-        for rule_binding_id in spark_target_rule_bindings:
-            rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
-            assert_not_none_or_empty(
-                rule_binding_configs,
-                f"Target Rule Binding Id: {rule_binding_id} not found "
-                f"in config path {configs_path.absolute()}.",
-            )
-            if debug:
-                logger.debug(
-                    f"Creating sql string from configs for rule binding: "
-                    f"{rule_binding_id}"
+        if enable_experimental_pyspark_runner:
+            for rule_binding_id in spark_target_rule_bindings:
+                rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
+                assert_not_none_or_empty(
+                    rule_binding_configs,
+                    f"Target Rule Binding Id: {rule_binding_id} not found "
+                    f"in config path {configs_path.absolute()}.",
+                )
+                if debug:
+                    logger.debug(
+                        f"Creating sql string from configs for rule binding: "
+                        f"{rule_binding_id}"
+                    )
+                    logger.debug(
+                        f"Rule binding config json:\n{pformat(rule_binding_configs)}"
+                    )
+                sql_string = lib.create_rule_binding_view_model(
+                    rule_binding_id=rule_binding_id,
+                    rule_binding_configs=rule_binding_configs,
+                    dq_summary_table_name=spark_dq_summary_table_name,
+                    configs_cache=configs_cache,
+                    environment=spark_environment_target,
+                    metadata=metadata,
+                    debug=print_sql_queries,
+                    progress_watermark=progress_watermark,
+                    default_configs=dataplex_registry_defaults,
+                    spark_runner=spark_runner,
                 )
                 logger.debug(
-                    f"Rule binding config json:\n{pformat(rule_binding_configs)}"
+                    f"*** Writing sql to {spark_dbt_rule_binding_views_path.absolute()}/"
+                    f"{rule_binding_id}.sql",
                 )
-            sql_string = lib.create_rule_binding_view_model(
-                rule_binding_id=rule_binding_id,
-                rule_binding_configs=rule_binding_configs,
-                dq_summary_table_name=spark_dq_summary_table_name,
-                configs_cache=configs_cache,
-                environment=spark_environment_target,
-                metadata=metadata,
-                debug=print_sql_queries,
-                progress_watermark=progress_watermark,
-                default_configs=dataplex_registry_defaults,
-                spark_runner=spark_runner,
-            )
-            logger.debug(
-                f"*** Writing sql to {spark_dbt_rule_binding_views_path.absolute()}/"
-                f"{rule_binding_id}.sql",
-            )
-            lib.write_sql_string_as_dbt_model(
-                rule_binding_id=rule_binding_id,
-                sql_string=sql_string,
-                dbt_rule_binding_views_path=spark_dbt_rule_binding_views_path,
-            )
-            # clean up old spark rule_bindings
-            for view in spark_dbt_rule_binding_views_path.glob("*.sql"):
-                if view.stem not in spark_target_rule_bindings:
-                    view.unlink()
+                lib.write_sql_string_as_dbt_model(
+                    rule_binding_id=rule_binding_id,
+                    sql_string=sql_string,
+                    dbt_rule_binding_views_path=spark_dbt_rule_binding_views_path,
+                )
+                # clean up old spark rule_bindings
+                for view in spark_dbt_rule_binding_views_path.glob("*.sql"):
+                    if view.stem not in spark_target_rule_bindings:
+                        view.unlink()
 
         # create dbt configs json for the main.sql loop and run dbt
         if bq_target_rule_bindings:
@@ -589,14 +599,15 @@ def main(  # noqa: C901
                 debug=debug,
                 dry_run=dry_run,
             )
-        if spark_target_rule_bindings:
-            # create dbt configs json for the main.sql loop and run dbt
-            spark_configs = {"target_rule_binding_ids": spark_target_rule_bindings}
-            spark_dbt_runner.run_spark(
-                configs=spark_configs,
-                debug=debug,
-                dry_run=dry_run,
-            )
+        if enable_experimental_pyspark_runner:
+            if spark_target_rule_bindings:
+                # create dbt configs json for the main.sql loop and run dbt
+                spark_configs = {"target_rule_binding_ids": spark_target_rule_bindings}
+                spark_dbt_runner.run_spark(
+                    configs=spark_configs,
+                    debug=debug,
+                    dry_run=dry_run,
+                )
 
         if not dry_run:
             if target_bigquery_summary_table:
