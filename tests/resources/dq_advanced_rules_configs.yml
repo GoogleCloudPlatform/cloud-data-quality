@@ -727,22 +727,22 @@ rule_bindings:
   #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
   #   metadata:
   #     brand: one
-  # T8_CONFORMITY_CHECK_SHOULD_FAIL:
-  #   entity_id: CONFORMITY_CHECK_NOT_OK
-  #   column_id: DATA
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_INVALID_EMAIL
-  #   metadata:
-  #     brand: one
-  # T8_CONFORMITY_CHECK_SHOULD_SUCCEED:
-  #   entity_id: CONFORMITY_CHECK_OK
-  #   column_id: DATA
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_INVALID_EMAIL
-  #   metadata:
-  #     brand: one
+  T8_CONFORMITY_CHECK_SHOULD_FAIL:
+    entity_id: CONFORMITY_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_INVALID_EMAIL
+    metadata:
+      brand: one
+  T8_CONFORMITY_CHECK_SHOULD_SUCCEED:
+    entity_id: CONFORMITY_CHECK_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_INVALID_EMAIL
+    metadata:
+      brand: one
   # T9_COMPLETNESS_CHECK_SHOULD_FAIL:
   #   entity_id: COMPLETNESS_CHECK_NOT_OK
   #   column_id: DATA
@@ -783,84 +783,84 @@ rule_bindings:
   #         threshold_pct: 97
   #   metadata:
   #     brand: one
-  T10_UNIQUENESS_CHECK_SHOULD_FAIL:
-    entity_id: UNIQUENESS_CHECK_NOT_OK
-    column_id: DATA
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: data.data, id, type
-          group_by_statement: data, id, type
-    metadata:
-      brand: one
-  T10_UNIQUENESS_CHECK_SHOULD_SUCCEED:
-    entity_id: UNIQUENESS_CHECK_OK
-    column_id: DATA
-    row_filter_id: NONE
-    rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: data.data, id, type
-          group_by_statement: data, id, type
-    metadata:
-      brand: one
-  T11_ACCURACY_CHECK_SIMPLE_SHOULD_FAIL:
-    entity_id: ACCURACY_CHECK_SIMPLE
-    column_id: FULL_NAME
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ACCURACY_ISSUES_SIMPLE:
-          deviation_threshold_pct: 2
-    metadata:
-      brand: one
-  T11_ACCURACY_CHECK_SIMPLE_SHOULD_SUCCEED:
-    entity_id: ACCURACY_CHECK_SIMPLE
-    column_id: FULL_NAME
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ACCURACY_ISSUES_SIMPLE:
-          deviation_threshold_pct: 25
-    metadata:
-      brand: one
-  T11_ACCURACY_CHECK_DISTRIBUTION_SHOULD_FAIL:
-    entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
-    column_id: FULL_NAME
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ACCURACY_ISSUES_DISTRIBUTION:
-          standard_deviation_threshold: 2
-          bucket_ratio: 10
-    metadata:
-      brand: one
-  T11_ACCURACY_CHECK_DISTRIBUTION_HIGH_STD_DEV_SHOULD_FAIL:
-    entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
-    column_id: FULL_NAME
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ACCURACY_ISSUES_DISTRIBUTION:
-          standard_deviation_threshold: 1
-          bucket_ratio: 10
-    metadata:
-      brand: one
-  T11_ACCURACY_CHECK_DISTRIBUTION_SHOULD_SUCCEED:
-    entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
-    column_id: FULL_NAME
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ACCURACY_ISSUES_DISTRIBUTION:
-          standard_deviation_threshold: 2
-          bucket_ratio: 10
-    metadata:
-      brand: one
-  T11_ACCURACY_CHECK_DISTRIBUTION_HIGH_BUCKET_RATE_SHOULD_SUCCEED:
-    entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
-    column_id: FULL_NAME
-    row_filter_id: NONE
-    rule_ids:
-      - NO_ACCURACY_ISSUES_DISTRIBUTION:
-          standard_deviation_threshold: 2
-          bucket_ratio: 4244
-    metadata:
-      brand: one
+  # T10_UNIQUENESS_CHECK_SHOULD_FAIL:
+  #   entity_id: UNIQUENESS_CHECK_NOT_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DUPLICATES_IN_COLUMN_GROUPS:
+  #         column_names: data.data, id, type
+  #         group_by_statement: data, id, type
+  #   metadata:
+  #     brand: one
+  # T10_UNIQUENESS_CHECK_SHOULD_SUCCEED:
+  #   entity_id: UNIQUENESS_CHECK_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_DUPLICATES_IN_COLUMN_GROUPS:
+  #         column_names: data.data, id, type
+  #         group_by_statement: data, id, type
+  #   metadata:
+  #     brand: one
+  # T11_ACCURACY_CHECK_SIMPLE_SHOULD_FAIL:
+  #   entity_id: ACCURACY_CHECK_SIMPLE
+  #   column_id: FULL_NAME
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ACCURACY_ISSUES_SIMPLE:
+  #         deviation_threshold_pct: 2
+  #   metadata:
+  #     brand: one
+  # T11_ACCURACY_CHECK_SIMPLE_SHOULD_SUCCEED:
+  #   entity_id: ACCURACY_CHECK_SIMPLE
+  #   column_id: FULL_NAME
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ACCURACY_ISSUES_SIMPLE:
+  #         deviation_threshold_pct: 25
+  #   metadata:
+  #     brand: one
+  # T11_ACCURACY_CHECK_DISTRIBUTION_SHOULD_FAIL:
+  #   entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
+  #   column_id: FULL_NAME
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ACCURACY_ISSUES_DISTRIBUTION:
+  #         standard_deviation_threshold: 2
+  #         bucket_ratio: 10
+  #   metadata:
+  #     brand: one
+  # T11_ACCURACY_CHECK_DISTRIBUTION_HIGH_STD_DEV_SHOULD_FAIL:
+  #   entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
+  #   column_id: FULL_NAME
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ACCURACY_ISSUES_DISTRIBUTION:
+  #         standard_deviation_threshold: 1
+  #         bucket_ratio: 10
+  #   metadata:
+  #     brand: one
+  # T11_ACCURACY_CHECK_DISTRIBUTION_SHOULD_SUCCEED:
+  #   entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
+  #   column_id: FULL_NAME
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ACCURACY_ISSUES_DISTRIBUTION:
+  #         standard_deviation_threshold: 2
+  #         bucket_ratio: 10
+  #   metadata:
+  #     brand: one
+  # T11_ACCURACY_CHECK_DISTRIBUTION_HIGH_BUCKET_RATE_SHOULD_SUCCEED:
+  #   entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
+  #   column_id: FULL_NAME
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_ACCURACY_ISSUES_DISTRIBUTION:
+  #         standard_deviation_threshold: 2
+  #         bucket_ratio: 4244
+  #   metadata:
+  #     brand: one
 rules:
   NO_DELAYED_INGESTION_DAY_LEVEL:
     rule_type: CUSTOM_SQL_STATEMENT
