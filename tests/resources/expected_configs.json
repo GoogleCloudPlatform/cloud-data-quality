@@ -26,6 +26,11 @@
           "description": "contact detail",
           "name": "value",
           "data_type": "STRING"
+        },
+        "DATA": {
+          "description": "custom data",
+          "name": "data",
+          "data_type": "STRING"
         }
       },
       "database_name": "<your_bigquery_dataset_id>",
