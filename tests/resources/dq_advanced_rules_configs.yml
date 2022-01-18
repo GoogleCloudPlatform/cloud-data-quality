@@ -507,22 +507,24 @@ rule_bindings:
   #         elapsed_time_hours: 10
   #   metadata:
   #     brand: one
-  # T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED:
-  #   entity_id: COMPLEX_RULES_TABLE_OK
-  #   column_id: INVOICE_GROSS_TOTAL_AMOUNT
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_COMPLEX_RULES_MISMATCH
-  #   metadata:
-  #     brand: one
-  # T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_FAIL:
-  #   entity_id: COMPLEX_RULES_TABLE_NOT_OK
-  #   column_id: INVOICE_GROSS_TOTAL_AMOUNT
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_COMPLEX_RULES_MISMATCH
-  #   metadata:
-  #     brand: one
+  T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED:
+    entity_id: COMPLEX_RULES_TABLE_OK
+    column_id: INVOICE_GROSS_TOTAL_AMOUNT
+    row_filter_id: NONE
+    rule_ids:
+      - NO_COMPLEX_RULES_MISMATCH:
+          error_margin: 0.03
+    metadata:
+      brand: one
+  T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_FAIL:
+    entity_id: COMPLEX_RULES_TABLE_NOT_OK
+    column_id: INVOICE_GROSS_TOTAL_AMOUNT
+    row_filter_id: NONE
+    rule_ids:
+      - NO_COMPLEX_RULES_MISMATCH:
+          error_margin: 0.03
+    metadata:
+      brand: one
   # T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_FAIL:
   #   entity_id: DIFFERENT_VOLUMES_PER_PERIOD
   #   column_id: DANA_INGESTION_TIMESTAMP
@@ -663,86 +665,102 @@ rule_bindings:
   #         deviation_threshold_pct: 10
   #   metadata:
   #     brand: one
-  # T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_FAIL:
-  #   entity_id: REFERENCE_DATA_CHECK_NOT_OK
-  #   column_id: ART_NO
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR
-  #   metadata:
-  #     brand: one
-  # T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED:
-  #   entity_id: REFERENCE_DATA_CHECK_OK
-  #   column_id: ART_NO
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR
-  #   metadata:
-  #     brand: one
-  # T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_FAIL:
-  #   entity_id: REFERENCE_DATA_CHECK_NOT_OK
-  #   column_id: ART_NO
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR
-  #   metadata:
-  #     brand: one
-  # T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED:
-  #   entity_id: REFERENCE_DATA_CHECK_OK
-  #   column_id: ART_NO
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR
-  #   metadata:
-  #     brand: one
-  # T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_FAIL:
-  #   entity_id: REFERENCE_DATA_CHECK_SUBQUERY_NOT_OK
-  #   column_id: SALE_LINE_LIST
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY
-  #   metadata:
-  #     brand: one
-  # T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_SUCCEED:
-  #   entity_id: REFERENCE_DATA_CHECK_SUBQUERY_OK
-  #   column_id: SALE_LINE_LIST
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY
-  #   metadata:
-  #     brand: one
-  # T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_FAIL:
-  #   entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_NOT_OK
-  #   column_id: YCCOUNTIQENTIYIERS
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
-  #   metadata:
-  #     brand: one
-  # T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_SUCCEED:
-  #   entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_OK
-  #   column_id: YCCOUNTIQENTIYIERS
-  #   row_filter_id: NONE
-  #   rule_ids:
-  #     - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2
-  #   metadata:
-  #     brand: one
-  T8_CONFORMITY_CHECK_SHOULD_FAIL:
-    entity_id: CONFORMITY_CHECK_NOT_OK
-    column_id: DATA
+  T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_NOT_OK
+    column_id: ART_NO
     row_filter_id: NONE
     rule_ids:
-      - NO_INVALID_EMAIL
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data
     metadata:
       brand: one
-  T8_CONFORMITY_CHECK_SHOULD_SUCCEED:
-    entity_id: CONFORMITY_CHECK_OK
-    column_id: DATA
+  T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_OK
+    column_id: ART_NO
     row_filter_id: NONE
     rule_ids:
-      - NO_INVALID_EMAIL
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data
     metadata:
       brand: one
+  T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_NOT_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data
+    metadata:
+      brand: one
+  T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data
+    metadata:
+      brand: one
+  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY_NOT_OK
+    column_id: SALE_LINE_LIST
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data_subquery
+    metadata:
+      brand: one
+  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY_OK
+    column_id: SALE_LINE_LIST
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data_subquery
+    metadata:
+      brand: one
+  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_NOT_OK
+    column_id: YCCOUNTIQENTIYIERS
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data_subquery2
+    metadata:
+      brand: one
+  T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_OK
+    column_id: YCCOUNTIQENTIYIERS
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data_subquery2
+    metadata:
+      brand: one
+  # T8_CONFORMITY_CHECK_SHOULD_FAIL:
+  #   entity_id: CONFORMITY_CHECK_NOT_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_INVALID_EMAIL
+  #   metadata:
+  #     brand: one
+  # T8_CONFORMITY_CHECK_SHOULD_SUCCEED:
+  #   entity_id: CONFORMITY_CHECK_OK
+  #   column_id: DATA
+  #   row_filter_id: NONE
+  #   rule_ids:
+  #     - NO_INVALID_EMAIL
+  #   metadata:
+  #     brand: one
   # T9_COMPLETNESS_CHECK_SHOULD_FAIL:
   #   entity_id: COMPLETNESS_CHECK_NOT_OK
   #   column_id: DATA
@@ -904,12 +922,14 @@ rules:
   NO_COMPLEX_RULES_MISMATCH:
     rule_type: CUSTOM_SQL_EXPR
     params:
+      custom_sql_arguments:
+        - error_margin
       custom_sql_expr: |-
         (select
             sum(SaleLine.dItemTotalNetAmount) + sum(SaleLine.dVatAmount)
           from
             unnest(SaleLineList.SaleLine) as SaleLine
-        ) between $column - 0.03 and $column + 0.03
+        ) between $column - $error_margin and $column + $error_margin
   NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
     rule_type: CUSTOM_SQL_STATEMENT
     params:
@@ -975,23 +995,35 @@ rules:
   NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
     rule_type: CUSTOM_SQL_EXPR
     params:
+      custom_sql_arguments:
+        - ref_data_dataset
+        - ref_data_table_id
       custom_sql_expr: |-
-        $column in (select art_no from clouddq_integration_tests_input_data.reference_data)
+        $column in (select art_no from `$ref_data_dataset.$ref_data_table_id`)
   NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
     rule_type: CUSTOM_SQL_EXPR
     params:
+      custom_sql_arguments:
+        - ref_data_dataset
+        - ref_data_table_id
       custom_sql_expr: |-
-        exists (select 1 from clouddq_integration_tests_input_data.reference_data r where r.art_no = data.$column)
+        exists (select 1 from `$ref_data_dataset.$ref_data_table_id` r where r.art_no = data.$column)
   NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
     rule_type: CUSTOM_SQL_EXPR
     params:
+      custom_sql_arguments:
+        - ref_data_dataset
+        - ref_data_table_id
       custom_sql_expr: |-
-        exists (select 1 from unnest($column.saleline) sl inner join clouddq_integration_tests_input_data.reference_data_subquery r on sl.litemnumber = r.subsys_item)
+        exists (select 1 from unnest($column.saleline) sl inner join `$ref_data_dataset.$ref_data_table_id` r on sl.litemnumber = r.subsys_item)
   NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
     rule_type: CUSTOM_SQL_EXPR
     params:
+      custom_sql_arguments:
+        - ref_data_dataset
+        - ref_data_table_id
       custom_sql_expr: |-
-        exists (select 1 from unnest($column) t inner join clouddq_integration_tests_input_data.reference_data_subquery2 r on t.iq = r.id and t.type = r.type and t.qyty = r.data)
+        exists (select 1 from unnest($column) t inner join `$ref_data_dataset.$ref_data_table_id` r on t.iq = r.id and t.type = r.type and t.qyty = r.data)
   NO_INVALID_EMAIL:
     rule_type: REGEX
     params:
