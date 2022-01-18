@@ -166,5 +166,33 @@
     "success_count": null,
     "failed_count": null,
     "null_count": null
+  },
+  {
+    "rule_binding_id": "UNIQUENESS",
+    "rule_id": "UNIQUE",
+    "column_id": null,
+    "dimension": null,
+    "metadata_json_string": "{}",
+    "progress_watermark": true,
+    "rows_validated": "9",
+    "complex_rule_validation_errors_count": "2",
+    "complex_rule_validation_success_flag": false,
+    "success_count": null,
+    "failed_count": null,
+    "null_count": null
+  },
+  {
+    "rule_binding_id": "CUSTOM_SQL_EXPR_PARAMETRIZED",
+    "rule_id": "CUSTOM_SQL_LENGTH_LE_PARAMETRIZED",
+    "column_id": "value",
+    "dimension": null,
+    "metadata_json_string": "{}",
+    "progress_watermark": true,
+    "rows_validated": "7",
+    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_success_flag": null,
+    "success_count": "5",
+    "failed_count": "1",
+    "null_count": "1"
   }
 ]

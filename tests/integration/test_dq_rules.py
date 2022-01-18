@@ -158,7 +158,7 @@ class TestDqRules:
                         logger.info(lines)
                     logger.warning(
                         "Rows with values not matching the expected "
-                        "content in 'tests/resources/expected_results.csv':"
+                        "content in 'tests/resources/expected_results.json':"
                     )
                     for row in rows:
                         record = json.loads(str(row[0]))
