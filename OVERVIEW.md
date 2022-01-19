@@ -190,3 +190,152 @@ On each run, CloudDQ converts each `rule_binding` into a SQL script, which creat
 `CloudDQ` reports validation summary statistics for each `rule_binding` and `rule` by appending to the target BigQuery table specified in the CLI argument `--target_bigquery_summary_table`. Record-level validation statistics are captured the in columns `success_count`, `success_percentage`, `failed_count`, `failed_percentage`, `null_count`, `null_percentage`. The rule type `NOT_NULL` reports the count of `NULL`s present in the input `column-id` in the columns `failed_count`, `failed_percentage`, and always set the columns `null_count` and `null_percentage` to `NULL`. `CUSTOM_SQL_STATEMENT` rules do not report record-level validation statistics and therefore will set the content of the columns `success_count`, `success_percentage`, `failed_count`, `failed_percentage`, `null_count`, `null_percentage` to `NULL`.
 
 Set-level validation results for `CUSTOM_SQL_STATEMENT` rules are captured in the columns `complex_rule_validation_errors_count` and `complex_rule_validation_success_flag`. `complex_rule_validation_errors_count` contains the count of rows returned by the `custom_sql_statement` block. `complex_rule_validation_success_flag` is set to `TRUE` if `complex_rule_validation_errors_count` is equals to 0, `FALSE` if `complex_rule_validation_errors_count` is larger than 0, and `NULL` for all other rule types that are not `CUSTOM_SQL_STATEMENT`.
+
+The summary table stores the results of the data quality validations, with the
+output summary for each combination of rule binding and rule per validation run.
+This output is structured in the summary table as follows:
+
+#### Summary Table Description
+
+The table below lists the columns in their `dq_summary` table, that is the output of a CloudDQ validation run.
+
+<table>
+  <thead>
+    <tr>
+      <th>Column name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>execution_ts</code></td>
+      <td>(timestamp) Timestamp of when the validation query was executed.</td>
+    </tr>
+    <tr>
+      <td><code>rule_binding_id</code></td>
+      <td>(string) ID of the rule binding for which validation results are
+        reported.</td>
+    </tr>
+    <tr>
+      <td><code>rule_id</code></td>
+      <td>(string) ID of the rule under the rule binding for which validation
+        results are reported.</td>
+    </tr>
+    <tr>
+      <td><code>dimension</code></td>
+      <td>(string) Data Quality dimension of the rule_id. This value can only be 
+       one of the values specified in the <code>rule_dimensions</code> YAML node.</td>
+    </tr>
+    <tr>
+      <td><code>table_id</code></td>
+      <td>(string) ID of the table for which validation results are reported.</td>
+    </tr>
+    <tr>
+      <td><code>column_id</code></td>
+      <td>(string) ID of the column for which validation results are reported.</td>
+    </tr>
+    <tr>
+      <td><code>last_modified</code></td>
+      <td>(timestamp) The last modified timestamp of the <code>table_id</code>
+        being validated.</td>
+    </tr>
+    <tr>
+      <td><code>metadata_json_string</code></td>
+      <td>(string) Key-value pairs of the metadata parameter content specified
+       under the rule binding or during the data quality run.</td>
+    </tr>
+    <tr>
+      <td><code>configs_hashsum</code></td>
+      <td>(string) The hash sum of the JSON document containing the rule binding
+        and all its associated rules, rule bindings, row filters, and entities
+        configurations. This allows tracking when the content of a
+        <code>rule_binding</code> ID or one of its referenced configurations has
+        changed.</td>
+    </tr>
+    <tr>
+      <td><code>dq_run_id</code></td>
+      <td>(string) Unique ID of the record.</td>
+    </tr>
+    <tr>
+      <td><code>invocation_id</code></td>
+      <td>(string) ID of the data quality run. All data quality summary records
+        generated within the same data quality execution instance share the same
+        <code>invocation_id</code>.</td>
+    </tr>
+    <tr>
+      <td><code>progress_watermark</code></td>
+      <td>(boolean) Determines whether this particular record will be considered
+        by the data quality check in determining high watermark for incremental
+        validation. If FALSE, the respective record will be ignored when
+        establishing the high watermark value. This is useful when executing
+        test data quality validations which should not advance high watermark.
+        <code>CloudDQ</code> populates this field with <code>TRUE</code> by default, but
+        this can be overridden if the argument <code>--progress_watermark</code>
+        has a value of <code>FALSE</code>.
+      </td>
+    </tr>
+        <tr>
+      <td><code>rows_validated</code></td>
+      <td>(integer) Total number of records validated after applying
+        <code>row_filters</code> and any high-watermark filters on the
+        <code>incremental_time_filter_column_id</code> column if specified.</td>
+    </tr>
+    <tr>
+      <td><code>complex_rule_validation_errors_count</code></td>
+      <td>(float) Number of rows returned by a <code>CUSTOM_SQL_STATEMENT</code>
+        rule.</td>
+    </tr>
+    <tr>
+      <td><code>complex_rule_validation_success_flag</code></td>
+      <td>(boolean) Success status of <code>CUSTOM_SQL_STATEMENT</code> rules.
+    </td>
+    </tr>
+    <tr>
+      <td><code>success_count</code></td>
+      <td>(integer) Total number of records that passed validation. This field
+        is set to <code>NULL</code> for <code>CUSTOM_SQL_STATEMENT</code> rules.
+      </td>
+    </tr>
+    <tr>
+      <td><code>success_percentage</code></td>
+      <td>(float) Percentage of the number of records that passed validation
+        within the total number of records validated. This field is set to
+        <code>NULL</code> for <code>CUSTOM_SQL_STATEMENT</code> rules.</td>
+    </tr>
+    <tr>
+      <td><code>failed_count</code></td>
+      <td>(integer) Total number of records that failed validation. This field
+        is set to <code>NULL</code> for <code>CUSTOM_SQL_STATEMENT</code> rules.
+      </td>
+    </tr>
+        <tr>
+      <td><code>failed_percentage</code></td>
+      <td>(float) Percentage of the number of records that failed validation
+        within the total number of records validated. This field is set to
+        <code>NULL</code> for <code>CUSTOM_SQL_STATEMENT</code> rules.</td>
+    </tr>
+    <tr>
+      <td><code>null_count</code></td>
+      <td>(integer) Total number of records that returned null during validation.
+         This field is set to <code>NULL</code> for <code>NOT_NULL</code> and
+         <code>CUSTOM_SQL_STATEMENT</code> rules.</td>
+    </tr>
+    <tr>
+      <td><code>null_percentage</code></td>
+      <td>(float) Percentage of the number of records that returned null during
+        validation within the total number of records validated. This field is
+        set to <code>NULL</code> for <code>NOT_NULL</code> and
+        <code>CUSTOM_SQL_STATEMENT</code> rules.</td>
+    </tr>
+    <tr>
+      <td><code>dataplex_lake</code></td>
+      <td>Not used in the open-source version of <code>CloudDQ</code>.</td>
+    </tr>
+    <tr>
+      <td><code>dataplex_zone</code></td>
+      <td>Not used in the open-source version of <code>CloudDQ</code>.</td>
+    </tr>
+    <tr>
+      <td><code>dataplex_asset_id</code></td>
+      <td>Not used in the open-source version of <code>CloudDQ</code>.</td>
+    </tr></table>
