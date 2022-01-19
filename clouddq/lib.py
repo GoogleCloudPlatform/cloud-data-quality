@@ -123,11 +123,30 @@ def create_rule_binding_view_model(
         logger.info(pformat(configs))
     return sql_string
 
+def create_entity_summary_view_model(
+    entity_id: str,
+    target_rule_binding_ids: list[str],
+    debug: bool = False,
+) -> str:
+    template = load_jinja_template(
+        template_path=Path("dbt", "macros", "entity_dq_summary.sql")
+    )
+    configs = {
+        "target_rule_binding_ids": target_rule_binding_ids
+    }
+    sql_string = template.render(configs)
+    if debug:
+        logger.info(
+            f"Generated Entity DQ Summary SQL for entity {entity_id} "
+            f"containing rule_binding_ids:\n{target_rule_binding_ids}"
+        )
+    return sql_string
+
 
 def write_sql_string_as_dbt_model(
-    rule_binding_id: str, sql_string: str, dbt_rule_binding_views_path: Path
+    model_id: str, sql_string: str, dbt_rule_binding_views_path: Path
 ) -> None:
-    with open(dbt_rule_binding_views_path / f"{rule_binding_id}.sql", "w") as f:
+    with open(dbt_rule_binding_views_path / f"{model_id}.sql", "w") as f:
         f.write(sql_string.strip())
 
 

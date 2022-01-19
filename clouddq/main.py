@@ -315,6 +315,7 @@ def main(  # noqa: C901
         )
         dbt_path = dbt_runner.get_dbt_path()
         dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
+        dbt_entity_summary_path = dbt_runner.get_entity_summary_path()
         dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir()
         environment_target = dbt_runner.get_dbt_environment_target()
         # Prepare DQ Summary Table
@@ -425,6 +426,17 @@ def main(  # noqa: C901
             target_rule_binding_ids=target_rule_binding_ids,
             enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
         )
+        # Get Entities for entity-level summary views
+        # target_entity_summary_views: dict = configs_cache.get_entities_from_rule_bindings(
+        #     target_rule_binding_ids=target_rule_binding_ids,
+        # )
+        # for entity_id, rule_binding_ids in target_rule_binding_ids.items():
+        #     entity_summary_view_sql = lib.create_entity_summary_view_model(
+        #         entity_id=entity_id, 
+        #         target_rule_binding_ids=rule_binding_ids, 
+        #         debug=debug)
+                
+        # Create Rule_binding views
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
@@ -463,13 +475,17 @@ def main(  # noqa: C901
                 f"{rule_binding_id}.sql",
             )
             lib.write_sql_string_as_dbt_model(
-                rule_binding_id=rule_binding_id,
+                model_id=rule_binding_id,
                 sql_string=sql_string,
                 dbt_rule_binding_views_path=dbt_rule_binding_views_path,
             )
         # clean up old rule_bindings
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem not in target_rule_binding_ids:
+                view.unlink()
+        # clean up old entity_summary views
+        for view in dbt_entity_summary_path.glob("*.sql"):
+            if view.stem not in target_entity_summary_views:
                 view.unlink()
         # create dbt configs json for the main.sql loop and run dbt
         configs = {"target_rule_binding_ids": target_rule_binding_ids}

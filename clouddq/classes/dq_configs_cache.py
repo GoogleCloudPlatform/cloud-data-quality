@@ -20,6 +20,7 @@ from pprint import pformat
 
 import logging
 import sqlite3
+import time
 
 from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
@@ -125,14 +126,16 @@ class DqConfigsCache:
         for record in rule_bindings_rows:
             if "entity_uri" not in record:
                 record.update({"entity_uri": None})
-        self._cache_db["rule_bindings"].upsert_all(rule_bindings_rows, pk="id")
+        self._cache_db["rule_bindings"].upsert_all(
+            rule_bindings_rows, pk="id", alter=True
+        )
 
     def load_all_entities_collection(self, entities_collection: dict) -> None:
         logger.debug(
             f"Loading 'entities' configs into cache:\n{pformat(entities_collection.keys())}"
         )
         self._cache_db["entities"].upsert_all(
-            unnest_object_to_list(entities_collection), pk="id"
+            unnest_object_to_list(entities_collection), pk="id", alter=True
         )
 
     def load_all_row_filters_collection(self, row_filters_collection: dict) -> None:
@@ -140,7 +143,7 @@ class DqConfigsCache:
             f"Loading 'row_filters' configs into cache:\n{pformat(row_filters_collection.keys())}"
         )
         self._cache_db["row_filters"].upsert_all(
-            unnest_object_to_list(row_filters_collection), pk="id"
+            unnest_object_to_list(row_filters_collection), pk="id", alter=True
         )
 
     def load_all_rules_collection(self, rules_collection: dict) -> None:
@@ -148,7 +151,7 @@ class DqConfigsCache:
             f"Loading 'rules' configs into cache:\n{pformat(rules_collection.keys())}"
         )
         self._cache_db["rules"].upsert_all(
-            unnest_object_to_list(rules_collection), pk="id"
+            unnest_object_to_list(rules_collection), pk="id", alter=True
         )
 
     def load_all_rule_dimensions_collection(
@@ -160,6 +163,7 @@ class DqConfigsCache:
         self._cache_db["rule_dimensions"].upsert_all(
             [{"rule_dimension": dim} for dim in rule_dimensions_collection],
             pk="rule_dimension",
+            alter=True
         )
 
     def resolve_dataplex_entity_uris(  # noqa: C901
@@ -198,6 +202,7 @@ class DqConfigsCache:
                 logger.debug(
                     f"Parsed entity_uri configs:\n{pformat(entity_uri.to_dict())}"
                 )
+                time.sleep(1)
                 if entity_uri.scheme == "dataplex":
                     dataplex_entity = client.get_dataplex_entity(
                         gcp_project_id=entity_uri.get_configs("projects"),
@@ -277,6 +282,9 @@ class DqConfigsCache:
                 self._cache_db["entities"].upsert_all(
                     resolved_entity, pk="id", alter=True
                 )
+                self._cache_db["rule_bindings"].update(
+                    record["id"], {"entity_id": resolved_entity[0]["id"]}, alter=True
+                )
 
     def update_config(
         configs_type: str, config_old: list | dict, config_new: list | dict
@@ -334,3 +342,15 @@ class DqConfigsCache:
                     f"If a config is repeated, it must be identical."
                 )
             return config_old.copy()
+
+    # def get_entities_from_rule_bindings(
+    #             self, target_rule_binding_ids: list[str]
+    #         ) -> dict[str, str]:
+    #     for record in self._cache_db.query(
+    #         "select distinct e.id, rb.id "
+    #         "e.source_database, e.table_name, e.database_name, e.instance_name"
+    #         "from entities e inner join rule_bindings rb"
+    #         " on e.id = rb.rule"
+    #         "from rule_bindings "
+    #         f"where  is in ({','.join(target_rule_binding_ids)})"
+    #     ):
