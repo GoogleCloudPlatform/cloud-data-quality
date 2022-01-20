@@ -47,7 +47,7 @@ rules:
       start_date
     params:
       custom_sql_expr: |-
-        $column in (select unique_key from <dataset_id>.<ref_table_id> where timestamp >= $start_date)
+        $column in (select cast(unique_key as string) from <dataset_id>.<ref_table_id> where timestamp >= "$start_date")
 
   FOREIGN_KEY_VALID:
     rule_type: CUSTOM_SQL_EXPR

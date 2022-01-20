@@ -223,9 +223,20 @@ The subquery is coded into the `custom_sql_expr` field. This example assumes a r
 rules:
   REF_SUBQUERY:
     rule_type: CUSTOM_SQL_EXPR
+    custom_sql_arguments:
+      start_date
     params:
       custom_sql_expr: |-
-        $column in (select unique_key from `<dataset_id>.<ref_table_id>` where timestamp >= '2016-01-01')
+        $column in (select cast(unique_key as string) from <dataset_id>.<ref_table_id> where timestamp >= "$start_date")
+
+rule_bindings:
+  REF_SUBQUERY:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - REF_SUBQUERY:
+          start_date: '2016-01-01'
 ```
 
 Full example: [rule](docs/examples/referential_integrity.yaml#37) and [rule binding](docs/examples/referential_integrity.yaml#56)
