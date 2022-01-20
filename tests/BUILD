@@ -22,6 +22,12 @@ filegroup(
 )
 
 filegroup(
+    name = "test_data",
+    srcs = glob(["data/**/*"]),
+    visibility = ["//tests:__subpackages__"],
+)
+
+filegroup(
     name = "test_configs",
     srcs = glob(["resources/configs/**/*"]),
     visibility = ["//tests:__subpackages__"],
@@ -60,8 +66,10 @@ SRCS = glob([
 DATA = [
     ":resources",
     "//:dbt",
+    "//:docs",
     "//:dbt_project",
     ":test_configs",
+    ":test_data",
     ":test_dbt_profiles_dir",
     "//clouddq:dbt_template",
     "//clouddq:dbt_project_template",

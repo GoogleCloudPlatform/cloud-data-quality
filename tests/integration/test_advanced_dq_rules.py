@@ -16,8 +16,12 @@ from pathlib import Path
 from pprint import pformat
 
 import json
+import csv
 import logging
 import shutil
+import os
+import fileinput
+from datetime import date, timedelta
 
 from google.cloud import bigquery
 
@@ -28,8 +32,6 @@ from clouddq.main import main
 from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import working_directory
-
-import pandas
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +45,76 @@ class TestDqAdvancedRules:
         client.close_connection()
 
     @pytest.fixture(scope="session")
+    def prepare_test_input_data(
+        self,
+        client,
+        test_data,
+        gcp_project_id,
+        gcp_dataplex_bigquery_dataset_id
+    ):
+        client = client.get_connection()
+
+        input_files_csv = ["accuracy_check_distribution_not_ok.csv", "accuracy_check_distribution_ok.csv",
+            "accuracy_check_simple.csv", "completeness_check_not_ok.csv", "completeness_check_ok.csv",
+            "conformity_check_not_ok.csv", "conformity_check_ok.csv", "different_volumes_per_period.csv", 
+            "ingestion_day_level.csv", "ingestion_month_level.csv", "ingestion_timestamp_level.csv", 
+            "reference_check_not_ok.csv", "reference_check_ok.csv", "reference_data.csv", "reference_data_subquery.csv", 
+            "reference_data_subquery2.csv", "uniqueness_check_not_ok.csv", "uniqueness_check_ok.csv"]
+
+        input_files_json = ["complex_rules_not_ok.json", "complex_rules_ok.json",
+            "reference_check_subquery2_not_ok.json", "reference_check_subquery2_ok.json", 
+            "reference_check_subquery_not_ok.json", "reference_check_subquery_ok.json"]
+
+        # override some dates (for the ingestion check - it's looking backwards from the current date)
+        # fileinput supports inline editing, it outputs the stdout to the file
+        with fileinput.FileInput(test_data / f"advanced_rules/ingestion_day_level.csv", inplace=True, backup='.bak') as file:
+            day1 = (date.today() - timedelta(days=10)).strftime("%Y-%m-%d")
+            day2 = (date.today() - timedelta(days=11)).strftime("%Y-%m-%d")
+            for line in file:
+                line = line.replace("2021-12-15", day1)
+                line = line.replace("2021-12-14", day2)
+                print (line, end='')
+
+        with fileinput.FileInput(test_data / f"advanced_rules/ingestion_month_level.csv", inplace=True, backup='.bak') as file:
+            today = date.today()
+            first = today.replace(day=1)
+            lastMonth = first - timedelta(days=1)
+            for line in file:
+                line = line.replace("202111", lastMonth.strftime("%Y%m"))
+                print (line, end='')
+                
+        with fileinput.FileInput(test_data / f"advanced_rules/ingestion_timestamp_level.csv", inplace=True, backup='.bak') as file:
+            today = date.today()
+            first = today.replace(day=1)
+            lastMonth = first - timedelta(days=1)
+            for line in file:
+                line = line.replace("2021-12", lastMonth.strftime("%Y-%m"))
+                print (line, end='')
+            
+        for filename in input_files_csv + input_files_json:
+            with open(test_data / f"advanced_rules/{filename}", "rb") as source_file:
+                table_id = f"{gcp_project_id}.{gcp_dataplex_bigquery_dataset_id}.{os.path.splitext(filename)[0]}"
+                
+                file_format = os.path.splitext(filename)[1][1:]
+                job_config = bigquery.LoadJobConfig(
+                    source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON if file_format == "json" else bigquery.SourceFormat.CSV,
+                    autodetect=True,
+                    write_disposition="WRITE_TRUNCATE")
+
+                job = client.load_table_from_file(source_file, table_id, job_config=job_config)
+                job.result()  # Waits for the job to complete.
+
+                table = client.get_table(table_id)  # Make an API request.
+                logger.info(f"Loaded {table.num_rows} rows and {len(table.schema)} columns to {table_id}")
+
+    @pytest.fixture(scope="session")
     def create_expected_results_table(
         self,
         client,
         test_resources,
         gcp_project_id,
         target_bq_result_dataset_name,
-        target_bq_result_table_name,):
+        target_bq_result_table_name):
 
         client = client.get_connection()
 
@@ -83,48 +148,44 @@ class TestDqAdvancedRules:
         logger.info(f"Loaded {table.num_rows} rows and {len(table.schema)} columns to {table_id}")
         return table_id
 
-    def test_dq_advanced_rules(
+    def _generic_test_runner(
         self,
-        runner,
-        temp_configs_from_dq_advanced_rules_config_file,
-        gcp_application_credentials,
-        gcp_project_id,
-        gcp_bq_dataset,
-        gcp_bq_region,
-        target_bq_result_dataset_name,
-        target_bq_result_table_name,
-        tmp_path,
-        client,
-        gcp_impersonation_credentials,
-        gcp_sa_key,
-        create_expected_results_table,
-        source_dq_advanced_rules_configs_file_path,
-        test_resources,
-        caplog,
+        _runner,
+        _temp_configs_from_dq_advanced_rules_config_file,
+        _gcp_application_credentials,
+        _gcp_project_id,
+        _gcp_bq_dataset,
+        _gcp_bq_region,
+        _target_bq_result_dataset_name,
+        _target_bq_result_table_name,
+        _tmp_path,
+        _client,
+        _gcp_impersonation_credentials,
+        _gcp_sa_key,
+        _create_expected_results_table,
+        _source_dq_advanced_rules_configs_file_path,
+        _test_resources,
+        _caplog,
     ):
-        caplog.set_level(logging.INFO, logger="clouddq")
+        _caplog.set_level(logging.INFO, logger="clouddq")
         try:
-            temp_dir = Path(tmp_path).joinpath("clouddq_test_dq_advanced_rules")
+            temp_dir = Path(_tmp_path).joinpath("cloud_dq_working_dir")
             temp_dir.mkdir(parents=True)
 
-            print("Input yaml:")
-            with open(source_dq_advanced_rules_configs_file_path) as input_yaml:
-                lines = input_yaml.readlines()
-                for line in lines:
-                    print(line)
             with working_directory(temp_dir):
-                logger.info(f"test_last_modified_in_dq_summary {gcp_application_credentials}")
-                target_table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
+                logger.info(f"test_last_modified_in_dq_summary {_gcp_application_credentials}")
+                target_table = f"{_gcp_project_id}.{_target_bq_result_dataset_name}.{_target_bq_result_table_name}"
                 args = [
                     "ALL",
-                    f"{temp_configs_from_dq_advanced_rules_config_file}",
-                    f"--gcp_project_id={gcp_project_id}",
-                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
-                    f"--gcp_region_id={gcp_bq_region}",
+                    f"{_temp_configs_from_dq_advanced_rules_config_file}",
+                    f"--gcp_project_id={_gcp_project_id}",
+                    f"--gcp_bq_dataset_id={_gcp_bq_dataset}",
+                    f"--gcp_region_id={_gcp_bq_region}",
                     f"--target_bigquery_summary_table={target_table}",
                     "--enable_experimental_bigquery_entity_uris",
+                    "--debug"
                     ]
-                result = runner.invoke(main, args)
+                result = _runner.invoke(main, args)
                 print(result.output)
                 assert result.exit_code == 0
 
@@ -134,11 +195,11 @@ class TestDqAdvancedRules:
                     dbt_path=None,
                     dbt_profiles_dir=None,
                     environment_target="Dev",
-                    gcp_project_id=gcp_project_id,
-                    gcp_region_id=gcp_bq_region,
-                    gcp_bq_dataset_id=gcp_bq_dataset,
-                    gcp_service_account_key_path=gcp_sa_key,
-                    gcp_impersonation_credentials=gcp_impersonation_credentials,
+                    gcp_project_id=_gcp_project_id,
+                    gcp_region_id=_gcp_bq_region,
+                    gcp_bq_dataset_id=_gcp_bq_dataset,
+                    gcp_service_account_key_path=_gcp_sa_key,
+                    gcp_impersonation_credentials=_gcp_impersonation_credentials,
                 )
                 dbt_path = dbt_runner.get_dbt_path()
                 invocation_id = get_dbt_invocation_id(dbt_path)
@@ -152,7 +213,7 @@ class TestDqAdvancedRules:
                 complex_rule_validation_success_flag,
                 success_count, failed_count, null_count
                 FROM
-                    `{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}`
+                    `{_gcp_project_id}.{_target_bq_result_dataset_name}.{_target_bq_result_table_name}`
                 WHERE
                     invocation_id='{invocation_id}'
                 EXCEPT DISTINCT
@@ -162,20 +223,20 @@ class TestDqAdvancedRules:
                 complex_rule_validation_success_flag,
                 success_count, failed_count, null_count
                 FROM
-                    `{create_expected_results_table}`
+                    `{_create_expected_results_table}`
                 )
                 SELECT TO_JSON_STRING(validation_errors)
                 FROM validation_errors;
                 """
                 logger.info(f"SQL query is: {sql}")
-                query_job = client.execute_query(sql)
+                query_job = _client.execute_query(sql)
                 results = query_job.result()
                 logger.info("Query done")
                 rows = list(results)
                 logger.info(f"Query execution returned {len(rows)} rows")
                 if len(rows):
-                    logger.info(f"Input yaml from {source_dq_advanced_rules_configs_file_path}:")
-                    with open(source_dq_advanced_rules_configs_file_path) as input_yaml:
+                    logger.info(f"Input yaml from {_source_dq_advanced_rules_configs_file_path}:")
+                    with open(_source_dq_advanced_rules_configs_file_path) as input_yaml:
                         lines = input_yaml.read()
                         logger.info(lines)
                     logger.warning(
@@ -188,7 +249,7 @@ class TestDqAdvancedRules:
                 failed_rows = [json.loads(row[0]) for row in rows]
                 failed_rows_rule_binding_ids = [row['rule_binding_id'] for row in failed_rows]
                 failed_rows_rule_ids = [row['rule_id'] for row in failed_rows]
-                with open(test_resources / "dq_rules_expected_results.json", "rb") as source_file:
+                with open(_test_resources / "dq_rules_expected_results.json", "rb") as source_file:
                     expected_json = []
                     json_data = json.loads(source_file.read())
                     for record in json_data:
@@ -200,7 +261,339 @@ class TestDqAdvancedRules:
                 assert failed_rows == expected_json
         finally:
             shutil.rmtree(temp_dir)
-
+            
+    def test_timeliness_delayed_ingestion(
+        self,
+        runner,
+        temp_configs_from_dq_advanced_rules_timeliness_delayed_ingestion_config_file,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
+        tmp_path,
+        client,
+        gcp_impersonation_credentials,
+        gcp_sa_key,
+        create_expected_results_table,
+        prepare_test_input_data,
+        source_dq_advanced_rules_timeliness_delayed_ingestion_configs_file_path,
+        test_resources,
+        caplog,
+    ):
+        self._generic_test_runner(runner,
+            temp_configs_from_dq_advanced_rules_timeliness_delayed_ingestion_config_file,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            target_bq_result_dataset_name,
+            target_bq_result_table_name,
+            tmp_path,
+            client,
+            gcp_impersonation_credentials,
+            gcp_sa_key,
+            create_expected_results_table,
+            source_dq_advanced_rules_timeliness_delayed_ingestion_configs_file_path,
+            test_resources,
+            caplog)
+    
+    def test_correctness_complex_rule(
+        self,
+        runner,
+        temp_configs_from_dq_advanced_rules_correctness_complex_rule_config_file,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
+        tmp_path,
+        client,
+        gcp_impersonation_credentials,
+        gcp_sa_key,
+        prepare_test_input_data,
+        create_expected_results_table,
+        source_dq_advanced_rules_correctness_complex_rule_configs_file_path,
+        test_resources,
+        caplog,
+    ):
+        self._generic_test_runner(runner,
+            temp_configs_from_dq_advanced_rules_correctness_complex_rule_config_file,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            target_bq_result_dataset_name,
+            target_bq_result_table_name,
+            tmp_path,
+            client,
+            gcp_impersonation_credentials,
+            gcp_sa_key,
+            create_expected_results_table,
+            source_dq_advanced_rules_correctness_complex_rule_configs_file_path,
+            test_resources,
+            caplog)
+            
+    def test_timeliness_volumes_per_period(
+        self,
+        runner,
+        temp_configs_from_dq_advanced_rules_timeliness_volumes_per_period_config_file,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
+        tmp_path,
+        client,
+        gcp_impersonation_credentials,
+        gcp_sa_key,
+        prepare_test_input_data,
+        create_expected_results_table,
+        source_dq_advanced_rules_timeliness_volumes_per_period_configs_file_path,
+        test_resources,
+        caplog,
+    ):
+        self._generic_test_runner(runner,
+            temp_configs_from_dq_advanced_rules_timeliness_volumes_per_period_config_file,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            target_bq_result_dataset_name,
+            target_bq_result_table_name,
+            tmp_path,
+            client,
+            gcp_impersonation_credentials,
+            gcp_sa_key,
+            create_expected_results_table,
+            source_dq_advanced_rules_timeliness_volumes_per_period_configs_file_path,
+            test_resources,
+            caplog)
+            
+    def test_integrity_reference_data(
+        self,
+        runner,
+        temp_configs_from_dq_advanced_rules_integrity_reference_data_config_file,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
+        tmp_path,
+        client,
+        gcp_impersonation_credentials,
+        gcp_sa_key,
+        prepare_test_input_data,
+        create_expected_results_table,
+        source_dq_advanced_rules_integrity_reference_data_configs_file_path,
+        test_resources,
+        caplog,
+    ):
+        self._generic_test_runner(runner,
+            temp_configs_from_dq_advanced_rules_integrity_reference_data_config_file,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            target_bq_result_dataset_name,
+            target_bq_result_table_name,
+            tmp_path,
+            client,
+            gcp_impersonation_credentials,
+            gcp_sa_key,
+            create_expected_results_table,
+            source_dq_advanced_rules_integrity_reference_data_configs_file_path,
+            test_resources,
+            caplog)
+            
+    def test_integrity_subquery(
+        self,
+        runner,
+        temp_configs_from_dq_advanced_rules_integrity_subquery_config_file,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
+        tmp_path,
+        client,
+        gcp_impersonation_credentials,
+        gcp_sa_key,
+        prepare_test_input_data,
+        create_expected_results_table,
+        source_dq_advanced_rules_integrity_subquery_configs_file_path,
+        test_resources,
+        caplog,
+    ):
+        self._generic_test_runner(runner,
+            temp_configs_from_dq_advanced_rules_integrity_subquery_config_file,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            target_bq_result_dataset_name,
+            target_bq_result_table_name,
+            tmp_path,
+            client,
+            gcp_impersonation_credentials,
+            gcp_sa_key,
+            create_expected_results_table,
+            source_dq_advanced_rules_integrity_subquery_configs_file_path,
+            test_resources,
+            caplog)
+            
+    def test_conformity_email_regex(
+        self,
+        runner,
+        temp_configs_from_dq_advanced_rules_conformity_email_regex_config_file,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
+        tmp_path,
+        client,
+        gcp_impersonation_credentials,
+        gcp_sa_key,
+        prepare_test_input_data,
+        create_expected_results_table,
+        source_dq_advanced_rules_conformity_email_regex_configs_file_path,
+        test_resources,
+        caplog,
+    ):
+        self._generic_test_runner(runner,
+            temp_configs_from_dq_advanced_rules_conformity_email_regex_config_file,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            target_bq_result_dataset_name,
+            target_bq_result_table_name,
+            tmp_path,
+            client,
+            gcp_impersonation_credentials,
+            gcp_sa_key,
+            create_expected_results_table,
+            source_dq_advanced_rules_conformity_email_regex_configs_file_path,
+            test_resources,
+            caplog)
+            
+    def test_completeness_with_condition(
+        self,
+        runner,
+        temp_configs_from_dq_advanced_rules_completeness_with_condition_config_file,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
+        tmp_path,
+        client,
+        gcp_impersonation_credentials,
+        gcp_sa_key,
+        prepare_test_input_data,
+        create_expected_results_table,
+        source_dq_advanced_rules_completeness_with_condition_configs_file_path,
+        test_resources,
+        caplog,
+    ):
+        self._generic_test_runner(runner,
+            temp_configs_from_dq_advanced_rules_completeness_with_condition_config_file,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            target_bq_result_dataset_name,
+            target_bq_result_table_name,
+            tmp_path,
+            client,
+            gcp_impersonation_credentials,
+            gcp_sa_key,
+            create_expected_results_table,
+            source_dq_advanced_rules_completeness_with_condition_configs_file_path,
+            test_resources,
+            caplog)
+            
+    def test_uniqueness_with_column_groups(
+        self,
+        runner,
+        temp_configs_from_dq_advanced_rules_uniqueness_with_column_groups_config_file,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
+        tmp_path,
+        client,
+        gcp_impersonation_credentials,
+        gcp_sa_key,
+        prepare_test_input_data,
+        create_expected_results_table,
+        source_dq_advanced_rules_uniqueness_with_column_groups_configs_file_path,
+        test_resources,
+        caplog,
+    ):
+        self._generic_test_runner(runner,
+            temp_configs_from_dq_advanced_rules_uniqueness_with_column_groups_config_file,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            target_bq_result_dataset_name,
+            target_bq_result_table_name,
+            tmp_path,
+            client,
+            gcp_impersonation_credentials,
+            gcp_sa_key,
+            create_expected_results_table,
+            source_dq_advanced_rules_uniqueness_with_column_groups_configs_file_path,
+            test_resources,
+            caplog)
+            
+    def test_accuracy_distribution_based(
+        self,
+        runner,
+        temp_configs_from_dq_advanced_rules_accuracy_distribution_based_config_file,
+        gcp_application_credentials,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_bq_region,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
+        tmp_path,
+        client,
+        gcp_impersonation_credentials,
+        gcp_sa_key,
+        prepare_test_input_data,
+        create_expected_results_table,
+        source_dq_advanced_rules_accuracy_distribution_based_configs_file_path,
+        test_resources,
+        caplog,
+    ):
+        self._generic_test_runner(runner,
+            temp_configs_from_dq_advanced_rules_accuracy_distribution_based_config_file,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            target_bq_result_dataset_name,
+            target_bq_result_table_name,
+            tmp_path,
+            client,
+            gcp_impersonation_credentials,
+            gcp_sa_key,
+            create_expected_results_table,
+            source_dq_advanced_rules_accuracy_distribution_based_configs_file_path,
+            test_resources,
+            caplog)
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

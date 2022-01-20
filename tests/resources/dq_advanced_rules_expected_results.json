@@ -3,10 +3,10 @@
     "rule_binding_id": "T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_FAIL",
     "rule_id": "NO_DELAYED_INGESTION_DAY_LEVEL",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
-    "rows_validated": 20000,
+    "rows_validated": 100,
     "complex_rule_validation_errors_count": 1,
     "complex_rule_validation_success_flag": false,
     "success_count": null,
@@ -17,10 +17,10 @@
     "rule_binding_id": "T1_NO_DELAYED_INGESTION_DAY_LEVEL_SHOULD_SUCCEED",
     "rule_id": "NO_DELAYED_INGESTION_DAY_LEVEL",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
-    "rows_validated": 20000,
+    "rows_validated": 100,
     "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
     "success_count": null,
@@ -28,13 +28,13 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T2_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_SUCCEED",
+    "rule_binding_id": "T1_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_SUCCEED",
     "rule_id": "NO_DELAYED_INGESTION_MONTH_LEVEL",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
-    "rows_validated": 1000,
+    "rows_validated": 100,
     "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
     "success_count": null,
@@ -42,13 +42,13 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T2_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_FAIL",
+    "rule_binding_id": "T1_NO_DELAYED_INGESTION_MONTH_LEVEL_SHOULD_FAIL",
     "rule_id": "NO_DELAYED_INGESTION_MONTH_LEVEL",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
-    "rows_validated": 1000,
+    "rows_validated": 100,
     "complex_rule_validation_errors_count": 1,
     "complex_rule_validation_success_flag": false,
     "success_count": null,
@@ -56,13 +56,13 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T3_NO_DELAYED_INGESTION_TIMESTAMP_LEVEL_SHOULD_SUCCEED",
+    "rule_binding_id": "T1_NO_DELAYED_INGESTION_TIMESTAMP_LEVEL_SHOULD_SUCCEED",
     "rule_id": "NO_DELAYED_INGESTION_TIMESTAMP_LEVEL",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
-    "rows_validated": 20000,
+    "rows_validated": 86,
     "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
     "success_count": null,
@@ -70,13 +70,13 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T3_NO_DELAYED_INGESTION_TIMESTAMP_LEVEL_SHOULD_FAIL",
+    "rule_binding_id": "T1_NO_DELAYED_INGESTION_TIMESTAMP_LEVEL_SHOULD_FAIL",
     "rule_id": "NO_DELAYED_INGESTION_TIMESTAMP_LEVEL",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
-    "rows_validated": 20000,
+    "rows_validated": 86,
     "complex_rule_validation_errors_count": 1,
     "complex_rule_validation_success_flag": false,
     "success_count": null,
@@ -84,10 +84,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED",
+    "rule_binding_id": "T2_NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED",
     "rule_id": "NO_COMPLEX_RULES_MISMATCH",
     "column_id": "dInvoiceGrossTotalAmount",
-    "dimension": null,
+    "dimension": "correctness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 10,
@@ -98,10 +98,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T4_NO_COMPLEX_RULES_MISMATCH_SHOULD_FAIL",
+    "rule_binding_id": "T2_NO_COMPLEX_RULES_MISMATCH_SHOULD_FAIL",
     "rule_id": "NO_COMPLEX_RULES_MISMATCH",
     "column_id": "dInvoiceGrossTotalAmount",
-    "dimension": null,
+    "dimension": "correctness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 10,
@@ -112,10 +112,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_FAIL",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_FAIL",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -126,10 +126,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_SUCCEED",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_SUCCEED",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -140,10 +140,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_MONTH_SHOULD_SUCCEED",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_MONTH_SHOULD_SUCCEED",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -154,10 +154,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_FAIL",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_FAIL",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -168,10 +168,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_SUCCEED",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_SUCCEED",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -182,10 +182,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_MONTH_SHOULD_SUCCEED",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_MONTH_SHOULD_SUCCEED",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -196,10 +196,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_SUCCEED",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_SUCCEED",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -210,10 +210,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_FAIL",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_FAIL",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -224,10 +224,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_PERIOD_TOO_OLD_SHOULD_FAIL",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_PERIOD_TOO_OLD_SHOULD_FAIL",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -238,10 +238,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_MONTH_SHOULD_FAIL",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_MONTH_SHOULD_FAIL",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -252,10 +252,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_YEAR_SHOULD_FAIL",
+    "rule_binding_id": "T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_YEAR_SHOULD_FAIL",
     "rule_id": "NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD",
     "column_id": null,
-    "dimension": null,
+    "dimension": "timeliness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
@@ -266,10 +266,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_FAIL",
+    "rule_binding_id": "T4_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_FAIL",
     "rule_id": "NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR",
     "column_id": "art_no",
-    "dimension": null,
+    "dimension": "integrity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 1000,
@@ -280,10 +280,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T6_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED",
+    "rule_binding_id": "T4_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED",
     "rule_id": "NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR",
     "column_id": "art_no",
-    "dimension": null,
+    "dimension": "integrity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 1000,
@@ -294,10 +294,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_FAIL",
+    "rule_binding_id": "T4_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_FAIL",
     "rule_id": "NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR",
     "column_id": "art_no",
-    "dimension": null,
+    "dimension": "integrity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 1000,
@@ -308,10 +308,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T6_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED",
+    "rule_binding_id": "T4_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED",
     "rule_id": "NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR",
     "column_id": "art_no",
-    "dimension": null,
+    "dimension": "integrity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 1000,
@@ -322,10 +322,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_FAIL",
+    "rule_binding_id": "T5_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_FAIL",
     "rule_id": "NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY",
     "column_id": "SaleLineList",
-    "dimension": null,
+    "dimension": "integrity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 10,
@@ -336,10 +336,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_SUCCEED",
+    "rule_binding_id": "T5_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_SUCCEED",
     "rule_id": "NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY",
     "column_id": "SaleLineList",
-    "dimension": null,
+    "dimension": "integrity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 10,
@@ -350,10 +350,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_FAIL",
+    "rule_binding_id": "T5_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_FAIL",
     "rule_id": "NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2",
     "column_id": "yccountIqentiyiers",
-    "dimension": null,
+    "dimension": "integrity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 100,
@@ -364,10 +364,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T7_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_SUCCEED",
+    "rule_binding_id": "T5_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_SUCCEED",
     "rule_id": "NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2",
     "column_id": "yccountIqentiyiers",
-    "dimension": null,
+    "dimension": "integrity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 6,
@@ -378,10 +378,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T8_CONFORMITY_CHECK_SHOULD_SUCCEED",
+    "rule_binding_id": "T6_CONFORMITY_CHECK_SHOULD_SUCCEED",
     "rule_id": "NO_INVALID_EMAIL",
     "column_id": "data",
-    "dimension": null,
+    "dimension": "conformity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 1000,
@@ -392,10 +392,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T8_CONFORMITY_CHECK_SHOULD_FAIL",
+    "rule_binding_id": "T6_CONFORMITY_CHECK_SHOULD_FAIL",
     "rule_id": "NO_INVALID_EMAIL",
     "column_id": "data",
-    "dimension": null,
+    "dimension": "conformity",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 993,
@@ -406,10 +406,10 @@
     "null_count": 0
   },
   {
-    "rule_binding_id": "T9_COMPLETNESS_CHECK_SHOULD_FAIL",
-    "rule_id": "NO_ISSUES_WITH_COMPLETNESS",
+    "rule_binding_id": "T7_COMPLETENESS_CHECK_SHOULD_FAIL",
+    "rule_id": "NO_ISSUES_WITH_COMPLETENESS",
     "column_id": null,
-    "dimension": null,
+    "dimension": "completeness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 1000,
@@ -420,10 +420,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T9_COMPLETNESS_CHECK_SHOULD_FAIL2",
-    "rule_id": "NO_ISSUES_WITH_COMPLETNESS",
+    "rule_binding_id": "T7_COMPLETENESS_CHECK_SHOULD_FAIL2",
+    "rule_id": "NO_ISSUES_WITH_COMPLETENESS",
     "column_id": null,
-    "dimension": null,
+    "dimension": "completeness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 1000,
@@ -434,10 +434,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T9_COMPLETNESS_CHECK_SHOULD_SUCCEED",
-    "rule_id": "NO_ISSUES_WITH_COMPLETNESS",
+    "rule_binding_id": "T7_COMPLETENESS_CHECK_SHOULD_SUCCEED",
+    "rule_id": "NO_ISSUES_WITH_COMPLETENESS",
     "column_id": null,
-    "dimension": null,
+    "dimension": "completeness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 1000,
@@ -448,10 +448,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T9_COMPLETNESS_CHECK_SHOULD_SUCCEED2",
-    "rule_id": "NO_ISSUES_WITH_COMPLETNESS",
+    "rule_binding_id": "T7_COMPLETENESS_CHECK_SHOULD_SUCCEED2",
+    "rule_id": "NO_ISSUES_WITH_COMPLETENESS",
     "column_id": null,
-    "dimension": null,
+    "dimension": "completeness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 1000,
@@ -462,10 +462,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T10_UNIQUENESS_CHECK_SHOULD_FAIL",
+    "rule_binding_id": "T8_UNIQUENESS_CHECK_SHOULD_FAIL",
     "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
     "column_id": null,
-    "dimension": null,
+    "dimension": "uniqueness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 12348,
@@ -476,10 +476,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T10_UNIQUENESS_CHECK_SHOULD_SUCCEED",
+    "rule_binding_id": "T8_UNIQUENESS_CHECK_SHOULD_SUCCEED",
     "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
     "column_id": null,
-    "dimension": null,
+    "dimension": "uniqueness",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 10000,
@@ -490,10 +490,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T11_ACCURACY_CHECK_SIMPLE_SHOULD_FAIL",
+    "rule_binding_id": "T9_ACCURACY_CHECK_SIMPLE_SHOULD_FAIL",
     "rule_id": "NO_ACCURACY_ISSUES_SIMPLE",
     "column_id": null,
-    "dimension": null,
+    "dimension": "accuracy",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4187,
@@ -504,10 +504,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T11_ACCURACY_CHECK_SIMPLE_SHOULD_SUCCEED",
+    "rule_binding_id": "T9_ACCURACY_CHECK_SIMPLE_SHOULD_SUCCEED",
     "rule_id": "NO_ACCURACY_ISSUES_SIMPLE",
     "column_id": null,
-    "dimension": null,
+    "dimension": "accuracy",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4187,
@@ -518,10 +518,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T11_ACCURACY_CHECK_DISTRIBUTION_SHOULD_FAIL",
+    "rule_binding_id": "T9_ACCURACY_CHECK_DISTRIBUTION_SHOULD_FAIL",
     "rule_id": "NO_ACCURACY_ISSUES_DISTRIBUTION",
     "column_id": null,
-    "dimension": null,
+    "dimension": "accuracy",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4244,
@@ -532,10 +532,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T11_ACCURACY_CHECK_DISTRIBUTION_HIGH_STD_DEV_SHOULD_FAIL",
+    "rule_binding_id": "T9_ACCURACY_CHECK_DISTRIBUTION_HIGH_STD_DEV_SHOULD_FAIL",
     "rule_id": "NO_ACCURACY_ISSUES_DISTRIBUTION",
     "column_id": null,
-    "dimension": null,
+    "dimension": "accuracy",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 5017,
@@ -546,10 +546,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T11_ACCURACY_CHECK_DISTRIBUTION_SHOULD_SUCCEED",
+    "rule_binding_id": "T9_ACCURACY_CHECK_DISTRIBUTION_SHOULD_SUCCEED",
     "rule_id": "NO_ACCURACY_ISSUES_DISTRIBUTION",
     "column_id": null,
-    "dimension": null,
+    "dimension": "accuracy",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 5017,
@@ -560,10 +560,10 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T11_ACCURACY_CHECK_DISTRIBUTION_HIGH_BUCKET_RATE_SHOULD_SUCCEED",
+    "rule_binding_id": "T9_ACCURACY_CHECK_DISTRIBUTION_HIGH_BUCKET_RATE_SHOULD_SUCCEED",
     "rule_id": "NO_ACCURACY_ISSUES_DISTRIBUTION",
     "column_id": null,
-    "dimension": null,
+    "dimension": "accuracy",
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4244,
