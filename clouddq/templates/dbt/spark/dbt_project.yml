@@ -44,7 +44,7 @@ models:
     data_quality_engine:
       materialized: table
     rule_binding_views:
-      materialized: table
+      materialized: view
 
 vars:
   target_rule_binding_ids: ""

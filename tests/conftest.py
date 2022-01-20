@@ -250,6 +250,10 @@ def source_configs_path():
     return Path("tests").joinpath("resources", "configs").absolute()
 
 @pytest.fixture(scope="session")
+def spark_source_configs_path():
+    return Path("tests").joinpath("resources", "configs_spark").absolute()
+
+@pytest.fixture(scope="session")
 def source_configs_file_path():
     return Path("tests").joinpath("resources").joinpath("configs.yml").absolute()
 
@@ -302,7 +306,7 @@ def temp_configs_dir(
     # Create temp directory
     temp_clouddq_dir = Path(tmp_path).joinpath("clouddq_test_artifacts")
     # Copy over tests/resources/configs
-    configs_path = Path(temp_clouddq_dir).joinpath("configs")
+    configs_path = Path(temp_clouddq_dir).joinpath("configs_spark")
     _ = shutil.copytree(source_configs_path, configs_path)
     # Prepare test config
     test_data = configs_path.joinpath("entities", "test-data.yml")
@@ -336,6 +340,45 @@ def temp_configs_dir(
     yield configs_path.absolute()
     if os.path.exists(temp_clouddq_dir):
         shutil.rmtree(temp_clouddq_dir)
+
+@pytest.fixture(scope="function")
+def temp_spark_configs_dir(
+        gcp_project_id,
+        gcp_dataplex_bigquery_dataset_id,
+        gcp_dataplex_region,
+        gcp_dataplex_lake_name,
+        gcp_dataplex_zone_id,
+        spark_source_configs_path,
+        tmp_path):
+    # Create temp directory
+    temp_clouddq_dir = Path(tmp_path).joinpath("clouddq_spark_test_artifacts")
+    # Copy over tests/resources/configs_spark
+    configs_path = Path(temp_clouddq_dir).joinpath("configs")
+    _ = shutil.copytree(spark_source_configs_path, configs_path)
+    # Prepare test config
+    test_data = configs_path.joinpath("entities", "test-data.yml")
+    with open(test_data) as source_file:
+        lines = source_file.read()
+    with open(test_data, "w") as source_file:
+        lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
+        lines = lines.replace("<my-gcp-dataplex-lake-id>", gcp_dataplex_lake_name)
+        lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
+        source_file.write(lines)
+    # Prepare metadata_registry_default_configs
+    registry_defaults = configs_path.joinpath("metadata_registry_defaults.yml")
+    with open(registry_defaults) as source_file:
+        lines = source_file.read()
+    with open(registry_defaults, "w") as source_file:
+        lines = lines.replace("<my-gcp-dataplex-lake-id>", gcp_dataplex_lake_name)
+        lines = lines.replace("<my-gcp-dataplex-region-id>", gcp_dataplex_region)
+        lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
+        lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
+        source_file.write(lines)
+
+    yield configs_path.absolute()
+    if os.path.exists(temp_clouddq_dir):
+        shutil.rmtree(temp_clouddq_dir)
+
 
 @pytest.fixture(scope="function")
 def temp_configs_from_file(

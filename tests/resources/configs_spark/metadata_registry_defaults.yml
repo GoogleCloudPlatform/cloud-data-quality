@@ -12,24 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rule_bindings:
-  T3_DQ_1_EMAIL_DUPLICATE:
-    entity_id: TEST_TABLE_BQ
-    column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
-    rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: "contact_type,value"
-      - NOT_NULL_SIMPLE
-    metadata:
-      brand: one
-
-  T3_DQ_1_EMAIL_DUPLICATE_NONE:
-    entity_id: TEST_TABLE_DP
-    column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
-    rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: "contact_type,value"
-    metadata:
-      brand: one
+metadata_registry_defaults:
+  dataplex:
+    projects: <my-gcp-project-id>
+    locations: <my-gcp-dataplex-region-id>
+    lakes: <my-gcp-dataplex-lake-id>
+    zones: <my-gcp-dataplex-zone-id>

@@ -18,74 +18,19 @@ This is designed to be launched using a companion script such
 as `scripts/dataproc/submit-dataproc-job.sh`.
 """
 
-from itertools import chain
 from pathlib import Path
 from pprint import pprint
-from zipfile import ZipFile
 
-import hashlib
 import os
 import subprocess
 import sys
+
+# from pyhive import hive
 
 from pyspark.sql.session import SparkSession
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
 from contextlib import closing
-
-
-def verify_executable(filename, expected_hexdigest):
-    hash_sha256 = hashlib.sha256()
-    with open(filename, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_sha256.update(chunk)
-    if not hash_sha256.hexdigest() == expected_hexdigest:
-        raise ValueError(f"Cannot verify executable {filename}.")
-
-
-def prepare_configs_path(input_directory):
-    configs_path = Path("configs")
-    if not configs_path.is_dir():
-        print(f"Creating configs directory at: `{configs_path.absolute()}`")
-        configs_path.mkdir()
-    for filename in input_directory:
-        file = Path(filename)
-        # checking if it is a file
-        if file.is_file():
-            if file.suffix == ".zip" and file.name != "clouddq-executable.zip":
-                print(
-                    f"Extracting file {file} to configs directory `{configs_path}`..."
-                )
-                with ZipFile(file, "r") as zipObject:
-                    zipObject.extractall(configs_path)
-            elif file.suffix == ".yml" or file.suffix == ".yaml":
-                print(
-                    f"Copying YAML file {file} to configs directory `{configs_path}`..."
-                )
-                configs_path.joinpath(file.name).write_text(file.open().read())
-        # else if it's a directory,
-        # look for yaml/yml files in the path
-        # and copy them to the `configs` directory
-        elif file.is_dir():
-            for yaml_file in chain(file.glob("**/*.yaml"), file.glob("**/*.yml")):
-                try:
-                    content = yaml_file.open().read()
-                    configs_path.joinpath(yaml_file.name).write_text(content)
-                except Exception as e:
-                    print(f"Failed to parse config file: {yaml_file}\n{e}")
-                    continue
-    return configs_path
-
-
-def main(args):
-    with open(f"{args[1]}.hashsum") as f:
-        expected_hexdigest = f.read().replace("\n", "").replace("\t", "")
-        print(f"CloudDQ executable expected hexdigest: {expected_hexdigest}")
-        verify_executable(args[1], expected_hexdigest)
-    args[3] = str(Path("configs").absolute())
-    cmd = f"{sys.executable} {' '.join(args[1:])}"
-    print(f"Executing commands:\n {cmd}")
-    subprocess.run(cmd, shell=True, check=True)
 
 
 def create_cloudq_staging_schema():
@@ -124,9 +69,10 @@ def create_cloudq_staging_schema():
         else:
             print("Table does not exist :(")
     except Exception as e:
-        print(e.with_traceback())
+        print(str(e))
     finally:
         spark.stop()
+
 
 if __name__ == "__main__":
     print("OS runtime details:")
@@ -141,11 +87,8 @@ if __name__ == "__main__":
     pprint(os.listdir())
     print("Input PySpark arguments:")
     pprint(sys.argv)
-    input_configs = sys.argv[3]
-    print(f"User-specified CloudDQ YAML configs: {input_configs}")
-    configs_path = prepare_configs_path(os.listdir())
-    print("Configs directory contents is:")
-    pprint(list(configs_path.glob("**/*")))
+    print("Pyhive Version")
+    print("pyhive.__version__")
     print("Start thrift server:")
     cmd = f"""export HIVE_SERVER2_THRIFT_PORT=10005;
     export HIVE_SERVER2_THRIFT_BIND_HOST=localhost;
@@ -153,8 +96,13 @@ if __name__ == "__main__":
     print(f"Executing commands:\n {cmd}")
     subprocess.run(cmd, shell=True, check=True)
     print("Thrift server started successfully:")
-    print("Installing pyhive===>")
-    subprocess.run("pip install pyhive", shell=True, check=True)
     print("Testing connection to hive metastore `default` database using thrift:")
-    create_cloudq_staging_schema()
-    main(sys.argv)
+    # connection = hive.connect(
+    #     host="localhost", port=10005, database='default', user="root"
+    # )
+    # with closing(connection):
+    #     cursor = connection.cursor()
+    #     cursor.execute("SHOW TABLES;")
+    #     rows = list(cursor.fetchall())
+    #     print(f"Connected to hive metastore successfully. We have {len(rows)} tables in default database.")
+    # create_cloudq_staging_schema()

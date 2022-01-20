@@ -91,6 +91,7 @@ class CloudDqDataplexClient:
         validate_only: bool = False,
         clouddq_pyspark_driver_filename: str = "clouddq_pyspark_driver.py",
         enable_experimental_bigquery_entity_uris: bool = True,
+        enable_experimental_pyspark_runner: bool = False,
     ) -> Response:
         # Set default CloudDQ PySpark driver path if not manually overridden
         clouddq_pyspark_driver_path = self._validate_clouddq_artifact_path(
@@ -149,6 +150,8 @@ class CloudDqDataplexClient:
         # Set experimental flags
         if enable_experimental_bigquery_entity_uris:
             execution_arguments += " --enable_experimental_bigquery_entity_uris,"
+        if enable_experimental_pyspark_runner:
+            execution_arguments += " --enable_experimental_pyspark_runner,"
         # Prepare Dataplex Task message body for CloudDQ Job
         clouddq_post_body = {
             "spark": {

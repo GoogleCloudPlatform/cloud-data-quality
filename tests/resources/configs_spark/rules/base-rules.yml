@@ -12,24 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rule_bindings:
-  T3_DQ_1_EMAIL_DUPLICATE:
-    entity_id: TEST_TABLE_BQ
-    column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
-    rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: "contact_type,value"
-      - NOT_NULL_SIMPLE
-    metadata:
-      brand: one
+rules:
+  NOT_NULL_SIMPLE:
+    rule_type: NOT_NULL
 
-  T3_DQ_1_EMAIL_DUPLICATE_NONE:
-    entity_id: TEST_TABLE_DP
-    column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
-    rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: "contact_type,value"
-    metadata:
-      brand: one
+  REGEX_VALID_EMAIL:
+    rule_type: REGEX
+    params:
+      pattern: |-
+        ^[^@]+[@]{1}[^@]+$
+
+  CUSTOM_SQL_LENGTH_LE_30:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        LENGTH( $column ) <= 30
+
+  CUSTOM_SQL_LENGTH_LE_PARAMETRIZED:
+    params:
+      custom_sql_arguments:
+        - upper_bound
+      custom_sql_expr: LENGTH( $column ) <= $upper_bound
+    rule_type: CUSTOM_SQL_EXPR
+
+  NOT_BLANK:
+    rule_type: NOT_BLANK

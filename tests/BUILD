@@ -28,6 +28,12 @@ filegroup(
 )
 
 filegroup(
+    name = "test_spark_configs",
+    srcs = glob(["resources/configs_spark/**/*"]),
+    visibility = ["//tests:__subpackages__"],
+)
+
+filegroup(
     name = "test_dbt_profiles_dir",
     srcs = glob(["resources/test_dbt_profiles_dir/profiles.yml"]),
     visibility = ["//tests:__subpackages__"],
@@ -46,6 +52,7 @@ DEPS = [
     requirement("google-api-python-client"),
     requirement("requests-oauth2"),
     requirement("filelock"),
+    requirement("PyHive"),
 ]
 
 SRCS = glob([
@@ -62,6 +69,7 @@ DATA = [
     "//:dbt",
     "//:dbt_project",
     ":test_configs",
+    ":test_spark_configs",
     ":test_dbt_profiles_dir",
     "//clouddq:dbt_template",
     "//clouddq:dbt_project_template",
@@ -209,6 +217,15 @@ py_test(
     name = "test_spark_dq_rules",
     srcs = SRCS,
     data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+py_test(
+    name = "test_dataplex_spark_task",
+    srcs = SRCS,
+    data = DATA + [
+        "//:bazel_bin_clouddq_executable",
+    ],
     legacy_create_init = 0,
     deps = DEPS,
 )

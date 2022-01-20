@@ -1,0 +1,52 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+entities:
+  TEST_TABLE:
+    source_database: DATAPLEX
+    table_name: clouddq_avro_asset
+    lake_name: <my-gcp-dataplex-lake-id>
+    zone_name: <my-gcp-dataplex-zone-id>
+    resource_type: STORAGE_BUCKET
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          table_name: <table_name_2>
+          lake_name: <my_gcp_dataplex_lake_id_2>
+          zone_name: <my_gcp_dataplex_zone_id_2>
+          resource_type: <resource_type_2>
+          project_name: <my_gcp_project_id_2>
+    columns:
+      ROW_ID:
+        name: row_id
+        data_type: STRING
+        description: |-
+          unique identifying id
+      CONTACT_TYPE:
+        name: contact_type
+        data_type: STRING
+        description: |-
+          contact detail type
+      VALUE:
+        name: value
+        data_type: STRING
+        description: |-
+          contact detail
+      TS:
+        name: ts
+        data_type: DATETIME
+        description: |-
+          updated timestamp

@@ -18,19 +18,20 @@ load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirem
 
 filegroup(
     name = "dbt_template",
-    srcs = glob(["templates/dbt/models/data_quality_engine/**/*.sql"]),
+    srcs = glob(["templates/dbt/bigquery/models/data_quality_engine/**/*.sql"]) +
+    glob(["templates/dbt/spark/models/data_quality_engine/**/*.sql"]),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "dbt_project_template",
-    srcs = glob(["templates/dbt/dbt_project.yml"]),
+    srcs = glob(["templates/dbt/bigquery/dbt_project.yml"]) + glob(["templates/dbt/spark/dbt_project.yml"]),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "macros_template",
-    srcs = glob(["templates/dbt/macros/*.sql"]),
+    srcs = glob(["templates/dbt/bigquery/macros/*.sql"]) + glob(["templates/dbt/spark/macros/*.sql"]),
     visibility = ["//visibility:public"],
 )
 
@@ -56,6 +57,7 @@ py_binary(
         requirement("click"),
         requirement("coloredlogs"),
         requirement("sqlite-utils"),
+        requirement("PyHive"),
     ],
 )
 
@@ -71,7 +73,7 @@ py_library(
         requirement("dbt-bigquery"),
         requirement("google-cloud-logging"),
         requirement("dbt-spark"),
-        requirement("pyhive"),
+        requirement("PyHive"),
         requirement("sasl"),
         requirement("thrift-sasl"),
     ],
@@ -84,6 +86,7 @@ py_library(
     deps = [
         requirement("jinja2"),
         requirement("sqlite-utils"),
+        requirement("PyHive"),
     ],
 )
 
@@ -96,7 +99,7 @@ py_library(
         requirement("dbt-bigquery"),
         requirement("pyyaml"),
         requirement("dbt-spark"),
-        requirement("pyhive"),
+        requirement("PyHive"),
         requirement("sasl"),
         requirement("thrift-sasl"),
     ],
@@ -112,6 +115,7 @@ py_library(
         requirement("google-cloud-storage"),
         requirement("google-cloud-bigquery"),
         requirement("google-api-python-client"),
+        requirement("PyHive"),
     ],
 )
 

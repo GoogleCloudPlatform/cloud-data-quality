@@ -19,3 +19,5 @@ requests-oauth2==0.3.0
 pytest-xdist==2.4.0
 filelock==3.3.2
 sqlite-utils==3.18
+pyspark
+PyHive[hive]==0.6.4
