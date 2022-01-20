@@ -1,0 +1,116 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+entities:
+  REFERENCE_DATA_CHECK_NOT_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      ART_NO:
+        name: art_no
+        data_type: INTEGER
+        description: |-
+          Art no
+  REFERENCE_DATA_CHECK_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      ART_NO:
+        name: art_no
+        data_type: INTEGER
+        description: |-
+          Art no
+
+
+row_filters:
+  NONE:
+    filter_sql_expr: 'True'
+
+
+rule_dimensions:
+  - timeliness
+  - correctness
+  - integrity
+  - conformity
+  - completeness
+  - uniqueness
+  - accuracy
+  - validity
+
+
+rules:
+  NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
+    rule_type: CUSTOM_SQL_EXPR
+    dimension: integrity
+    params:
+      custom_sql_arguments:
+        - ref_data_dataset
+        - ref_data_table_id
+      custom_sql_expr: |-
+        $column in (select art_no from `$ref_data_dataset.$ref_data_table_id`)
+  NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
+    rule_type: CUSTOM_SQL_EXPR
+    dimension: integrity
+    params:
+      custom_sql_arguments:
+        - ref_data_dataset
+        - ref_data_table_id
+      custom_sql_expr: |-
+        exists (select 1 from `$ref_data_dataset.$ref_data_table_id` r where r.art_no = data.$column)
+
+
+rule_bindings:
+  T4_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_NOT_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data
+    metadata:
+      brand: one
+  T4_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data
+    metadata:
+      brand: one
+  T4_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_NOT_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data
+    metadata:
+      brand: one
+  T4_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_OK
+    column_id: ART_NO
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data
+    metadata:
+      brand: one

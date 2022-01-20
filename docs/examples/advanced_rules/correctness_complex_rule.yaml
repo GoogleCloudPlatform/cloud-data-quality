@@ -1,0 +1,88 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+entities:
+  COMPLEX_RULES_TABLE_OK:
+    source_database: BIGQUERY
+    table_name: complex_rules_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      INVOICE_GROSS_TOTAL_AMOUNT:
+        name: dInvoiceGrossTotalAmount
+        data_type: NUMERIC
+        description: |-
+          invoice gross total amount
+  COMPLEX_RULES_TABLE_NOT_OK:
+    source_database: BIGQUERY
+    table_name: complex_rules_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      INVOICE_GROSS_TOTAL_AMOUNT:
+        name: dInvoiceGrossTotalAmount
+        data_type: NUMERIC
+        description: |-
+          invoice gross total amount
+
+
+row_filters:
+  NONE:
+    filter_sql_expr: 'True'
+
+
+rule_dimensions:
+  - timeliness
+  - correctness
+  - integrity
+  - conformity
+  - completeness
+  - uniqueness
+  - accuracy
+  - validity
+
+
+rules:
+  NO_COMPLEX_RULES_MISMATCH:
+    rule_type: CUSTOM_SQL_EXPR
+    dimension: correctness
+    params:
+      custom_sql_arguments:
+        - error_margin
+      custom_sql_expr: |-
+        (select
+            sum(SaleLine.dItemTotalNetAmount) + sum(SaleLine.dVatAmount)
+          from
+            unnest(SaleLineList.SaleLine) as SaleLine
+        ) between $column - $error_margin and $column + $error_margin
+
+
+rule_bindings:
+  T2_NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED:
+    entity_id: COMPLEX_RULES_TABLE_OK
+    column_id: INVOICE_GROSS_TOTAL_AMOUNT
+    row_filter_id: NONE
+    rule_ids:
+      - NO_COMPLEX_RULES_MISMATCH:
+          error_margin: 0.03
+    metadata:
+      brand: one
+  T2_NO_COMPLEX_RULES_MISMATCH_SHOULD_FAIL:
+    entity_id: COMPLEX_RULES_TABLE_NOT_OK
+    column_id: INVOICE_GROSS_TOTAL_AMOUNT
+    row_filter_id: NONE
+    rule_ids:
+      - NO_COMPLEX_RULES_MISMATCH:
+          error_margin: 0.03
+    metadata:
+      brand: one

@@ -1,0 +1,201 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+entities:
+  ACCURACY_CHECK_SIMPLE:
+    source_database: BIGQUERY
+    table_name: accuracy_check_simple
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      FULL_NAME:
+        name: fullName
+        data_type: STRING
+        description: |-
+          full name
+      GENDER:
+        name: gender
+        data_type: STRING
+        description: |-
+          gender
+      DATE_OF_BIRTH:
+        name: dateOfBirth
+        data_type: DATE
+        description: |-
+          date of birth
+  ACCURACY_CHECK_DISTRIBUTION_NOT_OK:
+    source_database: BIGQUERY
+    table_name: accuracy_check_distribution_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      FULL_NAME:
+        name: fullName
+        data_type: STRING
+        description: |-
+          full name
+      GENDER:
+        name: gender
+        data_type: STRING
+        description: |-
+          gender
+      DATE_OF_BIRTH:
+        name: dateOfBirth
+        data_type: DATE
+        description: |-
+          date of birth
+  ACCURACY_CHECK_DISTRIBUTION_OK:
+    source_database: BIGQUERY
+    table_name: accuracy_check_distribution_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      FULL_NAME:
+        name: fullName
+        data_type: STRING
+        description: |-
+          full name
+      GENDER:
+        name: gender
+        data_type: STRING
+        description: |-
+          gender
+      DATE_OF_BIRTH:
+        name: dateOfBirth
+        data_type: DATE
+        description: |-
+          date of birth
+
+
+row_filters:
+  NONE:
+    filter_sql_expr: 'True'
+
+
+rule_dimensions:
+  - timeliness
+  - correctness
+  - integrity
+  - conformity
+  - completeness
+  - uniqueness
+  - accuracy
+  - validity
+
+
+rules:
+  NO_ACCURACY_ISSUES_SIMPLE:
+    rule_type: CUSTOM_SQL_STATEMENT
+    dimension: accuracy
+    params:
+      custom_sql_arguments:
+        - deviation_threshold_pct
+      custom_sql_statement: |-
+        select
+          *
+        from (
+          select
+            countif(gender in ('MALE', 'FEMALE')) as n
+          from data
+          )
+        where
+          ifnull(safe_divide(n,
+              (
+              select
+                count(*)
+              from data
+              )),
+            cast('inf' as float64)) < (1 - ($deviation_threshold_pct / 100))
+  NO_ACCURACY_ISSUES_DISTRIBUTION:
+    rule_type: CUSTOM_SQL_STATEMENT
+    dimension: accuracy
+    params:
+      custom_sql_arguments:
+        - standard_deviation_threshold
+        - bucket_ratio
+      custom_sql_statement: |-
+        select *
+        from (
+          select
+            stddev_pop(num_inst) as std_dev,
+            avg(num_inst) as avg_bucket_size,
+            any_value(dist_buckets) as dist_buckets,
+            safe_divide(avg(num_inst), any_value(dist_buckets)) as bucket_ratio
+          from (
+            select
+              dateOfBirth, count(*) over (partition by dateOfBirth) as num_inst, count(distinct dateOfBirth) over () as dist_buckets
+            from data
+            )
+        )
+        where std_dev > $standard_deviation_threshold or bucket_ratio > $bucket_ratio
+
+
+rule_bindings:
+  T9_ACCURACY_CHECK_SIMPLE_SHOULD_FAIL:
+    entity_id: ACCURACY_CHECK_SIMPLE
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_SIMPLE:
+          deviation_threshold_pct: 2
+    metadata:
+      brand: one
+  T9_ACCURACY_CHECK_SIMPLE_SHOULD_SUCCEED:
+    entity_id: ACCURACY_CHECK_SIMPLE
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_SIMPLE:
+          deviation_threshold_pct: 25
+    metadata:
+      brand: one
+  T9_ACCURACY_CHECK_DISTRIBUTION_SHOULD_FAIL:
+    entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_DISTRIBUTION:
+          standard_deviation_threshold: 2
+          bucket_ratio: 10
+    metadata:
+      brand: one
+  T9_ACCURACY_CHECK_DISTRIBUTION_HIGH_STD_DEV_SHOULD_FAIL:
+    entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_DISTRIBUTION:
+          standard_deviation_threshold: 1
+          bucket_ratio: 10
+    metadata:
+      brand: one
+  T9_ACCURACY_CHECK_DISTRIBUTION_SHOULD_SUCCEED:
+    entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_DISTRIBUTION:
+          standard_deviation_threshold: 2
+          bucket_ratio: 10
+    metadata:
+      brand: one
+  T9_ACCURACY_CHECK_DISTRIBUTION_HIGH_BUCKET_RATE_SHOULD_SUCCEED:
+    entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
+    column_id: FULL_NAME
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ACCURACY_ISSUES_DISTRIBUTION:
+          standard_deviation_threshold: 2
+          bucket_ratio: 4244
+    metadata:
+      brand: one

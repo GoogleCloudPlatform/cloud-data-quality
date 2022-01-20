@@ -1,0 +1,138 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+entities:
+  REFERENCE_DATA_CHECK_SUBQUERY_NOT_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_subquery_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      SALE_LINE_LIST:
+        name: SaleLineList
+        data_type: INTEGER
+        description: |-
+          Sale Line List
+  REFERENCE_DATA_CHECK_SUBQUERY_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_subquery_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      SALE_LINE_LIST:
+        name: SaleLineList
+        data_type: INTEGER
+        description: |-
+          Sale Line List
+  REFERENCE_DATA_CHECK_SUBQUERY2_NOT_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_subquery2_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      YCCOUNTIQENTIYIERS:
+        name: yccountIqentiyiers
+        data_type: INTEGER
+        description: |-
+          Record item
+  REFERENCE_DATA_CHECK_SUBQUERY2_OK:
+    source_database: BIGQUERY
+    table_name: reference_check_subquery2_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      YCCOUNTIQENTIYIERS:
+        name: yccountIqentiyiers
+        data_type: INTEGER
+        description: |-
+          Record item
+
+
+row_filters:
+  NONE:
+    filter_sql_expr: 'True'
+
+
+rule_dimensions:
+  - timeliness
+  - correctness
+  - integrity
+  - conformity
+  - completeness
+  - uniqueness
+  - accuracy
+  - validity
+
+
+rules:
+  NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
+    rule_type: CUSTOM_SQL_EXPR
+    dimension: integrity
+    params:
+      custom_sql_arguments:
+        - ref_data_dataset
+        - ref_data_table_id
+      custom_sql_expr: |-
+        exists (select 1 from unnest($column.saleline) sl inner join `$ref_data_dataset.$ref_data_table_id` r on sl.litemnumber = r.subsys_item)
+  NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
+    rule_type: CUSTOM_SQL_EXPR
+    dimension: integrity
+    params:
+      custom_sql_arguments:
+        - ref_data_dataset
+        - ref_data_table_id
+      custom_sql_expr: |-
+        exists (select 1 from unnest($column) t inner join `$ref_data_dataset.$ref_data_table_id` r on t.iq = r.id and t.type = r.type and t.qyty = r.data)
+
+
+rule_bindings:
+  T5_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY_NOT_OK
+    column_id: SALE_LINE_LIST
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data_subquery
+    metadata:
+      brand: one
+  T5_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY_OK
+    column_id: SALE_LINE_LIST
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data_subquery
+    metadata:
+      brand: one
+  T5_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_FAIL:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_NOT_OK
+    column_id: YCCOUNTIQENTIYIERS
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data_subquery2
+    metadata:
+      brand: one
+  T5_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_OK
+    column_id: YCCOUNTIQENTIYIERS
+    row_filter_id: NONE
+    rule_ids:
+      - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
+          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_table_id: reference_data_subquery2
+    metadata:
+      brand: one
