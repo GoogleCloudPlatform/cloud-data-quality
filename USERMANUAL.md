@@ -268,7 +268,7 @@ rules:
           group by $column),
         t2 as (
           select $ref_column_id as col, count(*) as t2_n 
-          from `<dataset_id>.$ref_table_id`
+          from <dataset_id>.`$ref_table_id`
           group by $ref_column_id
         )
         select t1.*, t2.t2_n
@@ -312,7 +312,7 @@ rules:
           select 
             $ref_column_id as t2_col, 
             row_number() over (order by $ref_column_id) as n 
-            from `<dataset_id>.$ref_table_id`
+            from <dataset_id>.`$ref_table_id`
         )
         select t1.t1_col, t2.t2_col
         from t1 
@@ -364,7 +364,7 @@ rules:
           group by $key_column_id),
         t2 as (
           select $ref_key_column_id as key, sum($ref_value_column_id) as ref_total
-          from <dataset_id>.$ref_table_id
+          from <dataset_id>.`$ref_table_id`
           group by $ref_key_column_id
         )
         select t1.*, t2.*
@@ -471,8 +471,7 @@ rule_bindings:
     column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
-      - UNIQUE:
-          dummy: 0 # Due to bug, a CUSTOM_SQL_STATEMENT requires at least one parameter. Will be fixed in the next version.
+      - UNIQUE
 ```
 
 Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule binding](docs/examples/aggregate_conditions.yaml#47)
@@ -548,7 +547,7 @@ Full example: [Rule](docs/examples/aggregate_conditions.yaml#38) and [rule bindi
 
 #### Outliers by z-score
 
-The z-score is the deviation from the mean in units of the standard deviation. If the values in a column have a mean of 10 and  a standard deviation of 2, then a value of 16 in this column has a z-score of (10-16)/2 = 3.
+The z-score is the deviation from the mean in units of the standard deviation. If the values in a column have a mean of 10 and  a standard deviation of 2, then a value of 16 in this column has a z-score of (16-10)/2 = 3 standard deviations.
 
 The z-score is frequently used to identify outliers.
 

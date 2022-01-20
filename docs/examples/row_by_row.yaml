@@ -97,7 +97,7 @@ rules:
           group by $column),
         t2 as (
           select $ref_column_id as col, count(*) as t2_n 
-          from `<dataset_id>.$ref_table_id`
+          from <dataset_id>.`$ref_table_id`
           group by $ref_column_id
         )
         select t1.*, t2.t2_n
@@ -121,7 +121,7 @@ rules:
           select 
             $ref_column_id as t2_col, 
             row_number() over (order by $ref_column_id) as n 
-            from `<dataset_id>.$ref_table_id`
+            from <dataset_id>.`$ref_table_id`
         )
         select t1.t1_col, t2.t2_col
         from t1 
@@ -145,7 +145,7 @@ rules:
           group by $key_column_id),
         t2 as (
           select $ref_key_column_id as key, sum($ref_value_column_id) as ref_total
-          from <dataset_id>.$ref_table_id
+          from <dataset_id>.`$ref_table_id`
           group by $ref_key_column_id
         )
         select t1.*, t2.*

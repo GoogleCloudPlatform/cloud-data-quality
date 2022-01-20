@@ -43,15 +43,17 @@ rules:
 
   REF_SUBQUERY:
     rule_type: CUSTOM_SQL_EXPR
+    custom_sql_arguments:
+      start_date
     params:
       custom_sql_expr: |-
-        $column in (select unique_key from `<dataset_id>.<ref_table_id>` where timestamp >= '2016-01-01')
+        $column in (select unique_key from <dataset_id>.<ref_table_id> where timestamp >= $start_date)
 
   FOREIGN_KEY_VALID:
     rule_type: CUSTOM_SQL_EXPR
     params:
       custom_sql_expr: |-
-        $column in (select distinct unique_key from `<dataset_id>.<pk_ref_table_id>`)
+        $column in (select distinct unique_key from <dataset_id>.<pk_ref_table_id>)
 
 
 row_filters:
@@ -65,7 +67,8 @@ rule_bindings:
     column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
-      - REF_SUBQUERY
+      - REF_SUBQUERY:
+          start_date: '2016-01-01'
       
   FOREIGN_KEY_VALID:
     entity_id: TEST_DATA

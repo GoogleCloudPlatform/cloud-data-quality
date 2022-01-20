@@ -73,8 +73,7 @@ rule_bindings:
     column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
-      - UNIQUE:
-          dummy: 0 # Due to bug, a CUSTOM_SQL_STATEMENT requires at least one parameter. Will be fixed in the next version.
+      - UNIQUE
 
   UNIQUENESS_MULTIPLE:
     entity_id: TEST_DATA

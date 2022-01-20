@@ -60,20 +60,20 @@ Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](config
 
 #### Rule Type `NOT_BLANK`
 
-Violated if any row in the given column contains null.
+Violated if any row in the given column contains an empty string.
  
 ```yaml
 rules:
-  NOT_NULL_SIMPLE:
-    rule_type: NOT_NULL
+  NOT_BLANK_SIMPLE:
+    rule_type: NOT_BLANK
 
 rule_bindings:
-  NOT_NULL:
+  NOT_BLANK:
     entity_id: TEST_DATA
     column_id: UNIQUE_KEY
     row_filter_id: NONE
     rule_ids:
-      - NOT_NULL_SIMPLE
+      - NOT_BLANK_SIMPLE
 ```
 
 Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-2-bindings.yml)
@@ -89,7 +89,6 @@ The example shows a check for a valid email address.
 rules:
   VALID_EMAIL:
     rule_type: REGEX
-    dimension: conformance
     params:
       pattern: |-
         ^[^@]+[@]{1}[^@]+$
@@ -110,14 +109,28 @@ Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](config
 This rule type allows the specification of an SQL expression returning a boolean. The validation fails when the expression returns `TRUE`.
 
 This rule, contrary to `CUSTOM_SQL_STATEMENT` supports row-level validation (see preceding section on the differences between row-level and
-set-leve validation). This implies it has access to the row-level context of the table defined as "entity", meaning that all columns of the
+set-level validation). This implies it has access to the row-level context of the table defined as "entity", meaning that all columns of the
 same row can be accessed.
 
 The below example of this rule performs a SELECT on a reference table to compare to a list of known currencies.
 
-The SQL condition can be parametrized using `custom_sql_parameters` (see the `CUSTOM_SQL_LENGTH` [example rule](configs/base-rules.yml) and [how it's used](configs/rule_bindings/team-2-rule-bindings.yml)). The SQL condition can also use an implicit parameter `$column`, to identify the column that the condition should be applied to.
+The SQL condition can be parametrized using `custom_sql_parameters` (see the `CUSTOM_SQL_LENGTH` [example rule](configs/base-rules.yml) and [how it's used](configs/rule_bindings/team-2-rule-bindings.yml)). The SQL condition can also use an implicit parameter `$column`, to identify the column that the condition should be applied to. The value of the parameter `$column` refers to a column in the referred entity. In the example below, the rule is applied to column `CURRENCY` in the `TEST_DATA` entity, which in turn refers to a column called `curr` in a table in BigQuery.
 
 ```yaml
+ntities:
+  TEST_DATA:
+    source_database: BIGQUERY
+    table_name: <table_id>
+    dataset_name: <dataset_id>
+    project_name: <project_id>
+    columns:
+      AMOUNT:
+        name: amount
+        data_type: INTEGER
+      CURRENCY:
+        name: curr
+        data_type: STRING
+
 rules:
   CORRECT_CURRENCY_CODE:
     rule_type: CUSTOM_SQL_EXPR
