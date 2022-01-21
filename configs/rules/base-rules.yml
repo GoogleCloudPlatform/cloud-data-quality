@@ -24,12 +24,14 @@ rules:
       pattern: |-
         ^[^@]+[@]{1}[^@]+$
 
-  CUSTOM_SQL_LENGTH_LE_30:
+  CUSTOM_SQL_LENGTH:
     rule_type: CUSTOM_SQL_EXPR
     dimension: correctness
+    custom_sql_arguments:
+      - upper_bound
     params:
       custom_sql_expr: |-
-        LENGTH( $column ) <= 30
+        LENGTH( $column ) <= $upper_bound
 
   CORRECT_CURRENCY_CODE:
     rule_type: CUSTOM_SQL_EXPR

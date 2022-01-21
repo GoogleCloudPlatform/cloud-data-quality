@@ -1,0 +1,80 @@
+entities:
+  TEST_DATA:
+    source_database: BIGQUERY
+    table_name: <table_id>
+    dataset_name: <dataset_id>
+    project_name: <project_id>
+    columns:
+      UNIQUE_KEY:
+        name: unique_key
+        data_type: INTEGER
+      DESCRIPT:
+        name: descript
+        data_type: STRING
+      DATE:
+        name: date
+        data_type: DATE
+      TIME:
+        name: time
+        data_type: TIME
+      ADDRESS:
+        name: address
+        data_type: STRING
+      LON:
+        name: longitude
+        data_type: FLOAT
+      LAT:
+        name: latitude
+        data_type: FLOAT
+      LOCATION:
+        name: location
+        data_type: STRING
+      TIMESTAMP:
+        name: timestamp
+        data_type: TIMESTAMP
+        
+
+rules:
+  ACCEPTED_CURRENCY:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (‘USD’, ‘EUR’,  ‘CNY’)
+
+  REF_SUBQUERY:
+    rule_type: CUSTOM_SQL_EXPR
+    custom_sql_arguments:
+      start_date
+    params:
+      custom_sql_expr: |-
+        $column in (select cast(unique_key as string) from <dataset_id>.`<ref_table_id>` where timestamp >= "$start_date")
+
+  FOREIGN_KEY_VALID:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        $column in (select distinct unique_key from <dataset_id>.`<pk_ref_table_id>`)
+
+
+row_filters:
+  NONE:
+    filter_sql_expr: |-
+      True
+        
+rule_bindings:
+  REF_SUBQUERY:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - REF_SUBQUERY:
+          start_date: '2016-01-01'
+      
+  FOREIGN_KEY_VALID:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - FOREIGN_KEY_VALID
+      
+      

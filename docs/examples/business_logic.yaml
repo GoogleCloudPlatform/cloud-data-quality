@@ -1,0 +1,66 @@
+entities:
+  TAXI_TRIPS:
+    source_database: BIGQUERY
+    table_name: <table_id>
+    dataset_name: <dataset_id>
+    project_name: <project_id>
+    columns:
+      UNIQUE_KEY:
+        name: unique_key
+        data_type: STRING
+      TAXI_ID:
+        name: taxi_id
+        data_type: STRING
+      TRIP_START_TIMESTAMP:
+        name: trip_start_timestamp
+        data_type: TIMESTAMP
+      TRIP_END_TIMESTAMP:
+        name: trip_end_timestamp
+        data_type: TIMESTAMP
+      PAYMENT_TYPE:
+        name: payment_type
+        data_type: STRING
+      FARE:
+        name: fare
+        data_type: FLOAT
+      TIPS:
+        name: tips
+        data_type: FLOAT
+      TOLLS:
+        name: tolls
+        data_type: FLOAT
+      EXTRAS:
+        name: extras
+        data_type: FLOAT
+      TRIP_TOTAL:
+        name: trip_total
+        data_type: FLOAT
+      PICKUP_LOCATION:
+        name: pickup_location
+        data_type: STRING
+      DROPOFF_LOCATION:
+        name: dropoff_location
+        data_type: STRING
+    
+
+row_filters:
+  NONE:
+    filter_sql_expr: |-
+      True
+
+
+rules:
+  TRIP_AMOUNT_NO_CHARGE:
+    rule_type: CUSTOM_SQL_EXPR
+    params:
+      custom_sql_expr: |-
+        payment_type = 'No Charge' and ($column is not null or $column > 0)
+
+
+rule_bindings:
+  TRIP_AMOUNT_NO_CHARGE:
+    entity_id: TAXI_TRIPS
+    column_id: TRIP_TOTAL
+    row_filter_id: NONE
+    rule_ids:
+      - TRIP_AMOUNT_NO_CHARGE
