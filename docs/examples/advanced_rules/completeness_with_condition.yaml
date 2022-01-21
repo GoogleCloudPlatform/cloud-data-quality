@@ -107,6 +107,6 @@ rule_bindings:
     rule_ids:
       - NO_ISSUES_WITH_COMPLETENESS:
           condition: data.data IS NOT NULL
-          threshold_pct: 97
+          threshold_pct: 85
     metadata:
       brand: one

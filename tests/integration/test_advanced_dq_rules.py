@@ -16,7 +16,6 @@ from pathlib import Path
 from pprint import pformat
 
 import json
-import csv
 import logging
 import shutil
 import os
@@ -52,8 +51,6 @@ class TestDqAdvancedRules:
         gcp_project_id,
         gcp_dataplex_bigquery_dataset_id
     ):
-        client = client.get_connection()
-
         input_files_csv = ["accuracy_check_distribution_not_ok.csv", "accuracy_check_distribution_ok.csv",
             "accuracy_check_simple.csv", "completeness_check_not_ok.csv", "completeness_check_ok.csv",
             "conformity_check_not_ok.csv", "conformity_check_ok.csv", "different_volumes_per_period.csv", 
@@ -65,6 +62,11 @@ class TestDqAdvancedRules:
             "reference_check_subquery2_not_ok.json", "reference_check_subquery2_ok.json", 
             "reference_check_subquery_not_ok.json", "reference_check_subquery_ok.json"]
 
+        # check if the data files exist, if not, ignore - data has been loaded offline
+        if not os.path.exists(test_data / f"advanced_rules"):
+            return
+
+        client = client.get_connection()
         # override some dates (for the ingestion check - it's looking backwards from the current date)
         # fileinput supports inline editing, it outputs the stdout to the file
         with fileinput.FileInput(test_data / f"advanced_rules/ingestion_day_level.csv", inplace=True, backup='.bak') as file:

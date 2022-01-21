@@ -175,7 +175,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_ACCURACY_ISSUES_DISTRIBUTION:
-          standard_deviation_threshold: 1
+          standard_deviation_threshold: 0.1
           bucket_ratio: 10
     metadata:
       brand: one
@@ -196,6 +196,6 @@ rule_bindings:
     rule_ids:
       - NO_ACCURACY_ISSUES_DISTRIBUTION:
           standard_deviation_threshold: 2
-          bucket_ratio: 4244
+          bucket_ratio: 100
     metadata:
       brand: one
