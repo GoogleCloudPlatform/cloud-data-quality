@@ -227,7 +227,7 @@ rules:
       start_date
     params:
       custom_sql_expr: |-
-        $column in (select cast(unique_key as string) from <dataset_id>.<ref_table_id> where timestamp >= "$start_date")
+        $column in (select cast(unique_key as string) from <dataset_id>.`<ref_table_id>` where timestamp >= "$start_date")
 
 rule_bindings:
   REF_SUBQUERY:
@@ -253,10 +253,10 @@ rules:
     rule_type: CUSTOM_SQL_EXPR
     params:
       custom_sql_expr: |-
-        $column in (select distinct unique_key from `<dataset_id>.<pk_table_id>`)
+        $column in (select distinct unique_key from <dataset_id>.`<pk_table_id>`)
 ```
 
-Full example: [rule](docs/examples/referential_integrity.yaml#37) and [rule binding](docs/examples/referential_integrity.yaml#56)
+Full example: [rule](docs/examples/referential_integrity.yaml) and [rule binding](docs/examples/referential_integrity.yaml)
 
 ### Row-by-row Dataset Comparison
 

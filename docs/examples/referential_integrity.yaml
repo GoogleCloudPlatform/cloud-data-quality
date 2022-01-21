@@ -47,13 +47,13 @@ rules:
       start_date
     params:
       custom_sql_expr: |-
-        $column in (select cast(unique_key as string) from <dataset_id>.<ref_table_id> where timestamp >= "$start_date")
+        $column in (select cast(unique_key as string) from <dataset_id>.`<ref_table_id>` where timestamp >= "$start_date")
 
   FOREIGN_KEY_VALID:
     rule_type: CUSTOM_SQL_EXPR
     params:
       custom_sql_expr: |-
-        $column in (select distinct unique_key from <dataset_id>.<pk_ref_table_id>)
+        $column in (select distinct unique_key from <dataset_id>.`<pk_ref_table_id>`)
 
 
 row_filters:
