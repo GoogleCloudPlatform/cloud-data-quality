@@ -109,7 +109,7 @@ Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](config
 This rule type allows the specification of an SQL expression returning a boolean. The validation fails when the expression returns `TRUE`.
 
 This rule, contrary to `CUSTOM_SQL_STATEMENT` supports row-level validation (see preceding section on the differences between row-level and
-set-level validation). This implies it has access to the row-level context of the table defined as "entity", meaning that all columns of the
+set-level validation). This imp<dataset_id>.$ref_table_idlies it has access to the row-level context of the table defined as "entity", meaning that all columns of the
 same row can be accessed.
 
 The below example of this rule performs a SELECT on a reference table to compare to a list of known currencies.
@@ -124,7 +124,6 @@ ntities:
     dataset_name: <dataset_id>
     project_name: <project_id>
     columns:
-      AMOUNT:
         name: amount
         data_type: INTEGER
       CURRENCY:
@@ -340,15 +339,5 @@ The table below lists the columns in their `dq_summary` table, that is the outpu
         set to <code>NULL</code> for <code>NOT_NULL</code> and
         <code>CUSTOM_SQL_STATEMENT</code> rules.</td>
     </tr>
-    <tr>
-      <td><code>dataplex_lake</code></td>
-      <td>Not used in the open-source version of <code>CloudDQ</code>.</td>
-    </tr>
-    <tr>
-      <td><code>dataplex_zone</code></td>
-      <td>Not used in the open-source version of <code>CloudDQ</code>.</td>
-    </tr>
-    <tr>
-      <td><code>dataplex_asset_id</code></td>
-      <td>Not used in the open-source version of <code>CloudDQ</code>.</td>
-    </tr></table>
+  </tbody>
+</table>
