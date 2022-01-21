@@ -114,7 +114,7 @@ same row can be accessed.
 
 The below example of this rule performs a SELECT on a reference table to compare to a list of known currencies.
 
-The SQL condition can be parametrized using `custom_sql_parameters` (see the `CUSTOM_SQL_LENGTH` [example rule](configs/base-rules.yml) and [how it's used](configs/rule_bindings/team-2-rule-bindings.yml)). The SQL condition can also use an implicit parameter `$column`, to identify the column that the condition should be applied to. The value of the parameter `$column` refers to a column in the referred entity. In the example below, the rule is applied to column `CURRENCY` in the `TEST_DATA` entity, which in turn refers to a column called `curr` in a table in BigQuery.
+The SQL expression can be parametrized using `custom_sql_parameters` (see the `CUSTOM_SQL_LENGTH` [example rule](configs/base-rules.yml) and [how it's used](configs/rule_bindings/team-2-rule-bindings.yml)). The SQL expression can also use an implicit parameter `$column`, to identify the column that the condition should be applied to. The value of the parameter `$column` refers to a column in the referred entity. In the example below, the rule is applied to column `CURRENCY` in the `TEST_DATA` entity, which in turn refers to a column called `curr` in a table in BigQuery.
 
 ```yaml
 ntities:
