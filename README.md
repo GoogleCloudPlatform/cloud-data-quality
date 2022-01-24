@@ -20,7 +20,7 @@ It takes as input Data Quality validation tests defined using a flexible and reu
 
 ## Contributions
 
-We welcome all community contributions, whether by opening Github Issues, updating documentations, or updating the code directly. Please consult the [contribution guide](CONTRIBUTING.md) and [development guide](./README.md#Development) for details on how to contribute. 
+We welcome all community contributions, whether by opening Github Issues, updating documentations, or updating the code directly. Please consult the [contribution guide](CONTRIBUTING.md) for details on how to contribute. 
 
 Before opening a pull request to suggest a feature change, please open a Github Issue to discuss the use-case and feature proposal with the project maintainers.
 
