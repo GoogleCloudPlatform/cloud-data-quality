@@ -1,0 +1,186 @@
+entities:
+  TEST_DATA:
+    source_database: BIGQUERY
+    table_name: <table_id>
+    dataset_name: <dataset_id>
+    project_name: <project_id>
+    columns:
+      UNIQUE_KEY:
+        name: unique_key
+        data_type: INTEGER
+      DESCRIPT:
+        name: descript
+        data_type: STRING
+      DATE:
+        name: date
+        data_type: DATE
+      TIME:
+        name: time
+        data_type: TIME
+      ADDRESS:
+        name: address
+        data_type: STRING
+      LON:
+        name: longitude
+        data_type: FLOAT
+      LAT:
+        name: latitude
+        data_type: FLOAT
+      LOCATION:
+        name: location
+        data_type: STRING
+      TIMESTAMP:
+        name: timestamp
+        data_type: TIMESTAMP
+        
+  TAXI_TRIPS:
+    source_database: BIGQUERY
+    table_name: <table_id>
+    dataset_name: <dataset_id>
+    project_name: <project_id>
+    columns:
+      UNIQUE_KEY:
+        name: unique_key
+        data_type: STRING
+      TAXI_ID:
+        name: taxi_id
+        data_type: STRING
+      TRIP_START_TIMESTAMP:
+        name: trip_start_timestamp
+        data_type: TIMESTAMP
+      TRIP_END_TIMESTAMP:
+        name: trip_end_timestamp
+        data_type: TIMESTAMP
+      PAYMENT_TYPE:
+        name: payment_type
+        data_type: STRING
+      FARE:
+        name: fare
+        data_type: FLOAT
+      TIPS:
+        name: tips
+        data_type: FLOAT
+      TOLLS:
+        name: tolls
+        data_type: FLOAT
+      EXTRAS:
+        name: extras
+        data_type: FLOAT
+      TRIP_TOTAL:
+        name: trip_total
+        data_type: FLOAT
+      PICKUP_LOCATION:
+        name: pickup_location
+        data_type: STRING
+      DROPOFF_LOCATION:
+        name: dropoff_location
+        data_type: STRING
+    
+
+row_filters:
+  NONE:
+    filter_sql_expr: |-
+      True
+
+
+rules:
+  EQUAL_COLUMNS:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+       - ref_table_id
+       - ref_column_id
+    params:
+      custom_sql_statement: |-
+        with t1 as (
+          select $column as col, count(*) as t1_n 
+          from data
+          group by $column),
+        t2 as (
+          select $ref_column_id as col, count(*) as t2_n 
+          from <dataset_id>.`$ref_table_id`
+          group by $ref_column_id
+        )
+        select t1.*, t2.t2_n
+        from t1 
+        full outer join t2 using(col)
+        where not t1_n = t2_n 
+
+  EQUAL_COLUMNS_UNIQUE_VALUES:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments:
+        - ref_table_id
+        - ref_column_id
+    params:
+      custom_sql_statement: |-
+        with t1 as (
+          select 
+            $column as t1_col, 
+            row_number() over (order by $column) as n 
+          from data),
+        t2 as (
+          select 
+            $ref_column_id as t2_col, 
+            row_number() over (order by $ref_column_id) as n 
+            from <dataset_id>.`$ref_table_id`
+        )
+        select t1.t1_col, t2.t2_col
+        from t1 
+        full outer join t2 using(n)
+        where not t1_col = t2_col 
+
+
+  EQUAL_AGGREGATE:
+    rule_type: CUSTOM_SQL_STATEMENT
+    custom_sql_arguments: 
+      key_column_id
+      value_column_id
+      ref_table_id
+      ref_key_column_id
+      ref_value_column_id
+    params:
+      custom_sql_statement: |-
+        with t1 as (
+          select $key_column_id as key, sum($value_column_id) as total
+          from data
+          group by $key_column_id),
+        t2 as (
+          select $ref_key_column_id as key, sum($ref_value_column_id) as ref_total
+          from <dataset_id>.`$ref_table_id`
+          group by $ref_key_column_id
+        )
+        select t1.*, t2.*
+        from t1 
+        full outer join t2 using(key)
+        where not total = ref_total 
+
+
+rule_bindings:
+  EQUAL_COLUMNS:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - EQUAL_COLUMNS:
+          ref_table_id: <reference_table_id>
+          ref_column_id: <reference_column_id>
+
+  EQUAL_COLUMNS_UNIQUE_VALUES:
+    entity_id: TEST_DATA
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
+    rule_ids:
+      - EQUAL_COLUMNS_UNIQUE_VALUES:
+          ref_table_id: <reference_table_id>
+          ref_column_id: <reference_column_id>
+
+  EQUAL_AGGREGATE:
+    entity_id: TAXI_TRIPS
+    column_id: TAXI_ID
+    row_filter_id: NONE
+    rule_ids:
+      - EQUAL_AGGREGATE:
+          key_column_id: <key_column_id>
+          value_column_id: <value_column_id>
+          ref_table_id: <reference_table_id>
+          ref_key_column_id: <reference_key_column_id>
+          ref_value_column_id: <reference_value_column_id>
