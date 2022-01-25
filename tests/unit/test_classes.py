@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
 import logging
+import shutil
 
 import pytest
-from pathlib import Path
-import shutil
 
 from clouddq import lib
 from clouddq.classes.dq_configs_cache import DqConfigsCache
