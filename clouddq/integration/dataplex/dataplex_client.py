@@ -323,11 +323,14 @@ class DataplexClient:
             raise ValueError(
                 "Dataplex list_entities() API call missing required arguments 'lake_name'."
             )
+        default_params = {"page_size": 100}
+        if params:
+            default_params.update(params)
         response = self._session.get(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/zones/{zone_id}/entities/",
             headers=self._headers,
-            params=params,
+            params=default_params,
         )
         if "entities" not in response.json():
             logger.warning(
