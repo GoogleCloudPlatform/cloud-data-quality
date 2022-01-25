@@ -14,7 +14,7 @@
 
 {{
   config(
-    materialized = 'ephemeral',
+    materialized = 'table',
   )
 }}
 {%- for rule_binding_id in var('target_rule_binding_ids') -%}

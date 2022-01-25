@@ -74,9 +74,9 @@ entities:
   TEST_TABLE_DP:
     source_database: DATAPLEX
     table_name: clouddq_avro_asset
-    lake_name: clouddq
-    zone_name: dq_raw
-    resource_type: STORAGE_BUCKET
+    lake_name: clouddq #dataplex_lake
+    zone_name: dq_raw #dataplex_zone
+    resource_type: CLOUD_STORAGE
     project_name: dataplex-clouddq
     environment_override:
       TEST:

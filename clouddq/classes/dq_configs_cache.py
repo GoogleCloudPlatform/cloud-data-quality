@@ -370,7 +370,7 @@ class DqConfigsCache:
                     on
                     rb.entity_id = entities.id
                     where
-                    entities.resource_type='STORAGE_BUCKET';"""
+                    entities.resource_type='CLOUD_STORAGE';"""
             )
             if records:
                 for record in records:

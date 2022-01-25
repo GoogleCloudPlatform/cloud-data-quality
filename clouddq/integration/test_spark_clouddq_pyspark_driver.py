@@ -47,6 +47,7 @@ def create_cloudq_staging_schema():
         hc = SQLContext(sc, sparkSession=spark)
         print("Show databases:")
         spark.sql("SHOW DATABASES;").show()
+        spark.sql(f"DROP DATABASE if exists {schema} CASCADE;")
         print("Create clouddq staging schema if not exists:")
         spark.sql(f"CREATE DATABASE IF NOT EXISTS {schema};")
         print("Show databases:")
@@ -87,8 +88,6 @@ if __name__ == "__main__":
     pprint(os.listdir())
     print("Input PySpark arguments:")
     pprint(sys.argv)
-    print("Pyhive Version")
-    print("pyhive.__version__")
     print("Start thrift server:")
     cmd = f"""export HIVE_SERVER2_THRIFT_PORT=10005;
     export HIVE_SERVER2_THRIFT_BIND_HOST=localhost;
@@ -98,7 +97,7 @@ if __name__ == "__main__":
     print("Thrift server started successfully:")
     print("Testing connection to hive metastore `default` database using thrift:")
     # connection = hive.connect(
-    #     host="localhost", port=10005, database='default', user="root"
+    #     host="localhost", port=10005, database='default'
     # )
     # with closing(connection):
     #     cursor = connection.cursor()
