@@ -32,6 +32,13 @@ ENTITY_CUSTOM_CONFIG_MAPPING = {
         "table_name": "{table_name}",
         "database_name": "{dataset_name}",
         "instance_name": "{project_name}",
+        "resource_type": "{resource_type}",
+    },
+    "DATAPLEX": {
+        "table_name": "{table_name}",
+        "database_name": "{dataplex_zone}",
+        "instance_name": "{project_name}",
+        "resource_type": "{resource_type}",
     },
 }
 
@@ -58,7 +65,10 @@ def get_custom_entity_configs(
     )
     entity_config_arguments = dict()
     for argument in entity_config_template_arguments:
-        argument_value = configs_map.get(argument)
+        if source_database == "DATAPLEX" and argument == "dataplex_zone":
+            argument_value = configs_map.get(argument).replace("-", "_")
+        else:
+            argument_value = configs_map.get(argument)
         if argument_value:
             entity_config_arguments[argument] = argument_value
     try:
@@ -93,6 +103,7 @@ class DqEntity:
     table_name: str
     database_name: str
     instance_name: str
+    resource_type: str
     columns: dict[str, DqEntityColumn]
     environment_override: dict | None
     dataplex_name: str | None
@@ -157,6 +168,14 @@ class DqEntity:
             source_database=source_database,
             config_key="instance_name",
         )
+
+        resource_type = get_custom_entity_configs(
+            entity_id=entity_id,
+            configs_map=kwargs,
+            source_database=source_database,
+            config_key="resource_type",
+        )
+
         columns_dict = get_from_dict_and_assert(
             config_id=entity_id, kwargs=kwargs, key="columns"
         )
@@ -215,6 +234,7 @@ class DqEntity:
             instance_name=instance_name,
             columns=columns,
             environment_override=environment_override,
+            resource_type=resource_type,
             dataplex_name=kwargs.get("dataplex_name", None),
             dataplex_lake=kwargs.get("dataplex_lake", None),
             dataplex_zone=kwargs.get("dataplex_zone", None),
@@ -243,6 +263,7 @@ class DqEntity:
             "database_name": self.database_name,
             "instance_name": self.instance_name,
             "columns": columns,
+            "resource_type": self.resource_type,
         }
         if self.source_database == "BIGQUERY":
             output.update(
@@ -283,9 +304,36 @@ class DqEntity:
                 schema_dict[column_configs["name"].upper()] = column_configs
             entity_configs = {
                 "source_database": dataplex_entity.system,
+                "resource_type": dataplex_entity.system,
                 "table_name": bigquery_configs.get("tables"),
                 "dataset_name": bigquery_configs.get("datasets"),
                 "project_name": bigquery_configs.get("projects"),
+                "columns": schema_dict,
+                "environment_override": {},
+                "entity_id": entity_id,
+                "dataplex_name": dataplex_entity.name,
+                "dataplex_lake": dataplex_entity.lake,
+                "dataplex_zone": dataplex_entity.zone,
+                "dataplex_location": dataplex_entity.location,
+                "dataplex_asset_id": dataplex_entity.asset,
+                "dataplex_createTime": dataplex_entity.createTime,
+                "dataplex_updateTime": dataplex_entity.updateTime,
+            }
+            return DqEntity.from_dict(
+                entity_id=entity_id.upper(), kwargs=entity_configs
+            )
+        elif dataplex_entity.system == "CLOUD_STORAGE":
+            schema_dict = {}
+            for column in dataplex_entity.schema.to_dict()["fields"]:
+                column_configs = column
+                column_configs["data_type"] = column["type"]
+                schema_dict[column_configs["name"].upper()] = column_configs
+            entity_configs = {
+                "source_database": "DATAPLEX",
+                "resource_type": dataplex_entity.system,
+                "table_name": dataplex_entity.id,
+                "dataset_name": dataplex_entity.zone,
+                "project_name": dataplex_entity.project_id,
                 "columns": schema_dict,
                 "environment_override": {},
                 "entity_id": entity_id,

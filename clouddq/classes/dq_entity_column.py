@@ -112,6 +112,7 @@ class DatabaseType(str, Enum):
 
     BIGQUERY = "BIGQUERY"
     DATAPLEX_BQ_EXTERNAL_TABLE = "DATAPLEX_BQ_EXTERNAL_TABLE"
+    DATAPLEX = "DATAPLEX"
 
     def get_column_type(
         self: DqEntityColumn, column_type: DatabaseColumnType | str
@@ -131,6 +132,15 @@ class DatabaseType(str, Enum):
             raise NotImplementedError(
                 f"Database: {self} does not yet have column type mapping."
             )
+        if self == DatabaseType.DATAPLEX:
+            database_column_type = BIGQUERY_COLUMN_TYPES_MAPPING.get(column_type, None)
+            assert_not_none_or_empty(
+                database_column_type,
+                f"Database: {self} does not have type {column_type} "
+                f"defined in column type mapping."
+                f"Current mapping: {BIGQUERY_COLUMN_TYPES_MAPPING}",
+            )
+            return database_column_type
         else:
             raise NotImplementedError(
                 f"Database: {self} does not yet have column type mapping."
