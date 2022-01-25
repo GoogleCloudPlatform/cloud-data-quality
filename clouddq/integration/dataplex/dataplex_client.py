@@ -114,7 +114,7 @@ class DataplexClient:
         return session
 
     @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=180, period=ONE_MINUTE)
+    @limits(calls=60, period=ONE_MINUTE)
     def get_dataplex_lake(
         self,
         lake_name: str,
@@ -137,7 +137,7 @@ class DataplexClient:
         return response
 
     @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=60, period=ONE_MINUTE)
+    @limits(calls=30, period=ONE_MINUTE)
     def create_dataplex_task(
         self,
         task_id: str,
@@ -173,7 +173,7 @@ class DataplexClient:
         return response
 
     @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=180, period=ONE_MINUTE)
+    @limits(calls=60, period=ONE_MINUTE)
     def get_dataplex_task_jobs(
         self,
         task_id: str,
@@ -199,7 +199,7 @@ class DataplexClient:
         return response
 
     @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=180, period=ONE_MINUTE)
+    @limits(calls=60, period=ONE_MINUTE)
     def get_dataplex_task(
         self,
         task_id: str,
@@ -251,7 +251,7 @@ class DataplexClient:
         return response
 
     @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=40, period=ONE_MINUTE)
+    @limits(calls=20, period=ONE_MINUTE)
     def get_entity(
         self,
         zone_id: str,
@@ -293,7 +293,7 @@ class DataplexClient:
         return response
 
     @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=40, period=ONE_MINUTE)
+    @limits(calls=20, period=ONE_MINUTE)
     def list_entities(
         self,
         zone_id: str,
