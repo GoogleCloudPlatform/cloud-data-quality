@@ -29,6 +29,8 @@ requests-oauth2 = "^0.3.0"
 google-api-python-client = "^2.27.0"
 google-cloud-storage = "^1.42.3"
 google-cloud-logging = "^2.7.0"
+ratelimit = "^2.2.1"
+backoff = "^1.11.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"

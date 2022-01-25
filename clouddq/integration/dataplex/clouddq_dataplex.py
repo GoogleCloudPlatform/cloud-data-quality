@@ -308,7 +308,7 @@ class CloudDqDataplexClient:
         location_id: str = None,
         lake_name: str = None,
     ) -> list[DataplexEntity]:
-        params = {"page_size": 1000}
+        params = {"page_size": 10}
 
         if prefix and data_path:
             raise ValueError("Either prefix or datapath should be passed but not both")
