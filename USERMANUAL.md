@@ -16,7 +16,7 @@ For example, on [Cloud Shell](https://cloud.google.com/shell/docs/launching-clou
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.0"
+export CLOUDDQ_RELEASE_VERSION="0.5.1"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 source cloud-data-quality/scripts/install_python3.sh "3.9.7"
 python3 --version
@@ -32,7 +32,7 @@ For example, from [Cloud Shell](https://shell.cloud.google.com/?show=ide%2Ctermi
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.0"
+export CLOUDDQ_RELEASE_VERSION="0.5.1"
 export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
@@ -43,7 +43,7 @@ If you do not have Python 3.9 installed, you could install Python 3.9 on an `Ubu
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.0"
+export CLOUDDQ_RELEASE_VERSION="0.5.1"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 source cloud-data-quality/scripts/install_python3.sh "3.9.7"
 python3 --version
@@ -68,7 +68,7 @@ From either [Cloud Shell](https://shell.cloud.google.com) or a `Ubuntu`/`Debian`
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.0"
+export CLOUDDQ_RELEASE_VERSION="0.5.1"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 ```
 
@@ -76,7 +76,7 @@ Then change directory to the git project and get the pre-built executable from G
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.0"
+export CLOUDDQ_RELEASE_VERSION="0.5.1"
 export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
