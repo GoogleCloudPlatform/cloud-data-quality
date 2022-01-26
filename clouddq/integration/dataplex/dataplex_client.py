@@ -20,11 +20,11 @@ from pprint import pformat
 import json
 import logging
 
-from backoff import expo
-from backoff import on_exception
 from google.auth.credentials import Credentials
-from ratelimit import RateLimitException
-from ratelimit import limits
+from pyrate_limiter import Duration
+from pyrate_limiter import Limiter
+from pyrate_limiter import MemoryListBucket
+from pyrate_limiter import RequestRate
 from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
@@ -35,7 +35,11 @@ import google.auth.transport.requests
 from clouddq.integration.gcp_credentials import GcpCredentials
 
 
-ONE_MINUTE = 60
+limiter = Limiter(
+    RequestRate(2, Duration.SECOND),
+    RequestRate(8, Duration.MINUTE),
+    bucket_class=MemoryListBucket,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -113,8 +117,7 @@ class DataplexClient:
             session.auth = OAuth2BearerToken(self._auth_token)
         return session
 
-    @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=60, period=ONE_MINUTE)
+    @limiter.ratelimit("get_dataplex_lake", delay=True, max_delay=60)
     def get_dataplex_lake(
         self,
         lake_name: str,
@@ -136,8 +139,7 @@ class DataplexClient:
         )
         return response
 
-    @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=30, period=ONE_MINUTE)
+    @limiter.ratelimit("set_dataplex_task", delay=True, max_delay=60)
     def create_dataplex_task(
         self,
         task_id: str,
@@ -172,8 +174,7 @@ class DataplexClient:
         )
         return response
 
-    @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=60, period=ONE_MINUTE)
+    @limiter.ratelimit("get_dataplex_task", delay=True, max_delay=60)
     def get_dataplex_task_jobs(
         self,
         task_id: str,
@@ -198,8 +199,7 @@ class DataplexClient:
         )
         return response
 
-    @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=60, period=ONE_MINUTE)
+    @limiter.ratelimit("get_dataplex_task", delay=True, max_delay=60)
     def get_dataplex_task(
         self,
         task_id: str,
@@ -224,8 +224,7 @@ class DataplexClient:
         )
         return response
 
-    @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=60, period=ONE_MINUTE)
+    @limiter.ratelimit("set_dataplex_task", delay=True, max_delay=60)
     def delete_dataplex_task(
         self,
         task_id: str,
@@ -250,8 +249,7 @@ class DataplexClient:
         )
         return response
 
-    @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=20, period=ONE_MINUTE)
+    @limiter.ratelimit("get_dataplex_asset", delay=True, max_delay=60)
     def get_entity(
         self,
         zone_id: str,
@@ -292,8 +290,7 @@ class DataplexClient:
         )
         return response
 
-    @on_exception(expo, RateLimitException, max_tries=5)
-    @limits(calls=20, period=ONE_MINUTE)
+    @limiter.ratelimit("get_dataplex_asset", delay=True, max_delay=60)
     def list_entities(
         self,
         zone_id: str,
