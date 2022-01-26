@@ -104,8 +104,7 @@ py_library(
         requirement("google-cloud-storage"),
         requirement("google-cloud-bigquery"),
         requirement("google-api-python-client"),
-        requirement("ratelimit"),
-        requirement("backoff"),
+        requirement("pyrate_limiter"),
     ],
 )
 
