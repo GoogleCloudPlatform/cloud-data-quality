@@ -106,7 +106,7 @@ Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](config
 
 #### Rule Type `CUSTOM_SQL_EXPRESSION`
 
-This rule type allows the specification of an SQL expression returning a boolean. The validation fails when the expression returns `TRUE`.
+This rule type allows the specification of an SQL expression returning a boolean. The validation fails when the expression returns `FALSE`.
 
 This rule, contrary to `CUSTOM_SQL_STATEMENT` supports row-level validation (see preceding section on the differences between row-level and
 set-level validation). This implies it has access to the row-level context of the table defined as "entity", meaning that all columns of the
