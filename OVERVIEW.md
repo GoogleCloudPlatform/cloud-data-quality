@@ -9,7 +9,7 @@
 * “live data environments” – environments supporting production data operations – as opposed to migration or dev/test environments
 * “declarative configuration” – specifies intended goals (what) of DQ evaluation from an end user perspective – as opposed to imperative (how) approach
 
-
+The declarative configuration specification is described in [Reference Guide](REFERENCE.md).
 
 ## Concepts
 
@@ -109,7 +109,7 @@ Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](config
 This rule type allows the specification of an SQL expression returning a boolean. The validation fails when the expression returns `TRUE`.
 
 This rule, contrary to `CUSTOM_SQL_STATEMENT` supports row-level validation (see preceding section on the differences between row-level and
-set-level validation). This imp<dataset_id>.$ref_table_idlies it has access to the row-level context of the table defined as "entity", meaning that all columns of the
+set-level validation). This implies it has access to the row-level context of the table defined as "entity", meaning that all columns of the
 same row can be accessed.
 
 The below example of this rule performs a SELECT on a reference table to compare to a list of known currencies.
@@ -124,8 +124,6 @@ entities:
     dataset_name: <dataset_id>
     project_name: <project_id>
     columns:
-        name: amount
-        data_type: INTEGER
       CURRENCY:
         name: curr
         data_type: STRING
