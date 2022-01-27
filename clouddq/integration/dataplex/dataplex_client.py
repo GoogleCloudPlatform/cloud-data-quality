@@ -21,6 +21,10 @@ import json
 import logging
 
 from google.auth.credentials import Credentials
+from pyrate_limiter import Duration
+from pyrate_limiter import Limiter
+from pyrate_limiter import MemoryListBucket
+from pyrate_limiter import RequestRate
 from requests import Response
 from requests import Session
 from requests_oauth2 import OAuth2BearerToken
@@ -30,6 +34,12 @@ import google.auth.transport.requests
 
 from clouddq.integration.gcp_credentials import GcpCredentials
 
+
+limiter = Limiter(
+    RequestRate(2, Duration.SECOND),
+    RequestRate(8, Duration.MINUTE),
+    bucket_class=MemoryListBucket,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +117,7 @@ class DataplexClient:
             session.auth = OAuth2BearerToken(self._auth_token)
         return session
 
+    @limiter.ratelimit("get_dataplex_lake", delay=True, max_delay=60)
     def get_dataplex_lake(
         self,
         lake_name: str,
@@ -128,6 +139,7 @@ class DataplexClient:
         )
         return response
 
+    @limiter.ratelimit("set_dataplex_task", delay=True, max_delay=60)
     def create_dataplex_task(
         self,
         task_id: str,
@@ -162,6 +174,7 @@ class DataplexClient:
         )
         return response
 
+    @limiter.ratelimit("get_dataplex_task", delay=True, max_delay=60)
     def get_dataplex_task_jobs(
         self,
         task_id: str,
@@ -186,6 +199,7 @@ class DataplexClient:
         )
         return response
 
+    @limiter.ratelimit("get_dataplex_task", delay=True, max_delay=60)
     def get_dataplex_task(
         self,
         task_id: str,
@@ -210,6 +224,7 @@ class DataplexClient:
         )
         return response
 
+    @limiter.ratelimit("set_dataplex_task", delay=True, max_delay=60)
     def delete_dataplex_task(
         self,
         task_id: str,
@@ -234,31 +249,7 @@ class DataplexClient:
         )
         return response
 
-    def get_dataplex_iam_permissions(
-        self,
-        body: str,
-        gcp_project_id: str = None,
-        location_id: str = None,
-        lake_name: str = None,
-    ) -> Response:
-        if not gcp_project_id:
-            gcp_project_id = self.gcp_project_id
-        if not location_id:
-            location_id = self.location_id
-        if not lake_name:
-            lake_name = self.lake_name
-        if not location_id or not gcp_project_id or not lake_name:
-            raise ValueError(
-                "Dataplex Client API call missing required arguments 'gcp_project_id', 'lake_name' and 'location_id'."
-            )
-        response = self._session.post(
-            f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
-            f"{location_id}/lakes/{lake_name}/tasks/",
-            headers=self._headers,
-            data=json.dumps(body),
-        )
-        return response
-
+    @limiter.ratelimit("get_dataplex_asset", delay=True, max_delay=60)
     def get_entity(
         self,
         zone_id: str,
@@ -299,6 +290,7 @@ class DataplexClient:
         )
         return response
 
+    @limiter.ratelimit("get_dataplex_asset", delay=True, max_delay=60)
     def list_entities(
         self,
         zone_id: str,
@@ -328,11 +320,14 @@ class DataplexClient:
             raise ValueError(
                 "Dataplex list_entities() API call missing required arguments 'lake_name'."
             )
+        default_params = {"page_size": 100}
+        if params:
+            default_params.update(params)
         response = self._session.get(
             f"{self.dataplex_endpoint}/v1/projects/{gcp_project_id}/locations/"
             f"{location_id}/lakes/{lake_name}/zones/{zone_id}/entities/",
             headers=self._headers,
-            params=params,
+            params=default_params,
         )
         if "entities" not in response.json():
             logger.warning(

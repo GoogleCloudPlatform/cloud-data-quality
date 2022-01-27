@@ -244,12 +244,6 @@ class CloudDqDataplexClient:
     def get_dataplex_lake(self, lake_name: str) -> Response:
         return self._client.get_dataplex_lake(lake_name)
 
-    def get_iam_permissions(self) -> list:
-        body = {"resource": "dataplex", "permissions": ["roles/dataproc.worker"]}
-        return self._client.get_dataplex_iam_permissions(
-            body=body,
-        )
-
     def _validate_clouddq_artifact_path(
         self, clouddq_artifact_path: str | None, artifact_name: str
     ) -> str:
@@ -308,7 +302,7 @@ class CloudDqDataplexClient:
         location_id: str = None,
         lake_name: str = None,
     ) -> list[DataplexEntity]:
-        params = {"page_size": 1000}
+        params = {"page_size": 10}
 
         if prefix and data_path:
             raise ValueError("Either prefix or datapath should be passed but not both")
