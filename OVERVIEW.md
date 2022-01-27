@@ -55,7 +55,7 @@ rule_bindings:
       - NOT_NULL_SIMPLE
 ```
 
-Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-1-bindings.yml)
+Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-1-rule-bindings.yml)
 
 
 #### Rule Type `NOT_BLANK`
@@ -76,7 +76,7 @@ rule_bindings:
       - NOT_BLANK_SIMPLE
 ```
 
-Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-2-bindings.yml)
+Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-2-rule-bindings.yml)
 
 
 #### Rule Type `REGEX`
@@ -102,7 +102,7 @@ rule_bindings:
       - VALID_EMAIL
 ```
 
-Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-2-bindings.yml)
+Complete example: [Rule](configs/rules/base-rules.yml) and [rule binding](configs/rule_bindings/team-2-rule-bindings.yml)
 
 #### Rule Type `CUSTOM_SQL_EXPRESSION`
 
