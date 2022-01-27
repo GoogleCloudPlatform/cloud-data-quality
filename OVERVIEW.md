@@ -184,7 +184,7 @@ rule_bindings:
           n_max: 1000
 ```
 
-Complete example: [Rule](configs/rules/complex-rules.yml) and [rule binding](configs/rule_bindings/team-3-bindings.yml)
+Complete example: [Rule](configs/rules/complex-rules.yml) and [rule binding](configs/rule_bindings/team-3-rule-bindings.yml)
 
 
 ### CloudDQ Execution
