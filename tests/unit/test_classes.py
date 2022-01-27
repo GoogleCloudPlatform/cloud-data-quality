@@ -122,6 +122,7 @@ class TestClasses:
             "table_name": "table_name",
             "dataset_name": "dataset_name",
             "project_name": "project_name",
+            "resource_type": "BIGQUERY",
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -138,6 +139,7 @@ class TestClasses:
                 "dataset_name": "dataset_name",
                 "instance_name": "project_name",
                 "project_name": "project_name",
+                "resource_type": "BIGQUERY",
                 "columns": {
                     "TEST_COLUMN": {
                         "description": "test column description",
@@ -155,6 +157,7 @@ class TestClasses:
             "table_name": "table_name",
             "database_name": "dataset_name",
             "instance_name": "project_name",
+            "resource_type": "BIGQUERY",
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -171,6 +174,7 @@ class TestClasses:
                 "dataset_name": "dataset_name",
                 "instance_name": "project_name",
                 "project_name": "project_name",
+                "resource_type": "BIGQUERY",
                 "columns": {
                     "TEST_COLUMN": {
                         "description": "test column description",
@@ -189,6 +193,7 @@ class TestClasses:
             "lake_name": "lake",
             "zone_name": "zone",
             "project_name": "project_name",
+            "resource_type": "CLOUD_STORAGE",
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -207,6 +212,7 @@ class TestClasses:
                     "table_name": "table",
                     "database_name": "lake_zone",
                     "instance_name": "project_name",
+                    "resource_type": "CLOUD_STORAGE",
                     "columns": {
                         "TEST_COLUMN": {
                             "description": "test column description",
