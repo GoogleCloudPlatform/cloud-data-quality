@@ -59,7 +59,7 @@ class DataplexEntity:
         )
 
     @classmethod
-    def from_dict(cls: DataplexEntity, kwargs: dict) -> DataplexEntity:
+    def from_dict(cls: DataplexEntity, entity_id: str, kwargs: dict) -> DataplexEntity:
         """
 
         Args:
@@ -70,76 +70,89 @@ class DataplexEntity:
 
         """
 
-        entity_name = kwargs.get("name")
-        assert_not_none_or_empty(
-            value=entity_name, error_msg="Name: must define non-empty value: 'name'."
-        )
+        try:
+            entity_name = kwargs.get("name", None)
+            assert_not_none_or_empty(
+                value=entity_name,
+                error_msg=f"Entity {entity_id} must define non-empty value for field: 'name'.",
+            )
 
-        create_time = kwargs.get("createTime")
-        assert_not_none_or_empty(
-            value=create_time,
-            error_msg="Create Time: must define non-empty value: 'create_time'.",
-        )
+            create_time = kwargs.get("createTime", None)
+            assert_not_none_or_empty(
+                value=create_time,
+                error_msg=f"Entity {entity_id} must define non-empty value for field: 'create_time'.",
+            )
 
-        update_time = kwargs.get("updateTime")
-        assert_not_none_or_empty(
-            value=update_time,
-            error_msg="Update Time: must define non-empty value: 'update_time'.",
-        )
+            update_time = kwargs.get("updateTime", None)
+            assert_not_none_or_empty(
+                value=update_time,
+                error_msg=f"Entity {entity_id} must define non-empty value for field: 'update_time'.",
+            )
 
-        entity_id = kwargs.get("id")
-        assert_not_none_or_empty(
-            value=entity_id, error_msg="Id: must define non-empty value: 'id'."
-        )
+            entity_id = kwargs.get("id", None)
+            assert_not_none_or_empty(
+                value=entity_id,
+                error_msg=f"Entity {entity_id} must define non-empty value for field: 'id'.",
+            )
 
-        entity_type = kwargs.get("type")
-        assert_not_none_or_empty(
-            value=entity_type,
-            error_msg="Entity type: must define non-empty value: 'entity_type'.",
-        )
+            entity_type = kwargs.get("type", None)
+            assert_not_none_or_empty(
+                value=entity_type,
+                error_msg=f"Entity {entity_id} must define non-empty value for field: 'entity_type'.",
+            )
 
-        asset = kwargs.get("asset")
-        assert_not_none_or_empty(
-            value=asset, error_msg="Asset: must define non-empty value: 'asset'."
-        )
+            asset = kwargs.get("asset", None)
+            assert_not_none_or_empty(
+                value=asset,
+                error_msg=f"Entity {entity_id} must define non-empty value for field: 'asset'.",
+            )
 
-        data_path = kwargs.get("dataPath")
-        assert_not_none_or_empty(
-            value=data_path,
-            error_msg="Data Path: must define non-empty value: 'data_path'.",
-        )
+            data_path = kwargs.get("dataPath", None)
+            assert_not_none_or_empty(
+                value=data_path,
+                error_msg=f"Entity {entity_id} must define non-empty value for field: 'data_path'.",
+            )
 
-        system = kwargs.get("system")
-        assert_not_none_or_empty(
-            value=system, error_msg="System: must define non-empty value: 'system'."
-        )
+            system = kwargs.get("system", None)
+            assert_not_none_or_empty(
+                value=system,
+                error_msg=f"Entity {entity_id} must define non-empty value for field: 'system'.",
+            )
 
-        entity_format = kwargs.get("format")
-        assert_not_none_or_empty(
-            value=entity_format,
-            error_msg="Format: must define non-empty value: 'format'.",
-        )
+            entity_format = kwargs.get("format", None)
+            if system != "BIGQUERY":
+                assert_not_none_or_empty(
+                    value=entity_format,
+                    error_msg=f"Entity {entity_id} must define non-empty value for field: 'format'.",
+                )
 
-        schema_dict = kwargs.get("schema")
-        assert_not_none_or_empty(
-            value=schema_dict,
-            error_msg="Schema: must define non-empty value: 'schema'.",
-        )
+            schema_dict = kwargs.get("schema", None)
+            assert_not_none_or_empty(
+                value=schema_dict,
+                error_msg=f"Entity {entity_id} must define non-empty value for field: 'schema'.",
+            )
 
-        schema = DataplexEntitySchema.from_dict(kwargs=schema_dict)
+            schema = DataplexEntitySchema.from_dict(
+                entity_id=entity_id, kwargs=schema_dict
+            )
 
-        return DataplexEntity(
-            name=entity_name,
-            createTime=create_time,
-            updateTime=update_time,
-            id=entity_id,
-            type=entity_type,
-            asset=asset,
-            dataPath=data_path,
-            system=system,
-            format=entity_format,
-            schema=schema,
-        )
+            return DataplexEntity(
+                name=entity_name,
+                createTime=create_time,
+                updateTime=update_time,
+                id=entity_id,
+                type=entity_type,
+                asset=asset,
+                dataPath=data_path,
+                system=system,
+                format=entity_format,
+                schema=schema,
+            )
+        except ValueError as e:
+            raise ValueError(
+                f"Failed to parse Dataplex Entity response with error:\n\t{e}\n"
+                f"Input Dataplex Entity response:\n\t{format(kwargs)}"
+            )
 
     def to_dict(self: DataplexEntity) -> dict:
         """
