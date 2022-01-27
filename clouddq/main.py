@@ -434,7 +434,6 @@ def main(  # noqa: C901
         configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
         configs_cache.resolve_dataplex_entity_uris(
             client=dataplex_client,
-            bigquery_client=bigquery_client,
             default_configs=dataplex_registry_defaults,
             target_rule_binding_ids=target_rule_binding_ids,
             enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,

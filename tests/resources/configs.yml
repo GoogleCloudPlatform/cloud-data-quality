@@ -65,7 +65,7 @@ rule_bindings:
     metadata:
       brand: one
   T8_URI_DP_EMAIL_DUPLICATE:
-    entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/clouddq_gcs_test_asset_raw
+    entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/entities/clouddq_gcs_test_asset_raw
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
     rule_ids:
