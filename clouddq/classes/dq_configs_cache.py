@@ -35,6 +35,7 @@ import clouddq.classes.dq_rule as dq_rule
 import clouddq.classes.dq_rule_binding as dq_rule_binding
 import clouddq.classes.dq_rule_dimensions as dq_rule_dimensions
 import clouddq.integration.dataplex.clouddq_dataplex as clouddq_dataplex
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 
 
 logger = logging.getLogger(__name__)
@@ -165,6 +166,7 @@ class DqConfigsCache:
     def resolve_dataplex_entity_uris(  # noqa: C901
         self,
         client: clouddq_dataplex.CloudDqDataplexClient,
+        bigquery_client=BigQueryClient,
         default_configs: dict | None = None,
         target_rule_binding_ids: list[str] = None,
         enable_experimental_bigquery_entity_uris: bool = True,
@@ -210,6 +212,15 @@ class DqConfigsCache:
                         entity_id=entity_uri.get_db_primary_key(),
                         dataplex_entity=dataplex_entity,
                     ).to_dict()
+                    entity_uri_primary_key = entity_uri.get_db_primary_key().upper()
+                    gcs_clouddq_entity = clouddq_entity.get(entity_uri_primary_key)
+                    gcs_entity_external_table_name = f"{gcs_clouddq_entity.get('instance_name')}.{gcs_clouddq_entity.get('database_name')}.{gcs_clouddq_entity.get('table_name')}"
+                    logger.debug(f"GCS Entity External Table Name is {gcs_entity_external_table_name}")
+                    is_table_exists = bigquery_client.is_table_exists(table=gcs_entity_external_table_name,
+                                                    project_id=gcs_clouddq_entity.get('instance_name'))
+                    if is_table_exists:
+                        logger.debug(f"The External Table {gcs_entity_external_table_name} for Entity URI "
+                                     f"{entity_uri_primary_key} exists in Bigquery.")
                     resolved_entity = unnest_object_to_list(clouddq_entity)
                 elif entity_uri.scheme == "bigquery":
                     if not enable_experimental_bigquery_entity_uris:
@@ -264,7 +275,9 @@ class DqConfigsCache:
                             f"Current Dataplex default configs from "
                             f"'metadata_registry_defaults' YAML:\n"
                             f"{pformat(default_configs)}\n\n"
-                            f"Ensure BigQuery entity exists in the correct Dataplex zone."
+                            f"Ensure BigQuery entity exists in the correct Dataplex zone. "
+                            f"If Bigquery Entity is a External Table created by Dataplex,"
+                            f"you must specify Dataplex Entity URI instead of a Bigquery URI."
                         )
                     else:
                         dataplex_entity = dataplex_entities_match[0]
