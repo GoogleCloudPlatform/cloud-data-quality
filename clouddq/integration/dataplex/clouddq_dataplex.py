@@ -285,7 +285,9 @@ class CloudDqDataplexClient:
             params=params,
         )
         if response.status_code == 200:
-            return DataplexEntity.from_dict(json.loads(response.text))
+            return DataplexEntity.from_dict(
+                entity_id=entity_id, kwargs=json.loads(response.text)
+            )
         else:
             raise RuntimeError(
                 f"Failed to retrieve Dataplex entity: "

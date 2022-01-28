@@ -88,7 +88,7 @@ class TestMetadataIntegration:
                 request.getfixturevalue("gcp_dataplex_bigquery_dataset_id")) \
             .replace("<gcp_dataplex_bucket_name>", request.getfixturevalue("gcp_dataplex_bucket_name"))
 
-        expected_entity = DataplexEntity.from_dict(kwargs=expected_obj)
+        expected_entity = DataplexEntity.from_dict(entity_id=expected_obj["name"], kwargs=expected_obj)
 
         print(f"Response Object is \n {actual_entity}")
 
@@ -143,4 +143,4 @@ class TestMetadataIntegration:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
