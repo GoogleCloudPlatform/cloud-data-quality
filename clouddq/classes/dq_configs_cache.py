@@ -166,6 +166,7 @@ class DqConfigsCache:
     def resolve_dataplex_entity_uris(  # noqa: C901
         self,
         client: clouddq_dataplex.CloudDqDataplexClient,
+        bigquery_client: BigQueryClient,
         default_configs: dict | None = None,
         target_rule_binding_ids: list[str] = None,
         enable_experimental_bigquery_entity_uris: bool = True,
@@ -216,7 +217,7 @@ class DqConfigsCache:
                     logger.debug(
                         f"GCS Entity External Table Name is {gcs_entity_external_table_name}"
                     )
-                    bq_table_exists = BigQueryClient().is_table_exists(
+                    bq_table_exists = bigquery_client.is_table_exists(
                         table=gcs_entity_external_table_name,
                         project_id=clouddq_entity.instance_name,
                     )
