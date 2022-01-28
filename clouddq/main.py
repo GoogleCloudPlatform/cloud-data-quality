@@ -300,9 +300,8 @@ def main(  # noqa: C901
         json_logger.warning(
             json.dumps({"clouddq_run_configs": locals()}, cls=JsonEncoderDatetime)
         )
-        if not skip_sql_validation:
-            # Create BigQuery client for query dry-runs
-            bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
+        # Create BigQuery client for query dry-runs
+        bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -488,8 +487,6 @@ def main(  # noqa: C901
         # create dbt configs json for the main.sql loop and run dbt
         configs = {
             "target_rule_binding_ids": target_rule_binding_ids,
-            "gcp_project_id": gcp_project_id,
-            "gcp_bq_dataset_id": gcp_bq_dataset_id,
         }
         dbt_runner.run(
             configs=configs,
