@@ -210,23 +210,22 @@ class DqConfigsCache:
                     clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
                         entity_id=entity_uri.get_db_primary_key(),
                         dataplex_entity=dataplex_entity,
-                    ).to_dict()
+                    )
                     entity_uri_primary_key = entity_uri.get_db_primary_key().upper()
-                    gcs_clouddq_entity = clouddq_entity.get(entity_uri_primary_key)
-                    gcs_entity_external_table_name = f"{gcs_clouddq_entity.get('instance_name')}.{gcs_clouddq_entity.get('database_name')}.{gcs_clouddq_entity.get('table_name')}"
+                    gcs_entity_external_table_name = clouddq_entity.get_bq_external_table_name()
                     logger.debug(
                         f"GCS Entity External Table Name is {gcs_entity_external_table_name}"
                     )
                     bq_table_exists = BigQueryClient().is_table_exists(
                         table=gcs_entity_external_table_name,
-                        project_id=gcs_clouddq_entity.get("instance_name"),
+                        project_id=clouddq_entity.instance_name,
                     )
                     if bq_table_exists:
                         logger.debug(
                             f"The External Table {gcs_entity_external_table_name} for Entity URI "
                             f"{entity_uri_primary_key} exists in Bigquery."
                         )
-                    resolved_entity = unnest_object_to_list(clouddq_entity)
+                    resolved_entity = unnest_object_to_list(clouddq_entity.to_dict())
                 elif entity_uri.scheme == "bigquery":
                     if not enable_experimental_bigquery_entity_uris:
                         raise NotImplementedError(
