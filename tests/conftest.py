@@ -329,6 +329,17 @@ def temp_configs_dir(
         lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
         lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
         source_file.write(lines)
+    #prepare gcs entity_uri configs
+    gcs_registry_defaults = configs_path.joinpath("rule_bindings", "team-5-rule-bindings.yml")
+    with open(gcs_registry_defaults) as gcs_source_file:
+        lines = gcs_source_file.read()
+    with open(gcs_registry_defaults, "w") as gcs_source_file:
+        lines = lines.replace("<my-gcp-dataplex-lake-id>", gcp_dataplex_lake_name)
+        lines = lines.replace("<my-gcp-dataplex-region-id>", gcp_dataplex_region)
+        lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
+        lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
+        lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
+        gcs_source_file.write(lines)
     yield configs_path.absolute()
     if os.path.exists(temp_clouddq_dir):
         shutil.rmtree(temp_clouddq_dir)
