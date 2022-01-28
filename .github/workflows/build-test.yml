@@ -92,5 +92,3 @@ jobs:
           gsutil cp clouddq_patched.zip.hashsum gs://${{ secrets.GCS_BUCKET_NAME }}/build-artifacts/${{matrix.os}}/python3.8/`date -I'minutes'`/${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}/clouddq-executable.zip.hashsum
           gsutil cp clouddq/integration/clouddq_pyspark_driver.py gs://${{ secrets.GCS_BUCKET_NAME }}/build-artifacts/${{matrix.os}}/python3.8/`date -I'minutes'`/${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}/clouddq_pyspark_driver.py
         shell: bash
-
-      - run: sleep 60
