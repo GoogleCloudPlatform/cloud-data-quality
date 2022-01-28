@@ -1,6 +1,6 @@
 [
   {
-    "rule_binding_id": "T1_DQ_1_VALUE_NOT_NULL",
+    "rule_binding_id": "T1_DQ_1_VALUE_NOT_NULL_TEST",
     "rule_id": "NOT_NULL_SIMPLE",
     "column_id": "value",
     "dimension": null,
@@ -14,7 +14,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T2_DQ_1_EMAIL",
+    "rule_binding_id": "T2_DQ_1_EMAIL_TEST",
     "rule_id": "CUSTOM_SQL_LENGTH_LE_30",
     "column_id": "value",
     "dimension": null,
@@ -28,7 +28,7 @@
     "null_count": "1"
   },
   {
-    "rule_binding_id": "T2_DQ_1_EMAIL",
+    "rule_binding_id": "T2_DQ_1_EMAIL_TEST",
     "rule_id": "NOT_BLANK",
     "column_id": "value",
     "dimension": null,
@@ -42,7 +42,7 @@
     "null_count": "1"
   },
   {
-    "rule_binding_id": "T2_DQ_1_EMAIL",
+    "rule_binding_id": "T2_DQ_1_EMAIL_TEST",
     "rule_id": "NOT_NULL_SIMPLE",
     "column_id": "value",
     "dimension": null,
@@ -56,7 +56,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T2_DQ_1_EMAIL",
+    "rule_binding_id": "T2_DQ_1_EMAIL_TEST",
     "rule_id": "REGEX_VALID_EMAIL",
     "column_id": "value",
     "dimension": null,
@@ -70,7 +70,7 @@
     "null_count": "1"
   },
   {
-    "rule_binding_id": "T3_DQ_1_EMAIL_DUPLICATE_NONE",
+    "rule_binding_id": "T3_DQ_1_EMAIL_DUPLICATE_NONE_TEST",
     "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
     "column_id": null,
     "dimension": null,
@@ -84,7 +84,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T4_DUPLICATE_ROW_ID",
+    "rule_binding_id": "T4_DUPLICATE_ROW_ID_TEST",
     "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
     "column_id": null,
     "dimension": null,
@@ -98,7 +98,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T5_DUPLICATE_ROW_ID_CONTACT_TYPE",
+    "rule_binding_id": "T5_DUPLICATE_ROW_ID_CONTACT_TYPE_TEST",
     "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
     "column_id": null,
     "dimension": null,
@@ -112,7 +112,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T6_DUPLICATE_VALUE_WITH_NULL",
+    "rule_binding_id": "T6_DUPLICATE_VALUE_WITH_NULL_TEST",
     "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
     "column_id": null,
     "dimension": null,
@@ -126,7 +126,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T7_EMAIL_DUPLICATE_CONTACT_TYPE",
+    "rule_binding_id": "T7_EMAIL_DUPLICATE_CONTACT_TYPE_TEST",
     "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
     "column_id": null,
     "dimension": null,
@@ -140,7 +140,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T8_DUPLICATE_NO_ROWS",
+    "rule_binding_id": "T8_DUPLICATE_NO_ROWS_TEST",
     "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
     "column_id": null,
     "dimension": null,
@@ -154,7 +154,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "T9_INCREMENTAL_NO_ROWS",
+    "rule_binding_id": "T9_INCREMENTAL_NO_ROWS_TEST",
     "rule_id": "NO_DUPLICATES_IN_COLUMN_GROUPS",
     "column_id": null,
     "dimension": null,
@@ -168,7 +168,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "UNIQUENESS",
+    "rule_binding_id": "UNIQUENESS_TEST",
     "rule_id": "UNIQUE",
     "column_id": null,
     "dimension": null,
@@ -182,7 +182,7 @@
     "null_count": null
   },
   {
-    "rule_binding_id": "CUSTOM_SQL_EXPR_PARAMETRIZED",
+    "rule_binding_id": "CUSTOM_SQL_EXPR_PARAMETRIZED_TEST",
     "rule_id": "CUSTOM_SQL_LENGTH_LE_PARAMETRIZED",
     "column_id": "value",
     "dimension": null,

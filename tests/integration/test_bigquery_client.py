@@ -52,8 +52,15 @@ class TestBigQueryClient:
 
     def test_assert_dataset_is_in_region(self, client):
         dataset = "bigquery-public-data.google_analytics_sample"
+        project_id = dataset.split(".")[0]
         region = "US"
-        client.assert_dataset_is_in_region(dataset=dataset, region=region)
+        assert region == client.get_dataset_region(dataset=dataset, project_id=project_id)
+
+    def test_assert_dataset_is_in_region_failure(self, client):
+        dataset = "bigquery-public-data.google_analytics_sample"
+        project_id = dataset.split(".")[0]
+        region = "EU"
+        assert region != client.get_dataset_region(dataset=dataset, project_id=project_id)
 
     def test_assert_is_table_exists(self, client):
         table_name = "bigquery-public-data.github_repos.commits"
@@ -86,12 +93,6 @@ class TestBigQueryClient:
             target_bq_result_table_name):
         table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
         client.assert_required_columns_exist_in_table(table=table)
-
-    def test_assert_dataset_is_in_region_failure(self, client):
-        dataset = "bigquery-public-data.google_analytics_sample"
-        region = "EU"
-        with pytest.raises(AssertionError):
-            client.assert_dataset_is_in_region(dataset=dataset, region=region)
 
 
 if __name__ == "__main__":
