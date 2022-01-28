@@ -21,6 +21,7 @@ import click.testing
 import pytest
 
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.lib import prepare_configs_cache
 from clouddq.utils import working_directory
 
@@ -228,6 +229,13 @@ def test_dq_dataplex_client(dataplex_endpoint,
                                 gcs_bucket_name=gcs_bucket_name)
 
 @pytest.fixture(scope="session")
+def test_bigquery_client():
+    """Get BigQuery Client using discovered ADC"""
+    client = BigQueryClient()
+    yield client
+    client.close_connection()
+
+@pytest.fixture(scope="session")
 def test_dataplex_metadata_defaults_configs(
         gcp_dataplex_lake_name,
         gcp_dataplex_region,
@@ -275,13 +283,15 @@ def test_configs_cache(
 def test_default_dataplex_configs_cache(temp_configs_dir,
                                         test_dq_dataplex_client,
                                         test_dataplex_metadata_defaults_configs,
-                                        tmp_path):
+                                        tmp_path,
+                                        test_bigquery_client):
     temp_path = Path(tmp_path).joinpath("clouddq_test_configs_cache")
     temp_path.mkdir()
     with working_directory(temp_path):
         configs_cache = prepare_configs_cache(configs_path=temp_configs_dir)
         configs_cache.resolve_dataplex_entity_uris(
             client=test_dq_dataplex_client,
+            bigquery_client=test_bigquery_client,
             default_configs=test_dataplex_metadata_defaults_configs
         )
         yield configs_cache
@@ -375,13 +385,15 @@ def temp_configs_from_file(
 def test_default_dataplex_configs_cache_from_file(temp_configs_from_file,
                                         test_dq_dataplex_client,
                                         test_dataplex_metadata_defaults_configs,
-                                        tmp_path):
+                                        tmp_path,
+                                        test_bigquery_client,):
     temp_path = Path(tmp_path).joinpath("clouddq_test_configs_cache")
     temp_path.mkdir()
     with working_directory(temp_path):
         configs_cache = prepare_configs_cache(configs_path=temp_configs_from_file)
         configs_cache.resolve_dataplex_entity_uris(
             client=test_dq_dataplex_client,
+            bigquery_client=test_bigquery_client,
             default_configs=test_dataplex_metadata_defaults_configs
         )
         yield configs_cache
