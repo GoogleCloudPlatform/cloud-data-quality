@@ -244,12 +244,6 @@ class CloudDqDataplexClient:
     def get_dataplex_lake(self, lake_name: str) -> Response:
         return self._client.get_dataplex_lake(lake_name)
 
-    def get_iam_permissions(self) -> list:
-        body = {"resource": "dataplex", "permissions": ["roles/dataproc.worker"]}
-        return self._client.get_dataplex_iam_permissions(
-            body=body,
-        )
-
     def _validate_clouddq_artifact_path(
         self, clouddq_artifact_path: str | None, artifact_name: str
     ) -> str:
@@ -291,7 +285,9 @@ class CloudDqDataplexClient:
             params=params,
         )
         if response.status_code == 200:
-            return DataplexEntity.from_dict(json.loads(response.text))
+            return DataplexEntity.from_dict(
+                entity_id=entity_id, kwargs=json.loads(response.text)
+            )
         else:
             raise RuntimeError(
                 f"Failed to retrieve Dataplex entity: "

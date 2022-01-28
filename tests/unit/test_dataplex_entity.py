@@ -36,11 +36,12 @@ class TestDataplexEntity:
 
     def test_create_dataplex_entity_from_input_dict(self, mock_valid_dataplex_input):
         """ """
-        dataplex_entity_actual = DataplexEntity.from_dict(mock_valid_dataplex_input)
+        name = "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id"
+        dataplex_entity_actual = DataplexEntity.from_dict(entity_id=name, kwargs=mock_valid_dataplex_input)
 
         dataplex_entity_expected_dict = {
-            "name": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
-            "db_primary_key": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",  # noqa: E501
+            "name": name,
+            "db_primary_key": name,
             "createTime": "createTimestamp",
             "updateTime": "updateTimestamp",
             "id": "entity_id",
@@ -54,19 +55,19 @@ class TestDataplexEntity:
                               {"name": "column3", "type": "STRING", "mode": "REQUIRED"},
                               {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}]}
         }
-        assert dataplex_entity_actual == DataplexEntity.from_dict(dataplex_entity_expected_dict)
+        assert dataplex_entity_actual == DataplexEntity.from_dict(entity_id=name, kwargs=dataplex_entity_expected_dict)
 
     def test_validate_dataplex_entity(self, mock_valid_dataplex_input):
         """ """
-        dataplex_entity = DataplexEntity.from_dict(mock_valid_dataplex_input)
+        name = "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id"
+        dataplex_entity = DataplexEntity.from_dict(entity_id=name, kwargs=mock_valid_dataplex_input)
 
         schema = {"fields": [{"name": "column1", "type": "STRING", "mode": "REQUIRED"},
                              {"name": "column2", "type": "STRING", "mode": "REQUIRED"},
                              {"name": "column3", "type": "STRING", "mode": "REQUIRED"},
                              {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}]}
 
-        assert dataplex_entity.name == "projects/project-id/locations/location-id/lakes/" \
-                                       "lake_name/zones/zone-id/entities/entity_id"
+        assert dataplex_entity.name == name
         assert dataplex_entity.createTime == "createTimestamp"
         assert dataplex_entity.updateTime == "updateTimestamp"
         assert dataplex_entity.id == "entity_id"
@@ -75,7 +76,7 @@ class TestDataplexEntity:
         assert dataplex_entity.dataPath == "projects/project-id/datasets/bigquery_dataset_id/tables/table_name"
         assert dataplex_entity.system == "BIGQUERY"
         assert dataplex_entity.format == {"format": "OTHER"}
-        assert dataplex_entity.schema == DataplexEntitySchema.from_dict(kwargs=schema)
+        assert dataplex_entity.schema == DataplexEntitySchema.from_dict(entity_id="entity_id", kwargs=schema)
         assert dataplex_entity.project_id == "project-id"
         assert dataplex_entity.location == "location-id"
         assert dataplex_entity.lake == "lake_name"
@@ -83,7 +84,8 @@ class TestDataplexEntity:
 
     def test_validate_dataplex_entity_to_dict(self, mock_valid_dataplex_input):
         """ """
-        dataplex_entity = DataplexEntity.from_dict(mock_valid_dataplex_input)
+        name = "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id"
+        dataplex_entity = DataplexEntity.from_dict(entity_id=name, kwargs=mock_valid_dataplex_input)
 
         schema = {"fields": [{"name": "column1", "type": "STRING", "mode": "REQUIRED"},
                               {"name": "column2", "type": "STRING", "mode": "REQUIRED"},  # noqa: E127
@@ -91,8 +93,8 @@ class TestDataplexEntity:
                               {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}]}  # noqa: E127
 
         dataplex_entity_expected = {
-            "name": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",
-            "db_primary_key": "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id",  # noqa: E501
+            "name": name,
+            "db_primary_key": name,
             "createTime": "createTimestamp",
             "updateTime": "updateTimestamp",
             "id": "entity_id",
@@ -101,7 +103,39 @@ class TestDataplexEntity:
             "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
             "system": "BIGQUERY",
             "format": {"format": "OTHER"},
-            "schema": DataplexEntitySchema.from_dict(kwargs=schema),
+            "schema": DataplexEntitySchema.from_dict(entity_id= name, kwargs=schema),
+            "project_id": "project-id",
+            "location": "location-id",
+            "lake": "lake_name",
+            "zone": "zone-id",
+        }
+
+        assert dataplex_entity.to_dict() == dataplex_entity_expected
+
+    def test_validate_dataplex_entity_to_dict(self, mock_valid_dataplex_input):
+        """ """
+        name = "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id"
+        test_input = mock_valid_dataplex_input
+        del test_input["format"]
+        dataplex_entity = DataplexEntity.from_dict(entity_id=name, kwargs=mock_valid_dataplex_input)
+
+        schema = {"fields": [{"name": "column1", "type": "STRING", "mode": "REQUIRED"},
+                              {"name": "column2", "type": "STRING", "mode": "REQUIRED"},  # noqa: E127
+                              {"name": "column3", "type": "STRING", "mode": "REQUIRED"},  # noqa: E127
+                              {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}]}  # noqa: E127
+
+        dataplex_entity_expected = {
+            "name": name,
+            "db_primary_key": name,
+            "createTime": "createTimestamp",
+            "updateTime": "updateTimestamp",
+            "id": "entity_id",
+            "type": "TABLE",
+            "asset": "asset-id",
+            "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
+            "system": "BIGQUERY",
+            "format": None,
+            "schema": DataplexEntitySchema.from_dict(entity_id= name, kwargs=schema),
             "project_id": "project-id",
             "location": "location-id",
             "lake": "lake_name",
@@ -113,7 +147,7 @@ class TestDataplexEntity:
     def test_dataplex_entity_missing_columns_failure(self, mock_invalid_dataplex_input):
         """ """
         with pytest.raises(ValueError):
-            DataplexEntity.from_dict(kwargs=mock_invalid_dataplex_input)
+            DataplexEntity.from_dict(entity_id="test", kwargs=mock_invalid_dataplex_input)
 
 
 if __name__ == "__main__":
