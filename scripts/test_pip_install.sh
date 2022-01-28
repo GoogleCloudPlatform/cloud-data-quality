@@ -79,6 +79,12 @@ sed -i s/\<my-gcp-dataplex-region-id\>/"${DATAPLEX_REGION_ID}"/g "$TEST_DIR"/con
 sed -i s/\<my-gcp-project-id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/configs/rule_bindings/team-4-rule-bindings.yml
 sed -i s/\<my-gcp-dataplex-zone-id\>/"${DATAPLEX_ZONE_ID}"/g "$TEST_DIR"/configs/rule_bindings/team-4-rule-bindings.yml
 sed -i s/\<my_bigquery_dataset_id\>/"${DATAPLEX_BIGQUERY_DATASET_ID}"/g "$TEST_DIR"/configs/rule_bindings/team-4-rule-bindings.yml
+# configs/rule_bindings/team-5-rule-bindings.yml
+sed -i s/\<my-gcp-dataplex-lake-id\>/"${DATAPLEX_LAKE_NAME}"/g "$TEST_DIR"/configs/rule_bindings/team-5-rule-bindings.yml
+sed -i s/\<my-gcp-dataplex-region-id\>/"${DATAPLEX_REGION_ID}"/g "$TEST_DIR"/configs/rule_bindings/team-5-rule-bindings.yml
+sed -i s/\<my-gcp-project-id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/configs/rule_bindings/team-5-rule-bindings.yml
+sed -i s/\<my-gcp-dataplex-zone-id\>/"${DATAPLEX_ZONE_ID}"/g "$TEST_DIR"/configs/rule_bindings/team-5-rule-bindings.yml
+sed -i s/\<my_bigquery_dataset_id\>/"${DATAPLEX_BIGQUERY_DATASET_ID}"/g "$TEST_DIR"/configs/rule_bindings/team-5-rule-bindings.yml
 # configs/metadata_registry_defaults.yml
 sed -i s/\<my-gcp-dataplex-lake-id\>/"${DATAPLEX_LAKE_NAME}"/g "$TEST_DIR"/configs/metadata_registry_defaults.yml
 sed -i s/\<my-gcp-dataplex-region-id\>/"${DATAPLEX_REGION_ID}"/g "$TEST_DIR"/configs/metadata_registry_defaults.yml
