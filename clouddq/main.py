@@ -466,15 +466,9 @@ def main(  # noqa: C901
             enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
         )
         # Get Entities for entity-level summary views
-        # target_entity_summary_views: dict = configs_cache.get_entities_from_rule_bindings(
-        #     target_rule_binding_ids=target_rule_binding_ids,
-        # )
-        # for entity_id, rule_binding_ids in target_rule_binding_ids.items():
-        #     entity_summary_view_sql = lib.create_entity_summary_view_model(
-        #         entity_id=entity_id, 
-        #         target_rule_binding_ids=rule_binding_ids, 
-        #         debug=debug)
-                
+        target_entity_summary_views_configs: dict = configs_cache.get_entities_configs_from_rule_bindings(
+            target_rule_binding_ids=target_rule_binding_ids,
+        )               
         # Create Rule_binding views
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
@@ -516,19 +510,46 @@ def main(  # noqa: C901
             lib.write_sql_string_as_dbt_model(
                 model_id=rule_binding_id,
                 sql_string=sql_string,
-                dbt_rule_binding_views_path=dbt_rule_binding_views_path,
+                dbt_model_path=dbt_rule_binding_views_path,
             )
         # clean up old rule_bindings
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem not in target_rule_binding_ids:
                 view.unlink()
+        # create entity-level summary table models
+        for entity_table_id, entity_configs_dict in target_entity_summary_views_configs.items():
+            rule_binding_ids_list = entity_configs_dict.get('rule_binding_ids_list')
+            assert_not_none_or_empty(
+                rule_binding_ids_list,
+                f"Internal Error: no rule_binding_id found for entity_table_id {entity_table_id}."
+            )
+            sql_string = lib.create_entity_summary_view_model(
+                entity_table_id=entity_table_id,
+                rule_binding_ids_list=rule_binding_ids_list,
+                debug=print_sql_queries,
+            )
+            if not skip_sql_validation:
+                logger.debug(
+                    f"Validating generated SQL code for entity-level summary for "
+                    f"{entity_table_id} using BigQuery dry-run client.",
+                )
+                bigquery_client.check_query_dry_run(query_string=sql_string)
+            logger.debug(
+                f"*** Writing sql to {dbt_entity_summary_path.absolute()}/"
+                f"{entity_table_id}.sql",
+            )
+            lib.write_sql_string_as_dbt_model(
+                model_id=entity_table_id,
+                sql_string=sql_string,
+                dbt_model_path=dbt_entity_summary_path,
+            )
         # clean up old entity_summary views
         for view in dbt_entity_summary_path.glob("*.sql"):
-            if view.stem not in target_entity_summary_views:
+            if view.stem not in target_entity_summary_views_configs.keys():
                 view.unlink()
         # create dbt configs json for the main.sql loop and run dbt
         configs = {
-            "target_rule_binding_ids": target_rule_binding_ids,
+            # "target_rule_binding_ids": target_rule_binding_ids,
         }
         dbt_runner.run(
             configs=configs,

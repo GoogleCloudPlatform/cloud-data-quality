@@ -283,7 +283,7 @@ class DqConfigsCache:
                     resolved_entity, pk="id", alter=True
                 )
                 self._cache_db["rule_bindings"].update(
-                    record["id"], {"entity_id": resolved_entity[0]["id"]}, alter=True
+                    record["id"], {"entity_id": entity_uri.get_db_primary_key()}, alter=True
                 )
 
     def update_config(
@@ -343,14 +343,27 @@ class DqConfigsCache:
                 )
             return config_old.copy()
 
-    # def get_entities_from_rule_bindings(
-    #             self, target_rule_binding_ids: list[str]
-    #         ) -> dict[str, str]:
-    #     for record in self._cache_db.query(
-    #         "select distinct e.id, rb.id "
-    #         "e.source_database, e.table_name, e.database_name, e.instance_name"
-    #         "from entities e inner join rule_bindings rb"
-    #         " on e.id = rb.rule"
-    #         "from rule_bindings "
-    #         f"where  is in ({','.join(target_rule_binding_ids)})"
-    #     ):
+    def get_entities_configs_from_rule_bindings(
+                self, target_rule_binding_ids: list[str]
+            ) -> dict[str, str]:
+        for record in self._cache_db.query(
+            "select distinct e.id, rb.id "
+            "e.source_database, e.table_name, e.database_name, e.instance_name"
+            "from entities e inner join rule_bindings rb"
+            " on e.id = rb.rule"
+            "from rule_bindings "
+            f"where  is in ({','.join(target_rule_binding_ids)})"
+        ):
+        target_entity_summary_views_configs = {
+            "entity_table_id": {
+                "rule_binding_ids_list": [
+                    "rule_binding_1"
+                ]
+            },
+            "entity_table_id": {
+                "rule_binding_ids_list": [
+                    "rule_binding_1"
+                ]
+            }
+        }
+        return target_entity_summary_views_configs

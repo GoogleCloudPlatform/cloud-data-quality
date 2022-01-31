@@ -46,7 +46,7 @@ models:
     rule_binding_views:
       materialized: view
     entity_dq_statistics:
-      materialized: view
+      materialized: table
 
 vars:
   target_rule_binding_ids: ""

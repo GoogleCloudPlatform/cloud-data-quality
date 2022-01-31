@@ -17,7 +17,7 @@
     materialized = 'ephemeral',
   )
 }}
-{%- for rule_binding_id in var('target_rule_binding_ids') -%}
+{%- for entity_dq_statistics_model in var('entity_dq_statistics_models') -%}
     SELECT
         '{{ invocation_id }}'  AS invocation_id,
         execution_ts,
@@ -77,7 +77,7 @@
         END
         AS null_percentage,
     FROM
-        {{ ref(rule_binding_id) }}
+        {{ ref(entity_dq_statistics_model) }}
     GROUP BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
     {% if loop.nextitem is defined %}
