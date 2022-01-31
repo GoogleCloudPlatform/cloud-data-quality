@@ -354,5 +354,5 @@ class DqEntity:
                 f"is unsupported for entity:\n {dataplex_entity.to_dict()}"
             )
 
-    def get_bq_external_table_name(self):
+    def get_table_name(self):
         return  f"{self.instance_name}.{self.database_name}.{self.table_name}"

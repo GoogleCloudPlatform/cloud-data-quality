@@ -41,6 +41,15 @@ import clouddq.integration.dataplex.clouddq_dataplex as clouddq_dataplex
 
 logger = logging.getLogger(__name__)
 
+GET_ENTITY_SUMMARY_QUERY = """
+select
+REPLACE(e.instance_name,'-','_') || '__' || e.database_name || '__' || e.table_name as entity_table_id,
+group_concat(rb.id, ',') as rule_binding_ids_list
+from entities e inner join rule_bindings rb
+on e.id = rb.entity_id
+where rb.id in ({target_rule_binding_ids_list})
+group by e.instance_name || e.database_name || e.table_name
+"""
 
 @dataclass
 class DqConfigsCache:
@@ -218,7 +227,7 @@ class DqConfigsCache:
                         dataplex_entity=dataplex_entity,
                     )
                     entity_uri_primary_key = entity_uri.get_db_primary_key().upper()
-                    gcs_entity_external_table_name = clouddq_entity.get_bq_external_table_name()
+                    gcs_entity_external_table_name = clouddq_entity.get_table_name()
                     logger.debug(
                         f"GCS Entity External Table Name is {gcs_entity_external_table_name}"
                     )
@@ -301,8 +310,16 @@ class DqConfigsCache:
                 self._cache_db["entities"].upsert_all(
                     resolved_entity, pk="id", alter=True
                 )
+                entity_configs = {
+                    "entity_id": entity_uri.get_db_primary_key().upper(),
+                    "source_database": clouddq_entity.source_database,
+                    "table_name": clouddq_entity.table_name,
+                    "database_name": clouddq_entity.database_name,
+                    "instance_name": clouddq_entity.instance_name,
+                    "resource_type": clouddq_entity.resource_type,
+                }
                 self._cache_db["rule_bindings"].update(
-                    record["id"], {"entity_id": entity_uri.get_db_primary_key()}, alter=True
+                    record["id"], entity_configs, alter=True
                 )
 
     def update_config(
@@ -365,24 +382,17 @@ class DqConfigsCache:
     def get_entities_configs_from_rule_bindings(
                 self, target_rule_binding_ids: list[str]
             ) -> dict[str, str]:
-        for record in self._cache_db.query(
-            "select distinct e.id, rb.id "
-            "e.source_database, e.table_name, e.database_name, e.instance_name"
-            "from entities e inner join rule_bindings rb"
-            " on e.id = rb.rule"
-            "from rule_bindings "
-            f"where  is in ({','.join(target_rule_binding_ids)})"
-        ):
-        target_entity_summary_views_configs = {
-            "entity_table_id": {
-                "rule_binding_ids_list": [
-                    "rule_binding_1"
-                ]
-            },
-            "entity_table_id": {
-                "rule_binding_ids_list": [
-                    "rule_binding_1"
-                ]
+        query = GET_ENTITY_SUMMARY_QUERY.format(
+            target_rule_binding_ids_list=','.join([f"'{id}'" for id in target_rule_binding_ids])
+        )
+        logger.warning("*********")
+        logger.warning(query)
+        target_entity_summary_views_configs = {}
+        for record in self._cache_db.query(query):
+            entity_table_id = record["entity_table_id"]
+            target_entity_summary_views_configs[entity_table_id] = {
+                "rule_binding_ids_list": record["rule_binding_ids_list"].split(","),
             }
-        }
+        logger.warning("*********")
+        logger.warning(pformat(target_entity_summary_views_configs))
         return target_entity_summary_views_configs

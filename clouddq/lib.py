@@ -123,26 +123,30 @@ def create_rule_binding_view_model(
         logger.info(pformat(configs))
     return sql_string
 
-def create_entity_summary_view_model(
+def create_entity_summary_model(
     entity_table_id: str,
-    rule_binding_ids_list: list,
+    entity_target_rule_binding_configs: dict,
+    gcp_project_id: str,
+    gcp_bq_dataset_id: str,
     debug: bool = False,
 ) -> str:
     if debug:
-        logger.info(
+        logger.warning(
             f"Generating Entity-level DQ Summary aggregate for entity "
-            f"{entity_table_id} with rule_binding_ids:\n"
-            f"{pformat(rule_binding_ids_list)}"
+            f"{entity_table_id} with entity_target_rule_binding_configs:\n"
+            f"{pformat(entity_target_rule_binding_configs)}"
         )
     template = load_jinja_template(
         template_path=Path("dbt", "macros", "create_entity_aggregate_dq_summary.sql")
     )
     configs = {
-        "rule_binding_ids_list": rule_binding_ids_list
+        "entity_target_rule_binding_configs": entity_target_rule_binding_configs,
+        "gcp_project_id": gcp_project_id,
+        "gcp_bq_dataset_id": gcp_bq_dataset_id,
     }
     sql_string = template.render(configs)
-    if debug:
-        logger.info(f"Generated sql for entity_table_id {entity_table_id}:\n{sql_string}")
+    # if debug:
+    logger.warning(f"Generated sql for entity_table_id: {entity_table_id}:\n{sql_string}")
     return sql_string
 
 def write_sql_string_as_dbt_model(
