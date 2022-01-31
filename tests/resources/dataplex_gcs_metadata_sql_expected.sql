@@ -22,7 +22,7 @@ data AS (
       *,
       '<rule_binding_id>' AS rule_binding_id,
     FROM
-      `<your-gcp-project-id>.<your_dataplex_zone_name>.clouddq_gcs_test_asset_raw` d
+      `<your-gcp-project-id>.<your_dataplex_zone_name>.asset_bucket` d
     WHERE
       contact_type = 'email'
 ),
@@ -38,7 +38,7 @@ SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     '<rule_binding_id>' AS rule_binding_id,
     'NO_DUPLICATES_IN_COLUMN_GROUPS' AS rule_id,
-    '<your-gcp-project-id>.<your_dataplex_zone_name>.clouddq_gcs_test_asset_raw' AS table_id,
+    '<your-gcp-project-id>.<your_dataplex_zone_name>.asset_bucket' AS table_id,
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
 
@@ -80,7 +80,7 @@ using (contact_type,value)
     CURRENT_TIMESTAMP() AS execution_ts,
     '<rule_binding_id>' AS rule_binding_id,
     'NOT_NULL_SIMPLE' AS rule_id,
-    '<your-gcp-project-id>.<your_dataplex_zone_name>.clouddq_gcs_test_asset_raw' AS table_id,
+    '<your-gcp-project-id>.<your_dataplex_zone_name>.asset_bucket' AS table_id,
     'value' AS column_id,
     data.value AS column_value,
 

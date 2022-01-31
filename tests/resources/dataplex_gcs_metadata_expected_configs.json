@@ -3,7 +3,7 @@
   "entity_id": "<dataplex_entity_id>",
   "entity_configs": {
     "source_database": "DATAPLEX",
-    "table_name": "clouddq_gcs_test_asset_raw",
+    "table_name": "asset_bucket",
     "database_name": "<your_dataplex_bigquery_dataset_id>",
     "instance_name": "<your-gcp-project-id>",
     "columns": {
