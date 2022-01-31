@@ -334,7 +334,7 @@ class TestMetadataUriTemplates:
             )
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_zone_id.replace('-', '_'), "<your_dataplex_zone_name>")\
-                .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")\
+                .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_name>")\
                 .replace(rule_binding_id, "<rule_binding_id>")\
                 .replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
