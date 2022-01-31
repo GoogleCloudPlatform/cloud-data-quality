@@ -14,7 +14,7 @@
 
 rule_bindings:
   T8_URI_GCS_EMAIL_DUPLICATE:
-    entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/entities/clouddq_gcs_test_asset_raw
+    entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/entities/asset_bucket
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
     rule_ids:
@@ -26,7 +26,7 @@ rule_bindings:
 
 
   T9_URI_DP_EMAIL_DUPLICATE:
-    entity_uri: dataplex://zones/<my-gcp-dataplex-zone-id>/entities/clouddq_gcs_test_asset_raw
+    entity_uri: dataplex://zones/<my-gcp-dataplex-zone-id>/entities/asset_bucket
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
     rule_ids:
