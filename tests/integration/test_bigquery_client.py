@@ -22,76 +22,77 @@ from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 @pytest.mark.e2e
 class TestBigQueryClient:
 
-    @pytest.fixture(scope="session")
-    def client(self):
-        """Get BigQuery Client using discovered ADC"""
-        client = BigQueryClient()
-        yield client
-        client.close_connection()
-
-    def test_check_query_dry_run_failure(self, client):
+    def test_check_query_dry_run_failure(self, test_bigquery_client):
         query = "SELECT 1; drop table students;--"
         with pytest.raises(BadRequest):
-            client.check_query_dry_run(query)
+            test_bigquery_client.check_query_dry_run(query)
 
-    def test_check_query_dry_run(self, client):
+    def test_check_query_dry_run(self, test_bigquery_client):
         query = "SELECT 1 + 2"
-        client.check_query_dry_run(query)
+        test_bigquery_client.check_query_dry_run(query)
 
-    def test_assert_is_dataset_exists(self, client):
+    def test_assert_is_dataset_exists(self, test_bigquery_client):
         table_name = "bigquery-public-data.github_repos.commits"
-        table_ref = client.table_from_string(
+        table_ref = test_bigquery_client.table_from_string(
             table_name
         )
         project_id = table_ref.project
         dataset_id = table_ref.dataset_id
-        assert client.is_dataset_exists(dataset=dataset_id, project_id=project_id) is True
+        assert test_bigquery_client.is_dataset_exists(dataset=dataset_id, project_id=project_id) is True
 
-    def test_assert_is_dataset_exists_implicit_project_id(self, client, gcp_dataplex_bigquery_dataset_id):
-        assert client.is_dataset_exists(dataset=gcp_dataplex_bigquery_dataset_id) is True
+    def test_assert_is_dataset_exists_implicit_project_id(self, test_bigquery_client, gcp_dataplex_bigquery_dataset_id):
+        assert test_bigquery_client.is_dataset_exists(dataset=gcp_dataplex_bigquery_dataset_id) is True
 
-    def test_assert_dataset_is_in_region(self, client):
+    def test_assert_dataset_is_in_region(self, test_bigquery_client):
         dataset = "bigquery-public-data.google_analytics_sample"
         region = "US"
-        client.assert_dataset_is_in_region(dataset=dataset, region=region)
+        test_bigquery_client.assert_dataset_is_in_region(dataset=dataset, region=region)
 
-    def test_assert_is_table_exists(self, client):
+    def test_assert_is_table_exists(self, test_bigquery_client):
         table_name = "bigquery-public-data.github_repos.commits"
-        table_ref = client.table_from_string(
+        table_ref = test_bigquery_client.table_from_string(
             table_name
         )
         project_id = table_ref.project
-        assert client.is_table_exists(table=table_name, project_id=project_id) is True
+        assert test_bigquery_client.is_table_exists(table=table_name, project_id=project_id) is True
+
+    def test_assert_is_table_exists_fail(self, test_bigquery_client):
+        table_name = "bigquery-public-data.github_repos.commits_fail"
+        table_ref = test_bigquery_client.table_from_string(
+            table_name
+        )
+        project_id = table_ref.project
+        assert test_bigquery_client.is_table_exists(table=table_name, project_id=project_id) is False
 
     def test_assert_is_table_exists_implicit_project_id(self,
-            client,
+            test_bigquery_client,
             gcp_project_id,
             target_bq_result_dataset_name,
             target_bq_result_table_name):
         table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
-        assert client.is_table_exists(table=table) is True
+        assert test_bigquery_client.is_table_exists(table=table) is True
 
     def test_assert_required_columns_exist_in_table(self,
-            client,
+            test_bigquery_client,
             gcp_project_id,
             target_bq_result_dataset_name,
             target_bq_result_table_name):
         table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
-        client.assert_required_columns_exist_in_table(table=table, project_id=gcp_project_id)
+        test_bigquery_client.assert_required_columns_exist_in_table(table=table, project_id=gcp_project_id)
 
     def test_assert_required_columns_exist_in_table_implicit_project_id(self,
-            client,
+            test_bigquery_client,
             gcp_project_id,
             target_bq_result_dataset_name,
             target_bq_result_table_name):
         table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
-        client.assert_required_columns_exist_in_table(table=table)
+        test_bigquery_client.assert_required_columns_exist_in_table(table=table)
 
-    def test_assert_dataset_is_in_region_failure(self, client):
+    def test_assert_dataset_is_in_region_failure(self, test_bigquery_client):
         dataset = "bigquery-public-data.google_analytics_sample"
         region = "EU"
         with pytest.raises(AssertionError):
-            client.assert_dataset_is_in_region(dataset=dataset, region=region)
+            test_bigquery_client.assert_dataset_is_in_region(dataset=dataset, region=region)
 
 
 if __name__ == "__main__":

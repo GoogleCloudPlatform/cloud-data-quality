@@ -386,4 +386,4 @@ class TestDataplexIntegration:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-v', '-rP', '-n 4'] + sys.argv[1:]))
+    raise SystemExit(pytest.main([__file__, '-v', '-rP', '-n 3'] + sys.argv[1:]))
