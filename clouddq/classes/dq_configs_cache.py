@@ -26,6 +26,7 @@ from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
 
 from clouddq.classes.metadata_registry_defaults import SAMPLE_DEFAULT_REGISTRIES_YAML
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.utils import convert_json_value_to_dict
 from clouddq.utils import unnest_object_to_list
 
@@ -169,6 +170,7 @@ class DqConfigsCache:
     def resolve_dataplex_entity_uris(  # noqa: C901
         self,
         client: clouddq_dataplex.CloudDqDataplexClient,
+        bigquery_client: BigQueryClient,
         default_configs: dict | None = None,
         target_rule_binding_ids: list[str] = None,
         enable_experimental_bigquery_entity_uris: bool = True,
@@ -214,8 +216,25 @@ class DqConfigsCache:
                     clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
                         entity_id=entity_uri.get_db_primary_key(),
                         dataplex_entity=dataplex_entity,
-                    ).to_dict()
-                    resolved_entity = unnest_object_to_list(clouddq_entity)
+                    )
+                    entity_uri_primary_key = entity_uri.get_db_primary_key().upper()
+                    gcs_entity_external_table_name = clouddq_entity.get_bq_external_table_name()
+                    logger.debug(
+                        f"GCS Entity External Table Name is {gcs_entity_external_table_name}"
+                    )
+                    bq_table_exists = bigquery_client.is_table_exists(
+                        table=gcs_entity_external_table_name,
+                        project_id=clouddq_entity.instance_name,
+                    )
+                    if bq_table_exists:
+                        logger.debug(
+                            f"The External Table {gcs_entity_external_table_name} for Entity URI "
+                            f"{entity_uri_primary_key} exists in Bigquery."
+                        )
+                    else:
+                        raise RuntimeError(f"Unable to find Bigquery External Table  {gcs_entity_external_table_name} "
+                                           f"for Entity URI {entity_uri_primary_key}")
+                    resolved_entity = unnest_object_to_list(clouddq_entity.to_dict())
                 elif entity_uri.scheme == "bigquery":
                     if not enable_experimental_bigquery_entity_uris:
                         raise NotImplementedError(
