@@ -70,7 +70,8 @@ coloredlogs.install(logger=logger)
 @click.option(
     "--gcp_region_id",
     help="GCP region used for running BigQuery Jobs and for storing "
-    " any intemediate DQ summary results. "
+    " any intemediate DQ summary results. This is an optional argument. "
+    "It will default to the region of the --gcp_bq_dataset_id if not provided."
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
     type=str,
@@ -80,6 +81,8 @@ coloredlogs.install(logger=logger)
     help="GCP BigQuery Dataset ID used for storing rule_binding views "
     "and intermediate DQ summary results. This dataset must be located "
     "in project --gcp_project_id and region --gcp_region_id."
+    "If --gcp_region_id is not provided, BigQuery jobs will be created "
+    "in the same GCP region as this dataset. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
     type=str,
@@ -243,7 +246,6 @@ def main(  # noqa: C901
       configs/ \\
       --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
       --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
-      --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
       --target_bigquery_summary_table="${CLOUDDQ_TARGET_BIGQUERY_TABLE}" \\
       --metadata='{"key":"value"}' \\
 
@@ -253,7 +255,6 @@ def main(  # noqa: C901
       configs/ \\
       --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
       --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
-      --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
       --target_bigquery_summary_table="${CLOUDDQ_TARGET_BIGQUERY_TABLE}" \\
       --dry_run  \\
       --debug
@@ -277,15 +278,12 @@ def main(  # noqa: C901
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
         )
-    if (
-        not dbt_profiles_dir
-        and (  # noqa: W503
-            not gcp_project_id or not gcp_bq_dataset_id or not gcp_region_id
-        )
-    ) or (dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id or gcp_region_id)):
+    if (not dbt_profiles_dir and (not gcp_project_id or not gcp_bq_dataset_id)) or (
+        dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id)
+    ):
         raise ValueError(
-            "CLI input must define connection configs using '--dbt_profiles_dir' or "
-            "using '--gcp_project_id', '--gcp_bq_dataset_id', and '--gcp_region_id'."
+            "CLI input must define connection configs using either '--dbt_profiles_dir' "
+            "or ('--gcp_project_id', '--gcp_bq_dataset_id', '--gcp_region_id')."
         )
     bigquery_client = None
     try:
@@ -300,7 +298,7 @@ def main(  # noqa: C901
         json_logger.warning(
             json.dumps({"clouddq_run_configs": locals()}, cls=JsonEncoderDatetime)
         )
-        # Create BigQuery client for query dry-runs
+        # Create BigQuery client
         bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
@@ -310,6 +308,7 @@ def main(  # noqa: C901
             gcp_project_id=gcp_project_id,
             gcp_region_id=gcp_region_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
+            bigquery_client=bigquery_client,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
         )
@@ -325,34 +324,44 @@ def main(  # noqa: C901
             environment_target=environment_target,
         )
         logger.info(
-            "Writing BigQuery rule_binding views and intermediate "
-            f"summary results to BigQuery table: `{dq_summary_table_name}`. "
+            "Writing rule_binding views and intermediate summary "
+            f"results to BigQuery dq_summary_table_name: `{dq_summary_table_name}`. "
         )
         dq_summary_table_exists = False
-        if gcp_region_id and not skip_sql_validation:
-            dq_summary_table_ref = bigquery_client.table_from_string(
-                dq_summary_table_name
+        dq_summary_table_ref = bigquery_client.table_from_string(dq_summary_table_name)
+        dq_summary_project_id = dq_summary_table_ref.project
+        dq_summary_dataset = dq_summary_table_ref.dataset_id
+        logger.info(
+            f"Using dq_summary_dataset: {dq_summary_project_id}.{dq_summary_dataset}"
+        )
+        dq_summary_table_exists = bigquery_client.is_table_exists(
+            table=dq_summary_table_name, project_id=dq_summary_project_id
+        )
+        if not bigquery_client.is_dataset_exists(
+            dataset=dq_summary_dataset, project_id=dq_summary_project_id
+        ):
+            raise AssertionError(
+                "Invalid argument to --gcp_bq_dataset_id: "
+                f"Dataset {dq_summary_project_id}.{dq_summary_dataset} does not exist. "
             )
-            dq_summary_project_id = dq_summary_table_ref.project
-            dq_summary_dataset = dq_summary_table_ref.dataset_id
-            logger.info(
-                f"Using dq_summary_dataset: {dq_summary_project_id}.{dq_summary_dataset}"
+        dq_summary_dataset_region = bigquery_client.get_dataset_region(
+            dataset=dq_summary_dataset,
+            project_id=dq_summary_project_id,
+        )
+        if gcp_region_id and dq_summary_dataset_region != gcp_region_id:
+            raise AssertionError(
+                f"GCP region in --gcp_region_id '{gcp_region_id}' "
+                f"must be the same as dq_summary_dataset "
+                f"'{dq_summary_project_id}.{dq_summary_dataset}' region: "
+                f"'{dq_summary_dataset_region}'."
             )
-            bigquery_client.assert_dataset_is_in_region(
-                dataset=dq_summary_dataset,
-                region=gcp_region_id,
-                project_id=dq_summary_project_id,
-            )
-            dq_summary_table_exists = bigquery_client.is_table_exists(
-                table=dq_summary_table_name, project_id=dq_summary_project_id
-            )
-            bigquery_client.assert_required_columns_exist_in_table(
-                table=dq_summary_table_name, project_id=dq_summary_project_id
-            )
+        bigquery_client.assert_required_columns_exist_in_table(
+            table=dq_summary_table_name, project_id=dq_summary_project_id
+        )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             logger.info(
-                "Writing summary results to target BigQuery table: "
+                "Using target_bigquery_summary_table: "
                 f"`{target_bigquery_summary_table}`. "
             )
             target_table_ref = bigquery_client.table_from_string(
@@ -361,7 +370,8 @@ def main(  # noqa: C901
             target_project_id = target_table_ref.project
             target_dataset_id = target_table_ref.dataset_id
             logger.debug(
-                f"BigQuery dataset used in --target_bigquery_summary_table: {target_project_id}.{target_dataset_id}"
+                f"BigQuery dataset used in --target_bigquery_summary_table: "
+                f"{target_project_id}.{target_dataset_id}"
             )
             if not bigquery_client.is_dataset_exists(
                 dataset=target_dataset_id, project_id=target_project_id
@@ -371,11 +381,26 @@ def main(  # noqa: C901
                     f"{target_bigquery_summary_table}. "
                     f"Dataset {target_project_id}.{target_dataset_id} does not exist. "
                 )
-            bigquery_client.assert_dataset_is_in_region(
+            target_dataset_region = bigquery_client.get_dataset_region(
                 dataset=target_dataset_id,
-                region=gcp_region_id,
                 project_id=target_project_id,
             )
+            if gcp_region_id and target_dataset_region != gcp_region_id:
+                raise AssertionError(
+                    f"GCP region in --gcp_region_id '{gcp_region_id}' "
+                    f"must be the same as --target_bigquery_summary_table "
+                    f"'{target_project_id}.{target_dataset_id}' region "
+                    f"'{target_dataset_region}'."
+                )
+            if target_dataset_region != dq_summary_dataset_region:
+                raise ValueError(
+                    f"GCP region for --gcp_bq_dataset_id "
+                    f"'{dq_summary_project_id}.{dq_summary_dataset}': "
+                    f"'{dq_summary_dataset_region}' must be the same as "
+                    f"GCP region for --target_bigquery_summary_table "
+                    f"'{dq_summary_project_id}.{dq_summary_dataset}': "
+                    f"'{target_dataset_region}'"
+                )
             bigquery_client.assert_required_columns_exist_in_table(
                 table=target_bigquery_summary_table, project_id=target_project_id
             )
@@ -383,6 +408,7 @@ def main(  # noqa: C901
             logger.warning(
                 "CLI --target_bigquery_summary_table is not set. This will become a required argument in v1.0.0."
             )
+        # Log information about --summary_to_stdout
         if summary_to_stdout and target_bigquery_summary_table:
             logger.info(
                 "--summary_to_stdout is True. Logging summary results as json to stdout."

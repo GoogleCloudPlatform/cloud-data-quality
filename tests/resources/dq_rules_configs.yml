@@ -63,13 +63,13 @@ entities:
 
 
 rule_bindings:
-  T1_DQ_1_VALUE_NOT_NULL:
+  T1_DQ_1_VALUE_NOT_NULL_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
     rule_ids:
       - NOT_NULL_SIMPLE
-  T2_DQ_1_EMAIL:
+  T2_DQ_1_EMAIL_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
@@ -80,7 +80,7 @@ rule_bindings:
       - NOT_BLANK
     metadata:
       brand: one
-  T3_DQ_1_EMAIL_DUPLICATE_NONE:
+  T3_DQ_1_EMAIL_DUPLICATE_NONE_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
@@ -89,7 +89,7 @@ rule_bindings:
           column_names: "contact_type,value"
     metadata:
       brand: one
-  T4_DUPLICATE_ROW_ID:
+  T4_DUPLICATE_ROW_ID_TEST:
     entity_id: TEST_TABLE
     column_id: ROW_ID
     row_filter_id: NONE
@@ -98,7 +98,7 @@ rule_bindings:
           column_names: "row_id"
     metadata:
       brand: one
-  T5_DUPLICATE_ROW_ID_CONTACT_TYPE:
+  T5_DUPLICATE_ROW_ID_CONTACT_TYPE_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
@@ -107,7 +107,7 @@ rule_bindings:
           column_names: "row_id,contact_type"
     metadata:
       brand: one
-  T6_DUPLICATE_VALUE_WITH_NULL:
+  T6_DUPLICATE_VALUE_WITH_NULL_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
@@ -116,7 +116,7 @@ rule_bindings:
           column_names: "value"
     metadata:
       brand: one
-  T7_EMAIL_DUPLICATE_CONTACT_TYPE:
+  T7_EMAIL_DUPLICATE_CONTACT_TYPE_TEST:
     entity_id: TEST_TABLE
     column_id: CONTACT_TYPE
     row_filter_id: DATA_TYPE_EMAIL
@@ -125,7 +125,7 @@ rule_bindings:
           column_names: "contact_type"
     metadata:
       brand: one
-  T8_DUPLICATE_NO_ROWS:
+  T8_DUPLICATE_NO_ROWS_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NO_ROWS
@@ -134,7 +134,7 @@ rule_bindings:
           column_names: "contact_type,value"
     metadata:
       brand: one
-  T9_INCREMENTAL_NO_ROWS:
+  T9_INCREMENTAL_NO_ROWS_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
@@ -144,13 +144,13 @@ rule_bindings:
           column_names: "contact_type,value"
     metadata:
       brand: one
-  UNIQUENESS:
+  UNIQUENESS_TEST:
     entity_id: TEST_TABLE
     column_id: ROW_ID
     row_filter_id: NONE
     rule_ids:
       - UNIQUE
-  CUSTOM_SQL_EXPR_PARAMETRIZED:
+  CUSTOM_SQL_EXPR_PARAMETRIZED_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL

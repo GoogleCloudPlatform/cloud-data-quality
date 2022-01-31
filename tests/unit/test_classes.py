@@ -27,6 +27,7 @@ from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
+from clouddq.utils import strip_margin
 from clouddq.utils import working_directory
 
 
@@ -285,10 +286,14 @@ class TestClasses:
             "metadata": {"key": "value"}
         }
 
-        output = DqRuleBinding.from_dict(rule_binding_id="valid", kwargs=dq_rule_binding_dict_with_conflicted_column_id).resolve_all_configs_to_dict(configs_cache=configs_cache)
+        output = DqRuleBinding.from_dict(
+            rule_binding_id="valid",
+            kwargs=dq_rule_binding_dict_with_conflicted_column_id
+        ).resolve_all_configs_to_dict(configs_cache=configs_cache)
 
-        assert output["rule_configs_dict"]["REGEX_VALID_EMAIL"]["rule_sql_expr"] == "REGEXP_CONTAINS( CAST( data.data  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
-    
+        assert output["rule_configs_dict"]["REGEX_VALID_EMAIL"]["rule_sql_expr"] == \
+            "REGEXP_CONTAINS( CAST( data.data  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
+
     def test_dq_rule_binding_conflicted_column_id_is_not_escaped_for_sql_statement(self, temp_configs_dir, tmp_path):
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_configs_cache_2")
@@ -306,9 +311,25 @@ class TestClasses:
             "metadata": {"key": "value"}
         }
 
-        output = DqRuleBinding.from_dict(rule_binding_id="valid", kwargs=dq_rule_binding_dict_with_conflicted_column_id).resolve_all_configs_to_dict(configs_cache=configs_cache)
+        output = DqRuleBinding.from_dict(
+            rule_binding_id="valid",
+            kwargs=dq_rule_binding_dict_with_conflicted_column_id
+        ).resolve_all_configs_to_dict(configs_cache=configs_cache)
+        text = output["rule_configs_dict"]["NO_DUPLICATES_IN_COLUMN_GROUPS"]["rule_sql_expr"]
 
-        assert output["rule_configs_dict"]["NO_DUPLICATES_IN_COLUMN_GROUPS"]["rule_sql_expr"].replace('\n',' ') == "select a.* from data a inner join (   select     data   from data   group by data   having count(*) > 1 ) duplicates using (data)"
+        expected = """
+        |select a.*
+        |from data a
+        |inner join (
+        |  select
+        |    data
+        |  from data
+        |  group by data
+        |  having count(*) > 1
+        |) duplicates
+        |using (data)"""
+        assert strip_margin(text.replace(r"\s\s+", " ")) == \
+            strip_margin(expected.replace(r"\s\s+", " "))
 
     def test_rule_type_not_implemented(self):
         """ """

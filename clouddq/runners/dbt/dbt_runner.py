@@ -18,6 +18,7 @@ from typing import Optional
 
 import logging
 
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_DBT_ENVIRONMENT_TARGET
 from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig
 from clouddq.runners.dbt.dbt_connection_configs import GcpDbtConnectionConfig
@@ -53,6 +54,7 @@ class DbtRunner:
         gcp_bq_dataset_id: Optional[str],
         gcp_service_account_key_path: Optional[Path],
         gcp_impersonation_credentials: Optional[str],
+        bigquery_client: Optional[BigQueryClient] = None,
         create_paths_if_not_exists: bool = True,
     ):
         # Prepare local dbt environment
@@ -70,8 +72,9 @@ class DbtRunner:
             dbt_profiles_dir=dbt_profiles_dir,
             environment_target=environment_target,
             gcp_project_id=gcp_project_id,
-            gcp_region_id=gcp_region_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
+            bigquery_client=bigquery_client,
+            gcp_region_id=gcp_region_id,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
         )
@@ -127,10 +130,19 @@ class DbtRunner:
         )
         return self.environment_target
 
+    def get_dq_summary_dataset_region(self) -> str:
+        self._resolve_connection_configs(
+            dbt_profiles_dir=self.dbt_profiles_dir,
+            environment_target=self.environment_target,
+        )
+        Path(self.dbt_profiles_dir)
+        return self.environment_target
+
     def _resolve_connection_configs(
         self,
         dbt_profiles_dir: Optional[str],
         environment_target: Optional[str],
+        bigquery_client: Optional[BigQueryClient] = None,
         gcp_project_id: Optional[str] = None,
         gcp_region_id: Optional[str] = None,
         gcp_bq_dataset_id: Optional[str] = None,
@@ -150,8 +162,9 @@ class DbtRunner:
             # create GcpDbtConnectionConfig
             connection_config = GcpDbtConnectionConfig(
                 gcp_project_id=gcp_project_id,
-                gcp_region_id=gcp_region_id,
                 gcp_bq_dataset_id=gcp_bq_dataset_id,
+                bigquery_client=bigquery_client,
+                gcp_region_id=gcp_region_id,
                 gcp_service_account_key_path=gcp_service_account_key_path,
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
