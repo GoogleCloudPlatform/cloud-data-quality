@@ -226,6 +226,9 @@ class DqConfigsCache:
                             f"The External Table {gcs_entity_external_table_name} for Entity URI "
                             f"{entity_uri_primary_key} exists in Bigquery."
                         )
+                    else:
+                        raise RuntimeError(f"Unable to find Bigquery External Table  {gcs_entity_external_table_name} "
+                                           f"for Entity URI {entity_uri_primary_key}")
                     resolved_entity = unnest_object_to_list(clouddq_entity.to_dict())
                 elif entity_uri.scheme == "bigquery":
                     if not enable_experimental_bigquery_entity_uris:
