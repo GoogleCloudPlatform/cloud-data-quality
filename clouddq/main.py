@@ -78,7 +78,8 @@ coloredlogs.install(logger=logger)
 @click.option(
     "--gcp_bq_dataset_id",
     help="GCP BigQuery Dataset ID used for storing rule_binding views "
-    "and intermediate DQ summary results. "
+    "and intermediate DQ summary results. This dataset must be located "
+    "in project --gcp_project_id and region --gcp_region_id."
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
     type=str,
@@ -299,9 +300,8 @@ def main(  # noqa: C901
         json_logger.warning(
             json.dumps({"clouddq_run_configs": locals()}, cls=JsonEncoderDatetime)
         )
-        if not skip_sql_validation:
-            # Create BigQuery client for query dry-runs
-            bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
+        # Create BigQuery client for query dry-runs
+        bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -330,16 +330,24 @@ def main(  # noqa: C901
         )
         dq_summary_table_exists = False
         if gcp_region_id and not skip_sql_validation:
-            dq_summary_dataset = ".".join(dq_summary_table_name.split(".")[:2])
-            logger.debug(f"dq_summary_dataset: {dq_summary_dataset}")
+            dq_summary_table_ref = bigquery_client.table_from_string(
+                dq_summary_table_name
+            )
+            dq_summary_project_id = dq_summary_table_ref.project
+            dq_summary_dataset = dq_summary_table_ref.dataset_id
+            logger.info(
+                f"Using dq_summary_dataset: {dq_summary_project_id}.{dq_summary_dataset}"
+            )
             bigquery_client.assert_dataset_is_in_region(
-                dataset=dq_summary_dataset, region=gcp_region_id
+                dataset=dq_summary_dataset,
+                region=gcp_region_id,
+                project_id=dq_summary_project_id,
             )
             dq_summary_table_exists = bigquery_client.is_table_exists(
-                dq_summary_table_name
+                table=dq_summary_table_name, project_id=dq_summary_project_id
             )
             bigquery_client.assert_required_columns_exist_in_table(
-                dq_summary_table_name
+                table=dq_summary_table_name, project_id=dq_summary_project_id
             )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
@@ -350,21 +358,26 @@ def main(  # noqa: C901
             target_table_ref = bigquery_client.table_from_string(
                 target_bigquery_summary_table
             )
+            target_project_id = target_table_ref.project
             target_dataset_id = target_table_ref.dataset_id
             logger.debug(
-                f"BigQuery dataset used in --target_bigquery_summary_table: {target_dataset_id}"
+                f"BigQuery dataset used in --target_bigquery_summary_table: {target_project_id}.{target_dataset_id}"
             )
-            if not bigquery_client.is_dataset_exists(target_dataset_id):
+            if not bigquery_client.is_dataset_exists(
+                dataset=target_dataset_id, project_id=target_project_id
+            ):
                 raise AssertionError(
                     "Invalid argument to --target_bigquery_summary_table: "
                     f"{target_bigquery_summary_table}. "
-                    f"Dataset {target_dataset_id} does not exist. "
+                    f"Dataset {target_project_id}.{target_dataset_id} does not exist. "
                 )
             bigquery_client.assert_dataset_is_in_region(
-                dataset=target_dataset_id, region=gcp_region_id
+                dataset=target_dataset_id,
+                region=gcp_region_id,
+                project_id=target_project_id,
             )
             bigquery_client.assert_required_columns_exist_in_table(
-                target_bigquery_summary_table
+                table=target_bigquery_summary_table, project_id=target_project_id
             )
         else:
             logger.warning(
@@ -488,7 +501,9 @@ def main(  # noqa: C901
             if view.stem not in target_entity_summary_views:
                 view.unlink()
         # create dbt configs json for the main.sql loop and run dbt
-        configs = {"target_rule_binding_ids": target_rule_binding_ids}
+        configs = {
+            "target_rule_binding_ids": target_rule_binding_ids,
+        }
         dbt_runner.run(
             configs=configs,
             debug=debug,

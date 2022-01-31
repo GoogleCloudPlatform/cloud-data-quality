@@ -20,7 +20,8 @@ rule_bindings:
     rule_ids:
       - NOT_NULL_SIMPLE
       - REGEX_VALID_EMAIL
-      - CUSTOM_SQL_LENGTH_LE_30
+      - CUSTOM_SQL_LENGTH:
+          upper_bound: 30
       - NOT_BLANK
     metadata:
       brand: one

@@ -163,7 +163,7 @@ class DqConfigsCache:
         self._cache_db["rule_dimensions"].upsert_all(
             [{"rule_dimension": dim} for dim in rule_dimensions_collection],
             pk="rule_dimension",
-            alter=True
+            alter=True,
         )
 
     def resolve_dataplex_entity_uris(  # noqa: C901
@@ -263,13 +263,13 @@ class DqConfigsCache:
                         raise RuntimeError(
                             "Failed to retrieve Dataplex Metadata entry for "
                             f"entity_uri '{entity_uri.complete_uri_string}' in "
-                            f"Rule Binding ID '{record['id']}'\n\n"
+                            f"Rule Binding ID '{record['id']}' with error:\n"
+                            f"{pformat(dataplex_entities_match.json())}\n\n"
                             f"Parsed entity_uri configs:\n"
                             f"{pformat(entity_uri.to_dict())}\n\n"
                             f"Current Dataplex default configs from "
                             f"'metadata_registry_defaults' YAML:\n"
                             f"{pformat(default_configs)}\n\n"
-                            f"Ensure BigQuery entity exists in the correct Dataplex zone."
                         )
                     else:
                         dataplex_entity = dataplex_entities_match[0]

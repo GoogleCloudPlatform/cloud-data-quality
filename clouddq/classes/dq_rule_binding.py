@@ -304,7 +304,11 @@ class DqRuleBinding:
                     rule_id = rule_id.upper()
                     rule_sql_expr = Template(
                         rule_config["rule_sql_expr"]
-                    ).safe_substitute(column=column_configs.column_name)
+                    ).safe_substitute(
+                        column=column_configs.column_name
+                        if column_configs.column_name != "data"
+                        else f"data.{column_configs.column_name}"
+                    )
                     rule_config["rule_sql_expr"] = rule_sql_expr
                     rule_configs_dict[rule_id] = rule_config
             # Resolve filter configs

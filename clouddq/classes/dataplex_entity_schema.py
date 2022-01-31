@@ -28,11 +28,14 @@ class DataplexEntitySchema:
     fields: list[DataplexEntitySchemaField]
 
     @classmethod
-    def from_dict(cls: DataplexEntitySchema, kwargs: dict) -> DataplexEntitySchema:
+    def from_dict(
+        cls: DataplexEntitySchema, entity_id: str, kwargs: dict
+    ) -> DataplexEntitySchema:
 
-        fields = kwargs.get("fields")
+        fields = kwargs.get("fields", None)
         assert_not_none_or_empty(
-            value=fields, error_msg="Fields: must define non-empty value: 'fields'."
+            value=fields,
+            error_msg=f"Entity {entity_id}: must define non-empty value: 'fields'.",
         )
 
         return DataplexEntitySchema(

@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
 import logging
+import shutil
 
 import pytest
 
@@ -24,6 +27,7 @@ from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
+from clouddq.utils import working_directory
 
 
 logger = logging.getLogger(__name__)
@@ -263,6 +267,48 @@ class TestClasses:
                 rule_binding_id="valid",
                 kwargs=dq_rule_binding_dict_not_valid,
             )
+
+    def test_dq_rule_binding_conflicted_column_id_is_escaped_for_sql_expr(self, temp_configs_dir, tmp_path):
+        try:
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_configs_cache_2")
+            temp_dir.mkdir(parents=True)
+            with working_directory(temp_dir):
+                configs_cache = lib.prepare_configs_cache(temp_configs_dir)
+        finally:
+            shutil.rmtree(temp_dir)
+
+        dq_rule_binding_dict_with_conflicted_column_id = {
+            "entity_id": "TEST_TABLE",
+            "column_id": "data",
+            "row_filter_id": "NONE",
+            "rule_ids": ["REGEX_VALID_EMAIL"],
+            "metadata": {"key": "value"}
+        }
+
+        output = DqRuleBinding.from_dict(rule_binding_id="valid", kwargs=dq_rule_binding_dict_with_conflicted_column_id).resolve_all_configs_to_dict(configs_cache=configs_cache)
+
+        assert output["rule_configs_dict"]["REGEX_VALID_EMAIL"]["rule_sql_expr"] == "REGEXP_CONTAINS( CAST( data.data  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
+    
+    def test_dq_rule_binding_conflicted_column_id_is_not_escaped_for_sql_statement(self, temp_configs_dir, tmp_path):
+        try:
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_configs_cache_2")
+            temp_dir.mkdir(parents=True)
+            with working_directory(temp_dir):
+                configs_cache = lib.prepare_configs_cache(temp_configs_dir)
+        finally:
+            shutil.rmtree(temp_dir)
+
+        dq_rule_binding_dict_with_conflicted_column_id = {
+            "entity_id": "TEST_TABLE",
+            "column_id": "data",
+            "row_filter_id": "NONE",
+            "rule_ids": [{"NO_DUPLICATES_IN_COLUMN_GROUPS": {"column_names": "data"}}],
+            "metadata": {"key": "value"}
+        }
+
+        output = DqRuleBinding.from_dict(rule_binding_id="valid", kwargs=dq_rule_binding_dict_with_conflicted_column_id).resolve_all_configs_to_dict(configs_cache=configs_cache)
+
+        assert output["rule_configs_dict"]["NO_DUPLICATES_IN_COLUMN_GROUPS"]["rule_sql_expr"].replace('\n',' ') == "select a.* from data a inner join (   select     data   from data   group by data   having count(*) > 1 ) duplicates using (data)"
 
     def test_rule_type_not_implemented(self):
         """ """

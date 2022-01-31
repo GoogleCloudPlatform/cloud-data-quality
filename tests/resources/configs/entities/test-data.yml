@@ -40,6 +40,11 @@ entities:
         data_type: STRING
         description: |-
           contact detail
+      DATA:
+        name: data
+        data_type: STRING
+        description: |-
+          custom data
       TS:
         name: ts
         data_type: DATETIME
