@@ -329,16 +329,24 @@ def main(  # noqa: C901
         )
         dq_summary_table_exists = False
         if gcp_region_id and not skip_sql_validation:
-            dq_summary_dataset = ".".join(dq_summary_table_name.split(".")[:2])
-            logger.debug(f"dq_summary_dataset: {dq_summary_dataset}")
+            dq_summary_table_ref = bigquery_client.table_from_string(
+                dq_summary_table_name
+            )
+            dq_summary_project_id = dq_summary_table_ref.project
+            dq_summary_dataset = dq_summary_table_ref.dataset_id
+            logger.info(
+                f"Using dq_summary_dataset: {dq_summary_project_id}.{dq_summary_dataset}"
+            )
             bigquery_client.assert_dataset_is_in_region(
-                dataset=dq_summary_dataset, region=gcp_region_id
+                dataset=dq_summary_dataset,
+                region=gcp_region_id,
+                project_id=dq_summary_project_id,
             )
             dq_summary_table_exists = bigquery_client.is_table_exists(
-                dq_summary_table_name
+                table=dq_summary_table_name, project_id=dq_summary_project_id
             )
             bigquery_client.assert_required_columns_exist_in_table(
-                dq_summary_table_name
+                table=dq_summary_table_name, project_id=dq_summary_project_id
             )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
@@ -349,21 +357,26 @@ def main(  # noqa: C901
             target_table_ref = bigquery_client.table_from_string(
                 target_bigquery_summary_table
             )
+            target_project_id = target_table_ref.project
             target_dataset_id = target_table_ref.dataset_id
             logger.debug(
-                f"BigQuery dataset used in --target_bigquery_summary_table: {target_dataset_id}"
+                f"BigQuery dataset used in --target_bigquery_summary_table: {target_project_id}.{target_dataset_id}"
             )
-            if not bigquery_client.is_dataset_exists(target_dataset_id):
+            if not bigquery_client.is_dataset_exists(
+                dataset=target_dataset_id, project_id=target_project_id
+            ):
                 raise AssertionError(
                     "Invalid argument to --target_bigquery_summary_table: "
                     f"{target_bigquery_summary_table}. "
-                    f"Dataset {target_dataset_id} does not exist. "
+                    f"Dataset {target_project_id}.{target_dataset_id} does not exist. "
                 )
             bigquery_client.assert_dataset_is_in_region(
-                dataset=target_dataset_id, region=gcp_region_id
+                dataset=target_dataset_id,
+                region=gcp_region_id,
+                project_id=target_project_id,
             )
             bigquery_client.assert_required_columns_exist_in_table(
-                target_bigquery_summary_table
+                table=target_bigquery_summary_table, project_id=target_project_id
             )
         else:
             logger.warning(
@@ -421,6 +434,7 @@ def main(  # noqa: C901
         configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
         configs_cache.resolve_dataplex_entity_uris(
             client=dataplex_client,
+            bigquery_client=bigquery_client,
             default_configs=dataplex_registry_defaults,
             target_rule_binding_ids=target_rule_binding_ids,
             enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,

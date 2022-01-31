@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
 import logging
+import shutil
 
 import pytest
-from pathlib import Path
-import shutil
 
 from clouddq import lib
 from clouddq.classes.dq_configs_cache import DqConfigsCache
@@ -121,6 +122,7 @@ class TestClasses:
             "table_name": "table_name",
             "dataset_name": "dataset_name",
             "project_name": "project_name",
+            "resource_type": "BIGQUERY",
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -137,6 +139,7 @@ class TestClasses:
                 "dataset_name": "dataset_name",
                 "instance_name": "project_name",
                 "project_name": "project_name",
+                "resource_type": "BIGQUERY",
                 "columns": {
                     "TEST_COLUMN": {
                         "description": "test column description",
@@ -154,6 +157,7 @@ class TestClasses:
             "table_name": "table_name",
             "database_name": "dataset_name",
             "instance_name": "project_name",
+            "resource_type": "BIGQUERY",
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -170,6 +174,7 @@ class TestClasses:
                 "dataset_name": "dataset_name",
                 "instance_name": "project_name",
                 "project_name": "project_name",
+                "resource_type": "BIGQUERY",
                 "columns": {
                     "TEST_COLUMN": {
                         "description": "test column description",
@@ -188,6 +193,7 @@ class TestClasses:
             "lake_name": "lake",
             "zone_name": "zone",
             "project_name": "project_name",
+            "resource_type": "CLOUD_STORAGE",
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -206,6 +212,7 @@ class TestClasses:
                     "table_name": "table",
                     "database_name": "lake_zone",
                     "instance_name": "project_name",
+                    "resource_type": "CLOUD_STORAGE",
                     "columns": {
                         "TEST_COLUMN": {
                             "description": "test column description",
