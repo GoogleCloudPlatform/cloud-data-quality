@@ -533,12 +533,12 @@ def main(  # noqa: C901
                 gcp_bq_dataset_id=gcp_bq_dataset_id,
                 debug=print_sql_queries,
             )
-            if not skip_sql_validation:
-                logger.debug(
-                    f"Validating generated SQL code for entity-level summary for "
-                    f"{entity_table_id} using BigQuery dry-run client.",
-                )
-                bigquery_client.check_query_dry_run(query_string=sql_string)
+            # if not skip_sql_validation:
+            #     logger.debug(
+            #         f"Validating generated SQL code for entity-level summary for "
+            #         f"{entity_table_id} using BigQuery dry-run client.",
+            #     )
+            #     bigquery_client.check_query_dry_run(query_string=sql_string)
             logger.debug(
                 f"*** Writing sql to {dbt_entity_summary_path.absolute()}/"
                 f"{entity_table_id}.sql",

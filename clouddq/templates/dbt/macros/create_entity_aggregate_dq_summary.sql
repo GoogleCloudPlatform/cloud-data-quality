@@ -17,7 +17,6 @@
 {% set rule_binding_ids_list = entity_target_rule_binding_configs.get('rule_binding_ids_list') %}
 
 {%- for rule_binding_id in rule_binding_ids_list -%}
-  {% set fully_qualified_table_name = "%s.%s.%s" % (gcp_project_id, gcp_bq_dataset_id, rule_binding_id) -%}
 
   SELECT
       execution_ts,
@@ -77,7 +76,7 @@
       END
       AS null_percentage,
   FROM
-      `{{ fully_qualified_table_name }}`
+      {% raw -%}{{ ref('{%- endraw %}{{ rule_binding_id }}{% raw -%}') }}{%- endraw %}
   GROUP BY
       1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
 
