@@ -212,7 +212,7 @@ class DqConfigsCache:
                     if dataplex_entity.system == "CLOUD_STORAGE":
                         if not enable_experimental_dataplex_gcs_validation:
                             raise NotImplementedError(
-                                "Use CLI flag --enable_experimental_dataplex_gcs_entity_uris "
+                                "Use CLI flag --enable_experimental_dataplex_gcs_validation "
                                 "To enable validating Dataplex GCS resources using BigQuery "
                                 "External Tables"
                             )
