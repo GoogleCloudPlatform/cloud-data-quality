@@ -467,8 +467,10 @@ def main(  # noqa: C901
             enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
         )
         # Get Entities for entity-level summary views
-        target_entity_summary_configs: dict = configs_cache.get_entities_configs_from_rule_bindings(
-            target_rule_binding_ids=target_rule_binding_ids,
+        target_entity_summary_configs: dict = (
+            configs_cache.get_entities_configs_from_rule_bindings(
+                target_rule_binding_ids=target_rule_binding_ids,
+            )
         )
         logger.warning("****** target_entity_summary_configs")
         logger.warning(pformat(target_entity_summary_configs))
@@ -520,11 +522,14 @@ def main(  # noqa: C901
             if view.stem not in target_rule_binding_ids:
                 view.unlink()
         # create entity-level summary table models
-        for entity_table_id, entity_configs_dict in target_entity_summary_configs.items():
-            rule_binding_ids_list = entity_configs_dict.get('rule_binding_ids_list')
+        for (
+            entity_table_id,
+            entity_configs_dict,
+        ) in target_entity_summary_configs.items():
+            rule_binding_ids_list = entity_configs_dict.get("rule_binding_ids_list")
             assert_not_none_or_empty(
                 rule_binding_ids_list,
-                f"Internal Error: no rule_binding_id found for entity_table_id {entity_table_id}."
+                f"Internal Error: no rule_binding_id found for entity_table_id {entity_table_id}.",
             )
             sql_string = lib.create_entity_summary_model(
                 entity_table_id=entity_table_id,

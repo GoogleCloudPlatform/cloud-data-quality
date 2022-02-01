@@ -123,6 +123,7 @@ def create_rule_binding_view_model(
         logger.info(pformat(configs))
     return sql_string
 
+
 def create_entity_summary_model(
     entity_table_id: str,
     entity_target_rule_binding_configs: dict,
@@ -146,8 +147,11 @@ def create_entity_summary_model(
     }
     sql_string = template.render(configs)
     # if debug:
-    logger.warning(f"Generated sql for entity_table_id: {entity_table_id}:\n{sql_string}")
+    logger.warning(
+        f"Generated sql for entity_table_id: {entity_table_id}:\n{sql_string}"
+    )
     return sql_string
+
 
 def write_sql_string_as_dbt_model(
     model_id: str, sql_string: str, dbt_model_path: Path

@@ -51,6 +51,7 @@ where rb.id in ({target_rule_binding_ids_list})
 group by e.instance_name || e.database_name || e.table_name
 """
 
+
 @dataclass
 class DqConfigsCache:
     _cache_db: Database
@@ -241,8 +242,10 @@ class DqConfigsCache:
                             f"{entity_uri_primary_key} exists in Bigquery."
                         )
                     else:
-                        raise RuntimeError(f"Unable to find Bigquery External Table  {gcs_entity_external_table_name} "
-                                           f"for Entity URI {entity_uri_primary_key}")
+                        raise RuntimeError(
+                            f"Unable to find Bigquery External Table  {gcs_entity_external_table_name} "
+                            f"for Entity URI {entity_uri_primary_key}"
+                        )
                     resolved_entity = unnest_object_to_list(clouddq_entity.to_dict())
                 elif entity_uri.scheme == "bigquery":
                     if not enable_experimental_bigquery_entity_uris:
@@ -380,10 +383,12 @@ class DqConfigsCache:
             return config_old.copy()
 
     def get_entities_configs_from_rule_bindings(
-                self, target_rule_binding_ids: list[str]
-            ) -> dict[str, str]:
+        self, target_rule_binding_ids: list[str]
+    ) -> dict[str, str]:
         query = GET_ENTITY_SUMMARY_QUERY.format(
-            target_rule_binding_ids_list=','.join([f"'{id}'" for id in target_rule_binding_ids])
+            target_rule_binding_ids_list=",".join(
+                [f"'{id}'" for id in target_rule_binding_ids]
+            )
         )
         logger.warning("*********")
         logger.warning(query)

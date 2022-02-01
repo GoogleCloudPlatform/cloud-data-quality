@@ -355,4 +355,4 @@ class DqEntity:
             )
 
     def get_table_name(self):
-        return  f"{self.instance_name}.{self.database_name}.{self.table_name}"
+        return f"{self.instance_name}.{self.database_name}.{self.table_name}"

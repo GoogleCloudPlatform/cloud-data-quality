@@ -20,8 +20,8 @@ import shutil
 import click.testing
 import pytest
 
-from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
+from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.lib import prepare_configs_cache
 from clouddq.utils import working_directory
 
@@ -339,7 +339,7 @@ def temp_configs_dir(
         lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
         lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
         source_file.write(lines)
-    #prepare gcs entity_uri configs
+    # prepare gcs entity_uri configs
     registry_defaults = configs_path.joinpath("rule_bindings", "team-5-rule-bindings.yml")
     with open(registry_defaults) as source_file:
         lines = source_file.read()

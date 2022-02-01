@@ -16,8 +16,6 @@ from google.api_core.exceptions import BadRequest
 
 import pytest
 
-from clouddq.integration.bigquery.bigquery_client import BigQueryClient
-
 
 @pytest.mark.e2e
 class TestBigQueryClient:
@@ -94,12 +92,6 @@ class TestBigQueryClient:
             target_bq_result_table_name):
         table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
         test_bigquery_client.assert_required_columns_exist_in_table(table=table)
-
-    def test_assert_dataset_is_in_region_failure(self, test_bigquery_client):
-        dataset = "bigquery-public-data.google_analytics_sample"
-        region = "EU"
-        with pytest.raises(AssertionError):
-            test_bigquery_client.assert_dataset_is_in_region(dataset=dataset, region=region)
 
 
 if __name__ == "__main__":
