@@ -14,6 +14,7 @@
 entities:
   DIFFERENT_VOLUMES_PER_PERIOD:
     source_database: BIGQUERY
+    resource_type: BIGQUERY
     table_name: different_volumes_per_period
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>

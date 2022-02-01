@@ -14,6 +14,7 @@
 entities:
   INGESTION_TABLE_DAY_LEVEL:
     source_database: BIGQUERY
+    resource_type: BIGQUERY
     table_name: ingestion_day_level
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>
@@ -31,6 +32,7 @@ entities:
 
   INGESTION_TABLE_MONTH_LEVEL:
     source_database: BIGQUERY
+    resource_type: BIGQUERY
     table_name: ingestion_month_level
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>
@@ -48,6 +50,7 @@ entities:
 
   INGESTION_TABLE_TIMESTAMP_LEVEL:
     source_database: BIGQUERY
+    resource_type: BIGQUERY
     table_name: ingestion_timestamp_level
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>

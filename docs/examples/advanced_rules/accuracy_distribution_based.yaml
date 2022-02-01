@@ -14,6 +14,7 @@
 entities:
   ACCURACY_CHECK_SIMPLE:
     source_database: BIGQUERY
+    resource_type: BIGQUERY
     table_name: accuracy_check_simple
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>
@@ -35,6 +36,7 @@ entities:
           date of birth
   ACCURACY_CHECK_DISTRIBUTION_NOT_OK:
     source_database: BIGQUERY
+    resource_type: BIGQUERY
     table_name: accuracy_check_distribution_not_ok
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>
@@ -56,6 +58,7 @@ entities:
           date of birth
   ACCURACY_CHECK_DISTRIBUTION_OK:
     source_database: BIGQUERY
+    resource_type: BIGQUERY
     table_name: accuracy_check_distribution_ok
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>

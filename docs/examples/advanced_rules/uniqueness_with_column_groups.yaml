@@ -14,6 +14,7 @@
 entities:
   UNIQUENESS_CHECK_NOT_OK:
     source_database: BIGQUERY
+    resource_type: BIGQUERY
     table_name: uniqueness_check_not_ok
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>
@@ -35,6 +36,7 @@ entities:
           type field
   UNIQUENESS_CHECK_OK:
     source_database: BIGQUERY
+    resource_type: BIGQUERY
     table_name: uniqueness_check_ok
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>
