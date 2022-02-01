@@ -96,11 +96,13 @@ python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE 
     --debug  \
     --dry_run \
     --enable_experimental_bigquery_entity_uris
+    --enable_experimental_dataplex_gcs_entity_uris
 python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs --dbt_profiles_dir="$TEST_DIR" \
     --dbt_path="$TEST_DIR"  \
     --debug  \
     --dry_run \
     --enable_experimental_bigquery_entity_uris
+    --enable_experimental_dataplex_gcs_entity_uris
 
 # test clouddq with direct connection profiles
 python3 -m clouddq ALL configs \
@@ -110,6 +112,7 @@ python3 -m clouddq ALL configs \
     --debug \
     --dry_run \
     --enable_experimental_bigquery_entity_uris
+    --enable_experimental_dataplex_gcs_entity_uris
 
 if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
     # test clouddq with exported service account key
@@ -121,6 +124,7 @@ if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
         --debug \
         --dry_run \
         --enable_experimental_bigquery_entity_uris
+        --enable_experimental_dataplex_gcs_entity_uris
     if [[ -f "${IMPERSONATION_SERVICE_ACCOUNT:-}" ]]; then
         # test clouddq with exported service account key
         python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs \
@@ -132,6 +136,7 @@ if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
             --debug \
             --dry_run \
             --enable_experimental_bigquery_entity_uris
+            --enable_experimental_dataplex_gcs_entity_uris
     fi
 fi
 
@@ -145,4 +150,5 @@ if [[ -f "${IMPERSONATION_SERVICE_ACCOUNT:-}" ]]; then
         --debug \
         --dry_run \
         --enable_experimental_bigquery_entity_uris
+        --enable_experimental_dataplex_gcs_entity_uris
 fi
