@@ -33,7 +33,6 @@ entities:
     table_name: contact_details
     dataset_name: <my_bigquery_dataset_id>
     project_name: <my-gcp-project-id>
-    resource_type: BIGQUERY
     environment_override:
       TEST:
         environment: test
