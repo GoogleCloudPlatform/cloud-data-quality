@@ -78,7 +78,8 @@ coloredlogs.install(logger=logger)
 @click.option(
     "--gcp_bq_dataset_id",
     help="GCP BigQuery Dataset ID used for storing rule_binding views "
-    "and intermediate DQ summary results. "
+    "and intermediate DQ summary results. This dataset must be located "
+    "in project --gcp_project_id and region --gcp_region_id."
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
     type=str,
@@ -307,9 +308,8 @@ def main(  # noqa: C901
         json_logger.warning(
             json.dumps({"clouddq_run_configs": locals()}, cls=JsonEncoderDatetime)
         )
-        if not skip_sql_validation:
-            # Create BigQuery client for query dry-runs
-            bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
+        # Create BigQuery client for query dry-runs
+        bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -495,7 +495,9 @@ def main(  # noqa: C901
             if view.stem not in target_rule_binding_ids:
                 view.unlink()
         # create dbt configs json for the main.sql loop and run dbt
-        configs = {"target_rule_binding_ids": target_rule_binding_ids}
+        configs = {
+            "target_rule_binding_ids": target_rule_binding_ids,
+        }
         dbt_runner.run(
             configs=configs,
             debug=debug,

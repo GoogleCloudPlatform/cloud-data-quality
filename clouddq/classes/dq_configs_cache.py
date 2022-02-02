@@ -126,14 +126,16 @@ class DqConfigsCache:
         for record in rule_bindings_rows:
             if "entity_uri" not in record:
                 record.update({"entity_uri": None})
-        self._cache_db["rule_bindings"].upsert_all(rule_bindings_rows, pk="id")
+        self._cache_db["rule_bindings"].upsert_all(
+            rule_bindings_rows, pk="id", alter=True
+        )
 
     def load_all_entities_collection(self, entities_collection: dict) -> None:
         logger.debug(
             f"Loading 'entities' configs into cache:\n{pformat(entities_collection.keys())}"
         )
         self._cache_db["entities"].upsert_all(
-            unnest_object_to_list(entities_collection), pk="id"
+            unnest_object_to_list(entities_collection), pk="id", alter=True
         )
 
     def load_all_row_filters_collection(self, row_filters_collection: dict) -> None:
@@ -141,7 +143,7 @@ class DqConfigsCache:
             f"Loading 'row_filters' configs into cache:\n{pformat(row_filters_collection.keys())}"
         )
         self._cache_db["row_filters"].upsert_all(
-            unnest_object_to_list(row_filters_collection), pk="id"
+            unnest_object_to_list(row_filters_collection), pk="id", alter=True
         )
 
     def load_all_rules_collection(self, rules_collection: dict) -> None:
@@ -149,7 +151,7 @@ class DqConfigsCache:
             f"Loading 'rules' configs into cache:\n{pformat(rules_collection.keys())}"
         )
         self._cache_db["rules"].upsert_all(
-            unnest_object_to_list(rules_collection), pk="id"
+            unnest_object_to_list(rules_collection), pk="id", alter=True
         )
 
     def load_all_rule_dimensions_collection(
@@ -161,6 +163,7 @@ class DqConfigsCache:
         self._cache_db["rule_dimensions"].upsert_all(
             [{"rule_dimension": dim} for dim in rule_dimensions_collection],
             pk="rule_dimension",
+            alter=True,
         )
 
     def resolve_dataplex_entity_uris(  # noqa: C901
