@@ -146,10 +146,10 @@ def create_entity_summary_model(
         "gcp_bq_dataset_id": gcp_bq_dataset_id,
     }
     sql_string = template.render(configs)
-    # if debug:
-    logger.warning(
-        f"Generated sql for entity_table_id: {entity_table_id}:\n{sql_string}"
-    )
+    if debug:
+        logger.debug(
+            f"Generated sql for entity_table_id: {entity_table_id}:\n{sql_string}"
+        )
     return sql_string
 
 

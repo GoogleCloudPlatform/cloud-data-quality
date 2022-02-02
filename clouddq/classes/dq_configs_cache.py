@@ -20,7 +20,6 @@ from pprint import pformat
 
 import logging
 import sqlite3
-import time
 
 from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
@@ -222,7 +221,6 @@ class DqConfigsCache:
                 logger.debug(
                     f"Parsed entity_uri configs:\n{pformat(entity_uri.to_dict())}"
                 )
-                time.sleep(1)
                 if entity_uri.scheme == "dataplex":
                     dataplex_entity = client.get_dataplex_entity(
                         gcp_project_id=entity_uri.get_configs("projects"),
