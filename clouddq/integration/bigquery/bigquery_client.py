@@ -99,21 +99,13 @@ class BigQueryClient:
         if self._client:
             self._client.close()
 
-    def assert_dataset_is_in_region(
-        self, dataset: str, region: str, project_id: str = None
-    ) -> None:
+    def get_dataset_region(self, dataset: str, project_id: str) -> str:
         client = self.get_connection(project_id=project_id)
         try:
             dataset_info = client.get_dataset(dataset)
         except KeyError as error:
-            logger.fatal(f"Input dataset `{dataset}` is not valid.", exc_info=True)
             raise KeyError(f"\n\nInput dataset `{dataset}` is not valid.\n{error}")
-        if dataset_info.location != region:
-            raise AssertionError(
-                f"GCP region for BigQuery jobs in argument --gcp_region_id: "
-                f"'{region}' must be the same as dataset '{dataset}' location: "
-                f"'{dataset_info.location}'."
-            )
+        return dataset_info.location
 
     def check_query_dry_run(self, query_string: str, project_id: str = None) -> None:
         """check whether query is valid."""
