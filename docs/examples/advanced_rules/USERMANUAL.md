@@ -1,6 +1,6 @@
 # Advanced Rules
 ## Example Use Cases
-As an extension to existing examples and quickstart overview of CloudDQ rule framework, some more advanced rules have been prepared that address common data quality scenarios. The list is not full (will be kept updated) but contains most popular dimensions like `timeliness`, `correctness`, `integrity`, `conformity`, `completnes` just to name a few.
+As an extension to existing examples and quickstart overview of CloudDQ rule framework, some more advanced rules have been prepared that address common data quality scenarios. The list is not full (will be kept updated) but contains most popular dimensions like `timeliness`, `correctness`, `integrity`, `conformity`, `completness` just to name a few.
 
 ### Timeliness
 #### Alerting for failed / delayed data ingestion
@@ -81,7 +81,7 @@ rule_bindings:
           ingestion_timestamp: dana_ingestion_timestamp
           elapsed_time_hours: 1200
 ```
-Full example: [rule](docs/examples/timeliness_delayed_ingestion.yaml#86) and [rule binding](docs/examples/timeliness_delayed_ingestion.yaml#133)
+Full example: [rule](docs/examples/advanced_rules/timeliness_delayed_ingestion.yaml#86) and [rule binding](docs/examples/advanced_rules/timeliness_delayed_ingestion.yaml#133)
 
 #### Comparing data volumes / record counts between two time periods
 This rule compares data generated for a specific time interval against another interval.
@@ -220,7 +220,7 @@ rule_bindings:
           N_periods_back: 1
           deviation_threshold_pct: 30
 ```
-Full example: [rule](docs/examples/timelines_volumes_per_perdiod.yaml#45) and [rule binding](docs/examples/timelines_volumes_per_perdiod.yaml#113)
+Full example: [rule](docs/examples/advanced_rules/timelines_volumes_per_perdiod.yaml#45) and [rule binding](docs/examples/advanced_rules/timelines_volumes_per_perdiod.yaml#113)
 
 ### Correctness
 #### Define complex rule with record columns
@@ -247,7 +247,7 @@ rules:
             unnest(SaleLineList.SaleLine) as SaleLine
         ) between $column - $error_margin and $column + $error_margin
 rule_bindings:
-  T2_NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED:
+  NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED:
     entity_id: COMPLEX_RULES_TABLE_OK
     column_id: INVOICE_GROSS_TOTAL_AMOUNT
     row_filter_id: NONE
@@ -255,7 +255,7 @@ rule_bindings:
       - NO_COMPLEX_RULES_MISMATCH:
           error_margin: 0.03
 ```
-Full example: [rule](docs/examples/correctness_complex_rule.yaml#57) and [rule binding](docs/examples/correctness_complex_rule.yaml#72)
+Full example: [rule](docs/examples/advanced_rules/correctness_complex_rule.yaml#57) and [rule binding](docs/examples/advanced_rules/correctness_complex_rule.yaml#72)
 
 ### Integrity
 #### Validating Integrity (against reference data)
@@ -309,7 +309,7 @@ rule_bindings:
           ref_data_dataset: clouddq_integration_tests_input_data
           ref_data_table_id: reference_data
 ```
-Full example: [rule](docs/examples/integrity_reference_data.yaml#57) and [rule binding](docs/examples/integrity_reference_data.yaml#78)
+Full example: [rule](docs/examples/advanced_rules/integrity_reference_data.yaml#57) and [rule binding](docs/examples/advanced_rules/integrity_reference_data.yaml#78)
 
 #### Validating Integrity (against set returned by subquery)
 This check validates whether values in a specific column belong to a set returned from a subquery. It is very similar to the previous check, but the subquery might include some additional business logic or, like in this example, check the referential integrity on a set of different columns.
@@ -360,11 +360,13 @@ rule_bindings:
           ref_data_dataset: clouddq_integration_tests_input_data
           ref_data_table_id: reference_data_subquery2
 ```
-Full example: [rule](docs/examples/integrity_subquery.yaml#81) and [rule binding](docs/examples/integrity_subquery.yaml#102)
+Full example: [rule](docs/examples/advanced_rules/integrity_subquery.yaml#81) and [rule binding](docs/examples/advanced_rules/integrity_subquery.yaml#102)
 
 ### Conformity
 #### Validating Conformity
 This check validates whether values in a specific column belong to a predefined interval or they conform with a defined standard. In this example, they should be a valid email addresses.
+
+Note: More info about the official email regex that has been used here, can be find on [www.regular-expressions.info](https://www.regular-expressions.info/email.html).
 
 Example config:
 ```yaml
@@ -374,7 +376,7 @@ rules:
     dimension: conformity
     params:
       pattern: |-
-        ^[\\w\\.-]+@([\\w-]+\\.)+[\\w-]{2,4}$
+        ^[\\w\\.-]+@([\\w-]+\\.)+[\\w-]{2,}$
 
 rule_bindings:
   CONFORMITY_CHECK:
@@ -384,7 +386,7 @@ rule_bindings:
     rule_ids:
       - NO_INVALID_EMAIL
 ```
-Full example: [rule](docs/examples/conformity_email_regex.yaml#57) and [rule binding](docs/examples/conformity_email_regex.yaml#66)
+Full example: [rule](docs/examples/advanced_rules/conformity_email_regex.yaml#57) and [rule binding](docs/examples/advanced_rules/conformity_email_regex.yaml#66)
 
 ### Completness
 #### Validating Completeness
@@ -422,7 +424,7 @@ rule_bindings:
           condition: data.data IS NOT NULL
           threshold_pct: 100
 ```
-Full example: [rule](docs/examples/completness_with_condition.yaml#57) and [rule binding](docs/examples/completness_with_condition.yaml#74)
+Full example: [rule](docs/examples/advanced_rules/completness_with_condition.yaml#57) and [rule binding](docs/examples/advanced_rules/completness_with_condition.yaml#74)
 
 ### Uniqueness
 #### Validating Uniqueness
@@ -466,7 +468,7 @@ rule_bindings:
           column_names: data.data, id, type
           group_by_statement: data, id, type
 ```
-Full example: [rule](docs/examples/uniqueness_with_column_groups.yaml#77) and [rule binding](docs/examples/uniqueness_with_column_groups.yaml#98)
+Full example: [rule](docs/examples/advanced_rules/uniqueness_with_column_groups.yaml#77) and [rule binding](docs/examples/advanced_rules/uniqueness_with_column_groups.yaml#98)
 
 ### Accuracy
 #### Validating Accuracy
@@ -555,4 +557,4 @@ rule_bindings:
           standard_deviation_threshold: 2
           bucket_ratio: 10
 ```
-Full example: [rule](docs/examples/accuracy_distribution_based.yaml#99) and [rule binding](docs/examples/accuracy_distribution_based.yaml#146)
+Full example: [rule](docs/examples/advanced_rules/accuracy_distribution_based.yaml#99) and [rule binding](docs/examples/advanced_rules/accuracy_distribution_based.yaml#146)

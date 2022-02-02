@@ -60,7 +60,7 @@ rules:
     dimension: conformity
     params:
       pattern: |-
-        ^[\\w\\.-]+@([\\w-]+\\.)+[\\w-]{2,4}$
+        ^[\\w\\.-]+@([\\w-]+\\.)+[\\w-]{2,}$
 
 
 rule_bindings:

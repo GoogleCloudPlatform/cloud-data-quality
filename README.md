@@ -15,6 +15,7 @@ It takes as input Data Quality validation tests defined using a flexible and reu
 * For a high-level overview of the purpose of `CloudDQ`, an explanation of the concepts and how it works, as well as how you would consume the outputs, please see our [Overview](OVERVIEW.md)
 * For tutorials on how to use `CloudDQ`, example use cases, deployment best practices and example dashboards, see the [User Manual](USERMANUAL.md)
 * We also provide a [Reference Guide](REFERENCE.md) with spec of the configuration and the library reference.
+* For more advanced rules covering more specific requirements, please refer to [Advanced Rules User Manual](docs/examples/advanced_rules/USERMANUAL.md).
 
 **Note:** This project is currently in beta status and may still change in breaking ways.
 
