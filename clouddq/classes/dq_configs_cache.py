@@ -145,8 +145,13 @@ class DqConfigsCache:
         logger.debug(
             f"Loading 'entities' configs into cache:\n{pformat(entities_collection.keys())}"
         )
+        enriched_entities_configs = {}
+        for entity_id, entity_configs in entities_collection.items():
+            entity = dq_entity.DqEntity.from_dict(entity_id, entity_configs)
+            enriched_entities_configs.update(entity.to_dict())
+        logger.warning(f"enriched_entities_configs:\n{pformat(enriched_entities_configs)}")
         self._cache_db["entities"].upsert_all(
-            unnest_object_to_list(entities_collection), pk="id", alter=True
+            unnest_object_to_list(enriched_entities_configs), pk="id", alter=True
         )
 
     def load_all_row_filters_collection(self, row_filters_collection: dict) -> None:
