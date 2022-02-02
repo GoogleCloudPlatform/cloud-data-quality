@@ -189,6 +189,7 @@ class DqConfigsCache:
         default_configs: dict | None = None,
         target_rule_binding_ids: list[str] = None,
         enable_experimental_bigquery_entity_uris: bool = True,
+        enable_experimental_dataplex_gcs_validation: bool = True,
     ) -> None:
         if not target_rule_binding_ids:
             target_rule_binding_ids = ["ALL"]
@@ -228,6 +229,13 @@ class DqConfigsCache:
                         zone_id=entity_uri.get_configs("zones"),
                         entity_id=entity_uri.get_entity_id(),
                     )
+                    if dataplex_entity.system == "CLOUD_STORAGE":
+                        if not enable_experimental_dataplex_gcs_validation:
+                            raise NotImplementedError(
+                                "Use CLI flag --enable_experimental_dataplex_gcs_validation "
+                                "To enable validating Dataplex GCS resources using BigQuery "
+                                "External Tables"
+                            )
                     clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
                         entity_id=entity_uri.get_db_primary_key(),
                         dataplex_entity=dataplex_entity,

@@ -70,7 +70,7 @@ coloredlogs.install(logger=logger)
 @click.option(
     "--gcp_region_id",
     help="GCP region used for running BigQuery Jobs and for storing "
-    " any intemediate DQ summary results. This is an optional argument. "
+    " any intermediate DQ summary results. This is an optional argument. "
     "It will default to the region of the --gcp_bq_dataset_id if not provided."
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
@@ -204,6 +204,13 @@ coloredlogs.install(logger=logger)
     is_flag=True,
     default=False,
 )
+@click.option(
+    "--enable_experimental_dataplex_gcs_validation",
+    help="If True, allows validating Dataplex GCS resources using "
+    "BigQuery External Tables",
+    is_flag=True,
+    default=False,
+)
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
@@ -224,6 +231,7 @@ def main(  # noqa: C901
     skip_sql_validation: bool = False,
     summary_to_stdout: bool = False,
     enable_experimental_bigquery_entity_uris: bool = False,
+    enable_experimental_dataplex_gcs_validation: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -273,7 +281,8 @@ def main(  # noqa: C901
     if dbt_profiles_dir:
         logger.warning(
             "If --dbt_profiles_dir is present, all other connection configs "
-            "with pattern --gcp_* will be ignored. "
+            "such as '--gcp_project_id', '--gcp_bq_dataset_id', '--gcp_region_id' "
+            f"will be ignored. \n"
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
@@ -282,8 +291,9 @@ def main(  # noqa: C901
         dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id)
     ):
         raise ValueError(
-            "CLI input must define connection configs using either '--dbt_profiles_dir' "
-            "or ('--gcp_project_id', '--gcp_bq_dataset_id', '--gcp_region_id')."
+            "CLI input must define connection configs in either a single dbt profiles.yml file "
+            "in '--dbt_profiles_dir' or individually using the parameters: "
+            "'--gcp_project_id', '--gcp_bq_dataset_id', '--gcp_region_id')."
         )
     bigquery_client = None
     try:
@@ -465,6 +475,7 @@ def main(  # noqa: C901
             default_configs=dataplex_registry_defaults,
             target_rule_binding_ids=target_rule_binding_ids,
             enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
+            enable_experimental_dataplex_gcs_validation=enable_experimental_dataplex_gcs_validation,
         )
         # Get Entities for entity-level summary views
         target_entity_summary_configs: dict = (
@@ -559,7 +570,6 @@ def main(  # noqa: C901
                 view.unlink()
         # create dbt configs json for the main.sql loop and run dbt
         configs = {
-            # "target_rule_binding_ids": target_rule_binding_ids,
             "entity_dq_statistics_models": list(target_entity_summary_configs.keys()),
         }
         dbt_runner.run(
