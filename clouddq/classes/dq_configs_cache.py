@@ -149,7 +149,9 @@ class DqConfigsCache:
         for entity_id, entity_configs in entities_collection.items():
             entity = dq_entity.DqEntity.from_dict(entity_id, entity_configs)
             enriched_entities_configs.update(entity.to_dict())
-        logger.warning(f"enriched_entities_configs:\n{pformat(enriched_entities_configs)}")
+        logger.warning(
+            f"enriched_entities_configs:\n{pformat(enriched_entities_configs)}"
+        )
         self._cache_db["entities"].upsert_all(
             unnest_object_to_list(enriched_entities_configs), pk="id", alter=True
         )
@@ -328,11 +330,6 @@ class DqConfigsCache:
                 )
                 entity_configs = {
                     "entity_id": entity_uri.get_db_primary_key().upper(),
-                    "source_database": clouddq_entity.source_database,
-                    "table_name": clouddq_entity.table_name,
-                    "database_name": clouddq_entity.database_name,
-                    "instance_name": clouddq_entity.instance_name,
-                    "resource_type": clouddq_entity.resource_type,
                 }
                 self._cache_db["rule_bindings"].update(
                     record["id"], entity_configs, alter=True
@@ -403,14 +400,14 @@ class DqConfigsCache:
                 [f"'{id}'" for id in target_rule_binding_ids]
             )
         )
-        logger.warning("*********")
-        logger.warning(query)
         target_entity_summary_views_configs = {}
         for record in self._cache_db.query(query):
             entity_table_id = record["entity_table_id"]
             target_entity_summary_views_configs[entity_table_id] = {
                 "rule_binding_ids_list": record["rule_binding_ids_list"].split(","),
             }
-        logger.warning("*********")
-        logger.warning(pformat(target_entity_summary_views_configs))
+        logger.debug(
+            f"target_entity_summary_views_configs:\n"
+            f"{pformat(target_entity_summary_views_configs)}"
+        )
         return target_entity_summary_views_configs
