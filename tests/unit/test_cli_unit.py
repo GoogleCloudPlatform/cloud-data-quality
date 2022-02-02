@@ -89,6 +89,30 @@ class TestCli:
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_cli_dry_run_100_rules(
+        self,
+        runner,
+        tmp_path,
+        test_profiles_dir):
+        try:
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_dry_run_100_rules")
+            temp_dir.mkdir(parents=True)
+            configs_100_rules = Path("tests").joinpath("resources", "configs_100_rules.yml").absolute()
+            with working_directory(temp_dir):
+                args = [
+                    "ALL",
+                    f"{configs_100_rules}",
+                    f"--dbt_profiles_dir={test_profiles_dir}",
+                    "--dry_run",
+                    "--debug",
+                    "--skip_sql_validation"
+                    ]
+                result = runner.invoke(main, args)
+                logger.info(result.output)
+                assert result.exit_code == 0
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_cli_dry_run_incompatiable_arguments_failure(
         self,
         runner,

@@ -370,7 +370,8 @@ class TestDataplexIntegration:
                     clouddq_executable_checksum_path=clouddq_executable_checksum_path,
                     clouddq_pyspark_driver_path=clouddq_pyspark_driver_path,
                     clouddq_pyspark_driver_filename=clouddq_pyspark_driver_filename,
-                    enable_experimental_bigquery_entity_uris=True)
+                    enable_experimental_bigquery_entity_uris=True,
+                    enable_experimental_dataplex_gcs_validation=True,)
         # Check that the task has been created successfully
         print(f"CloudDQ task creation response is {response.text}")
         assert response.status_code == 200
@@ -386,4 +387,4 @@ class TestDataplexIntegration:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-v', '-rP', '-n 4'] + sys.argv[1:]))
+    raise SystemExit(pytest.main([__file__, '-v', '-rP', '-n 3'] + sys.argv[1:]))

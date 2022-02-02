@@ -112,7 +112,7 @@ class TestDataplexEntity:
 
         assert dataplex_entity.to_dict() == dataplex_entity_expected
 
-    def test_validate_dataplex_entity_to_dict_missing_format(self, mock_valid_dataplex_input):
+    def test_validate_dataplex_entity_to_dict_no_format(self, mock_valid_dataplex_input):
         """ """
         name = "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id"
         test_input = mock_valid_dataplex_input

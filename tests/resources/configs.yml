@@ -64,6 +64,7 @@ rule_bindings:
       - NOT_NULL_SIMPLE
     metadata:
       brand: one
+
 rules:
   CUSTOM_SQL_LENGTH_LE_30:
     params:
@@ -85,4 +86,3 @@ rules:
     params:
       pattern: ^[^@]+[@]{1}[^@]+$
     rule_type: REGEX
-

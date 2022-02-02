@@ -25,6 +25,7 @@ from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
 
 from clouddq.classes.metadata_registry_defaults import SAMPLE_DEFAULT_REGISTRIES_YAML
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.utils import convert_json_value_to_dict
 from clouddq.utils import unnest_object_to_list
 
@@ -125,14 +126,16 @@ class DqConfigsCache:
         for record in rule_bindings_rows:
             if "entity_uri" not in record:
                 record.update({"entity_uri": None})
-        self._cache_db["rule_bindings"].upsert_all(rule_bindings_rows, pk="id")
+        self._cache_db["rule_bindings"].upsert_all(
+            rule_bindings_rows, pk="id", alter=True
+        )
 
     def load_all_entities_collection(self, entities_collection: dict) -> None:
         logger.debug(
             f"Loading 'entities' configs into cache:\n{pformat(entities_collection.keys())}"
         )
         self._cache_db["entities"].upsert_all(
-            unnest_object_to_list(entities_collection), pk="id"
+            unnest_object_to_list(entities_collection), pk="id", alter=True
         )
 
     def load_all_row_filters_collection(self, row_filters_collection: dict) -> None:
@@ -140,7 +143,7 @@ class DqConfigsCache:
             f"Loading 'row_filters' configs into cache:\n{pformat(row_filters_collection.keys())}"
         )
         self._cache_db["row_filters"].upsert_all(
-            unnest_object_to_list(row_filters_collection), pk="id"
+            unnest_object_to_list(row_filters_collection), pk="id", alter=True
         )
 
     def load_all_rules_collection(self, rules_collection: dict) -> None:
@@ -148,7 +151,7 @@ class DqConfigsCache:
             f"Loading 'rules' configs into cache:\n{pformat(rules_collection.keys())}"
         )
         self._cache_db["rules"].upsert_all(
-            unnest_object_to_list(rules_collection), pk="id"
+            unnest_object_to_list(rules_collection), pk="id", alter=True
         )
 
     def load_all_rule_dimensions_collection(
@@ -160,14 +163,17 @@ class DqConfigsCache:
         self._cache_db["rule_dimensions"].upsert_all(
             [{"rule_dimension": dim} for dim in rule_dimensions_collection],
             pk="rule_dimension",
+            alter=True,
         )
 
     def resolve_dataplex_entity_uris(  # noqa: C901
         self,
         client: clouddq_dataplex.CloudDqDataplexClient,
+        bigquery_client: BigQueryClient,
         default_configs: dict | None = None,
         target_rule_binding_ids: list[str] = None,
         enable_experimental_bigquery_entity_uris: bool = True,
+        enable_experimental_dataplex_gcs_validation: bool = True,
     ) -> None:
         if not target_rule_binding_ids:
             target_rule_binding_ids = ["ALL"]
@@ -206,11 +212,39 @@ class DqConfigsCache:
                         zone_id=entity_uri.get_configs("zones"),
                         entity_id=entity_uri.get_entity_id(),
                     )
+                    if dataplex_entity.system == "CLOUD_STORAGE":
+                        if not enable_experimental_dataplex_gcs_validation:
+                            raise NotImplementedError(
+                                "Use CLI flag --enable_experimental_dataplex_gcs_validation "
+                                "To enable validating Dataplex GCS resources using BigQuery "
+                                "External Tables"
+                            )
                     clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
                         entity_id=entity_uri.get_db_primary_key(),
                         dataplex_entity=dataplex_entity,
-                    ).to_dict()
-                    resolved_entity = unnest_object_to_list(clouddq_entity)
+                    )
+                    entity_uri_primary_key = entity_uri.get_db_primary_key().upper()
+                    gcs_entity_external_table_name = (
+                        clouddq_entity.get_bq_external_table_name()
+                    )
+                    logger.debug(
+                        f"GCS Entity External Table Name is {gcs_entity_external_table_name}"
+                    )
+                    bq_table_exists = bigquery_client.is_table_exists(
+                        table=gcs_entity_external_table_name,
+                        project_id=clouddq_entity.instance_name,
+                    )
+                    if bq_table_exists:
+                        logger.debug(
+                            f"The External Table {gcs_entity_external_table_name} for Entity URI "
+                            f"{entity_uri_primary_key} exists in Bigquery."
+                        )
+                    else:
+                        raise RuntimeError(
+                            f"Unable to find Bigquery External Table  {gcs_entity_external_table_name} "
+                            f"for Entity URI {entity_uri_primary_key}"
+                        )
+                    resolved_entity = unnest_object_to_list(clouddq_entity.to_dict())
                 elif entity_uri.scheme == "bigquery":
                     if not enable_experimental_bigquery_entity_uris:
                         raise NotImplementedError(
