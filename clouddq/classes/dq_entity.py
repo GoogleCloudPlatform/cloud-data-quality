@@ -168,6 +168,7 @@ class DqEntity:
             source_database=source_database,
             config_key="instance_name",
         )
+
         resource_type = (
             get_custom_entity_configs(
                 entity_id=entity_id,
