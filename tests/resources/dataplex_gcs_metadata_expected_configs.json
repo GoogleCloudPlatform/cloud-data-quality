@@ -27,6 +27,7 @@
     "dataset_name": "<your_dataplex_bigquery_dataset_id>",
     "project_name": "<your-gcp-project-id>",
     "resource_type": "CLOUD_STORAGE",
+    "partition_fields": null,
     "dataplex_name": "<your-gcp-dataplex-name>",
     "dataplex_lake": "<your-gcp-dataplex-lake-id>",
     "dataplex_zone": "<your-gcp-dataplex-zone-id>",
