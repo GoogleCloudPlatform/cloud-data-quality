@@ -57,10 +57,15 @@ class TestDqConfigsCache:
             with working_directory(temp_dir):
                 configs_cache = lib.prepare_configs_cache(temp_configs_dir)
                 count_1 = configs_cache._cache_db['entities'].count
+                target_rule_binding_ids = [
+                    row["id"] for row in
+                    configs_cache._cache_db.query("select id from rule_bindings")
+                ]
                 configs_cache.resolve_dataplex_entity_uris(
                     client=test_dq_dataplex_client,
                     bigquery_client=test_bigquery_client,
                     default_configs=test_dataplex_metadata_defaults_configs,
+                    target_rule_binding_ids=target_rule_binding_ids
                 )
                 count_2 = configs_cache._cache_db['entities'].count
                 assert count_2 > count_1
@@ -83,7 +88,10 @@ class TestDqConfigsCache:
                 ]
                 output = test_default_dataplex_configs_cache.\
                     get_entities_configs_from_rule_bindings(rule_binding_ids)
-                table_name = f'{gcp_project_id.replace("-","_")}__{gcp_dataplex_bigquery_dataset_id}__contact_details'
+                table_name = (
+                    f'{gcp_project_id.replace("-","_")}__{gcp_dataplex_bigquery_dataset_id}'
+                    '__contact_details__VALUE__DATA_TYPE_EMAIL_1'
+                )
                 expected = {
                     table_name: {
                         'rule_binding_ids_list': [
