@@ -289,10 +289,15 @@ def test_default_dataplex_configs_cache(temp_configs_dir,
     temp_path.mkdir()
     with working_directory(temp_path):
         configs_cache = prepare_configs_cache(configs_path=temp_configs_dir)
+        target_rule_binding_ids = [
+            row["id"] for row in
+            configs_cache._cache_db.query("select id from rule_bindings")
+        ]
         configs_cache.resolve_dataplex_entity_uris(
             client=test_dq_dataplex_client,
             bigquery_client=test_bigquery_client,
-            default_configs=test_dataplex_metadata_defaults_configs
+            default_configs=test_dataplex_metadata_defaults_configs,
+            target_rule_binding_ids=target_rule_binding_ids
         )
         yield configs_cache
 
@@ -393,7 +398,7 @@ def test_default_dataplex_configs_cache_from_file(temp_configs_from_file,
         configs_cache = prepare_configs_cache(configs_path=temp_configs_from_file)
         target_rule_binding_ids = [
             row["id"] for row in
-            configs_cache._cache_db.query("select id from rule_binding")
+            configs_cache._cache_db.query("select id from rule_bindings")
         ]
         configs_cache.resolve_dataplex_entity_uris(
             client=test_dq_dataplex_client,
