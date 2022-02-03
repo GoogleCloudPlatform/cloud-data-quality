@@ -19,6 +19,7 @@
 {% set filter_sql_expr = configs.get('row_filter_configs').get('filter_sql_expr') -%}
 {% set column_name = configs.get('column_configs').get('name') -%}
 {% set entity_configs = configs.get('entity_configs') -%}
+{% set partition_fields = entity_configs.get('partition_fields')-%}
 {% set dataplex_lake = entity_configs.get('dataplex_lake') -%}
 {% set dataplex_zone = entity_configs.get('dataplex_zone') -%}
 {% set dataplex_asset_id = entity_configs.get('dataplex_asset_id') -%}
@@ -75,6 +76,11 @@ data AS (
 {% else %}
     WHERE
       {{ filter_sql_expr }}
+{% endif -%}
+{%- if partition_fields %}
+    {% for field in partition_fields %}
+        AND {{ field['name'] }} IS NOT NULL
+    {%- endfor -%}
 {% endif -%}
 ),
 last_mod AS (

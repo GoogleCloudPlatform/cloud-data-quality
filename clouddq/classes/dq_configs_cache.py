@@ -15,6 +15,7 @@
 """todo: add classes docstring."""
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pprint import pformat
 
@@ -67,6 +68,10 @@ class DqConfigsCache:
         convert_json_value_to_dict(entity_record, "environment_override")
         convert_json_value_to_dict(entity_record, "columns")
         entity = dq_entity.DqEntity.from_dict(entity_id, entity_record)
+        partition_fields = entity.partition_fields
+        if partition_fields:
+            partition_fields = json.loads(partition_fields)
+            entity.partition_fields = partition_fields
         return entity
 
     def get_rule_id(self, rule_id: str) -> dq_rule.DqRule:
