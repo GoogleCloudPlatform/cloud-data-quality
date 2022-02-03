@@ -451,12 +451,13 @@ class DqConfigsCache:
                     in_scope_rule_bindings = []
                     num_rules_per_table_count = 0
             else:
-                table_increment += 1
-                target_entity_summary_views_configs[
-                    f"{entity_table_id}_{table_increment}"
-                ] = {
-                    "rule_binding_ids_list": in_scope_rule_bindings.copy(),
-                }
+                if in_scope_rule_bindings:
+                    table_increment += 1
+                    target_entity_summary_views_configs[
+                        f"{entity_table_id}_{table_increment}"
+                    ] = {
+                        "rule_binding_ids_list": in_scope_rule_bindings.copy(),
+                    }
         logger.debug(
             f"target_entity_summary_views_configs:\n"
             f"{pformat(target_entity_summary_views_configs)}"
