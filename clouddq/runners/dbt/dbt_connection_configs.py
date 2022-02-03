@@ -26,6 +26,8 @@ import logging
 
 import yaml
 
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
+
 
 logger = logging.getLogger(__name__)
 
@@ -87,28 +89,37 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
     def __init__(
         self,
         gcp_project_id: str,
-        gcp_region_id: str,
         gcp_bq_dataset_id: str,
-        gcp_service_account_key_path: Optional[str],
-        gcp_impersonation_credentials: Optional[str],
+        gcp_region_id: Optional[str] = None,
+        bigquery_client: Optional[BigQueryClient] = None,
+        gcp_service_account_key_path: Optional[str] = None,
+        gcp_impersonation_credentials: Optional[str] = None,
     ):
         if not gcp_project_id:
             raise ValueError(
                 f"Invalid input to connection config argument 'gcp_project_id': "
                 f"{gcp_project_id}."
             )
-        if not gcp_region_id:
-            raise ValueError(
-                f"Invalid input to connection config argument 'gcp_region_id': "
-                f"{gcp_region_id}."
-            )
         if not gcp_bq_dataset_id:
             raise ValueError(
                 f"Invalid input to connection config argument 'gcp_bq_dataset_id': "
                 f"{gcp_bq_dataset_id}."
             )
+        if gcp_region_id:
+            self.gcp_region_id = gcp_region_id
+        else:
+            # Get gcp_region_id of --gcp_bq_dataset_id
+            if not bigquery_client:
+                raise RuntimeError(
+                    f"BigQuery client not available for retrieving dataset region "
+                    f"for {gcp_project_id}.{gcp_bq_dataset_id}."
+                )
+            dq_summary_dataset_region = bigquery_client.get_dataset_region(
+                dataset=gcp_bq_dataset_id,
+                project_id=gcp_project_id,
+            )
+            self.gcp_region_id = dq_summary_dataset_region
         self.gcp_project_id = gcp_project_id
-        self.gcp_region_id = gcp_region_id
         self.gcp_bq_dataset_id = gcp_bq_dataset_id
         if gcp_service_account_key_path:
             logger.info("Using exported service account key to authenticate to GCP...")

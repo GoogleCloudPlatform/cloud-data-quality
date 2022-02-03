@@ -172,11 +172,15 @@ class DqEntity:
             config_key="instance_name",
         )
 
-        resource_type = get_custom_entity_configs(
-            entity_id=entity_id,
-            configs_map=kwargs,
-            source_database=source_database,
-            config_key="resource_type",
+        resource_type = (
+            get_custom_entity_configs(
+                entity_id=entity_id,
+                configs_map=kwargs,
+                source_database=source_database,
+                config_key="resource_type",
+            )
+            if source_database == "DATAPLEX"
+            else source_database
         )
 
         partition_fields =  kwargs.get("partition_fields")
