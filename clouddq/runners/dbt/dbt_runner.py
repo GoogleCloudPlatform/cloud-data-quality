@@ -253,7 +253,7 @@ class DbtRunner:
         )
         self.dbt_entity_summary_path.mkdir(parents=True, exist_ok=True)
         if write_log:
-            logger.warning(
+            logger.debug(
                 "Using entity_dq_statistics path: "
                 f"{self.dbt_entity_summary_path.absolute()}/",
             )

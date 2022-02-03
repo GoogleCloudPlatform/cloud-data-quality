@@ -198,16 +198,16 @@ coloredlogs.install(logger=logger)
     default=False,
 )
 @click.option(
-    "--enable_experimental_bigquery_entity_uris",
-    help="If True, allows looking up entity_uris with scheme 'bigquery://' "
-    "using Dataplex Metadata API. ",
+    "--enable_experimental_dataplex_gcs_validation",
+    help="If True, allows validating Dataplex GCS resources using "
+    "BigQuery External Tables",
     is_flag=True,
     default=False,
 )
 @click.option(
-    "--enable_experimental_dataplex_gcs_validation",
-    help="If True, allows validating Dataplex GCS resources using "
-    "BigQuery External Tables",
+    "--enable_experimental_bigquery_entity_uris",
+    help="If True, allows looking up entity_uris with scheme 'bigquery://' "
+    "using Dataplex Metadata API. ",
     is_flag=True,
     default=False,
 )
@@ -282,7 +282,7 @@ def main(  # noqa: C901
         logger.warning(
             "If --dbt_profiles_dir is present, all other connection configs "
             "such as '--gcp_project_id', '--gcp_bq_dataset_id', '--gcp_region_id' "
-            f"will be ignored. \n"
+            "will be ignored. \n"
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
@@ -483,9 +483,6 @@ def main(  # noqa: C901
                 target_rule_binding_ids=target_rule_binding_ids,
             )
         )
-        logger.debug(
-            f"target_entity_summary_configs:\n{pformat(target_entity_summary_configs)}"
-        )
         # Create Rule_binding views
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
@@ -533,6 +530,9 @@ def main(  # noqa: C901
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem not in target_rule_binding_ids:
                 view.unlink()
+        logger.info(
+            f"target_entity_summary_configs:\n{pformat(target_entity_summary_configs)}"
+        )
         # create entity-level summary table models
         for (
             entity_table_id,

@@ -75,14 +75,6 @@ def get_custom_entity_configs(
         config_value = entity_config_template.format(**entity_config_arguments)
     except KeyError:
         if config_key in configs_map:
-            logger.warning(
-                f"Entity Config ID '{entity_id}' with source_database "
-                f"'{source_database}' is using deprecated "
-                f"config value '{config_key}'.\n"
-                f"This will be removed in version 1.0.\n"
-                f"Migrate to use the config values "
-                f"'{entity_config_template_arguments}' instead."
-            )
             config_value = configs_map.get(config_key)
         else:
             raise ValueError(
