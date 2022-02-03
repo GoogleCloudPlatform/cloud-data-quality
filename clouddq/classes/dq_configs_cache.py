@@ -213,8 +213,8 @@ class DqConfigsCache:
         self,
         client: clouddq_dataplex.CloudDqDataplexClient,
         bigquery_client: BigQueryClient,
+        target_rule_binding_ids: list[str],
         default_configs: dict | None = None,
-        target_rule_binding_ids: list[str] = None,
         enable_experimental_bigquery_entity_uris: bool = True,
         enable_experimental_dataplex_gcs_validation: bool = True,
     ) -> None:
