@@ -293,6 +293,7 @@ class TestCliIntegration:
         finally:
             shutil.rmtree(temp_dir)
 
+    @pytest.mark.xfail
     def test_cli_dry_run_oath_impersonation_fail(
         self,
         runner,
@@ -301,6 +302,7 @@ class TestCliIntegration:
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_application_credentials,
+        gcp_impersonation_credentials,
         tmp_path
     ):
         try:
@@ -318,6 +320,9 @@ class TestCliIntegration:
                     "--dry_run",
                     "--debug",
                     ]
+                if not gcp_impersonation_credentials:
+                    pytest.skip("Skipping tests involving service-account impersonation because "
+                    "test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found.")
                 result = runner.invoke(main, args)
                 print(result.output)
                 assert result.exit_code == 1
@@ -414,4 +419,4 @@ class TestCliIntegration:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

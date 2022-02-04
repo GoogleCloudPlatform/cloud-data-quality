@@ -38,7 +38,10 @@
       "environment_override": {
         "test": {
           "database_name": "<your_bigquery_dataset_id_2>",
+          "environment": "test",
           "instance_name": "<your_gcp_project_id_2>",
+          "override": {"dataset_name": "<your_bigquery_dataset_id_2>",
+                       "project_name": "<your_gcp_project_id_2>"},
           "table_name": "contact_details"
         }
       },

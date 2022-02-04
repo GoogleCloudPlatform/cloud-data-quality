@@ -81,6 +81,8 @@ coloredlogs.install(logger=logger)
     help="GCP BigQuery Dataset ID used for storing rule_binding views "
     "and intermediate DQ summary results. This dataset must be located "
     "in project --gcp_project_id and region --gcp_region_id."
+    "If --gcp_region_id is not provided, BigQuery jobs will be created "
+    "in the same GCP region as this dataset. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
     type=str,
@@ -196,16 +198,16 @@ coloredlogs.install(logger=logger)
     default=False,
 )
 @click.option(
-    "--enable_experimental_bigquery_entity_uris",
-    help="If True, allows looking up entity_uris with scheme 'bigquery://' "
-    "using Dataplex Metadata API. ",
+    "--enable_experimental_dataplex_gcs_validation",
+    help="If True, allows validating Dataplex GCS resources using "
+    "BigQuery External Tables",
     is_flag=True,
     default=False,
 )
 @click.option(
-    "--enable_experimental_dataplex_gcs_validation",
-    help="If True, allows validating Dataplex GCS resources using "
-    "BigQuery External Tables",
+    "--enable_experimental_bigquery_entity_uris",
+    help="If True, allows looking up entity_uris with scheme 'bigquery://' "
+    "using Dataplex Metadata API. ",
     is_flag=True,
     default=False,
 )
@@ -280,7 +282,7 @@ def main(  # noqa: C901
         logger.warning(
             "If --dbt_profiles_dir is present, all other connection configs "
             "such as '--gcp_project_id', '--gcp_bq_dataset_id', '--gcp_region_id' "
-            f"will be ignored. \n"
+            "will be ignored. \n"
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
@@ -322,6 +324,7 @@ def main(  # noqa: C901
         )
         dbt_path = dbt_runner.get_dbt_path()
         dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
+        dbt_entity_summary_path = dbt_runner.get_entity_summary_path()
         dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir()
         environment_target = dbt_runner.get_dbt_environment_target()
         # Prepare DQ Summary Table
@@ -474,6 +477,13 @@ def main(  # noqa: C901
             enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
             enable_experimental_dataplex_gcs_validation=enable_experimental_dataplex_gcs_validation,
         )
+        # Get Entities for entity-level summary views
+        target_entity_summary_configs: dict = (
+            configs_cache.get_entities_configs_from_rule_bindings(
+                target_rule_binding_ids=target_rule_binding_ids,
+            )
+        )
+        # Create Rule_binding views
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
@@ -512,17 +522,50 @@ def main(  # noqa: C901
                 f"{rule_binding_id}.sql",
             )
             lib.write_sql_string_as_dbt_model(
-                rule_binding_id=rule_binding_id,
+                model_id=rule_binding_id,
                 sql_string=sql_string,
-                dbt_rule_binding_views_path=dbt_rule_binding_views_path,
+                dbt_model_path=dbt_rule_binding_views_path,
             )
         # clean up old rule_bindings
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem not in target_rule_binding_ids:
                 view.unlink()
+        logger.info(
+            f"target_entity_summary_configs:\n{pformat(target_entity_summary_configs)}"
+        )
+        # create entity-level summary table models
+        for (
+            entity_table_id,
+            entity_configs_dict,
+        ) in target_entity_summary_configs.items():
+            rule_binding_ids_list = entity_configs_dict.get("rule_binding_ids_list")
+            assert_not_none_or_empty(
+                rule_binding_ids_list,
+                f"Internal Error: no rule_binding_id found for entity_table_id {entity_table_id}.",
+            )
+            sql_string = lib.create_entity_summary_model(
+                entity_table_id=entity_table_id,
+                entity_target_rule_binding_configs=entity_configs_dict,
+                gcp_project_id=gcp_project_id,
+                gcp_bq_dataset_id=gcp_bq_dataset_id,
+                debug=print_sql_queries,
+            )
+            logger.debug(
+                f"*** Writing sql to {dbt_entity_summary_path.absolute()}/"
+                f"{entity_table_id}.sql",
+            )
+            lib.write_sql_string_as_dbt_model(
+                model_id=entity_table_id,
+                sql_string=sql_string,
+                dbt_model_path=dbt_entity_summary_path,
+            )
+        # clean up old entity_summary views
+        for view in dbt_entity_summary_path.glob("*.sql"):
+            if view.stem not in target_entity_summary_configs.keys():
+                view.unlink()
         # create dbt configs json for the main.sql loop and run dbt
         configs = {
-            "target_rule_binding_ids": target_rule_binding_ids,
+            "entity_dq_statistics_models": list(target_entity_summary_configs.keys()),
         }
         dbt_runner.run(
             configs=configs,
