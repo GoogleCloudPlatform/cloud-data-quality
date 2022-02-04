@@ -1,0 +1,118 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+entities:
+  UNIQUENESS_CHECK_NOT_OK:
+    source_database: BIGQUERY
+    resource_type: BIGQUERY
+    table_name: uniqueness_check_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      DATA:
+        name: data
+        data_type: INTEGER
+        description: |-
+          data field
+      ID:
+        name: id
+        data_type: STRING
+        description: |-
+          id field
+      TYPE:
+        name: type
+        data_type: STRING
+        description: |-
+          type field
+  UNIQUENESS_CHECK_OK:
+    source_database: BIGQUERY
+    resource_type: BIGQUERY
+    table_name: uniqueness_check_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      DATA:
+        name: data
+        data_type: INTEGER
+        description: |-
+          data field
+      ID:
+        name: id
+        data_type: STRING
+        description: |-
+          id field
+      TYPE:
+        name: type
+        data_type: STRING
+        description: |-
+          type field
+
+
+row_filters:
+  NONE:
+    filter_sql_expr: 'True'
+
+
+rule_dimensions:
+  - timeliness
+  - correctness
+  - integrity
+  - conformity
+  - completeness
+  - uniqueness
+  - accuracy
+  - validity
+
+
+rules:
+  NO_DUPLICATES_IN_COLUMN_GROUPS:
+    rule_type: CUSTOM_SQL_STATEMENT
+    dimension: uniqueness
+    params:
+      custom_sql_arguments:
+        - column_names
+        - group_by_statement
+      custom_sql_statement: |-
+        select a.*
+        from data a
+        inner join (
+          select
+            $column_names
+          from data
+          group by $group_by_statement
+          having count(*) > 1
+        ) duplicates
+        using ($group_by_statement)
+
+
+rule_bindings:
+  T8_UNIQUENESS_CHECK_SHOULD_FAIL:
+    entity_id: UNIQUENESS_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: data.data, id, type
+          group_by_statement: data, id, type
+    metadata:
+      brand: one
+  T8_UNIQUENESS_CHECK_SHOULD_SUCCEED:
+    entity_id: UNIQUENESS_CHECK_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: data.data, id, type
+          group_by_statement: data, id, type
+    metadata:
+      brand: one

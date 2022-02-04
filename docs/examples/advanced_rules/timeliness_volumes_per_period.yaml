@@ -1,0 +1,253 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+entities:
+  DIFFERENT_VOLUMES_PER_PERIOD:
+    source_database: BIGQUERY
+    resource_type: BIGQUERY
+    table_name: different_volumes_per_period
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      DANA_INGESTION_TIMESTAMP:
+        name: dana_ingestion_timestamp
+        data_type: TIMESTAMP
+        description: |-
+          Ingestion Timestamp
+
+
+row_filters:
+  NONE:
+    filter_sql_expr: 'True'
+
+
+rule_dimensions:
+  - timeliness
+  - correctness
+  - integrity
+  - conformity
+  - completeness
+  - uniqueness
+  - accuracy
+  - validity
+
+
+rules:
+  NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+    rule_type: CUSTOM_SQL_STATEMENT
+    dimension: timeliness
+    params:
+      custom_sql_arguments:
+        - ts_column
+        - as_at_ts
+        - interval
+        - threshold
+      custom_sql_statement: |-
+        select *
+        from
+          (select count(*) as n 
+          from data
+          where date_trunc(cast($ts_column as date), $interval) = date_trunc(cast(parse_timestamp("%F %T %Z", "$as_at_ts") as date), $interval)
+          )
+        where  n <= $threshold
+  NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+    rule_type: CUSTOM_SQL_STATEMENT
+    dimension: timeliness
+    params:
+      custom_sql_arguments:
+        - ts_column
+        - as_at_ts
+        - interval
+        - avg_from_ts
+        - deviation_threshold_pct
+      custom_sql_statement: |-
+        select *
+        from
+          (select count(*) as n
+          from data
+          where date_trunc(cast($ts_column as date), $interval) = date_trunc(cast(parse_timestamp("%F %T %Z", "$as_at_ts") as date), $interval)
+          )
+        where ifnull(safe_divide(n, (select avg(count_by_interval)
+          from (
+            select count(*) as count_by_interval
+            from data
+            where
+            date_trunc(cast($ts_column as date), $interval) >= date_trunc(cast(parse_timestamp("%F %T %Z", "$avg_from_ts") as date), $interval)
+            group by date_trunc(cast($ts_column as date), $interval)
+          )
+        )), cast('inf' as float64)) not between (1 - ($deviation_threshold_pct / 100)) and (1 + ($deviation_threshold_pct / 100))
+  NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+    rule_type: CUSTOM_SQL_STATEMENT
+    dimension: timeliness
+    params:
+      custom_sql_arguments:
+        - ts_column
+        - as_at_ts
+        - interval
+        - N_periods_back
+        - deviation_threshold_pct
+      custom_sql_statement: |-
+        select *
+        from
+          (select count(*) as n
+          from data
+          where date_trunc(cast($ts_column as date), $interval) = date_trunc(cast(parse_timestamp("%F %T %Z", "$as_at_ts") as date), $interval)
+          )
+        where ifnull(safe_divide(n, (select count(*) as count_by_interval
+          from data
+          where
+          date_trunc(cast($ts_column as date), $interval) = date_sub(cast(timestamp_trunc("$as_at_ts", $interval) as date), interval $N_periods_back $interval)
+        )), cast('inf' as float64)) not between (1 - ($deviation_threshold_pct / 100)) and (1 + ($deviation_threshold_pct / 100))
+
+
+rule_bindings:
+  T3_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-29 00:00:00 UTC"
+          interval: day
+          threshold: 100
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_DAY_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: day
+          threshold: 100
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD_MONTH_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-29 00:00:00 UTC"
+          interval: month
+          threshold: 4000
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          avg_from_ts: "2021-12-01 00:00:00 UTC"
+          interval: day
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_DAY_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-22 00:00:00 UTC"
+          avg_from_ts: "2021-12-01 00:00:00 UTC"
+          interval: day
+          deviation_threshold_pct: 15
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD_MONTH_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-22 00:00:00 UTC"
+          avg_from_ts: "2021-12-01 00:00:00 UTC"
+          interval: month
+          deviation_threshold_pct: 0.01
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_SUCCEED:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-22 00:00:00 UTC"
+          interval: day
+          N_periods_back: 1
+          deviation_threshold_pct: 30
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: day
+          N_periods_back: 2
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_DAY_PERIOD_TOO_OLD_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: day
+          N_periods_back: 10
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_MONTH_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: month
+          N_periods_back: 1
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one
+  T3_NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD_YEAR_SHOULD_FAIL:
+    entity_id: DIFFERENT_VOLUMES_PER_PERIOD
+    column_id: DANA_INGESTION_TIMESTAMP
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
+          ts_column: dana_ingestion_timestamp
+          as_at_ts: "2021-12-23 00:00:00 UTC"
+          interval: year
+          N_periods_back: 1
+          deviation_threshold_pct: 10
+    metadata:
+      brand: one

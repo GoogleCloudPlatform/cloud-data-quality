@@ -254,6 +254,10 @@ def test_resources():
     return Path("tests").joinpath("resources").absolute()
 
 @pytest.fixture(scope="session")
+def test_data():
+    return Path("tests").joinpath("data").absolute()
+
+@pytest.fixture(scope="session")
 def source_configs_path():
     return Path("tests").joinpath("resources", "configs").absolute()
 
@@ -264,6 +268,10 @@ def source_configs_file_path():
 @pytest.fixture(scope="session")
 def source_dq_rules_configs_file_path():
     return Path("tests").joinpath("resources").joinpath("dq_rules_configs.yml").absolute()
+
+@pytest.fixture(scope="session")
+def source_dq_advanced_rules_configs_path():
+    return Path("docs").joinpath("examples").joinpath("advanced_rules").absolute()
 
 @pytest.fixture(scope="session")
 def test_profiles_dir():
@@ -445,6 +453,39 @@ def temp_configs_from_dq_rules_config_file(
     yield temp_clouddq_dir.absolute()
     if os.path.exists(temp_clouddq_dir):
         os.unlink(temp_clouddq_dir)
+
+@pytest.fixture(scope="function")
+def temp_configs_from_dq_advanced_rules_configs(
+        gcp_project_id,
+        gcp_dataplex_bigquery_dataset_id,
+        gcp_dataplex_region,
+        gcp_dataplex_lake_name,
+        gcp_dataplex_zone_id,
+        source_dq_advanced_rules_configs_path,
+        tmp_path):
+    # Create temp directory
+    temp_clouddq_dir = Path(tmp_path).joinpath("clouddq_test_dq_advanced_rules_configs")
+    # Copy over docs/examples/docs/advanced_rules
+    registry_defaults = shutil.copytree(source_dq_advanced_rules_configs_path, temp_clouddq_dir)
+    # Prepare entity_uri configs
+    for root, _, files in os.walk(registry_defaults):
+        for file in files:
+            if '.yaml' in file or '.yml' in file:
+                source_filename = os.path.join(root, file)
+                with open(source_filename) as source_file:
+                    lines = source_file.read()
+                with open(source_filename, "w") as source_file:
+                    lines = lines.replace("<my-gcp-dataplex-lake-id>", gcp_dataplex_lake_name)
+                    lines = lines.replace("<my-gcp-dataplex-region-id>", gcp_dataplex_region)
+                    lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
+                    lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
+                    lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
+                    lines = lines.replace("<my_bigquery_input_data_dataset_id>", gcp_dataplex_bigquery_dataset_id)
+                    source_file.write(lines)
+
+    yield temp_clouddq_dir.absolute()
+    if os.path.exists(temp_clouddq_dir):
+        shutil.rmtree(temp_clouddq_dir)
 
 @pytest.fixture(scope="session")
 def runner():
