@@ -21,17 +21,16 @@ from clouddq.utils import assert_not_none_or_empty
 
 
 @dataclass
-class DataplexEntitySchemaField:
+class DataplexEntityPartitionSchemaField:
     """ """
 
     name: str
     type: str
-    mode: str
 
-    def to_dict(self: DataplexEntitySchemaField) -> dict:
+    def to_dict(self: DataplexEntityPartitionSchemaField) -> dict:
         """
         Args:
-          self: DataplexEntitySchemaField:
+          self: DataplexEntityPartitionSchemaField:
 
         Returns:
 
@@ -40,15 +39,14 @@ class DataplexEntitySchemaField:
         output = {
             "name": self.name,
             "type": self.type,
-            "mode": self.mode,
         }
 
         return dict(output)
 
     @classmethod
     def from_dict(
-        cls: DataplexEntitySchemaField, entity_id: str, kwargs: dict
-    ) -> DataplexEntitySchemaField:
+        cls: DataplexEntityPartitionSchemaField, entity_id: str, kwargs: dict
+    ) -> DataplexEntityPartitionSchemaField:
 
         name = kwargs.get("name")
         assert_not_none_or_empty(
@@ -62,14 +60,7 @@ class DataplexEntitySchemaField:
             error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'type'",
         )
 
-        mode = kwargs.get("mode")
-        assert_not_none_or_empty(
-            value=mode,
-            error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'mode'",
-        )
-
-        return DataplexEntitySchemaField(
+        return DataplexEntityPartitionSchemaField(
             name=name,
             type=type,
-            mode=mode,
         )
