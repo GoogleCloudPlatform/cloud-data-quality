@@ -16,7 +16,6 @@ from pathlib import Path
 import logging
 import os
 import shutil
-import random
 
 import click.testing
 import pytest
@@ -271,40 +270,8 @@ def source_dq_rules_configs_file_path():
     return Path("tests").joinpath("resources").joinpath("dq_rules_configs.yml").absolute()
 
 @pytest.fixture(scope="session")
-def source_dq_advanced_rules_timeliness_delayed_ingestion_configs_file_path():
-    return Path("docs").joinpath("examples").joinpath("advanced_rules").joinpath("timeliness_delayed_ingestion.yaml").absolute()
-
-@pytest.fixture(scope="session")
-def source_dq_advanced_rules_correctness_complex_rule_configs_file_path():
-    return Path("docs").joinpath("examples").joinpath("advanced_rules").joinpath("correctness_complex_rule.yaml").absolute()
-
-@pytest.fixture(scope="session")
-def source_dq_advanced_rules_timeliness_volumes_per_period_configs_file_path():
-    return Path("docs").joinpath("examples").joinpath("advanced_rules").joinpath("timeliness_volumes_per_period.yaml").absolute()
-
-@pytest.fixture(scope="session")
-def source_dq_advanced_rules_integrity_reference_data_configs_file_path():
-    return Path("docs").joinpath("examples").joinpath("advanced_rules").joinpath("integrity_reference_data.yaml").absolute()
-
-@pytest.fixture(scope="session")
-def source_dq_advanced_rules_integrity_subquery_configs_file_path():
-    return Path("docs").joinpath("examples").joinpath("advanced_rules").joinpath("integrity_subquery.yaml").absolute()
-
-@pytest.fixture(scope="session")
-def source_dq_advanced_rules_conformity_email_regex_configs_file_path():
-    return Path("docs").joinpath("examples").joinpath("advanced_rules").joinpath("conformity_email_regex.yaml").absolute()
-
-@pytest.fixture(scope="session")
-def source_dq_advanced_rules_completeness_with_condition_configs_file_path():
-    return Path("docs").joinpath("examples").joinpath("advanced_rules").joinpath("completeness_with_condition.yaml").absolute()
-
-@pytest.fixture(scope="session")
-def source_dq_advanced_rules_uniqueness_with_column_groups_configs_file_path():
-    return Path("docs").joinpath("examples").joinpath("advanced_rules").joinpath("uniqueness_with_column_groups.yaml").absolute()
-
-@pytest.fixture(scope="session")
-def source_dq_advanced_rules_accuracy_distribution_based_configs_file_path():
-    return Path("docs").joinpath("examples").joinpath("advanced_rules").joinpath("accuracy_distribution_based.yaml").absolute()
+def source_dq_advanced_rules_configs_path():
+    return Path("docs").joinpath("examples").joinpath("advanced_rules").absolute()
 
 @pytest.fixture(scope="session")
 def test_profiles_dir():
@@ -477,184 +444,36 @@ def temp_configs_from_dq_rules_config_file(
         os.unlink(temp_clouddq_dir)
         
 @pytest.fixture(scope="function")
-def temp_configs_from_dq_advanced_rules_timeliness_delayed_ingestion_config_file(
+def temp_configs_from_dq_advanced_rules_configs(
         gcp_project_id,
         gcp_dataplex_bigquery_dataset_id,
         gcp_dataplex_region,
         gcp_dataplex_lake_name,
         gcp_dataplex_zone_id,
-        source_dq_advanced_rules_timeliness_delayed_ingestion_configs_file_path,
+        source_dq_advanced_rules_configs_path,
         tmp_path):
-    temp_clouddq_dir = _temp_configs_from_dq_advanced_rules(gcp_project_id,
-            gcp_dataplex_bigquery_dataset_id,
-            gcp_dataplex_region,
-            gcp_dataplex_lake_name,
-            gcp_dataplex_zone_id,
-            source_dq_advanced_rules_timeliness_delayed_ingestion_configs_file_path,
-            tmp_path)       
-    yield temp_clouddq_dir
+    # Create temp directory
+    temp_clouddq_dir = Path(tmp_path).joinpath(f"clouddq_test_dq_advanced_rules_configs")
+    # Copy over docs/examples/docs/advanced_rules
+    registry_defaults = shutil.copytree(source_dq_advanced_rules_configs_path, temp_clouddq_dir)
+    # Prepare entity_uri configs
+    for root, _, files in os.walk(registry_defaults):
+        for file in files:
+            if '.yaml' in file or '.yml' in file:
+                source_filename = os.path.join(root, file)
+                with open(source_filename) as source_file:
+                    lines = source_file.read()
+                with open(source_filename, "w") as source_file:
+                    lines = lines.replace("<my-gcp-dataplex-lake-id>", gcp_dataplex_lake_name)
+                    lines = lines.replace("<my-gcp-dataplex-region-id>", gcp_dataplex_region)
+                    lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
+                    lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
+                    lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
+                    source_file.write(lines)
+        
+    yield temp_clouddq_dir.absolute()
     if os.path.exists(temp_clouddq_dir):
-        os.unlink(temp_clouddq_dir)
-
-@pytest.fixture(scope="function")
-def temp_configs_from_dq_advanced_rules_correctness_complex_rule_config_file(
-        gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_dataplex_region,
-        gcp_dataplex_lake_name,
-        gcp_dataplex_zone_id,
-        source_dq_advanced_rules_correctness_complex_rule_configs_file_path,
-        tmp_path):
-    temp_clouddq_dir = _temp_configs_from_dq_advanced_rules(gcp_project_id,
-            gcp_dataplex_bigquery_dataset_id,
-            gcp_dataplex_region,
-            gcp_dataplex_lake_name,
-            gcp_dataplex_zone_id,
-            source_dq_advanced_rules_correctness_complex_rule_configs_file_path,
-            tmp_path)       
-    yield temp_clouddq_dir
-    if os.path.exists(temp_clouddq_dir):
-        os.unlink(temp_clouddq_dir)
-
-@pytest.fixture(scope="function")
-def temp_configs_from_dq_advanced_rules_timeliness_volumes_per_period_config_file(
-        gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_dataplex_region,
-        gcp_dataplex_lake_name,
-        gcp_dataplex_zone_id,
-        source_dq_advanced_rules_timeliness_volumes_per_period_configs_file_path,
-        tmp_path):
-    temp_clouddq_dir = _temp_configs_from_dq_advanced_rules(gcp_project_id,
-            gcp_dataplex_bigquery_dataset_id,
-            gcp_dataplex_region,
-            gcp_dataplex_lake_name,
-            gcp_dataplex_zone_id,
-            source_dq_advanced_rules_timeliness_volumes_per_period_configs_file_path,
-            tmp_path)       
-    yield temp_clouddq_dir
-    if os.path.exists(temp_clouddq_dir):
-        os.unlink(temp_clouddq_dir)
-
-@pytest.fixture(scope="function")
-def temp_configs_from_dq_advanced_rules_integrity_reference_data_config_file(
-        gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_dataplex_region,
-        gcp_dataplex_lake_name,
-        gcp_dataplex_zone_id,
-        source_dq_advanced_rules_integrity_reference_data_configs_file_path,
-        tmp_path):
-    temp_clouddq_dir = _temp_configs_from_dq_advanced_rules(gcp_project_id,
-            gcp_dataplex_bigquery_dataset_id,
-            gcp_dataplex_region,
-            gcp_dataplex_lake_name,
-            gcp_dataplex_zone_id,
-            source_dq_advanced_rules_integrity_reference_data_configs_file_path,
-            tmp_path)       
-    yield temp_clouddq_dir
-    if os.path.exists(temp_clouddq_dir):
-        os.unlink(temp_clouddq_dir)
-
-@pytest.fixture(scope="function")
-def temp_configs_from_dq_advanced_rules_integrity_subquery_config_file(
-        gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_dataplex_region,
-        gcp_dataplex_lake_name,
-        gcp_dataplex_zone_id,
-        source_dq_advanced_rules_integrity_subquery_configs_file_path,
-        tmp_path):
-    temp_clouddq_dir = _temp_configs_from_dq_advanced_rules(gcp_project_id,
-            gcp_dataplex_bigquery_dataset_id,
-            gcp_dataplex_region,
-            gcp_dataplex_lake_name,
-            gcp_dataplex_zone_id,
-            source_dq_advanced_rules_integrity_subquery_configs_file_path,
-            tmp_path)       
-    yield temp_clouddq_dir
-    if os.path.exists(temp_clouddq_dir):
-        os.unlink(temp_clouddq_dir)
-
-@pytest.fixture(scope="function")
-def temp_configs_from_dq_advanced_rules_conformity_email_regex_config_file(
-        gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_dataplex_region,
-        gcp_dataplex_lake_name,
-        gcp_dataplex_zone_id,
-        source_dq_advanced_rules_conformity_email_regex_configs_file_path,
-        tmp_path):
-    temp_clouddq_dir = _temp_configs_from_dq_advanced_rules(gcp_project_id,
-            gcp_dataplex_bigquery_dataset_id,
-            gcp_dataplex_region,
-            gcp_dataplex_lake_name,
-            gcp_dataplex_zone_id,
-            source_dq_advanced_rules_conformity_email_regex_configs_file_path,
-            tmp_path)       
-    yield temp_clouddq_dir
-    if os.path.exists(temp_clouddq_dir):
-        os.unlink(temp_clouddq_dir)
-
-@pytest.fixture(scope="function")
-def temp_configs_from_dq_advanced_rules_completeness_with_condition_config_file(
-        gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_dataplex_region,
-        gcp_dataplex_lake_name,
-        gcp_dataplex_zone_id,
-        source_dq_advanced_rules_completeness_with_condition_configs_file_path,
-        tmp_path):
-    temp_clouddq_dir = _temp_configs_from_dq_advanced_rules(gcp_project_id,
-            gcp_dataplex_bigquery_dataset_id,
-            gcp_dataplex_region,
-            gcp_dataplex_lake_name,
-            gcp_dataplex_zone_id,
-            source_dq_advanced_rules_completeness_with_condition_configs_file_path,
-            tmp_path)       
-    yield temp_clouddq_dir
-    if os.path.exists(temp_clouddq_dir):
-        os.unlink(temp_clouddq_dir)
-
-@pytest.fixture(scope="function")
-def temp_configs_from_dq_advanced_rules_uniqueness_with_column_groups_config_file(
-        gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_dataplex_region,
-        gcp_dataplex_lake_name,
-        gcp_dataplex_zone_id,
-        source_dq_advanced_rules_uniqueness_with_column_groups_configs_file_path,
-        tmp_path):
-    temp_clouddq_dir = _temp_configs_from_dq_advanced_rules(gcp_project_id,
-            gcp_dataplex_bigquery_dataset_id,
-            gcp_dataplex_region,
-            gcp_dataplex_lake_name,
-            gcp_dataplex_zone_id,
-            source_dq_advanced_rules_uniqueness_with_column_groups_configs_file_path,
-            tmp_path)       
-    yield temp_clouddq_dir
-    if os.path.exists(temp_clouddq_dir):
-        os.unlink(temp_clouddq_dir)
-
-@pytest.fixture(scope="function")
-def temp_configs_from_dq_advanced_rules_accuracy_distribution_based_config_file(
-        gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_dataplex_region,
-        gcp_dataplex_lake_name,
-        gcp_dataplex_zone_id,
-        source_dq_advanced_rules_accuracy_distribution_based_configs_file_path,
-        tmp_path):
-    temp_clouddq_dir = _temp_configs_from_dq_advanced_rules(gcp_project_id,
-            gcp_dataplex_bigquery_dataset_id,
-            gcp_dataplex_region,
-            gcp_dataplex_lake_name,
-            gcp_dataplex_zone_id,
-            source_dq_advanced_rules_accuracy_distribution_based_configs_file_path,
-            tmp_path)       
-    yield temp_clouddq_dir
-    if os.path.exists(temp_clouddq_dir):
-        os.unlink(temp_clouddq_dir)
+        shutil.rmtree(temp_clouddq_dir)
 
 @pytest.fixture(scope="session")
 def runner():
@@ -675,29 +494,3 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "dataplex" in item.keywords:
             item.add_marker(skip_dataplex)
-
-def _temp_configs_from_dq_advanced_rules(
-        _gcp_project_id,
-        _gcp_dataplex_bigquery_dataset_id,
-        _gcp_dataplex_region,
-        _gcp_dataplex_lake_name,
-        _gcp_dataplex_zone_id,
-        _source_dq_advanced_rules_configs_file_path,
-        _tmp_path):
-    # Create temp directory
-    temp_clouddq_dir = Path(_tmp_path).joinpath(f"source_rules_configs_files_{str(random.randint(0,1000000))}")
-    # Copy over docs/examples/docs/advanced_rules
-    registry_defaults = shutil.copyfile(_source_dq_advanced_rules_configs_file_path, temp_clouddq_dir)
-    # Prepare entity_uri configs
-    with open(registry_defaults) as source_file:
-        lines = source_file.read()
-    with open(registry_defaults, "w") as source_file:
-        lines = lines.replace("<my-gcp-dataplex-lake-id>", _gcp_dataplex_lake_name)
-        lines = lines.replace("<my-gcp-dataplex-region-id>", _gcp_dataplex_region)
-        lines = lines.replace("<my-gcp-project-id>", _gcp_project_id)
-        lines = lines.replace("<my-gcp-dataplex-zone-id>", _gcp_dataplex_zone_id)
-        lines = lines.replace("<my_bigquery_dataset_id>", _gcp_dataplex_bigquery_dataset_id)
-        source_file.write(lines)
-        
-    return temp_clouddq_dir
-    
