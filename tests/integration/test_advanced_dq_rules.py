@@ -22,6 +22,7 @@ import json
 import logging
 import os
 import shutil
+import sys
 
 from google.cloud import bigquery
 
@@ -125,7 +126,10 @@ class TestDqAdvancedRules:
 
         client = client.get_connection()
 
-        table_id = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}_advanced_rules_expected"
+        table_id = (
+            f"{gcp_project_id}.{target_bq_result_dataset_name}."
+            f"{target_bq_result_table_name}_advanced_rules_expected"
+        )
 
         job_config = bigquery.LoadJobConfig(
             source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
@@ -266,4 +270,4 @@ class TestDqAdvancedRules:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto'] + sys.argv[1:]))
