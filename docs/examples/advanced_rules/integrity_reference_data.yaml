@@ -82,7 +82,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
-          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
     metadata:
       brand: one
@@ -92,7 +92,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
-          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
     metadata:
       brand: one
@@ -102,7 +102,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
-          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
     metadata:
       brand: one
@@ -112,7 +112,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
-          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
     metadata:
       brand: one
