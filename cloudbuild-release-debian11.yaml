@@ -48,6 +48,22 @@ steps:
         gsutil cp clouddq/integration/clouddq_pyspark_driver.py
         gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
         -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq_pyspark_driver.py
+
+        source scripts/cloud_build_test_debian_ubuntu.sh "3.8.6"
+
+        gsutil ls gs://$_GCS_RELEASE_BUCKET
+
+        gsutil cp clouddq_patched.zip
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.8/main/`date
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
+
+        gsutil cp clouddq_patched.zip.hashsum
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.8/main/`date
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
+
+        gsutil cp clouddq/integration/clouddq_pyspark_driver.py
+        gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.8/main/`date
+        -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq_pyspark_driver.py
     entrypoint: /bin/bash
 timeout: 3600s
 logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
