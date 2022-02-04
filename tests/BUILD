@@ -159,7 +159,7 @@ py_test(
 )
 
 py_test(
-    name = "test_metadata_uri_templates",
+    name = "test_dataplex_metadata_uri_templates",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,

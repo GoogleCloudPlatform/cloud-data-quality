@@ -72,10 +72,10 @@ class MetadataRegistryDefaults:
         return self.default_configs
 
     def get_dataplex_registry_defaults(self, key: str | None = None) -> str | None:
-        if self.default_configs.get("dataplex", None):
+        if self.default_configs.get("DATAPLEX", None):
             if key:
-                return self.default_configs["dataplex"].get(key, None)
+                return self.default_configs["DATAPLEX"].get(key, None)
             else:
-                return self.default_configs["dataplex"]
+                return self.default_configs["DATAPLEX"]
         else:
             return None

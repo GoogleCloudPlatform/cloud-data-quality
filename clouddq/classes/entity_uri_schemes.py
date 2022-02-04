@@ -21,13 +21,13 @@ from enum import unique
 class EntityUriScheme(str, Enum):
     """ """
 
-    DATAPLEX = "dataplex"
-    BIGQUERY = "bigquery"
+    DATAPLEX = "DATAPLEX"
+    BIGQUERY = "BIGQUERY"
 
     @classmethod
     def from_scheme(cls, scheme: str):
 
         try:
-            return cls(scheme)
+            return cls(scheme.upper())
         except ValueError:
             raise NotImplementedError(f"{scheme} scheme is not implemented.")

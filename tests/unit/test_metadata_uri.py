@@ -97,7 +97,7 @@ class TestEntityURI:
         expected_entity_dict = {
             "uri": "dataplex://projects/project-id/locations/us-central1/lakes"
                    "/lake-id/zones/zone-id/entities/entity-id",
-            "scheme": "dataplex",
+            "scheme": "DATAPLEX",
             "entity_id": "entity-id",
             "db_primary_key": "projects/project-id/locations/us-central1/lakes/lake-id/zones/zone-id/entities/entity-id",  # noqa: E501
             "configs": {
@@ -255,7 +255,7 @@ class TestEntityURI:
         print(parsed_uri)
         expected_entity_dict = {
             "uri": "bigquery://projects/project-id/datasets/dataset-id/tables/table-id",
-            "scheme": "bigquery",
+            "scheme": "BIGQUERY",
             "entity_id": "projects/project-id/datasets/dataset-id/tables/table-id",
             "db_primary_key": "projects/project-id/datasets/dataset-id/tables/table-id",
             "configs": {

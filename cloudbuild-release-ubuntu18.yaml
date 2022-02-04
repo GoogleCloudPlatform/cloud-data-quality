@@ -31,6 +31,8 @@ steps:
 
         source scripts/cloud_build_test_debian_ubuntu.sh "3.8.6"
 
+        make test test_dataplex_dq_configs_cache
+
         make test test_dataplex_metadata
 
         source scripts/install_gcloud.sh

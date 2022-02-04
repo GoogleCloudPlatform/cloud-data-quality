@@ -42,7 +42,7 @@ class EntityUri:
 
     @property
     def complete_uri_string(self: EntityUri) -> str:
-        return f"{self.scheme.value}://{self.uri_configs_string}"
+        return f"{self.scheme.value.lower()}://{self.uri_configs_string}"
 
     @property
     def configs_dict(self: EntityUri) -> dict:
@@ -70,7 +70,7 @@ class EntityUri:
                 "lakes/lake-id/zones/zone-id/entities/entity-id"
             )
         uri_scheme, uri_configs_string = uri_string.split("://")
-        scheme = EntityUriScheme.from_scheme(uri_scheme)
+        scheme = EntityUriScheme.from_scheme(uri_scheme.upper())
         default_scheme_configs = None
         if default_configs:
             default_scheme_configs = default_configs
