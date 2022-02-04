@@ -124,7 +124,7 @@ class TestDqAdvancedRules:
 
         client = client.get_connection()
 
-        table_id = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}_expected"
+        table_id = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}_advanced_rules_expected"
 
         job_config = bigquery.LoadJobConfig(
             source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
@@ -242,7 +242,7 @@ class TestDqAdvancedRules:
                 if len(rows):
                     logger.warning(
                         "Rows with values not matching the expected "
-                        "content in 'tests/resources/expected_results.csv':"
+                        "content in 'tests/resources/dq_advanced_rules_expected_results.csv':"
                     )
                     for row in rows:
                         record = json.loads(str(row[0]))
@@ -250,7 +250,7 @@ class TestDqAdvancedRules:
                 failed_rows = [json.loads(row[0]) for row in rows]
                 failed_rows_rule_binding_ids = [row['rule_binding_id'] for row in failed_rows]
                 failed_rows_rule_ids = [row['rule_id'] for row in failed_rows]
-                with open(test_resources / "dq_rules_expected_results.json", "rb") as source_file:
+                with open(test_resources / "dq_advanced_rules_expected_results.json", "rb") as source_file:
                     expected_json = []
                     json_data = json.loads(source_file.read())
                     for record in json_data:
