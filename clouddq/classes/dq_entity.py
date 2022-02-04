@@ -18,15 +18,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pprint import pformat
 
+import json
 import logging
 
 from clouddq.classes.dataplex_entity import DataplexEntity
-from clouddq.classes.dataplex_entity_schema_partition_fields import DataplexEntityPartitionSchemaField
+from clouddq.classes.dataplex_entity_schema_partition_fields import (
+    DataplexEntityPartitionSchemaField,
+)
 from clouddq.classes.dq_entity_column import DqEntityColumn
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_format_string_arguments
 from clouddq.utils import get_from_dict_and_assert
-from typing import List
 
 
 ENTITY_CUSTOM_CONFIG_MAPPING = {
@@ -115,7 +117,7 @@ class DqEntity:
     dataplex_asset_id: str | None
     dataplex_createTime: str | None
     dataplex_updateTime: str | None
-    partition_fields: List[DataplexEntityPartitionSchemaField]
+    partition_fields: list[DataplexEntityPartitionSchemaField] | None
 
     def resolve_column_config(self: DqEntity, column_id: str) -> DqEntityColumn:
         """
@@ -183,7 +185,7 @@ class DqEntity:
             else source_database
         )
 
-        partition_fields =  kwargs.get("partition_fields")
+        partition_fields = kwargs.get("partition_fields")
 
         columns_dict = get_from_dict_and_assert(
             config_id=entity_id, kwargs=kwargs, key="columns"
@@ -367,5 +369,13 @@ class DqEntity:
                 f"is unsupported for entity:\n {dataplex_entity.to_dict()}"
             )
 
-    def get_bq_external_table_name(self):
+    def get_table_name(self):
         return f"{self.instance_name}.{self.database_name}.{self.table_name}"
+
+    def get_partition_fields(
+        self: DqEntity,
+    ) -> list[DataplexEntityPartitionSchemaField]:
+        partition_fields = self.partition_fields
+        if partition_fields:
+            partition_fields = json.loads(partition_fields)
+        return partition_fields

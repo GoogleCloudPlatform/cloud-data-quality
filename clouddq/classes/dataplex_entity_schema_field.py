@@ -25,7 +25,7 @@ class DataplexEntitySchemaField:
     """ """
 
     name: str
-    data_type: str
+    type: str
     mode: str
 
     def to_dict(self: DataplexEntitySchemaField) -> dict:
@@ -39,7 +39,7 @@ class DataplexEntitySchemaField:
 
         output = {
             "name": self.name,
-            "data_type": self.data_type,
+            "type": self.type,
             "mode": self.mode,
         }
 
@@ -47,27 +47,29 @@ class DataplexEntitySchemaField:
 
     @classmethod
     def from_dict(
-        cls: DataplexEntitySchemaField, kwargs: dict
+        cls: DataplexEntitySchemaField, entity_id: str, kwargs: dict
     ) -> DataplexEntitySchemaField:
 
         name = kwargs.get("name")
         assert_not_none_or_empty(
-            value=name, error_msg="Name: must define non-empty value: 'name'."
+            value=name,
+            error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'name'",
         )
 
-        data_type = kwargs.get("data_type")
+        type = kwargs.get("type")
         assert_not_none_or_empty(
-            value=data_type,
-            error_msg="DataType: must define non-empty value: 'data_type'.",
+            value=type,
+            error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'type'",
         )
 
         mode = kwargs.get("mode")
         assert_not_none_or_empty(
-            value=mode, error_msg="Mode: must define non-empty value: 'mode'."
+            value=mode,
+            error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'mode'",
         )
 
         return DataplexEntitySchemaField(
             name=name,
-            data_type=data_type,
+            type=type,
             mode=mode,
         )

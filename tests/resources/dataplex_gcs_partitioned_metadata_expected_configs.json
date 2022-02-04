@@ -1,0 +1,84 @@
+{
+  "rule_binding_id": "<dataplex_rule_binding_id>",
+  "entity_id": "<dataplex_entity_id>",
+  "entity_configs": {
+    "source_database": "DATAPLEX",
+    "table_name": "partitioned_gcs_asset",
+    "database_name": "<your_dataplex_bigquery_dataset_id>",
+    "instance_name": "<your-gcp-project-id>",
+    "columns": {
+      "ROW_ID": {
+        "name": "row_id",
+        "data_type": "STRING"
+      },
+      "CONTACT_TYPE": {
+        "name": "contact_type",
+        "data_type": "STRING"
+      },
+      "VALUE": {
+        "name": "value",
+        "data_type": "STRING"
+      },
+      "TS": {
+        "name": "ts",
+        "data_type": "STRING"
+      }
+    },
+    "dataset_name": "<your_dataplex_bigquery_dataset_id>",
+    "project_name": "<your-gcp-project-id>",
+    "resource_type": "CLOUD_STORAGE",
+    "partition_fields": [{"name": "dt",
+                          "type": "STRING"}],
+    "dataplex_name": "<your-gcp-dataplex-name>",
+    "dataplex_lake": "<your-gcp-dataplex-lake-id>",
+    "dataplex_zone": "<your-gcp-dataplex-zone-id>",
+    "dataplex_location": "<your-gcp-dataplex-region-id>",
+    "dataplex_asset_id": "<your-gcp-dataplex-asset-id>",
+    "dataplex_createTime": "<dataplex_entity_createTime>"
+  },
+  "column_id": "VALUE",
+  "column_configs": {
+    "name": "value",
+    "data_type": "STRING"
+  },
+  "rule_ids": [
+    {
+      "NO_DUPLICATES_IN_COLUMN_GROUPS": {
+        "column_names": "contact_type,value"
+      }
+    },
+    "NOT_NULL_SIMPLE"
+  ],
+  "rule_configs_dict": {
+    "NO_DUPLICATES_IN_COLUMN_GROUPS": {
+      "dimension": null,
+      "rule_type": "CUSTOM_SQL_STATEMENT",
+      "params": {
+        "custom_sql_arguments": [
+          "column_names"
+        ],
+        "custom_sql_statement": "select a.*\nfrom data a\ninner join (\n  select\n    $column_names\n  from data\n  group by $column_names\n  having count(*) > 1\n) duplicates\nusing ($column_names)",
+        "rule_binding_arguments": {
+          "column_names": "contact_type,value"
+        }
+      },
+      "rule_sql_expr": "select a.*\nfrom data a\ninner join (\n  select\n    contact_type,value\n  from data\n  group by contact_type,value\n  having count(*) > 1\n) duplicates\nusing (contact_type,value)"
+    },
+    "NOT_NULL_SIMPLE": {
+      "dimension": null,
+      "rule_type": "NOT_NULL",
+      "params": {
+        "rule_binding_arguments": null
+      },
+      "rule_sql_expr": "value IS NOT NULL"
+    }
+  },
+  "row_filter_id": "DATA_TYPE_EMAIL",
+  "row_filter_configs": {
+    "filter_sql_expr": "contact_type = 'email'"
+  },
+  "incremental_time_filter_column": null,
+  "metadata": {
+    "brand": "one"
+  }
+}

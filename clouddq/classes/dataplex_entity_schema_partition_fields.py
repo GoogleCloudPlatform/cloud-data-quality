@@ -25,7 +25,7 @@ class DataplexEntityPartitionSchemaField:
     """ """
 
     name: str
-    data_type: str
+    type: str
 
     def to_dict(self: DataplexEntityPartitionSchemaField) -> dict:
         """
@@ -38,28 +38,29 @@ class DataplexEntityPartitionSchemaField:
 
         output = {
             "name": self.name,
-            "data_type": self.data_type,
+            "type": self.type,
         }
 
         return dict(output)
 
     @classmethod
     def from_dict(
-        cls: DataplexEntityPartitionSchemaField, kwargs: dict
+        cls: DataplexEntityPartitionSchemaField, entity_id: str, kwargs: dict
     ) -> DataplexEntityPartitionSchemaField:
 
         name = kwargs.get("name")
         assert_not_none_or_empty(
-            value=name, error_msg="Name: must define non-empty value: 'name'."
+            value=name,
+            error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'name'",
         )
 
-        data_type = kwargs.get("data_type")
+        type = kwargs.get("type")
         assert_not_none_or_empty(
-            value=data_type,
-            error_msg="DataType: must define non-empty value: 'data_type'.",
+            value=type,
+            error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'type'",
         )
 
         return DataplexEntityPartitionSchemaField(
             name=name,
-            data_type=data_type,
+            type=type,
         )

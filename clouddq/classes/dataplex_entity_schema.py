@@ -20,34 +20,48 @@ from dataclasses import dataclass
 from clouddq.classes.dataplex_entity_schema_field import DataplexEntitySchemaField
 from clouddq.classes.dataplex_entity_schema_partition_fields import DataplexEntityPartitionSchemaField
 from clouddq.utils import assert_not_none_or_empty
-from typing import List
 
 
 @dataclass
 class DataplexEntitySchema:
     """ """
 
-    fields: List[DataplexEntitySchemaField]
-    partitionFields: List[DataplexEntityPartitionSchemaField] = None
-    partitionStyle: str = None
+    fields: list[DataplexEntitySchemaField]
+    partitionFields: list[DataplexEntityPartitionSchemaField]
+    partitionStyle: str
 
     @classmethod
     def from_dict(
         cls: DataplexEntitySchema, entity_id: str, kwargs: dict
     ) -> DataplexEntitySchema:
 
-        fields = kwargs.get("fields", None)
-        assert_not_none_or_empty(
-            value=fields,
-            error_msg=f"Entity {entity_id}: must define non-empty value: 'fields'.",
-        )
-
+        fields: list[dict] = []
+        fields_list = kwargs.get("fields")
+        if fields_list:
+            for obj in fields_list:
+                field = DataplexEntitySchemaField.from_dict(
+                    entity_id=entity_id, kwargs=obj
+                )
+                assert_not_none_or_empty(
+                    value=field,
+                    error_msg=f"Entity {entity_id}: must define non-empty value: 'fields'.",
+                )
+                fields.append(field.to_dict())
+        else:
+            fields = None
+        partition_fields: list[dict] = []
         if kwargs.get("partitionFields"):
-            partition_fields = kwargs.get("partitionFields")
-            assert_not_none_or_empty(
-                value=partition_fields,
-                error_msg=f"Entity {entity_id}: must define non-empty value: 'partition_fields'.",
-            )
+            partition_fields_list = kwargs.get("partitionFields")
+            for obj in partition_fields_list:
+                partition_field = DataplexEntityPartitionSchemaField.from_dict(
+                    entity_id=entity_id, kwargs=obj
+                )
+                assert_not_none_or_empty(
+                    value=partition_field,
+                    error_msg=f"Entity {entity_id}: must define non-empty value: "
+                    f"'partitionFields'.",
+                )
+                partition_fields.append(partition_field.to_dict())
         else:
             partition_fields = None
 
@@ -55,7 +69,7 @@ class DataplexEntitySchema:
             partition_style = kwargs.get("partitionStyle", None)
             assert_not_none_or_empty(
                 value=partition_style,
-                error_msg=f"Entity {entity_id}: must define non-empty value: 'partition_style'."
+                error_msg=f"Entity {entity_id}: must define non-empty value: 'partition_style'.",
             )
         else:
             partition_style = None
