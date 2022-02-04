@@ -175,7 +175,6 @@ class DqConfigsCache:
         for record in rule_bindings_rows:
             if "entity_uri" not in record:
                 record.update({"entity_uri": None})
-        logger.warning(f"rule_bindings_rows:\n{rule_bindings_rows}")
         self._cache_db["rule_bindings"].upsert_all(
             rule_bindings_rows, pk="id", alter=True
         )

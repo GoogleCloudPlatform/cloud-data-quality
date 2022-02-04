@@ -90,7 +90,7 @@ class TestDqConfigsCache:
                     get_entities_configs_from_rule_bindings(rule_binding_ids)
                 table_name = (
                     f'{gcp_project_id.replace("-","_")}__{gcp_dataplex_bigquery_dataset_id}'
-                    '__contact_details__VALUE__DATA_TYPE_EMAIL_1'
+                    '__contact_details__VALUE_1'
                 )
                 expected = {
                     table_name: {

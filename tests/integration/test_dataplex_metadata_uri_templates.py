@@ -18,6 +18,7 @@ from pprint import pformat
 import json
 import logging
 import re
+import sys
 
 import pytest
 
@@ -34,8 +35,8 @@ ASSET_ID_REP = "'<your_dataplex_asset_id>' AS dataplex_asset_id,"
 
 logger = logging.getLogger(__name__)
 
-
-class TestMetadataUriTemplates:
+@pytest.mark.dataplex
+class TestDataplexMetadataUriTemplates:
     """ """
     @pytest.fixture(scope="function")
     def test_rule_bindings_collection_team_4(self, temp_configs_dir):
@@ -116,6 +117,7 @@ class TestMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
+            
             with open(test_resources / "dataplex_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
@@ -210,7 +212,7 @@ class TestMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
-
+            
             with open(test_resources / "dataplex_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
@@ -232,6 +234,7 @@ class TestMetadataUriTemplates:
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
+            
             with open(test_resources / "dataplex_metadata_sql_expected.sql") as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
@@ -307,6 +310,7 @@ class TestMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
+            
             with open(test_resources / "dataplex_gcs_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
@@ -320,14 +324,13 @@ class TestMetadataUriTemplates:
         test_default_dataplex_configs_cache,
         test_resources,
         gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_bq_dataset,
         test_dataplex_metadata_defaults_configs,
         gcp_dataplex_zone_id,
         gcp_dataplex_lake_name,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_5.items():
+            
             with open(test_resources / "dataplex_gcs_metadata_sql_expected.sql") as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
@@ -385,6 +388,7 @@ class TestMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
+            
             with open(test_resources / "dataplex_gcs_partitioned_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
@@ -398,14 +402,13 @@ class TestMetadataUriTemplates:
         test_default_dataplex_configs_cache,
         test_resources,
         gcp_project_id,
-        gcp_dataplex_bigquery_dataset_id,
-        gcp_bq_dataset,
         test_dataplex_metadata_defaults_configs,
         gcp_dataplex_zone_id,
         gcp_dataplex_lake_name,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_6.items():
+            
             with open(test_resources / "dataplex_gcs_partitioned_metadata_sql_expected.sql") as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
@@ -430,4 +433,4 @@ class TestMetadataUriTemplates:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', '2'] + sys.argv[1:]))
