@@ -117,7 +117,7 @@ class TestDataplexMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
-            
+
             with open(test_resources / "dataplex_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
@@ -212,7 +212,7 @@ class TestDataplexMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
-            
+
             with open(test_resources / "dataplex_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
@@ -234,7 +234,7 @@ class TestDataplexMetadataUriTemplates:
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
-            
+
             with open(test_resources / "dataplex_metadata_sql_expected.sql") as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
@@ -310,7 +310,7 @@ class TestDataplexMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
-            
+
             with open(test_resources / "dataplex_gcs_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
@@ -330,7 +330,7 @@ class TestDataplexMetadataUriTemplates:
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_5.items():
-            
+
             with open(test_resources / "dataplex_gcs_metadata_sql_expected.sql") as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
@@ -388,7 +388,7 @@ class TestDataplexMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
-            
+
             with open(test_resources / "dataplex_gcs_partitioned_metadata_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
@@ -408,7 +408,7 @@ class TestDataplexMetadataUriTemplates:
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_6.items():
-            
+
             with open(test_resources / "dataplex_gcs_partitioned_metadata_sql_expected.sql") as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
