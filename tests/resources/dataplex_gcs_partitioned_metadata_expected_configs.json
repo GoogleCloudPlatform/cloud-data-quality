@@ -3,7 +3,7 @@
   "entity_id": "<dataplex_entity_id>",
   "entity_configs": {
     "source_database": "DATAPLEX",
-    "table_name": "asset_bucket",
+    "table_name": "partitioned_gcs_asset",
     "database_name": "<your_dataplex_bigquery_dataset_id>",
     "instance_name": "<your-gcp-project-id>",
     "columns": {
@@ -27,7 +27,8 @@
     "dataset_name": "<your_dataplex_bigquery_dataset_id>",
     "project_name": "<your-gcp-project-id>",
     "resource_type": "CLOUD_STORAGE",
-    "partition_fields": null,
+    "partition_fields": [{"name": "dt",
+                          "type": "STRING"}],
     "dataplex_name": "<your-gcp-dataplex-name>",
     "dataplex_lake": "<your-gcp-dataplex-lake-id>",
     "dataplex_zone": "<your-gcp-dataplex-zone-id>",

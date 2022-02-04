@@ -102,6 +102,8 @@ class DqConfigsCache:
         convert_json_value_to_dict(entity_record, "environment_override")
         convert_json_value_to_dict(entity_record, "columns")
         entity = dq_entity.DqEntity.from_dict(entity_id, entity_record)
+        partition_fields = entity.get_partition_fields()
+        entity.partition_fields = partition_fields
         return entity
 
     def get_rule_id(self, rule_id: str) -> dq_rule.DqRule:

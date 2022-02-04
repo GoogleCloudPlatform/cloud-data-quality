@@ -18,9 +18,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pprint import pformat
 
+import json
 import logging
 
 from clouddq.classes.dataplex_entity import DataplexEntity
+from clouddq.classes.dataplex_entity_schema_partition_fields import (
+    DataplexEntityPartitionSchemaField,
+)
 from clouddq.classes.dq_entity_column import DqEntityColumn
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_format_string_arguments
@@ -105,6 +109,7 @@ class DqEntity:
     dataplex_asset_id: str | None
     dataplex_createTime: str | None
     dataplex_updateTime: str | None
+    partition_fields: list[DataplexEntityPartitionSchemaField] | None
 
     def resolve_column_config(self: DqEntity, column_id: str) -> DqEntityColumn:
         """
@@ -171,6 +176,8 @@ class DqEntity:
             if source_database == "DATAPLEX"
             else source_database
         )
+
+        partition_fields = kwargs.get("partition_fields")
 
         columns_dict = get_from_dict_and_assert(
             config_id=entity_id, kwargs=kwargs, key="columns"
@@ -239,6 +246,7 @@ class DqEntity:
             dataplex_asset_id=kwargs.get("dataplex_asset_id", None),
             dataplex_createTime=kwargs.get("dataplex_createTime", None),
             dataplex_updateTime=kwargs.get("dataplex_updateTime", None),
+            partition_fields=partition_fields,
         )
 
     def to_dict(self: DqEntity) -> dict:
@@ -280,6 +288,7 @@ class DqEntity:
                     "dataplex_location": self.dataplex_location,
                     "dataplex_asset_id": self.dataplex_asset_id,
                     "dataplex_createTime": self.dataplex_createTime,
+                    "partition_fields": self.partition_fields,
                 }
             )
         return dict({f"{self.entity_id}": output})
@@ -315,6 +324,7 @@ class DqEntity:
                 "dataplex_asset_id": dataplex_entity.asset,
                 "dataplex_createTime": dataplex_entity.createTime,
                 "dataplex_updateTime": dataplex_entity.updateTime,
+                "partition_fields": dataplex_entity.schema.partitionFields,
             }
             return DqEntity.from_dict(
                 entity_id=entity_id.upper(), kwargs=entity_configs
@@ -341,6 +351,7 @@ class DqEntity:
                 "dataplex_asset_id": dataplex_entity.asset,
                 "dataplex_createTime": dataplex_entity.createTime,
                 "dataplex_updateTime": dataplex_entity.updateTime,
+                "partition_fields": dataplex_entity.schema.partitionFields,
             }
             return DqEntity.from_dict(
                 entity_id=entity_id.upper(), kwargs=entity_configs
@@ -353,3 +364,11 @@ class DqEntity:
 
     def get_table_name(self):
         return f"{self.instance_name}.{self.database_name}.{self.table_name}"
+
+    def get_partition_fields(
+        self: DqEntity,
+    ) -> list[DataplexEntityPartitionSchemaField]:
+        partition_fields = self.partition_fields
+        if partition_fields:
+            partition_fields = json.loads(partition_fields)
+        return partition_fields
