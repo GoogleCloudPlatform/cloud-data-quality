@@ -435,9 +435,13 @@ def main(  # noqa: C901
         logger.debug(f"Loading rule bindings from: {configs_path.absolute()}")
         all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
         # Prepare list of Rule Bindings in-scope for run
-        target_rule_binding_ids = [r.strip() for r in rule_binding_ids.split(",")]
+        target_rule_binding_ids = [
+            r.strip().upper() for r in rule_binding_ids.split(",")
+        ]
         if len(target_rule_binding_ids) == 1 and target_rule_binding_ids[0] == "ALL":
-            target_rule_binding_ids = list(all_rule_bindings.keys())
+            target_rule_binding_ids = [
+                rule_binding.upper() for rule_binding in all_rule_bindings.keys()
+            ]
         logger.info(f"Preparing SQL for rule bindings: {target_rule_binding_ids}")
         # Load default configs for metadata registries
         registry_defaults: MetadataRegistryDefaults = (
@@ -528,7 +532,7 @@ def main(  # noqa: C901
             )
         # clean up old rule_bindings
         for view in dbt_rule_binding_views_path.glob("*.sql"):
-            if view.stem not in target_rule_binding_ids:
+            if view.stem.upper() not in target_rule_binding_ids:
                 view.unlink()
         logger.info(
             f"target_entity_summary_configs:\n{pformat(target_entity_summary_configs)}"

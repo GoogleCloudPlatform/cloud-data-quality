@@ -44,12 +44,23 @@ logger = logging.getLogger(__name__)
 MAXIMUM_EXPONENTIAL_BACKOFF_SECONDS = 32
 
 
-def load_yaml(file_path: Path, key: str = None) -> typing.Dict:
+def load_yaml(file_path: Path, key: str = None) -> typing.Any:
     with file_path.open() as f:
         yaml_configs = yaml.safe_load(f)
     if not yaml_configs:
         return dict()
-    return yaml_configs.get(key, dict())
+    output = yaml_configs.get(key, dict())
+    if type(output) == dict:
+        return {key.upper(): value for key, value in output.items()}
+    elif type(output) == list:
+        return [item.upper() for item in output]
+    elif type(output) == str:
+        return output
+    else:
+        raise RuntimeError(
+            f"CloudDQ configs file `{file_path}` has empty config node type `{key}:`. "
+            "Please remove the node if it is not being used."
+        )
 
 
 def unnest_object_to_list(object: dict) -> list:

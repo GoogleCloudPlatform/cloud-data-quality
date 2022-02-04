@@ -58,7 +58,7 @@ class TestDqConfigsCache:
                 configs_cache = lib.prepare_configs_cache(temp_configs_dir)
                 count_1 = configs_cache._cache_db['entities'].count
                 target_rule_binding_ids = [
-                    row["id"] for row in
+                    row["id"].lower() for row in
                     configs_cache._cache_db.query("select id from rule_bindings")
                 ]
                 configs_cache.resolve_dataplex_entity_uris(

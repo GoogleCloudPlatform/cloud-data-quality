@@ -49,7 +49,6 @@ select
     e.database_name,
     e.table_name,
     rb.column_id,
-    rb.row_filter_id,
     group_concat(rb.id, ',') as rule_binding_ids_list,
     group_concat(json_array_length(rb.rule_ids), ',') as rules_per_rule_binding
 from
@@ -60,7 +59,7 @@ inner join
 where
     rb.id in ({target_rule_binding_ids_list})
 group by
-    1,2,3,4,5
+    1,2,3,4
 """
 GET_DISTINCT_ENTITY_URIS_SQL = """
 select distinct
@@ -96,7 +95,8 @@ class DqConfigsCache:
             entity_record = self._cache_db["entities"].get(entity_id)
         except NotFoundError:
             error_message = (
-                f"Table Entity_ID: {entity_id} not found in 'entities' config cache."
+                f"Table Entity_ID: {entity_id} not found in 'entities' config cache:\n"
+                f"{pformat(list(self._cache_db.query('select id from entities')))}"
             )
             raise NotFoundError(error_message)
         convert_json_value_to_dict(entity_record, "environment_override")
@@ -109,7 +109,10 @@ class DqConfigsCache:
         try:
             rule_record = self._cache_db["rules"].get(rule_id)
         except NotFoundError:
-            error_message = f"Rule_ID: {rule_id} not found in 'rules' config cache."
+            error_message = (
+                f"Rule_ID: {rule_id} not found in 'rules' config cache:\n"
+                f"{pformat(list(self._cache_db.query('select id from rules')))}"
+            )
             logger.error(error_message, exc_info=True)
             raise NotFoundError(error_message)
         convert_json_value_to_dict(rule_record, "params")
@@ -120,7 +123,10 @@ class DqConfigsCache:
         try:
             dims = self._cache_db["rule_dimensions"].get("rule_dimension")
         except NotFoundError:
-            error_message = "Rule dimensions not found in config cache."
+            error_message = (
+                f"Rule dimensions not found in config cache:\n"
+                f"{pformat(list(self._cache_db.query('select id from rule_dimension')))}"
+            )
             logger.error(error_message, exc_info=True)
             raise NotFoundError(error_message)
         return dq_rule_dimensions.DqRuleDimensions(dims)
@@ -130,7 +136,10 @@ class DqConfigsCache:
         try:
             row_filter_record = self._cache_db["row_filters"].get(row_filter_id)
         except NotFoundError:
-            error_message = f"Row Filter ID: {row_filter_id} not found in 'row_filters' config cache."
+            error_message = (
+                f"Row Filter ID: {row_filter_id} not found in 'row_filters' config cache:\n"
+                f"{pformat(list(self._cache_db.query('select id from row_filters')))}"
+            )
             raise NotFoundError(error_message)
         row_filter = dq_row_filter.DqRowFilter.from_dict(
             row_filter_id, row_filter_record
@@ -144,7 +153,10 @@ class DqConfigsCache:
         try:
             rule_binding_record = self._cache_db["rule_bindings"].get(rule_binding_id)
         except NotFoundError:
-            error_message = f"Rule_Binding_ID: {rule_binding_id} not found in 'rule_bindings' config cache."
+            error_message = (
+                f"Rule_Binding_ID: {rule_binding_id} not found in 'rule_bindings' config cache:\n"
+                f"{pformat(list(self._cache_db.query('select id from rule_bindings')))}"
+            )
             raise NotFoundError(error_message)
         convert_json_value_to_dict(rule_binding_record, "rule_ids")
         convert_json_value_to_dict(rule_binding_record, "metadata")
@@ -161,6 +173,7 @@ class DqConfigsCache:
         for record in rule_bindings_rows:
             if "entity_uri" not in record:
                 record.update({"entity_uri": None})
+        logger.warning(f"rule_bindings_rows:\n{rule_bindings_rows}")
         self._cache_db["rule_bindings"].upsert_all(
             rule_bindings_rows, pk="id", alter=True
         )
@@ -204,7 +217,7 @@ class DqConfigsCache:
             f"Loading 'rule_dimensions' configs into cache:\n{pformat(rule_dimensions_collection)}"
         )
         self._cache_db["rule_dimensions"].upsert_all(
-            [{"rule_dimension": dim} for dim in rule_dimensions_collection],
+            [{"rule_dimension": dim.upper()} for dim in rule_dimensions_collection],
             pk="rule_dimension",
             alter=True,
         )
@@ -221,6 +234,7 @@ class DqConfigsCache:
         logger.debug(
             f"Using Dataplex default configs for resolving entity_uris:\n{pformat(default_configs)}"
         )
+        target_rule_binding_ids = [id.upper() for id in target_rule_binding_ids]
         query = GET_DISTINCT_ENTITY_URIS_SQL.format(
             target_rule_binding_ids_list=",".join(
                 [f"'{id}'" for id in target_rule_binding_ids]
@@ -237,112 +251,25 @@ class DqConfigsCache:
                     default_configs=default_configs,
                 )
             except Exception as e:
-                raise ValueError(
-                    "Failed to parse 'entity_uri' from rule_binding ID "
-                    f"'{record['id']}' with error:\n{e}"
-                )
+                raise ValueError(f"Failed to parse 'entity_uri' with error:\n{e}")
             logger.debug(f"Parsed entity_uri configs:\n{pformat(entity_uri.to_dict())}")
-            if entity_uri.scheme == "dataplex":
-                dataplex_entity = client.get_dataplex_entity(
-                    gcp_project_id=entity_uri.get_configs("projects"),
-                    location_id=entity_uri.get_configs("locations"),
-                    lake_name=entity_uri.get_configs("lakes"),
-                    zone_id=entity_uri.get_configs("zones"),
-                    entity_id=entity_uri.get_entity_id(),
+            clouddq_entity = None
+            if entity_uri.scheme == "DATAPLEX":
+                clouddq_entity = self._resolve_dataplex_entity_uri(
+                    entity_uri=entity_uri,
+                    client=client,
+                    bigquery_client=bigquery_client,
+                    enable_experimental_dataplex_gcs_validation=enable_experimental_dataplex_gcs_validation,
                 )
-                if dataplex_entity.system == "CLOUD_STORAGE":
-                    if not enable_experimental_dataplex_gcs_validation:
-                        raise NotImplementedError(
-                            "Use CLI flag --enable_experimental_dataplex_gcs_validation "
-                            "to enable validating Dataplex GCS resources using BigQuery "
-                            "External Tables"
-                        )
-                clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
-                    entity_id=entity_uri.get_db_primary_key(),
-                    dataplex_entity=dataplex_entity,
+            elif entity_uri.scheme == "BIGQUERY":
+                clouddq_entity = self._resolve_bigquery_entity_uri(
+                    entity_uri=entity_uri,
+                    client=client,
+                    enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
                 )
-                entity_uri_primary_key = entity_uri.get_db_primary_key().upper()
-                gcs_entity_external_table_name = clouddq_entity.get_table_name()
-                logger.debug(
-                    f"GCS Entity External Table Name is {gcs_entity_external_table_name}"
-                )
-                bq_table_exists = bigquery_client.is_table_exists(
-                    table=gcs_entity_external_table_name,
-                    project_id=clouddq_entity.instance_name,
-                )
-                if bq_table_exists:
-                    logger.debug(
-                        f"The External Table {gcs_entity_external_table_name} for Entity URI "
-                        f"{entity_uri_primary_key} exists in Bigquery."
-                    )
-                else:
-                    raise RuntimeError(
-                        f"Unable to find Bigquery External Table  {gcs_entity_external_table_name} "
-                        f"for Entity URI {entity_uri_primary_key}"
-                    )
-                resolved_entity = unnest_object_to_list(clouddq_entity.to_dict())
-            elif entity_uri.scheme == "bigquery":
-                if not enable_experimental_bigquery_entity_uris:
-                    raise NotImplementedError(
-                        f"entity_uri '{entity_uri.complete_uri_string}' "
-                        f"in rule_binding id '{record['id']}' "
-                        "has unsupported scheme 'bigquery://'.\n"
-                        "Use CLI flag --enable_experimental_bigquery_entity_uris "
-                        "to enable looking up bigquery:// entity_uri scheme in format "
-                        "bigquery://projects/<project-id>/datasets/<dataset-id>/tables/<table-id> "
-                        "schemes using Dataplex Metadata API.\n"
-                        "Ensure the BigQuery dataset containing this table "
-                        "is registered as an asset in Dataplex.\n"
-                        "You can then specify the corresponding Dataplex "
-                        "projects/locations/lakes/zones as part of the "
-                        "metadata_default_registries YAML configs, e.g.\n"
-                        f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
-                    )
-                required_arguments = ["projects", "lakes", "locations", "zones"]
-                for argument in required_arguments:
-                    uri_argument = entity_uri.get_configs(argument)
-                    if not uri_argument:
-                        raise RuntimeError(
-                            f"Failed to retrieve default Dataplex '{argument}' for "
-                            f"entity_uri: {entity_uri.complete_uri_string}. \n"
-                            f"'{argument}' is a required argument to look-up metadata for the entity_uri "
-                            "using Dataplex Metadata API.\n"
-                            "Ensure the BigQuery dataset containing this table "
-                            "is registered as an asset in Dataplex.\n"
-                            "You can then specify the corresponding Dataplex "
-                            "projects/locations/lakes/zones as part of the "
-                            "metadata_default_registries YAML configs, e.g.\n"
-                            f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
-                        )
-                dataplex_entities_match = client.list_dataplex_entities(
-                    gcp_project_id=entity_uri.get_configs("projects"),
-                    location_id=entity_uri.get_configs("locations"),
-                    lake_name=entity_uri.get_configs("lakes"),
-                    zone_id=entity_uri.get_configs("zones"),
-                    data_path=entity_uri.get_entity_id(),
-                )
-                logger.info(
-                    f"Retrieved Dataplex Entities:\n{pformat(dataplex_entities_match)}"
-                )
-                if len(dataplex_entities_match) != 1:
-                    raise RuntimeError(
-                        "Failed to retrieve Dataplex Metadata entry for "
-                        f"entity_uri '{entity_uri.complete_uri_string}' in "
-                        f"Rule Binding ID '{record['id']}' with error:\n"
-                        f"{pformat(dataplex_entities_match.json())}\n\n"
-                        f"Parsed entity_uri configs:\n"
-                        f"{pformat(entity_uri.to_dict())}\n\n"
-                        f"Current Dataplex default configs from "
-                        f"'metadata_registry_defaults' YAML:\n"
-                        f"{pformat(default_configs)}\n\n"
-                    )
-                else:
-                    dataplex_entity = dataplex_entities_match[0]
-                    clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
-                        entity_id=entity_uri.get_db_primary_key(),
-                        dataplex_entity=dataplex_entity,
-                    ).to_dict()
-                resolved_entity = unnest_object_to_list(clouddq_entity)
+            else:
+                raise RuntimeError(f"Invalid Entity URI scheme: {entity_uri.scheme}")
+            resolved_entity = unnest_object_to_list(clouddq_entity.to_dict())
             logger.debug(f"Writing parsed Dataplex Entity to db: {resolved_entity}")
             self._cache_db["entities"].upsert_all(resolved_entity, pk="id", alter=True)
             entity_configs = {
@@ -385,9 +312,12 @@ class DqConfigsCache:
                 # == on dicts performs deep compare:
                 if not config_old_i == config_new_i:
                     raise ValueError(
-                        f"Detected Duplicated Config ID(s): {intersection} "
+                        f"Detected Duplicated Config ID(s): {intersection}. "
                         f"If a config ID is repeated, it must be for an identical "
-                        f"configuration."
+                        f"configuration.\n"
+                        f"Duplicated config contents:\n"
+                        f"{pformat(config_old_i)}\n"
+                        f"{pformat(config_new_i)}"
                     )
 
             updated = config_old.copy()
@@ -416,7 +346,7 @@ class DqConfigsCache:
     ) -> dict[str, str]:
         query = GET_ENTITY_SUMMARY_QUERY.format(
             target_rule_binding_ids_list=",".join(
-                [f"'{id}'" for id in target_rule_binding_ids]
+                [f"'{id.upper()}'" for id in target_rule_binding_ids]
             )
         )
         target_entity_summary_views_configs = {}
@@ -428,7 +358,6 @@ class DqConfigsCache:
                     record["database_name"],
                     record["table_name"],
                     record["column_id"],
-                    record["row_filter_id"],
                 ]
             )
             entity_table_id = re.sub(RE_NON_ALPHANUMERIC, "_", entity_table_id)
@@ -463,3 +392,110 @@ class DqConfigsCache:
             f"{pformat(target_entity_summary_views_configs)}"
         )
         return target_entity_summary_views_configs
+
+    def _resolve_dataplex_entity_uri(
+        self,
+        entity_uri: dq_entity_uri.EntityUri,
+        client: clouddq_dataplex.CloudDqDataplexClient,
+        bigquery_client: BigQueryClient,
+        enable_experimental_dataplex_gcs_validation: bool = True,
+    ) -> dq_entity.DqEntity:
+        dataplex_entity = client.get_dataplex_entity(
+            gcp_project_id=entity_uri.get_configs("projects"),
+            location_id=entity_uri.get_configs("locations"),
+            lake_name=entity_uri.get_configs("lakes"),
+            zone_id=entity_uri.get_configs("zones"),
+            entity_id=entity_uri.get_entity_id(),
+        )
+        if dataplex_entity.system == "CLOUD_STORAGE":
+            if not enable_experimental_dataplex_gcs_validation:
+                raise NotImplementedError(
+                    "Use CLI flag --enable_experimental_dataplex_gcs_validation "
+                    "to enable validating Dataplex GCS resources using BigQuery "
+                    "External Tables"
+                )
+        clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
+            entity_id=entity_uri.get_db_primary_key(),
+            dataplex_entity=dataplex_entity,
+        )
+        entity_uri_primary_key = entity_uri.get_db_primary_key().upper()
+        gcs_entity_external_table_name = clouddq_entity.get_table_name()
+        logger.debug(
+            f"GCS Entity External Table Name is {gcs_entity_external_table_name}"
+        )
+        bq_table_exists = bigquery_client.is_table_exists(
+            table=gcs_entity_external_table_name,
+            project_id=clouddq_entity.instance_name,
+        )
+        if bq_table_exists:
+            logger.debug(
+                f"The External Table {gcs_entity_external_table_name} for Entity URI "
+                f"{entity_uri_primary_key} exists in Bigquery."
+            )
+        else:
+            raise RuntimeError(
+                f"Unable to find Bigquery External Table  {gcs_entity_external_table_name} "
+                f"for Entity URI {entity_uri_primary_key}"
+            )
+        return clouddq_entity
+
+    def _resolve_bigquery_entity_uri(
+        self,
+        entity_uri: dq_entity_uri.EntityUri,
+        client: clouddq_dataplex.CloudDqDataplexClient,
+        enable_experimental_bigquery_entity_uris: bool = True,
+    ) -> dq_entity.DqEntity:
+        if not enable_experimental_bigquery_entity_uris:
+            raise NotImplementedError(
+                f"entity_uri '{entity_uri.complete_uri_string}' "
+                "has unsupported scheme 'bigquery://'.\n"
+                "Use CLI flag --enable_experimental_bigquery_entity_uris "
+                "to enable looking up bigquery:// entity_uri scheme in format "
+                "bigquery://projects/<project-id>/datasets/<dataset-id>/tables/<table-id> "
+                "schemes using Dataplex Metadata API.\n"
+                "Ensure the BigQuery dataset containing this table "
+                "is registered as an asset in Dataplex.\n"
+                "You can then specify the corresponding Dataplex "
+                "projects/locations/lakes/zones as part of the "
+                "metadata_default_registries YAML configs, e.g.\n"
+                f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
+            )
+        required_arguments = ["projects", "lakes", "locations", "zones"]
+        for argument in required_arguments:
+            uri_argument = entity_uri.get_configs(argument)
+            if not uri_argument:
+                raise RuntimeError(
+                    f"Failed to retrieve default Dataplex '{argument}' for "
+                    f"entity_uri: {entity_uri.complete_uri_string}. \n"
+                    f"'{argument}' is a required argument to look-up metadata for the entity_uri "
+                    "using Dataplex Metadata API.\n"
+                    "Ensure the BigQuery dataset containing this table "
+                    "is registered as an asset in Dataplex.\n"
+                    "You can then specify the corresponding Dataplex "
+                    "projects/locations/lakes/zones as part of the "
+                    "metadata_default_registries YAML configs, e.g.\n"
+                    f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
+                )
+        dataplex_entities_match = client.list_dataplex_entities(
+            gcp_project_id=entity_uri.get_configs("projects"),
+            location_id=entity_uri.get_configs("locations"),
+            lake_name=entity_uri.get_configs("lakes"),
+            zone_id=entity_uri.get_configs("zones"),
+            data_path=entity_uri.get_entity_id(),
+        )
+        logger.info(f"Retrieved Dataplex Entities:\n{pformat(dataplex_entities_match)}")
+        if len(dataplex_entities_match) != 1:
+            raise RuntimeError(
+                "Failed to retrieve Dataplex Metadata entry for "
+                f"entity_uri '{entity_uri.complete_uri_string}' "
+                f"with error:\n"
+                f"{pformat(dataplex_entities_match.json())}\n\n"
+                f"Parsed entity_uri configs:\n"
+                f"{pformat(entity_uri.to_dict())}\n\n"
+            )
+        dataplex_entity = dataplex_entities_match[0]
+        clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
+            entity_id=entity_uri.get_db_primary_key(),
+            dataplex_entity=dataplex_entity,
+        )
+        return clouddq_entity

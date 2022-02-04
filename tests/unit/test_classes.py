@@ -459,14 +459,14 @@ class TestClasses:
         rule_ids = rule_ids[1:]
 
         # Give one rule a dimension
-        rules[rule_id1]['dimension'] = 'completeness'
+        rules[rule_id1]['dimension'] = 'COMPLETENESS'
 
         cache = DqConfigsCache()
         cache.load_all_rules_collection(rules)
 
         rule_config1 = rules[rule_id1]
         rule_loaded1 = cache.get_rule_id(rule_id1)
-        assert rule_loaded1.dimension == 'completeness', rule_id1
+        assert rule_loaded1.dimension == 'COMPLETENESS', rule_id1
         assertRulesEqual(rule_id1, rule_config1, rule_loaded1)
 
         # test the other rules
