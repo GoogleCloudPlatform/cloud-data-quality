@@ -266,4 +266,4 @@ class TestDqAdvancedRules:
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))
+    raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto'] + sys.argv[1:]))
