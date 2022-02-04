@@ -36,7 +36,7 @@ class DqRule:
             if not rule_dims:
                 raise ValueError(
                     f"Invalid rule dimension '{config['dimension']}' in "
-                    f"rule configurations ID '{config_id}'.\n"
+                    f"rule configurations ID '{config_id}'. \n"
                     f"The list of allowed rule_dimensions is empty. You can add '{config['dimension']}' to"
                     f"the allowed list of dimensions in the 'rule_dimensions' YAML config node, e.g.\n"
                     f"```\nrule_dimensions:\n"
@@ -48,11 +48,11 @@ class DqRule:
                     f"  - integrity\n"
                     f"```"
                 )
-            if not config["dimension"] in rule_dims:
+            if not config["dimension"].upper() in rule_dims:
                 raise ValueError(
-                    f"Invalid rule dimension '{config['dimension']}' in "
-                    f"rule configurations ID '{config_id}'.\n"
-                    f"Ensure it is one of the allowed rule_dimensions: {rule_dims} or add it to"
+                    f"Invalid rule dimension '{config['dimension'].upper()}' in "
+                    f"rule configurations ID '{config_id}'. \n"
+                    f"Ensure it is one of the allowed rule_dimensions: {rule_dims} or add it to "
                     f"the allowed list of dimensions in the 'rule_dimensions' YAML config node, e.g.\n"
                     f"```\nrule_dimensions:\n"
                     f"  - consistency\n"
@@ -79,9 +79,13 @@ class DqRule:
 
         rule_type: RuleType = RuleType(kwargs.get("rule_type", ""))
         params: dict = kwargs.get("params", dict())
-        dim: str = kwargs.get("dimension")
+        dimension: str = kwargs.get("dimension", None)
+        dimension = dimension.upper() if dimension else None
         return DqRule(
-            rule_id=str(rule_id), rule_type=rule_type, dimension=dim, params=params
+            rule_id=str(rule_id),
+            rule_type=rule_type,
+            dimension=dimension,
+            params=params,
         )
 
     def to_dict(self: DqRule) -> dict:

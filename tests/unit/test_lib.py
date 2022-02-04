@@ -109,7 +109,7 @@ class TestLib:
             with open(rule_original) as f:
                 testconfig = yaml.safe_load(f)
 
-            dims_ref = ['completeness', 'accuracy', 'conformity']
+            dims_ref = ['COMPLETENESS', 'ACCURACY', 'CONFORMITY']
             testconfig[DqConfigType.RULE_DIMENSIONS.value] = dims_ref
 
             with open(temp_dir / 'rule.yml', 'w') as f:
@@ -126,7 +126,7 @@ class TestLib:
             with open(rule_original) as f:
                 testconfig = yaml.safe_load(f)
 
-            dims_ref = ['completeness', 'accuracy', 'conformity']
+            dims_ref = ['COMPLETENESS', 'ACCURACY', 'CONFORMITY']
             testconfig[DqConfigType.RULE_DIMENSIONS.value] = dims_ref
 
             with open(temp_dir / 'rule1.yml', 'w') as f:
@@ -212,7 +212,7 @@ class TestLib:
                 lib.prepare_configs_cache(temp_dir)
 
             # Add the rule dimensions and try again
-            rule_config['rule_dimensions'] = ['correctness', 'conformity', 'completeness']
+            rule_config['rule_dimensions'] = ['CORRECTNESS', 'CONFORMITY', 'COMPLETENESS']
             os.remove(base_rules)
             with open(base_rules, 'w') as f:
                 yaml.safe_dump(rule_config, f)

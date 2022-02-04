@@ -1,0 +1,114 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+entities:
+  COMPLETENESS_CHECK_NOT_OK:
+    source_database: BIGQUERY
+    resource_type: BIGQUERY
+    table_name: completeness_check_not_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      DATA:
+        name: data
+        data_type: STRING
+        description: |-
+          email address
+  COMPLETENESS_CHECK_OK:
+    source_database: BIGQUERY
+    resource_type: BIGQUERY
+    table_name: completeness_check_ok
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    columns:
+      DATA:
+        name: data
+        data_type: STRING
+        description: |-
+          email address
+
+
+row_filters:
+  NONE:
+    filter_sql_expr: 'True'
+
+
+rule_dimensions:
+  - timeliness
+  - correctness
+  - integrity
+  - conformity
+  - completeness
+  - uniqueness
+  - accuracy
+  - validity
+
+
+rules:
+  NO_ISSUES_WITH_COMPLETENESS:
+    rule_type: CUSTOM_SQL_STATEMENT
+    dimension: completeness
+    params:
+      custom_sql_arguments:
+        - threshold_pct
+        - condition
+      custom_sql_statement: |-
+        select *
+        from
+          (select sum(case when $condition then 1 else 0 end) * 100 / count(*) as pct 
+          from data
+          )
+        where pct < $threshold_pct
+
+
+rule_bindings:
+  T7_COMPLETENESS_CHECK_SHOULD_FAIL:
+    entity_id: COMPLETENESS_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ISSUES_WITH_COMPLETENESS:
+          condition: data.data IS NOT NULL
+          threshold_pct: 100
+    metadata:
+      brand: one
+  T7_COMPLETENESS_CHECK_SHOULD_FAIL2:
+    entity_id: COMPLETENESS_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ISSUES_WITH_COMPLETENESS:
+          condition: data.data IS NOT NULL
+          threshold_pct: 99
+    metadata:
+      brand: one
+  T7_COMPLETENESS_CHECK_SHOULD_SUCCEED:
+    entity_id: COMPLETENESS_CHECK_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ISSUES_WITH_COMPLETENESS:
+          condition: data.data IS NOT NULL
+          threshold_pct: 100
+    metadata:
+      brand: one
+  T7_COMPLETENESS_CHECK_SHOULD_SUCCEED2:
+    entity_id: COMPLETENESS_CHECK_NOT_OK
+    column_id: DATA
+    row_filter_id: NONE
+    rule_ids:
+      - NO_ISSUES_WITH_COMPLETENESS:
+          condition: data.data IS NOT NULL
+          threshold_pct: 85
+    metadata:
+      brand: one

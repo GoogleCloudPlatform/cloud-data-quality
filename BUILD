@@ -44,6 +44,12 @@ filegroup(
 )
 
 filegroup(
+    name = "docs",
+    srcs = glob(["docs/**/*.yaml"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "dbt_project",
     srcs = glob(["dbt/dbt_project.yml"]),
     visibility = ["//visibility:public"],

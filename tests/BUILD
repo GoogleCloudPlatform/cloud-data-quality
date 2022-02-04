@@ -22,6 +22,12 @@ filegroup(
 )
 
 filegroup(
+    name = "test_data",
+    srcs = glob(["data/**/*"]),
+    visibility = ["//tests:__subpackages__"],
+)
+
+filegroup(
     name = "test_configs",
     srcs = glob(["resources/configs/**/*"]),
     visibility = ["//tests:__subpackages__"],
@@ -60,8 +66,10 @@ SRCS = glob([
 DATA = [
     ":resources",
     "//:dbt",
+    "//:docs",
     "//:dbt_project",
     ":test_configs",
+    ":test_data",
     ":test_dbt_profiles_dir",
     "//clouddq:dbt_template",
     "//clouddq:dbt_project_template",
@@ -151,7 +159,7 @@ py_test(
 )
 
 py_test(
-    name = "test_metadata_uri_templates",
+    name = "test_dataplex_metadata_uri_templates",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,
@@ -208,6 +216,14 @@ py_test(
 
 py_test(
     name = "test_dq_rules",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "test_advanced_dq_rules",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,

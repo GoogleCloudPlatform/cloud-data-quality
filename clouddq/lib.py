@@ -132,7 +132,7 @@ def create_entity_summary_model(
     debug: bool = False,
 ) -> str:
     if debug:
-        logger.warning(
+        logger.info(
             f"Generating Entity-level DQ Summary aggregate for entity "
             f"{entity_table_id} with entity_target_rule_binding_configs:\n"
             f"{pformat(entity_target_rule_binding_configs)}"

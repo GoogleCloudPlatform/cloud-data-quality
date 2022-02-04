@@ -33,7 +33,7 @@ class TestMetadataRegistryDefaults:
     @pytest.fixture(scope="session")
     def dataplex_expected_defaults(self):
         expected_defaults = {
-            "dataplex": {
+            "DATAPLEX": {
                 "projects": "<my-gcp-project-id>",
                 "locations": "<my-gcp-dataplex-region-id>",
                 "lakes": "<my-gcp-dataplex-lake-id>",
@@ -44,12 +44,12 @@ class TestMetadataRegistryDefaults:
 
     def test_load_metadata_registry_default_configs(self, source_configs_path, dataplex_expected_defaults):
         metadata_defaults = load_metadata_registry_default_configs(configs_path=source_configs_path)
-        assert 'dataplex' in metadata_defaults.default_configs
+        assert 'DATAPLEX' in metadata_defaults.default_configs
         assert metadata_defaults.get_dataplex_registry_defaults('projects') == "<my-gcp-project-id>"
         assert metadata_defaults.get_dataplex_registry_defaults('locations') == "<my-gcp-dataplex-region-id>"
         assert metadata_defaults.get_dataplex_registry_defaults('lakes') == "<my-gcp-dataplex-lake-id>"
         assert metadata_defaults.get_dataplex_registry_defaults('zones') == "<my-gcp-dataplex-zone-id>"
-        assert metadata_defaults.get_dataplex_registry_defaults() == dataplex_expected_defaults['dataplex']
+        assert metadata_defaults.get_dataplex_registry_defaults() == dataplex_expected_defaults['DATAPLEX']
 
     def test_from_dict_metadata_registry_default_configs(self, dataplex_expected_defaults):
         metadata_registry_defaults = MetadataRegistryDefaults.from_dict(dataplex_expected_defaults)
@@ -66,7 +66,7 @@ class TestMetadataRegistryDefaults:
 
     def test_from_dict_metadata_registry_default_configs_unexpected_key(self):
         input_dict = {
-            "dataplex": {
+            "DATAPLEX": {
                 "dataset": "<my-gcp-bq-dataset>",
             }
         }
@@ -120,18 +120,15 @@ class TestMetadataRegistryDefaults:
             assert loaded_config.to_dict() == dataplex_expected_defaults
 
             # Load the config, modify it, and save it to a different file
-            with open(config_path / 'metadata_registry_defaults.yml') as f:
-                testconfig = yaml.safe_load(f)
-
-            assert testconfig == {'metadata_registry_defaults': dataplex_expected_defaults}
-            testconfig['metadata_registry_defaults']['dataplex']['projects'] = '<my-gcp-project-id-2>'
+            testconfig = {'metadata_registry_defaults': loaded_config.to_dict()}
+            testconfig['metadata_registry_defaults']['DATAPLEX']['projects'] = '<my-gcp-project-id-2>'
 
             with open(temp_dir / 'metadata_registry_defaults2.yml', 'w') as f:
                 yaml.safe_dump(testconfig, f)
 
             with open(temp_dir / 'metadata_registry_defaults2.yml') as f:
                 testconfig2 = yaml.safe_load(f)
-                assert testconfig2['metadata_registry_defaults']['dataplex']['projects'] == '<my-gcp-project-id-2>'
+                assert testconfig2['metadata_registry_defaults']['DATAPLEX']['projects'] == '<my-gcp-project-id-2>'
 
             # This is the actual test:
             with pytest.raises(ValueError):
