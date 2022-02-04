@@ -42,6 +42,7 @@ class DbtRunner:
     environment_target: str
     connection_config: DbtConnectionConfig
     dbt_rule_binding_views_path: Path
+    dbt_entity_summary_path: Path
 
     def __init__(
         self,
@@ -65,6 +66,7 @@ class DbtRunner:
         self._prepare_dbt_project_path()
         self._prepare_dbt_main_path()
         self._prepare_rule_binding_view_path(write_log=True)
+        self._prepare_entity_summary_path(write_log=True)
         # Prepare connection configurations
         self._resolve_connection_configs(
             dbt_profiles_dir=dbt_profiles_dir,
@@ -109,6 +111,10 @@ class DbtRunner:
     def get_rule_binding_view_path(self) -> Path:
         self._prepare_rule_binding_view_path()
         return Path(self.dbt_rule_binding_views_path)
+
+    def get_entity_summary_path(self) -> Path:
+        self._prepare_entity_summary_path()
+        return Path(self.dbt_entity_summary_path)
 
     def get_dbt_profiles_dir(self) -> Path:
         self._resolve_connection_configs(
@@ -165,8 +171,7 @@ class DbtRunner:
             self.connection_config = connection_config
             self.dbt_profiles_dir = Path(self.dbt_path)
             logger.debug(
-                "Writing user input GCP connection profile to dbt profiles.yml "
-                f"at path: {self.dbt_profiles_dir}",
+                "Using dbt profiles.yml path: {self.dbt_profiles_dir}",
             )
             if environment_target:
                 logger.debug(f"Using `environment_target`: {environment_target}")
@@ -237,6 +242,18 @@ class DbtRunner:
         self.dbt_rule_binding_views_path.mkdir(parents=True, exist_ok=True)
         if write_log:
             logger.debug(
-                "Writing generated sql to "
+                "Using rule_binding_views path: "
                 f"{self.dbt_rule_binding_views_path.absolute()}/",
+            )
+
+    def _prepare_entity_summary_path(self, write_log: bool = False) -> None:
+        assert self.dbt_path.is_dir()
+        self.dbt_entity_summary_path = (
+            self.dbt_path / "models" / "entity_dq_statistics"
+        )
+        self.dbt_entity_summary_path.mkdir(parents=True, exist_ok=True)
+        if write_log:
+            logger.debug(
+                "Using entity_dq_statistics path: "
+                f"{self.dbt_entity_summary_path.absolute()}/",
             )

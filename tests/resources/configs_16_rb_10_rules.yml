@@ -1,0 +1,430 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+metadata_registry_defaults:
+  dataplex:
+    projects: <my-gcp-project-id>
+    locations: <my-gcp-dataplex-region-id>
+    lakes: <my-gcp-dataplex-lake-id>
+    zones: <my-gcp-dataplex-zone-id>
+row_filters:
+  NONE:
+    filter_sql_expr: |-
+      True
+rule_dimensions:
+  - validity
+  - accuracy
+rule_bindings:
+  T1_COST_ID_UNIQUE:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T2_COST_EVENT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_event_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_event_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T3_COST_TYPE_CONCEPT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_type_concept_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_type_concept_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T4_CURRENCY_CONCEPT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: currency_concept_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: currency_concept_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T5_TOTAL_PAID:
+    entity_uri: dataplex://entities/cost
+    column_id: total_paid
+    row_filter_id: NONE
+    rule_ids:
+      - NOT_NULL_SIMPLE1
+      - NOT_NULL_SIMPLE2
+      - NOT_NULL_SIMPLE3
+      - NOT_NULL_SIMPLE4
+      - NOT_NULL_SIMPLE5
+      - NOT_NULL_SIMPLE6
+      - NOT_NULL_SIMPLE7
+      - NOT_NULL_SIMPLE8
+      - NOT_NULL_SIMPLE9
+      - NOT_NULL_SIMPLE10
+  T6_PAID_BY_PAYER:
+    entity_uri: dataplex://entities/cost
+    column_id: paid_by_payer
+    row_filter_id: NONE
+    rule_ids:
+      - VALUE_ZERO_OR_POSITIVE1
+      - VALUE_ZERO_OR_POSITIVE2
+      - VALUE_ZERO_OR_POSITIVE3
+      - VALUE_ZERO_OR_POSITIVE4
+      - VALUE_ZERO_OR_POSITIVE5
+      - VALUE_ZERO_OR_POSITIVE6
+      - VALUE_ZERO_OR_POSITIVE7
+      - VALUE_ZERO_OR_POSITIVE8
+      - VALUE_ZERO_OR_POSITIVE9
+      - VALUE_ZERO_OR_POSITIVE10
+  T7_PAID_BY_PATIENT:
+    entity_uri: dataplex://entities/cost
+    column_id: paid_by_patient
+    row_filter_id: NONE
+    rule_ids:
+      - VALUE_ZERO_OR_POSITIVE1
+      - VALUE_ZERO_OR_POSITIVE2
+      - VALUE_ZERO_OR_POSITIVE3
+      - VALUE_ZERO_OR_POSITIVE4
+      - VALUE_ZERO_OR_POSITIVE5
+      - VALUE_ZERO_OR_POSITIVE6
+      - VALUE_ZERO_OR_POSITIVE7
+      - VALUE_ZERO_OR_POSITIVE8
+      - VALUE_ZERO_OR_POSITIVE9
+      - VALUE_ZERO_OR_POSITIVE10
+  T8_PAID_BY_PRIMARY:
+    entity_uri: dataplex://entities/cost
+    column_id: paid_by_primary
+    row_filter_id: NONE
+    rule_ids:
+      - VALUE_ZERO_OR_POSITIVE1
+      - VALUE_ZERO_OR_POSITIVE2
+      - VALUE_ZERO_OR_POSITIVE3
+      - VALUE_ZERO_OR_POSITIVE4
+      - VALUE_ZERO_OR_POSITIVE5
+      - VALUE_ZERO_OR_POSITIVE6
+      - VALUE_ZERO_OR_POSITIVE7
+      - VALUE_ZERO_OR_POSITIVE8
+      - VALUE_ZERO_OR_POSITIVE9
+      - VALUE_ZERO_OR_POSITIVE10
+  T9_COST_EVENT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_event_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_event_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T10_COST_TYPE_CONCEPT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_type_concept_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_type_concept_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T11_COST_TYPE_CONCEPT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_type_concept_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_type_concept_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T12_COST_TYPE_CONCEPT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_type_concept_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_type_concept_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T13_COST_TYPE_CONCEPT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_type_concept_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_type_concept_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T14_COST_TYPE_CONCEPT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_type_concept_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_type_concept_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T15_COST_TYPE_CONCEPT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_type_concept_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_type_concept_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T16_COST_TYPE_CONCEPT_ID:
+    entity_uri: dataplex://entities/cost
+    column_id: cost_type_concept_id
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: cost_type_concept_id
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+rules:
+  NOT_NULL_SIMPLE1:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE2:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE3:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE4:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE5:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE6:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE7:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE8:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE9:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE10:
+    rule_type: NOT_NULL
+  NO_DUPLICATES_IN_COLUMN_GROUPS:
+    dimension: accuracy
+    params:
+      custom_sql_arguments:
+      - column_names
+      custom_sql_statement: "select a.*\nfrom data a\ninner join (\n  select\n   \
+        \ $column_names\n  from data\n  group by $column_names\n  having count(*)\
+        \ > 1\n) duplicates\nusing ($column_names)"
+    rule_type: CUSTOM_SQL_STATEMENT
+  VALUE_POSITIVE1:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE2:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE3:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE4:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE5:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE6:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE7:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE8:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE9:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE10:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_ZERO_OR_POSITIVE1:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE2:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE3:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE4:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE5:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE6:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE7:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE8:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE9:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE10:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0

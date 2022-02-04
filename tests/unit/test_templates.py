@@ -181,7 +181,6 @@ class TestJinjaTemplates:
             debug=True,
         )
         output = re.sub(RE_NEWLINES, '\n', output).strip()
-        print(output)
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         assert output == expected
@@ -225,7 +224,6 @@ class TestJinjaTemplates:
             "<your_bigquery_dataset_id>.__TABLES__", "<your_bigquery_dataset_id_2>.__TABLES__"
         )
         output = re.sub(RE_NEWLINES, '\n', output).strip()
-        print(output)
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         assert output == expected
@@ -266,7 +264,6 @@ class TestJinjaTemplates:
             dq_summary_table_exists=True,
         )
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
-        print(output)
         output = re.sub(RE_NEWLINES, '\n', output).strip()
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         assert output == expected
@@ -306,7 +303,6 @@ class TestJinjaTemplates:
             debug=True,
         )
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
-        print(output)
         output = re.sub(RE_NEWLINES, '\n', output).strip()
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         assert output == expected
@@ -337,6 +333,24 @@ class TestJinjaTemplates:
         metadata.update(rule_binding_configs["metadata"])
         assert configs["metadata"] == dict(metadata)
         assert configs["environment"] == env
+
+    def test_create_entity_summary_model(self, test_resources):
+        entity_target_rule_binding_configs = {
+            "rule_binding_ids_list": [
+                "rule_binding_id_1",
+                "rule_binding_id_2",
+            ]
+        }
+        entity_summary_model = lib.create_entity_summary_model(
+            entity_table_id="entity_table_id",
+            entity_target_rule_binding_configs=entity_target_rule_binding_configs,
+            gcp_project_id="gcp_project_id",
+            gcp_bq_dataset_id="gcp_bq_dataset_id",
+            debug=True)
+        with open(test_resources / "expected_entity_summary_model.sql") as f:
+            expected_entity_summary_model = f.read()
+            expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected_entity_summary_model)).strip()
+        assert expected == utils.strip_margin(re.sub(RE_NEWLINES, '\n', entity_summary_model)).strip()
 
 
 if __name__ == "__main__":

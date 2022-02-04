@@ -13,7 +13,7 @@
 -- limitations under the License.
 {% from 'macros.sql' import validate_simple_rule -%}
 {% from 'macros.sql' import validate_complex_rule -%}
-{%- macro run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -%}
+{%- macro create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -%}
 {% set rule_binding_id = configs.get('rule_binding_id') -%}
 {% set rule_configs_dict = configs.get('rule_configs_dict') -%}
 {% set filter_sql_expr = configs.get('row_filter_configs').get('filter_sql_expr') -%}
@@ -141,4 +141,4 @@ FROM
 
 {%- endmacro -%}
 
-{{-  run_dq_main(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -}}
+{{-  create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -}}
