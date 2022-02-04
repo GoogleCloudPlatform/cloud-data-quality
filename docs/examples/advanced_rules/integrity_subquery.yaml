@@ -106,7 +106,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
-          ref_data_dataset: clouddq_test_asset_curated
+          ref_data_dataset: <my_bigquery_input_data_dataset_id>
           ref_data_table_id: reference_data_subquery
     metadata:
       brand: one
@@ -116,7 +116,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
-          ref_data_dataset: clouddq_test_asset_curated
+          ref_data_dataset: <my_bigquery_input_data_dataset_id>
           ref_data_table_id: reference_data_subquery
     metadata:
       brand: one
@@ -126,7 +126,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
-          ref_data_dataset: clouddq_test_asset_curated
+          ref_data_dataset: <my_bigquery_input_data_dataset_id>
           ref_data_table_id: reference_data_subquery2
     metadata:
       brand: one
@@ -136,7 +136,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
-          ref_data_dataset: clouddq_test_asset_curated
+          ref_data_dataset: <my_bigquery_input_data_dataset_id>
           ref_data_table_id: reference_data_subquery2
     metadata:
       brand: one

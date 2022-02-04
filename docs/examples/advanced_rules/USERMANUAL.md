@@ -318,7 +318,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
-          ref_data_dataset: clouddq_test_asset_curated
+          ref_data_dataset: <my_bigquery_input_data_dataset_id>
           ref_data_table_id: reference_data
           ref_data_column_id: art_no
   T4_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED:
@@ -327,7 +327,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
-          ref_data_dataset: clouddq_test_asset_curated
+          ref_data_dataset: <my_bigquery_input_data_dataset_id>
           ref_data_table_id: reference_data
           ref_data_column_id: art_no
 ```
@@ -371,7 +371,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY:
-          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_dataset: <my_bigquery_input_data_dataset_id>
           ref_data_table_id: reference_data_subquery
   REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
     entity_id: REFERENCE_DATA_CHECK_SUBQUERY2_OK
@@ -379,7 +379,7 @@ rule_bindings:
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_SUBQUERY2:
-          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_dataset: <my_bigquery_input_data_dataset_id>
           ref_data_table_id: reference_data_subquery2
 ```
 Full example: [rule](/docs/examples/advanced_rules/integrity_subquery.yaml#81) and [rule binding](/docs/examples/advanced_rules/integrity_subquery.yaml#102)

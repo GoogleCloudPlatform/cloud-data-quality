@@ -240,10 +240,6 @@ class TestDqAdvancedRules:
                 rows = list(results)
                 logger.info(f"Query execution returned {len(rows)} rows")
                 if len(rows):
-                    logger.info(f"Input yaml from {source_dq_advanced_rules_configs_path}:")
-                    with open(source_dq_advanced_rules_configs_path) as input_yaml:
-                        lines = input_yaml.read()
-                        logger.info(lines)
                     logger.warning(
                         "Rows with values not matching the expected "
                         "content in 'tests/resources/expected_results.csv':"

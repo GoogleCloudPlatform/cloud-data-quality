@@ -469,6 +469,7 @@ def temp_configs_from_dq_advanced_rules_configs(
                     lines = lines.replace("<my-gcp-project-id>", gcp_project_id)
                     lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
                     lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
+                    lines = lines.replace("<my_bigquery_input_data_dataset_id>", gcp_dataplex_bigquery_dataset_id)
                     source_file.write(lines)
 
     yield temp_clouddq_dir.absolute()
