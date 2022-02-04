@@ -18,7 +18,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from clouddq.classes.dataplex_entity_schema_field import DataplexEntitySchemaField
-from clouddq.classes.dataplex_entity_schema_partition_fields import DataplexEntityPartitionSchemaField
+from clouddq.classes.dataplex_entity_schema_partition_fields import (
+    DataplexEntityPartitionSchemaField,
+)
 from clouddq.utils import assert_not_none_or_empty
 
 
