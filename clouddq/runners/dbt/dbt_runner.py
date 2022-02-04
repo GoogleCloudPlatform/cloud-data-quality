@@ -18,6 +18,7 @@ from typing import Optional
 
 import logging
 
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_DBT_ENVIRONMENT_TARGET
 from clouddq.runners.dbt.dbt_connection_configs import DbtConnectionConfig
 from clouddq.runners.dbt.dbt_connection_configs import GcpDbtConnectionConfig
@@ -41,6 +42,7 @@ class DbtRunner:
     environment_target: str
     connection_config: DbtConnectionConfig
     dbt_rule_binding_views_path: Path
+    dbt_entity_summary_path: Path
 
     def __init__(
         self,
@@ -52,6 +54,7 @@ class DbtRunner:
         gcp_bq_dataset_id: Optional[str],
         gcp_service_account_key_path: Optional[Path],
         gcp_impersonation_credentials: Optional[str],
+        bigquery_client: Optional[BigQueryClient] = None,
         create_paths_if_not_exists: bool = True,
     ):
         # Prepare local dbt environment
@@ -63,13 +66,15 @@ class DbtRunner:
         self._prepare_dbt_project_path()
         self._prepare_dbt_main_path()
         self._prepare_rule_binding_view_path(write_log=True)
+        self._prepare_entity_summary_path(write_log=True)
         # Prepare connection configurations
         self._resolve_connection_configs(
             dbt_profiles_dir=dbt_profiles_dir,
             environment_target=environment_target,
             gcp_project_id=gcp_project_id,
-            gcp_region_id=gcp_region_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
+            bigquery_client=bigquery_client,
+            gcp_region_id=gcp_region_id,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
         )
@@ -107,6 +112,10 @@ class DbtRunner:
         self._prepare_rule_binding_view_path()
         return Path(self.dbt_rule_binding_views_path)
 
+    def get_entity_summary_path(self) -> Path:
+        self._prepare_entity_summary_path()
+        return Path(self.dbt_entity_summary_path)
+
     def get_dbt_profiles_dir(self) -> Path:
         self._resolve_connection_configs(
             dbt_profiles_dir=self.dbt_profiles_dir,
@@ -121,10 +130,19 @@ class DbtRunner:
         )
         return self.environment_target
 
+    def get_dq_summary_dataset_region(self) -> str:
+        self._resolve_connection_configs(
+            dbt_profiles_dir=self.dbt_profiles_dir,
+            environment_target=self.environment_target,
+        )
+        Path(self.dbt_profiles_dir)
+        return self.environment_target
+
     def _resolve_connection_configs(
         self,
         dbt_profiles_dir: Optional[str],
         environment_target: Optional[str],
+        bigquery_client: Optional[BigQueryClient] = None,
         gcp_project_id: Optional[str] = None,
         gcp_region_id: Optional[str] = None,
         gcp_bq_dataset_id: Optional[str] = None,
@@ -144,16 +162,16 @@ class DbtRunner:
             # create GcpDbtConnectionConfig
             connection_config = GcpDbtConnectionConfig(
                 gcp_project_id=gcp_project_id,
-                gcp_region_id=gcp_region_id,
                 gcp_bq_dataset_id=gcp_bq_dataset_id,
+                bigquery_client=bigquery_client,
+                gcp_region_id=gcp_region_id,
                 gcp_service_account_key_path=gcp_service_account_key_path,
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
             self.connection_config = connection_config
             self.dbt_profiles_dir = Path(self.dbt_path)
             logger.debug(
-                "Writing user input GCP connection profile to dbt profiles.yml "
-                f"at path: {self.dbt_profiles_dir}",
+                "Using dbt profiles.yml path: {self.dbt_profiles_dir}",
             )
             if environment_target:
                 logger.debug(f"Using `environment_target`: {environment_target}")
@@ -224,6 +242,18 @@ class DbtRunner:
         self.dbt_rule_binding_views_path.mkdir(parents=True, exist_ok=True)
         if write_log:
             logger.debug(
-                "Writing generated sql to "
+                "Using rule_binding_views path: "
                 f"{self.dbt_rule_binding_views_path.absolute()}/",
+            )
+
+    def _prepare_entity_summary_path(self, write_log: bool = False) -> None:
+        assert self.dbt_path.is_dir()
+        self.dbt_entity_summary_path = (
+            self.dbt_path / "models" / "entity_dq_statistics"
+        )
+        self.dbt_entity_summary_path.mkdir(parents=True, exist_ok=True)
+        if write_log:
+            logger.debug(
+                "Using entity_dq_statistics path: "
+                f"{self.dbt_entity_summary_path.absolute()}/",
             )

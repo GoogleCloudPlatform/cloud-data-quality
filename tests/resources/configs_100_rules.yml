@@ -1,0 +1,749 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+entities:
+  TEST_TABLE:
+    source_database: BIGQUERY
+    table_name: contact_details
+    dataset_name: <my_bigquery_dataset_id>
+    project_name: <my-gcp-project-id>
+    environment_override:
+      TEST:
+        environment: test
+        override:
+          dataset_name: <your_bigquery_dataset_id_2>
+          project_name: <your_gcp_project_id_2>
+    columns:
+      COST_ID:
+        name: cost_id
+        data_type: INTEGER
+        description: |-
+          unique identifying id
+      COST_EVENT_ID:
+        name: cost_event_id
+        data_type: INTEGER
+        description: |-
+          integer type
+      COST_TYPE_CONCEPT_ID:
+        name: cost_type_concept_id
+        data_type: INTEGER
+        description: |-
+          integer type
+      CURRENCY_CONCEPT_ID:
+        name: currency_concept_id
+        data_type: INTEGER
+        description: |-
+          integer type
+      TOTAL_PAID:
+        name: total_paid
+        data_type: FLOAT
+        description: |-
+          FLOAT type
+      PAID_BY_PAYER:
+        name: paid_by_payer
+        data_type: FLOAT
+        description: |-
+          FLOAT type
+      PAID_BY_PATIENT:
+        name: paid_by_patient
+        data_type: FLOAT
+        description: |-
+          FLOAT type
+      PAID_BY_PRIMARY:
+        name: paid_by_primary
+        data_type: FLOAT
+        description: |-
+          FLOAT type
+      
+row_filters:
+  NONE:
+    filter_sql_expr: |-
+      True
+rule_dimensions:
+  - validity
+  - accuracy
+rule_bindings:
+  T1_COST_ID_UNIQUE:
+    entity_id: TEST_TABLE
+    column_id: COST_ID
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS1:
+          column_names: "cost_id"
+      - NOT_NULL_SIMPLE1
+      - NOT_NULL_SIMPLE2
+      - NOT_NULL_SIMPLE3
+      - NOT_NULL_SIMPLE4
+      - NOT_NULL_SIMPLE5
+      - NOT_NULL_SIMPLE6
+      - NOT_NULL_SIMPLE7
+      - NOT_NULL_SIMPLE8
+      - NOT_NULL_SIMPLE9
+      - NOT_NULL_SIMPLE10
+      - NOT_NULL_SIMPLE11
+      - NOT_NULL_SIMPLE12
+      - NOT_NULL_SIMPLE13
+      - NOT_NULL_SIMPLE14
+      - NOT_NULL_SIMPLE15
+      - NOT_NULL_SIMPLE16
+      - NOT_NULL_SIMPLE17
+      - NOT_NULL_SIMPLE18
+      - NOT_NULL_SIMPLE19
+      - NOT_NULL_SIMPLE20
+      - NOT_NULL_SIMPLE21
+      - NOT_NULL_SIMPLE22
+      - NOT_NULL_SIMPLE23
+      - NOT_NULL_SIMPLE24
+      - NOT_NULL_SIMPLE25
+      - NOT_NULL_SIMPLE26
+      - NOT_NULL_SIMPLE27
+      - NOT_NULL_SIMPLE28
+      - NOT_NULL_SIMPLE29
+      - NOT_NULL_SIMPLE30
+      - NOT_NULL_SIMPLE31
+      - NOT_NULL_SIMPLE32
+      - NOT_NULL_SIMPLE33
+      - NOT_NULL_SIMPLE34
+      - NOT_NULL_SIMPLE35
+      - NOT_NULL_SIMPLE36
+      - NOT_NULL_SIMPLE37
+      - NOT_NULL_SIMPLE38
+      - NOT_NULL_SIMPLE39
+      - NOT_NULL_SIMPLE40
+      - NOT_NULL_SIMPLE41
+      - NOT_NULL_SIMPLE42
+      - NOT_NULL_SIMPLE43
+      - NOT_NULL_SIMPLE44
+      - NOT_NULL_SIMPLE45
+      - NOT_NULL_SIMPLE46
+      - NOT_NULL_SIMPLE47
+      - NOT_NULL_SIMPLE48
+      - NOT_NULL_SIMPLE49
+      - NOT_NULL_SIMPLE50
+      - NOT_NULL_SIMPLE51
+      - NOT_NULL_SIMPLE52
+      - NOT_NULL_SIMPLE53
+      - NOT_NULL_SIMPLE54
+      - NOT_NULL_SIMPLE55
+      - NOT_NULL_SIMPLE56
+      - NOT_NULL_SIMPLE57
+      - NOT_NULL_SIMPLE58
+      - NOT_NULL_SIMPLE59
+      - NOT_NULL_SIMPLE60
+      - NOT_NULL_SIMPLE61
+      - NOT_NULL_SIMPLE62
+      - NOT_NULL_SIMPLE63
+      - NOT_NULL_SIMPLE64
+      - NOT_NULL_SIMPLE65
+      - NOT_NULL_SIMPLE66
+      - NOT_NULL_SIMPLE67
+      - NOT_NULL_SIMPLE68
+      - NOT_NULL_SIMPLE69
+      - NOT_NULL_SIMPLE70
+      - NOT_NULL_SIMPLE71
+      - NOT_NULL_SIMPLE72
+      - NOT_NULL_SIMPLE73
+      - NOT_NULL_SIMPLE74
+      - NOT_NULL_SIMPLE75
+      - NOT_NULL_SIMPLE76
+      - NOT_NULL_SIMPLE77
+      - NOT_NULL_SIMPLE78
+      - NOT_NULL_SIMPLE79
+      - NOT_NULL_SIMPLE80
+      - NOT_NULL_SIMPLE81
+      - NOT_NULL_SIMPLE82
+      - NOT_NULL_SIMPLE83
+      - NOT_NULL_SIMPLE84
+      - NOT_NULL_SIMPLE85
+      - NOT_NULL_SIMPLE86
+      - NOT_NULL_SIMPLE87
+      - NOT_NULL_SIMPLE88
+      - NOT_NULL_SIMPLE89
+      - NOT_NULL_SIMPLE90
+      - NOT_NULL_SIMPLE91
+      - NOT_NULL_SIMPLE92
+      - NOT_NULL_SIMPLE93
+      - NOT_NULL_SIMPLE94
+      - NOT_NULL_SIMPLE95
+      - NOT_NULL_SIMPLE96
+      - NOT_NULL_SIMPLE97
+      - NOT_NULL_SIMPLE98
+      - VALUE_POSITIVE1
+      - VALUE_POSITIVE2
+      - VALUE_POSITIVE3
+      - VALUE_POSITIVE4
+  T2_COST_EVENT_ID:
+    entity_id: TEST_TABLE
+    column_id: COST_EVENT_ID
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS1:
+          column_names: "cost_event_id"
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T3_COST_TYPE_CONCEPT_ID:
+    entity_id: TEST_TABLE
+    column_id: COST_TYPE_CONCEPT_ID
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS1:
+          column_names: "cost_type_concept_id"
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T4_CURRENCY_CONCEPT_ID:
+    entity_id: TEST_TABLE
+    column_id: CURRENCY_CONCEPT_ID
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS1:
+          column_names: "currency_concept_id"
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T5_TOTAL_PAID:
+    entity_id: TEST_TABLE
+    column_id: TOTAL_PAID
+    row_filter_id: NONE
+    rule_ids:
+      - NOT_NULL_SIMPLE1
+      - NOT_NULL_SIMPLE2
+      - NOT_NULL_SIMPLE3
+      - NOT_NULL_SIMPLE4
+      - NOT_NULL_SIMPLE5
+      - NOT_NULL_SIMPLE6
+      - NOT_NULL_SIMPLE7
+      - NOT_NULL_SIMPLE8
+      - NOT_NULL_SIMPLE9
+      - NOT_NULL_SIMPLE10
+      - NOT_NULL_SIMPLE11
+      - NOT_NULL_SIMPLE12
+      - NOT_NULL_SIMPLE13
+      - NOT_NULL_SIMPLE14
+      - NOT_NULL_SIMPLE15
+      - NOT_NULL_SIMPLE16
+      - NOT_NULL_SIMPLE17
+      - NOT_NULL_SIMPLE18
+      - NOT_NULL_SIMPLE19
+      - NOT_NULL_SIMPLE20
+      - NOT_NULL_SIMPLE21
+      - NOT_NULL_SIMPLE22
+      - NOT_NULL_SIMPLE23
+      - NOT_NULL_SIMPLE24
+      - NOT_NULL_SIMPLE25
+      - NOT_NULL_SIMPLE26
+      - NOT_NULL_SIMPLE27
+      - NOT_NULL_SIMPLE28
+      - NOT_NULL_SIMPLE29
+      - NOT_NULL_SIMPLE30
+      - NOT_NULL_SIMPLE31
+      - NOT_NULL_SIMPLE32
+      - NOT_NULL_SIMPLE33
+      - NOT_NULL_SIMPLE34
+      - NOT_NULL_SIMPLE35
+      - NOT_NULL_SIMPLE36
+      - NOT_NULL_SIMPLE37
+      - NOT_NULL_SIMPLE38
+      - NOT_NULL_SIMPLE39
+      - NOT_NULL_SIMPLE40
+      - NOT_NULL_SIMPLE41
+      - NOT_NULL_SIMPLE42
+      - NOT_NULL_SIMPLE43
+      - NOT_NULL_SIMPLE44
+      - NOT_NULL_SIMPLE45
+      - NOT_NULL_SIMPLE46
+      - NOT_NULL_SIMPLE47
+      - NOT_NULL_SIMPLE48
+      - NOT_NULL_SIMPLE49
+      - NOT_NULL_SIMPLE50
+      - NOT_NULL_SIMPLE51
+      - NOT_NULL_SIMPLE52
+      - NOT_NULL_SIMPLE53
+      - NOT_NULL_SIMPLE54
+      - NOT_NULL_SIMPLE55
+      - NOT_NULL_SIMPLE56
+      - NOT_NULL_SIMPLE57
+      - NOT_NULL_SIMPLE58
+      - NOT_NULL_SIMPLE59
+      - NOT_NULL_SIMPLE60
+      - NOT_NULL_SIMPLE61
+      - NOT_NULL_SIMPLE62
+      - NOT_NULL_SIMPLE63
+      - NOT_NULL_SIMPLE64
+      - NOT_NULL_SIMPLE65
+      - NOT_NULL_SIMPLE66
+      - NOT_NULL_SIMPLE67
+      - NOT_NULL_SIMPLE68
+      - NOT_NULL_SIMPLE69
+      - NOT_NULL_SIMPLE70
+      - NOT_NULL_SIMPLE71
+      - NOT_NULL_SIMPLE72
+      - NOT_NULL_SIMPLE73
+      - NOT_NULL_SIMPLE74
+      - NOT_NULL_SIMPLE75
+      - NOT_NULL_SIMPLE76
+      - NOT_NULL_SIMPLE77
+      - NOT_NULL_SIMPLE78
+      - NOT_NULL_SIMPLE79
+      - NOT_NULL_SIMPLE80
+      - NOT_NULL_SIMPLE81
+      - NOT_NULL_SIMPLE82
+      - NOT_NULL_SIMPLE83
+      - NOT_NULL_SIMPLE84
+      - NOT_NULL_SIMPLE85
+      - NOT_NULL_SIMPLE86
+      - NOT_NULL_SIMPLE87
+      - NOT_NULL_SIMPLE88
+      - NOT_NULL_SIMPLE89
+      - NOT_NULL_SIMPLE90
+      - NOT_NULL_SIMPLE91
+      - NOT_NULL_SIMPLE92
+      - NOT_NULL_SIMPLE93
+      - NOT_NULL_SIMPLE94
+      - NOT_NULL_SIMPLE95
+      - NOT_NULL_SIMPLE96
+      - NOT_NULL_SIMPLE97
+      - NOT_NULL_SIMPLE98
+  T6_PAID_BY_PAYER:
+    entity_id: TEST_TABLE
+    column_id: PAID_BY_PAYER
+    row_filter_id: NONE
+    rule_ids:
+      - VALUE_ZERO_OR_POSITIVE1
+      - VALUE_ZERO_OR_POSITIVE2
+      - VALUE_ZERO_OR_POSITIVE3
+      - VALUE_ZERO_OR_POSITIVE4
+      - VALUE_ZERO_OR_POSITIVE5
+      - VALUE_ZERO_OR_POSITIVE6
+      - VALUE_ZERO_OR_POSITIVE7
+      - VALUE_ZERO_OR_POSITIVE8
+      - VALUE_ZERO_OR_POSITIVE9
+      - VALUE_ZERO_OR_POSITIVE10
+  T7_PAID_BY_PATIENT:
+    entity_id: TEST_TABLE
+    column_id: PAID_BY_PATIENT
+    row_filter_id: NONE
+    rule_ids:
+      - VALUE_ZERO_OR_POSITIVE1
+      - VALUE_ZERO_OR_POSITIVE2
+      - VALUE_ZERO_OR_POSITIVE3
+      - VALUE_ZERO_OR_POSITIVE4
+      - VALUE_ZERO_OR_POSITIVE5
+      - VALUE_ZERO_OR_POSITIVE6
+      - VALUE_ZERO_OR_POSITIVE7
+      - VALUE_ZERO_OR_POSITIVE8
+      - VALUE_ZERO_OR_POSITIVE9
+      - VALUE_ZERO_OR_POSITIVE10
+  T8_PAID_BY_PRIMARY:
+    entity_id: TEST_TABLE
+    column_id: PAID_BY_PRIMARY
+    row_filter_id: NONE
+    rule_ids:
+      - VALUE_ZERO_OR_POSITIVE1
+      - VALUE_ZERO_OR_POSITIVE2
+      - VALUE_ZERO_OR_POSITIVE3
+      - VALUE_ZERO_OR_POSITIVE4
+      - VALUE_ZERO_OR_POSITIVE5
+      - VALUE_ZERO_OR_POSITIVE6
+      - VALUE_ZERO_OR_POSITIVE7
+      - VALUE_ZERO_OR_POSITIVE8
+      - VALUE_ZERO_OR_POSITIVE9
+      - VALUE_ZERO_OR_POSITIVE10
+  T9_COST_EVENT_ID:
+    entity_id: TEST_TABLE
+    column_id: COST_EVENT_ID
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS1:
+          column_names: "cost_event_id"
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+  T10_COST_TYPE_CONCEPT_ID:
+    entity_id: TEST_TABLE
+    column_id: COST_TYPE_CONCEPT_ID
+    row_filter_id: NONE
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS1:
+          column_names: "cost_type_concept_id"
+      - NOT_NULL_SIMPLE1
+      - VALUE_POSITIVE1
+      - NOT_NULL_SIMPLE2
+      - VALUE_POSITIVE2
+      - NOT_NULL_SIMPLE3
+      - VALUE_POSITIVE3
+      - NOT_NULL_SIMPLE4
+      - VALUE_POSITIVE4
+      - NOT_NULL_SIMPLE5
+rules:
+  NOT_NULL_SIMPLE1:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE2:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE3:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE4:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE5:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE6:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE7:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE8:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE9:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE10:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE11:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE12:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE13:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE14:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE15:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE16:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE17:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE18:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE19:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE20:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE21:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE22:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE23:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE24:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE25:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE26:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE27:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE28:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE29:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE30:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE31:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE32:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE33:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE34:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE35:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE36:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE37:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE38:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE39:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE40:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE41:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE42:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE43:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE44:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE45:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE46:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE47:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE48:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE49:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE50:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE51:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE52:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE53:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE54:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE55:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE56:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE57:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE58:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE59:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE60:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE61:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE62:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE63:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE64:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE65:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE66:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE67:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE68:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE69:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE70:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE71:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE72:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE73:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE74:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE75:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE76:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE77:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE78:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE79:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE80:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE81:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE82:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE83:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE84:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE85:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE86:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE87:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE88:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE89:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE90:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE91:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE92:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE93:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE94:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE95:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE96:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE97:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE98:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE99:
+    rule_type: NOT_NULL
+  NOT_NULL_SIMPLE100:
+    rule_type: NOT_NULL
+  NO_DUPLICATES_IN_COLUMN_GROUPS1:
+    dimension: accuracy
+    params:
+      custom_sql_arguments:
+      - column_names
+      custom_sql_statement: "select a.*\nfrom data a\ninner join (\n  select\n   \
+        \ $column_names\n  from data\n  group by $column_names\n  having count(*)\
+        \ > 1\n) duplicates\nusing ($column_names)"
+    rule_type: CUSTOM_SQL_STATEMENT
+  VALUE_POSITIVE1:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE2:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE3:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE4:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE5:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE6:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE7:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE8:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE9:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE10:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_POSITIVE11:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column > 0
+  VALUE_ZERO_OR_POSITIVE1:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE2:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE3:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE4:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE5:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE6:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE7:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE8:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE9:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0
+  VALUE_ZERO_OR_POSITIVE10:
+   rule_type: CUSTOM_SQL_EXPR
+   dimension: validity
+   params:
+     custom_sql_expr: |-
+       $column >= 0

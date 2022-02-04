@@ -13,7 +13,7 @@
 # limitations under the License.
 
 name: "data_quality"
-version: "0.4.0"
+version: "0.5.2"
 
 config-version: 2
 
@@ -42,9 +42,13 @@ clean-targets: # directories to be removed by `dbt clean`
 models:
   data_quality:
     data_quality_engine:
-      materialized: table
+      +materialized: ephemeral
     rule_binding_views:
-      materialized: view
+      +materialized: view
+    entity_dq_statistics:
+      +materialized: table
+      +hours_to_expiration: 6
+
 
 vars:
   target_rule_binding_ids: ""

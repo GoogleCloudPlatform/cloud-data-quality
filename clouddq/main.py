@@ -70,7 +70,8 @@ coloredlogs.install(logger=logger)
 @click.option(
     "--gcp_region_id",
     help="GCP region used for running BigQuery Jobs and for storing "
-    " any intemediate DQ summary results. "
+    " any intermediate DQ summary results. This is an optional argument. "
+    "It will default to the region of the --gcp_bq_dataset_id if not provided."
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
     type=str,
@@ -78,7 +79,10 @@ coloredlogs.install(logger=logger)
 @click.option(
     "--gcp_bq_dataset_id",
     help="GCP BigQuery Dataset ID used for storing rule_binding views "
-    "and intermediate DQ summary results. "
+    "and intermediate DQ summary results. This dataset must be located "
+    "in project --gcp_project_id and region --gcp_region_id."
+    "If --gcp_region_id is not provided, BigQuery jobs will be created "
+    "in the same GCP region as this dataset. "
     "This argument will be ignored if --dbt_profiles_dir is set.",
     default=None,
     type=str,
@@ -194,6 +198,13 @@ coloredlogs.install(logger=logger)
     default=False,
 )
 @click.option(
+    "--enable_experimental_dataplex_gcs_validation",
+    help="If True, allows validating Dataplex GCS resources using "
+    "BigQuery External Tables",
+    is_flag=True,
+    default=False,
+)
+@click.option(
     "--enable_experimental_bigquery_entity_uris",
     help="If True, allows looking up entity_uris with scheme 'bigquery://' "
     "using Dataplex Metadata API. ",
@@ -220,6 +231,7 @@ def main(  # noqa: C901
     skip_sql_validation: bool = False,
     summary_to_stdout: bool = False,
     enable_experimental_bigquery_entity_uris: bool = False,
+    enable_experimental_dataplex_gcs_validation: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -242,7 +254,6 @@ def main(  # noqa: C901
       configs/ \\
       --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
       --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
-      --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
       --target_bigquery_summary_table="${CLOUDDQ_TARGET_BIGQUERY_TABLE}" \\
       --metadata='{"key":"value"}' \\
 
@@ -252,7 +263,6 @@ def main(  # noqa: C901
       configs/ \\
       --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \\
       --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \\
-      --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \\
       --target_bigquery_summary_table="${CLOUDDQ_TARGET_BIGQUERY_TABLE}" \\
       --dry_run  \\
       --debug
@@ -271,20 +281,19 @@ def main(  # noqa: C901
     if dbt_profiles_dir:
         logger.warning(
             "If --dbt_profiles_dir is present, all other connection configs "
-            "with pattern --gcp_* will be ignored. "
+            "such as '--gcp_project_id', '--gcp_bq_dataset_id', '--gcp_region_id' "
+            "will be ignored. \n"
             "Passing in dbt configs directly via --dbt_profiles_dir will be "
             "deprecated in v1.0.0. Please migrate to use native-flags for "
             "specifying connection configs instead."
         )
-    if (
-        not dbt_profiles_dir
-        and (  # noqa: W503
-            not gcp_project_id or not gcp_bq_dataset_id or not gcp_region_id
-        )
-    ) or (dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id or gcp_region_id)):
+    if (not dbt_profiles_dir and (not gcp_project_id or not gcp_bq_dataset_id)) or (
+        dbt_profiles_dir and (gcp_project_id or gcp_bq_dataset_id)
+    ):
         raise ValueError(
-            "CLI input must define connection configs using '--dbt_profiles_dir' or "
-            "using '--gcp_project_id', '--gcp_bq_dataset_id', and '--gcp_region_id'."
+            "CLI input must define connection configs in either a single dbt profiles.yml file "
+            "in '--dbt_profiles_dir' or individually using the parameters: "
+            "'--gcp_project_id', '--gcp_bq_dataset_id', '--gcp_region_id')."
         )
     bigquery_client = None
     try:
@@ -299,9 +308,8 @@ def main(  # noqa: C901
         json_logger.warning(
             json.dumps({"clouddq_run_configs": locals()}, cls=JsonEncoderDatetime)
         )
-        if not skip_sql_validation:
-            # Create BigQuery client for query dry-runs
-            bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
+        # Create BigQuery client
+        bigquery_client = BigQueryClient(gcp_credentials=gcp_credentials)
         # Prepare dbt runtime
         dbt_runner = DbtRunner(
             dbt_path=dbt_path,
@@ -310,11 +318,13 @@ def main(  # noqa: C901
             gcp_project_id=gcp_project_id,
             gcp_region_id=gcp_region_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
+            bigquery_client=bigquery_client,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
         )
         dbt_path = dbt_runner.get_dbt_path()
         dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
+        dbt_entity_summary_path = dbt_runner.get_entity_summary_path()
         dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir()
         environment_target = dbt_runner.get_dbt_environment_target()
         # Prepare DQ Summary Table
@@ -324,34 +334,44 @@ def main(  # noqa: C901
             environment_target=environment_target,
         )
         logger.info(
-            "Writing BigQuery rule_binding views and intermediate "
-            f"summary results to BigQuery table: `{dq_summary_table_name}`. "
+            "Writing rule_binding views and intermediate summary "
+            f"results to BigQuery dq_summary_table_name: `{dq_summary_table_name}`. "
         )
         dq_summary_table_exists = False
-        if gcp_region_id and not skip_sql_validation:
-            dq_summary_table_ref = bigquery_client.table_from_string(
-                dq_summary_table_name
+        dq_summary_table_ref = bigquery_client.table_from_string(dq_summary_table_name)
+        dq_summary_project_id = dq_summary_table_ref.project
+        dq_summary_dataset = dq_summary_table_ref.dataset_id
+        logger.info(
+            f"Using dq_summary_dataset: {dq_summary_project_id}.{dq_summary_dataset}"
+        )
+        dq_summary_table_exists = bigquery_client.is_table_exists(
+            table=dq_summary_table_name, project_id=dq_summary_project_id
+        )
+        if not bigquery_client.is_dataset_exists(
+            dataset=dq_summary_dataset, project_id=dq_summary_project_id
+        ):
+            raise AssertionError(
+                "Invalid argument to --gcp_bq_dataset_id: "
+                f"Dataset {dq_summary_project_id}.{dq_summary_dataset} does not exist. "
             )
-            dq_summary_project_id = dq_summary_table_ref.project
-            dq_summary_dataset = dq_summary_table_ref.dataset_id
-            logger.info(
-                f"Using dq_summary_dataset: {dq_summary_project_id}.{dq_summary_dataset}"
+        dq_summary_dataset_region = bigquery_client.get_dataset_region(
+            dataset=dq_summary_dataset,
+            project_id=dq_summary_project_id,
+        )
+        if gcp_region_id and dq_summary_dataset_region != gcp_region_id:
+            raise AssertionError(
+                f"GCP region in --gcp_region_id '{gcp_region_id}' "
+                f"must be the same as dq_summary_dataset "
+                f"'{dq_summary_project_id}.{dq_summary_dataset}' region: "
+                f"'{dq_summary_dataset_region}'."
             )
-            bigquery_client.assert_dataset_is_in_region(
-                dataset=dq_summary_dataset,
-                region=gcp_region_id,
-                project_id=dq_summary_project_id,
-            )
-            dq_summary_table_exists = bigquery_client.is_table_exists(
-                table=dq_summary_table_name, project_id=dq_summary_project_id
-            )
-            bigquery_client.assert_required_columns_exist_in_table(
-                table=dq_summary_table_name, project_id=dq_summary_project_id
-            )
+        bigquery_client.assert_required_columns_exist_in_table(
+            table=dq_summary_table_name, project_id=dq_summary_project_id
+        )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             logger.info(
-                "Writing summary results to target BigQuery table: "
+                "Using target_bigquery_summary_table: "
                 f"`{target_bigquery_summary_table}`. "
             )
             target_table_ref = bigquery_client.table_from_string(
@@ -360,7 +380,8 @@ def main(  # noqa: C901
             target_project_id = target_table_ref.project
             target_dataset_id = target_table_ref.dataset_id
             logger.debug(
-                f"BigQuery dataset used in --target_bigquery_summary_table: {target_project_id}.{target_dataset_id}"
+                f"BigQuery dataset used in --target_bigquery_summary_table: "
+                f"{target_project_id}.{target_dataset_id}"
             )
             if not bigquery_client.is_dataset_exists(
                 dataset=target_dataset_id, project_id=target_project_id
@@ -370,11 +391,26 @@ def main(  # noqa: C901
                     f"{target_bigquery_summary_table}. "
                     f"Dataset {target_project_id}.{target_dataset_id} does not exist. "
                 )
-            bigquery_client.assert_dataset_is_in_region(
+            target_dataset_region = bigquery_client.get_dataset_region(
                 dataset=target_dataset_id,
-                region=gcp_region_id,
                 project_id=target_project_id,
             )
+            if gcp_region_id and target_dataset_region != gcp_region_id:
+                raise AssertionError(
+                    f"GCP region in --gcp_region_id '{gcp_region_id}' "
+                    f"must be the same as --target_bigquery_summary_table "
+                    f"'{target_project_id}.{target_dataset_id}' region "
+                    f"'{target_dataset_region}'."
+                )
+            if target_dataset_region != dq_summary_dataset_region:
+                raise ValueError(
+                    f"GCP region for --gcp_bq_dataset_id "
+                    f"'{dq_summary_project_id}.{dq_summary_dataset}': "
+                    f"'{dq_summary_dataset_region}' must be the same as "
+                    f"GCP region for --target_bigquery_summary_table "
+                    f"'{dq_summary_project_id}.{dq_summary_dataset}': "
+                    f"'{target_dataset_region}'"
+                )
             bigquery_client.assert_required_columns_exist_in_table(
                 table=target_bigquery_summary_table, project_id=target_project_id
             )
@@ -382,6 +418,7 @@ def main(  # noqa: C901
             logger.warning(
                 "CLI --target_bigquery_summary_table is not set. This will become a required argument in v1.0.0."
             )
+        # Log information about --summary_to_stdout
         if summary_to_stdout and target_bigquery_summary_table:
             logger.info(
                 "--summary_to_stdout is True. Logging summary results as json to stdout."
@@ -438,7 +475,15 @@ def main(  # noqa: C901
             default_configs=dataplex_registry_defaults,
             target_rule_binding_ids=target_rule_binding_ids,
             enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
+            enable_experimental_dataplex_gcs_validation=enable_experimental_dataplex_gcs_validation,
         )
+        # Get Entities for entity-level summary views
+        target_entity_summary_configs: dict = (
+            configs_cache.get_entities_configs_from_rule_bindings(
+                target_rule_binding_ids=target_rule_binding_ids,
+            )
+        )
+        # Create Rule_binding views
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
             assert_not_none_or_empty(
@@ -477,16 +522,51 @@ def main(  # noqa: C901
                 f"{rule_binding_id}.sql",
             )
             lib.write_sql_string_as_dbt_model(
-                rule_binding_id=rule_binding_id,
+                model_id=rule_binding_id,
                 sql_string=sql_string,
-                dbt_rule_binding_views_path=dbt_rule_binding_views_path,
+                dbt_model_path=dbt_rule_binding_views_path,
             )
         # clean up old rule_bindings
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem not in target_rule_binding_ids:
                 view.unlink()
+        logger.info(
+            f"target_entity_summary_configs:\n{pformat(target_entity_summary_configs)}"
+        )
+        # create entity-level summary table models
+        for (
+            entity_table_id,
+            entity_configs_dict,
+        ) in target_entity_summary_configs.items():
+            rule_binding_ids_list = entity_configs_dict.get("rule_binding_ids_list")
+            assert_not_none_or_empty(
+                rule_binding_ids_list,
+                f"Internal Error: no rule_binding_id found for entity_table_id {entity_table_id}.",
+            )
+            sql_string = lib.create_entity_summary_model(
+                entity_table_id=entity_table_id,
+                entity_target_rule_binding_configs=entity_configs_dict,
+                gcp_project_id=gcp_project_id,
+                gcp_bq_dataset_id=gcp_bq_dataset_id,
+                debug=print_sql_queries,
+            )
+            logger.debug(
+                f"*** Writing sql to {dbt_entity_summary_path.absolute()}/"
+                f"{entity_table_id}.sql",
+            )
+            lib.write_sql_string_as_dbt_model(
+                model_id=entity_table_id,
+                sql_string=sql_string,
+                dbt_model_path=dbt_entity_summary_path,
+            )
+        # clean up old entity_summary views
+        for view in dbt_entity_summary_path.glob("*.sql"):
+            if view.stem not in target_entity_summary_configs.keys():
+                view.unlink()
         # create dbt configs json for the main.sql loop and run dbt
-        configs = {"target_rule_binding_ids": target_rule_binding_ids}
+        configs = {
+            "entity_dq_statistics_models": list(target_entity_summary_configs.keys()),
+        }
         dbt_runner.run(
             configs=configs,
             debug=debug,

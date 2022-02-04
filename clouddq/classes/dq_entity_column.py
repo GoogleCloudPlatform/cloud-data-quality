@@ -111,7 +111,6 @@ class DatabaseType(str, Enum):
     """ """
 
     BIGQUERY = "BIGQUERY"
-    DATAPLEX_BQ_EXTERNAL_TABLE = "DATAPLEX_BQ_EXTERNAL_TABLE"
     DATAPLEX = "DATAPLEX"
 
     def get_column_type(
@@ -128,10 +127,6 @@ class DatabaseType(str, Enum):
                 f"Current mapping: {BIGQUERY_COLUMN_TYPES_MAPPING}",
             )
             return database_column_type
-        if self == DatabaseType.DATAPLEX_BQ_EXTERNAL_TABLE:
-            raise NotImplementedError(
-                f"Database: {self} does not yet have column type mapping."
-            )
         if self == DatabaseType.DATAPLEX:
             database_column_type = BIGQUERY_COLUMN_TYPES_MAPPING.get(column_type, None)
             assert_not_none_or_empty(
@@ -160,10 +155,12 @@ class DatabaseColumnType(str, Enum):
     INT = "INT"
     INTEGER = "INTEGER"
     INT64 = "INT64"
+    INT32 = "INT32"
     SMALLINT = "SMALLINT"
     BIGINT = "BIGINT"
     FLOAT = "FLOAT"
     FLOAT64 = "FLOAT64"
+    FLOAT32 = "FLOAT32"
     REAL = "REAL"
     DOUBLE = "DOUBLE"
     NUMERIC = "NUMERIC"
@@ -193,11 +190,13 @@ BIGQUERY_COLUMN_TYPES_MAPPING: dict = {
     DatabaseColumnType.TEXT: "STRING",
     DatabaseColumnType.INT: "INT64",
     DatabaseColumnType.INTEGER: "INT64",
+    DatabaseColumnType.INT32: "INT64",
     DatabaseColumnType.INT64: "INT64",
     DatabaseColumnType.SMALLINT: "INT64",
     DatabaseColumnType.BIGINT: "INT64",
     DatabaseColumnType.FLOAT: "FLOAT64",
     DatabaseColumnType.FLOAT64: "FLOAT64",
+    DatabaseColumnType.FLOAT32: "FLOAT64",
     DatabaseColumnType.REAL: "FLOAT64",
     DatabaseColumnType.DOUBLE: "FLOAT64",
     DatabaseColumnType.NUMERIC: "NUMERIC",

@@ -75,14 +75,6 @@ def get_custom_entity_configs(
         config_value = entity_config_template.format(**entity_config_arguments)
     except KeyError:
         if config_key in configs_map:
-            logger.warning(
-                f"Entity Config ID '{entity_id}' with source_database "
-                f"'{source_database}' is using deprecated "
-                f"config value '{config_key}'.\n"
-                f"This will be removed in version 1.0.\n"
-                f"Migrate to use the config values "
-                f"'{entity_config_template_arguments}' instead."
-            )
             config_value = configs_map.get(config_key)
         else:
             raise ValueError(
@@ -169,11 +161,15 @@ class DqEntity:
             config_key="instance_name",
         )
 
-        resource_type = get_custom_entity_configs(
-            entity_id=entity_id,
-            configs_map=kwargs,
-            source_database=source_database,
-            config_key="resource_type",
+        resource_type = (
+            get_custom_entity_configs(
+                entity_id=entity_id,
+                configs_map=kwargs,
+                source_database=source_database,
+                config_key="resource_type",
+            )
+            if source_database == "DATAPLEX"
+            else source_database
         )
 
         columns_dict = get_from_dict_and_assert(
@@ -226,6 +222,7 @@ class DqEntity:
                     "database_name": database_name_override,
                     "table_name": table_name_override,
                 }
+                environment_override[target_env].update(value)
         return DqEntity(
             entity_id=str(entity_id),
             source_database=source_database,
@@ -354,5 +351,5 @@ class DqEntity:
                 f"is unsupported for entity:\n {dataplex_entity.to_dict()}"
             )
 
-    def get_bq_external_table_name(self):
-        return  f"{self.instance_name}.{self.database_name}.{self.table_name}"
+    def get_table_name(self):
+        return f"{self.instance_name}.{self.database_name}.{self.table_name}"

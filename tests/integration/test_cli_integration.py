@@ -293,6 +293,7 @@ class TestCliIntegration:
         finally:
             shutil.rmtree(temp_dir)
 
+    @pytest.mark.xfail
     def test_cli_dry_run_oath_impersonation_fail(
         self,
         runner,
@@ -301,6 +302,7 @@ class TestCliIntegration:
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_application_credentials,
+        gcp_impersonation_credentials,
         tmp_path
     ):
         try:
@@ -318,6 +320,9 @@ class TestCliIntegration:
                     "--dry_run",
                     "--debug",
                     ]
+                if not gcp_impersonation_credentials:
+                    pytest.skip("Skipping tests involving service-account impersonation because "
+                    "test environment variable IMPERSONATION_SERVICE_ACCOUNT cannot be found.")
                 result = runner.invoke(main, args)
                 print(result.output)
                 assert result.exit_code == 1
@@ -381,6 +386,34 @@ class TestCliIntegration:
                 print(result.output)
                 assert result.exit_code == 1
                 assert isinstance(result.exception, SystemExit)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_cli_dry_run_implicit_region_id(
+        self,
+        runner,
+        temp_configs_dir,
+        gcp_project_id,
+        gcp_bq_dataset,
+        gcp_application_credentials,
+        tmp_path
+    ):
+        try:
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_11")
+            temp_dir.mkdir(parents=True)
+            with working_directory(temp_dir):
+                logger.info(f"test_cli_dry_run_implicit_region_id {gcp_application_credentials}")
+                args = [
+                    "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
+                    f"{temp_configs_dir}",
+                    f"--gcp_project_id={gcp_project_id}",
+                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+                    "--dry_run",
+                    "--debug",
+                    ]
+                result = runner.invoke(main, args)
+                print(result.output)
+                assert result.exit_code == 0
         finally:
             shutil.rmtree(temp_dir)
 

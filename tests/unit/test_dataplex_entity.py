@@ -103,7 +103,7 @@ class TestDataplexEntity:
             "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
             "system": "BIGQUERY",
             "format": {"format": "OTHER"},
-            "schema": DataplexEntitySchema.from_dict(entity_id= name, kwargs=schema),
+            "schema": DataplexEntitySchema.from_dict(entity_id=name, kwargs=schema),
             "project_id": "project-id",
             "location": "location-id",
             "lake": "lake_name",
@@ -112,7 +112,7 @@ class TestDataplexEntity:
 
         assert dataplex_entity.to_dict() == dataplex_entity_expected
 
-    def test_validate_dataplex_entity_to_dict(self, mock_valid_dataplex_input):
+    def test_validate_dataplex_entity_to_dict_no_format(self, mock_valid_dataplex_input):
         """ """
         name = "projects/project-id/locations/location-id/lakes/lake_name/zones/zone-id/entities/entity_id"
         test_input = mock_valid_dataplex_input
@@ -135,7 +135,7 @@ class TestDataplexEntity:
             "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
             "system": "BIGQUERY",
             "format": None,
-            "schema": DataplexEntitySchema.from_dict(entity_id= name, kwargs=schema),
+            "schema": DataplexEntitySchema.from_dict(entity_id=name, kwargs=schema),
             "project_id": "project-id",
             "location": "location-id",
             "lake": "lake_name",

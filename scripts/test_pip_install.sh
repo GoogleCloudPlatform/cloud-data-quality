@@ -95,12 +95,14 @@ sed -i s/\<my-gcp-dataplex-zone-id\>/"${DATAPLEX_ZONE_ID}"/g "$TEST_DIR"/configs
 python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs --dbt_profiles_dir="$TEST_DIR"  \
     --debug  \
     --dry_run \
-    --enable_experimental_bigquery_entity_uris
+    --enable_experimental_bigquery_entity_uris \
+    --enable_experimental_dataplex_gcs_validation
 python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs --dbt_profiles_dir="$TEST_DIR" \
     --dbt_path="$TEST_DIR"  \
     --debug  \
     --dry_run \
-    --enable_experimental_bigquery_entity_uris
+    --enable_experimental_bigquery_entity_uris \
+    --enable_experimental_dataplex_gcs_validation
 
 # test clouddq with direct connection profiles
 python3 -m clouddq ALL configs \
@@ -109,7 +111,8 @@ python3 -m clouddq ALL configs \
     --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
     --debug \
     --dry_run \
-    --enable_experimental_bigquery_entity_uris
+    --enable_experimental_bigquery_entity_uris \
+    --enable_experimental_dataplex_gcs_validation
 
 if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
     # test clouddq with exported service account key
@@ -120,7 +123,8 @@ if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
         --gcp_service_account_key_path="${GOOGLE_APPLICATION_CREDENTIALS}" \
         --debug \
         --dry_run \
-        --enable_experimental_bigquery_entity_uris
+        --enable_experimental_bigquery_entity_uris \
+        --enable_experimental_dataplex_gcs_validation
     if [[ -f "${IMPERSONATION_SERVICE_ACCOUNT:-}" ]]; then
         # test clouddq with exported service account key
         python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs \
@@ -131,7 +135,8 @@ if [[ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
             --gcp_impersonation_credentials="${IMPERSONATION_SERVICE_ACCOUNT}" \
             --debug \
             --dry_run \
-            --enable_experimental_bigquery_entity_uris
+            --enable_experimental_bigquery_entity_uris \
+            --enable_experimental_dataplex_gcs_validation
     fi
 fi
 
@@ -144,5 +149,6 @@ if [[ -f "${IMPERSONATION_SERVICE_ACCOUNT:-}" ]]; then
         --gcp_impersonation_credentials="${IMPERSONATION_SERVICE_ACCOUNT}" \
         --debug \
         --dry_run \
-        --enable_experimental_bigquery_entity_uris
+        --enable_experimental_bigquery_entity_uris \
+        --enable_experimental_dataplex_gcs_validation
 fi
