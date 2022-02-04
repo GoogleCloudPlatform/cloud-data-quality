@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import date
+from datetime import timedelta
 from pathlib import Path
 from pprint import pformat
 
+import fileinput
 import json
 import logging
-import shutil
 import os
-import fileinput
-from datetime import date, timedelta
+import shutil
 
 from google.cloud import bigquery
 
@@ -32,6 +33,7 @@ from clouddq.runners.dbt.dbt_runner import DbtRunner
 from clouddq.runners.dbt.dbt_utils import get_dbt_invocation_id
 from clouddq.utils import working_directory
 
+
 logger = logging.getLogger(__name__)
 
 class TestDqAdvancedRules:
@@ -41,7 +43,7 @@ class TestDqAdvancedRules:
         """Get BigQuery Client using discovered ADC"""
         client = BigQueryClient()
         yield client
-        client.close_connection()   
+        client.close_connection()
 
     @pytest.fixture(scope="session")
     def prepare_test_input_data(
@@ -53,55 +55,57 @@ class TestDqAdvancedRules:
     ):
         input_files_csv = ["accuracy_check_distribution_not_ok.csv", "accuracy_check_distribution_ok.csv",
             "accuracy_check_simple.csv", "completeness_check_not_ok.csv", "completeness_check_ok.csv",
-            "conformity_check_not_ok.csv", "conformity_check_ok.csv", "different_volumes_per_period.csv", 
-            "ingestion_day_level.csv", "ingestion_month_level.csv", "ingestion_timestamp_level.csv", 
-            "reference_check_not_ok.csv", "reference_check_ok.csv", "reference_data.csv", "reference_data_subquery.csv", 
+            "conformity_check_not_ok.csv", "conformity_check_ok.csv", "different_volumes_per_period.csv",
+            "ingestion_day_level.csv", "ingestion_month_level.csv", "ingestion_timestamp_level.csv",
+            "reference_check_not_ok.csv", "reference_check_ok.csv", "reference_data.csv", "reference_data_subquery.csv",
             "reference_data_subquery2.csv", "uniqueness_check_not_ok.csv", "uniqueness_check_ok.csv"]
 
         input_files_json = ["complex_rules_not_ok.json", "complex_rules_ok.json",
-            "reference_check_subquery2_not_ok.json", "reference_check_subquery2_ok.json", 
+            "reference_check_subquery2_not_ok.json", "reference_check_subquery2_ok.json",
             "reference_check_subquery_not_ok.json", "reference_check_subquery_ok.json"]
 
         # check if the data files exist, if not, ignore - data has been loaded offline
-        if not os.path.exists(test_data / f"advanced_rules"):
+        if not os.path.exists(test_data / "advanced_rules"):
             return
 
         client = client.get_connection()
         # override some dates (for the ingestion check - it's looking backwards from the current date)
         # fileinput supports inline editing, it outputs the stdout to the file
-        with fileinput.FileInput(test_data / f"advanced_rules/ingestion_day_level.csv", inplace=True, backup='.bak') as file:
+        with fileinput.FileInput(test_data / "advanced_rules/ingestion_day_level.csv",
+                inplace=True, backup='.bak') as file:
             day1 = (date.today() - timedelta(days=10)).strftime("%Y-%m-%d")
             day2 = (date.today() - timedelta(days=11)).strftime("%Y-%m-%d")
             for line in file:
                 line = line.replace("2021-12-15", day1)
                 line = line.replace("2021-12-14", day2)
-                print (line, end='')
+                print(line, end='')
 
-        with fileinput.FileInput(test_data / f"advanced_rules/ingestion_month_level.csv", inplace=True, backup='.bak') as file:
+        with fileinput.FileInput(test_data / "advanced_rules/ingestion_month_level.csv",
+                inplace=True, backup='.bak') as file:
             today = date.today()
             first = today.replace(day=1)
             lastMonth = first - timedelta(days=1)
             for line in file:
                 line = line.replace("202111", lastMonth.strftime("%Y%m"))
-                print (line, end='')
-                
-        with fileinput.FileInput(test_data / f"advanced_rules/ingestion_timestamp_level.csv", inplace=True, backup='.bak') as file:
+                print(line, end='')
+
+        with fileinput.FileInput(test_data / "advanced_rules/ingestion_timestamp_level.csv",
+                inplace=True, backup='.bak') as file:
             today = date.today()
             first = today.replace(day=1)
             lastMonth = first - timedelta(days=1)
             for line in file:
                 line = line.replace("2021-12", lastMonth.strftime("%Y-%m"))
-                print (line, end='')
-            
+                print(line, end='')
+
         for filename in input_files_csv + input_files_json:
             with open(test_data / f"advanced_rules/{filename}", "rb") as source_file:
                 table_id = f"{gcp_project_id}.{gcp_dataplex_bigquery_dataset_id}.{os.path.splitext(filename)[0]}"
-                
+
                 file_format = os.path.splitext(filename)[1][1:]
-                job_config = bigquery.LoadJobConfig(
-                    source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON if file_format == "json" else bigquery.SourceFormat.CSV,
-                    autodetect=True,
-                    write_disposition="WRITE_TRUNCATE")
+                job_config = bigquery.LoadJobConfig(source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
+                    if file_format == "json" else bigquery.SourceFormat.CSV,
+                        autodetect=True, write_disposition="WRITE_TRUNCATE")
 
                 job = client.load_table_from_file(source_file, table_id, job_config=job_config)
                 job.result()  # Waits for the job to complete.
@@ -149,7 +153,7 @@ class TestDqAdvancedRules:
         table = client.get_table(table_id)  # Make an API request.
         logger.info(f"Loaded {table.num_rows} rows and {len(table.schema)} columns to {table_id}")
         return table_id
- 
+
     def test_advanced_dq_rules(
         self,
         runner,
@@ -262,6 +266,7 @@ class TestDqAdvancedRules:
                 assert failed_rows == expected_json
         finally:
             shutil.rmtree(temp_dir)
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

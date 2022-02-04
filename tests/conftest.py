@@ -442,7 +442,7 @@ def temp_configs_from_dq_rules_config_file(
     yield temp_clouddq_dir.absolute()
     if os.path.exists(temp_clouddq_dir):
         os.unlink(temp_clouddq_dir)
-        
+
 @pytest.fixture(scope="function")
 def temp_configs_from_dq_advanced_rules_configs(
         gcp_project_id,
@@ -453,7 +453,7 @@ def temp_configs_from_dq_advanced_rules_configs(
         source_dq_advanced_rules_configs_path,
         tmp_path):
     # Create temp directory
-    temp_clouddq_dir = Path(tmp_path).joinpath(f"clouddq_test_dq_advanced_rules_configs")
+    temp_clouddq_dir = Path(tmp_path).joinpath("clouddq_test_dq_advanced_rules_configs")
     # Copy over docs/examples/docs/advanced_rules
     registry_defaults = shutil.copytree(source_dq_advanced_rules_configs_path, temp_clouddq_dir)
     # Prepare entity_uri configs
@@ -470,7 +470,7 @@ def temp_configs_from_dq_advanced_rules_configs(
                     lines = lines.replace("<my-gcp-dataplex-zone-id>", gcp_dataplex_zone_id)
                     lines = lines.replace("<my_bigquery_dataset_id>", gcp_dataplex_bigquery_dataset_id)
                     source_file.write(lines)
-        
+
     yield temp_clouddq_dir.absolute()
     if os.path.exists(temp_clouddq_dir):
         shutil.rmtree(temp_clouddq_dir)
