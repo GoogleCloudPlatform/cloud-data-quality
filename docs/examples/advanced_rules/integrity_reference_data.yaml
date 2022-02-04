@@ -62,8 +62,9 @@ rules:
       custom_sql_arguments:
         - ref_data_dataset
         - ref_data_table_id
+        - ref_data_column_id
       custom_sql_expr: |-
-        $column in (select art_no from `$ref_data_dataset.$ref_data_table_id`)
+        $column in (select $ref_data_column_id from `$ref_data_dataset.$ref_data_table_id`)
   NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
     rule_type: CUSTOM_SQL_EXPR
     dimension: integrity
@@ -71,8 +72,9 @@ rules:
       custom_sql_arguments:
         - ref_data_dataset
         - ref_data_table_id
+        - ref_data_column_id
       custom_sql_expr: |-
-        exists (select 1 from `$ref_data_dataset.$ref_data_table_id` r where r.art_no = data.$column)
+        exists (select 1 from `$ref_data_dataset.$ref_data_table_id` r where r.$ref_data_column_id = data.$column)
 
 
 rule_bindings:
@@ -84,6 +86,7 @@ rule_bindings:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
           ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
+          ref_data_column_id: art_no
     metadata:
       brand: one
   T4_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED:
@@ -94,6 +97,7 @@ rule_bindings:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
           ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
+          ref_data_column_id: art_no
     metadata:
       brand: one
   T4_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_FAIL:
@@ -104,6 +108,7 @@ rule_bindings:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
           ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
+          ref_data_column_id: art_no
     metadata:
       brand: one
   T4_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED:
@@ -114,5 +119,6 @@ rule_bindings:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
           ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
+          ref_data_column_id: art_no
     metadata:
       brand: one

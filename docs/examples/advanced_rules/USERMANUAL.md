@@ -263,6 +263,7 @@ rules:
           from
             unnest(SaleLineList.SaleLine) as SaleLine
         ) between $column - $error_margin and $column + $error_margin
+
 rule_bindings:
   NO_COMPLEX_RULES_MISMATCH_SHOULD_SUCCEED:
     entity_id: COMPLEX_RULES_TABLE_OK
@@ -296,8 +297,9 @@ rules:
       custom_sql_arguments:
         - ref_data_dataset
         - ref_data_table_id
+        - ref_data_column_id
       custom_sql_expr: |-
-        $column in (select art_no from `$ref_data_dataset.$ref_data_table_id`)
+        $column in (select $ref_data_column_id from `$ref_data_dataset.$ref_data_table_id`)
   NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
     rule_type: CUSTOM_SQL_EXPR
     dimension: integrity
@@ -305,26 +307,29 @@ rules:
       custom_sql_arguments:
         - ref_data_dataset
         - ref_data_table_id
+        - ref_data_column_id
       custom_sql_expr: |-
-        exists (select 1 from `$ref_data_dataset.$ref_data_table_id` r where r.art_no = data.$column)
+        exists (select 1 from `$ref_data_dataset.$ref_data_table_id` r where r.$ref_data_column_id = data.$column)
 
 rule_bindings:
-  REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
+  T4_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR_SHOULD_SUCCEED:
     entity_id: REFERENCE_DATA_CHECK_OK
     column_id: ART_NO
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
-          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
-  REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
-    entity_id: REFERENCE_DATA_CHECK_NOT_OK
+          ref_data_column_id: art_no
+  T4_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR_SHOULD_SUCCEED:
+    entity_id: REFERENCE_DATA_CHECK_OK
     column_id: ART_NO
     row_filter_id: NONE
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
-          ref_data_dataset: clouddq_integration_tests_input_data
+          ref_data_dataset: clouddq_test_asset_curated
           ref_data_table_id: reference_data
+          ref_data_column_id: art_no
 ```
 Full example: [rule](/docs/examples/advanced_rules/integrity_reference_data.yaml#57) and [rule binding](/docs/examples/advanced_rules/integrity_reference_data.yaml#78)
 
