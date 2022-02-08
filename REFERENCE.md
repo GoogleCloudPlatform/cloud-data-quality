@@ -24,7 +24,7 @@ rule_bindings:
       team: team-2
 
   T3_DQ_1_EMAIL_DUPLICATE:
-    entity_id: TEST_TABLE
+    entity_uri: dataplex://projects/<project-id>/locations/<region-id>/lakes/<lake-id>/zones/<zone-id>/entities/<entity-id> # replace variables in <angle brackets> with your own configs
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
     rule_ids:
@@ -39,7 +39,9 @@ Each `rule_binding` must define one of the fields:
 - `entity_id` or `entity_uri` and 
 - all of the fields `column_id`, `row_filter_id`, and `rule_ids`.
 
-`entity_id` refers to the table being validated, `entity_uri` is the URI path in a remote metadata registry that references the table being validated, `column_id` refers to the column in the table to be validated, `row_filter_id` refers to a filter condition to select rows in-scope for validation, and `rule_ids` refers to the list of data quality validation rules to apply on the selected column and rows.
+`entity_id` refers to the table being validated as defined in a separate `entities` configuration node. `entity_uri` is the URI path in a remote metadata registry that references the table being validated. You can only define one of `entity_id` or `entity_uri` in a single `rule_binding`. If you only use `entity_uri` in your `rule_binding` configs, there is no need to define the `entities` configuration node separately.  This is because CloudDQ will fetch metadata about the `entity_uri` directly from the remote metadata registry instead of relying on manually defined `entities` configurations.
+
+`column_id` refers to the column in the table to be validated, `row_filter_id` refers to a filter condition to select rows in-scope for validation, and `rule_ids` refers to the list of data quality validation rules to apply on the selected column and rows.
 
 If `incremental_time_filter_column_id` is set to a monotonically-increasing timestamp column in an append-only table, `CloudDQ` on each run will only validate rows where the timestamp specified in `incremental_time_filter_column_id` is higher than the timestamp of the last run. This allows CloudDQ to perform incremental validation without scanning the entire table everytime. If `incremental_time_filter_column_id` is not set, `CloudDQ` will validate all rows matching the `row_filter_id` on each run.
 
@@ -166,7 +168,7 @@ LAST_WEEK:
 
 #### Entities
 
-**Entities**: Captures static metadata for entities that are referenced from rule bindings.
+**Entities**: Captures static metadata for entities that are referenced in rule bindings.
 
 ```yaml
 entities:
@@ -198,6 +200,8 @@ entities:
           updated timestamp
 ```
 Entities configurations contain details of the table to be validated, including its source database, connnection settings, and column configurations.
+
+`entities` can be referenced in a `rule_binding` by specifying its unique identifier in the `rule_binding` field `entity_id`. If you do not use `entity_id` in any of your `rule_binding`, there is no need to define the `entities` configuration node separately.
 
 An example entity configurations is provided at `configs/entities/test-data.yml`. The data for the BigQuery table `contact_details` referred in this config can can be found in `tests/data/contact_details.csv`.
 

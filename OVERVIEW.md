@@ -263,6 +263,21 @@ The table below lists the columns in their `dq_summary` table, that is the outpu
         changed.</td>
     </tr>
     <tr>
+       <td><code>dataplex_lake</code></td>
+       <td>(string) ID of the Dataplex lake containing the table
+         being validated.</td>
+    </tr>
+    <tr>
+      <td><code>dataplex_zone</code></td>
+      <td>(string) ID of the Dataplex zone containing the table
+        being validated.</td>
+    </tr>
+    <tr>
+      <td><code>dataplex_asset_id</code></td>
+      <td>(string) ID of the Dataplex asset containing the table
+        being validated.</td>
+    </tr>
+    <tr>
       <td><code>dq_run_id</code></td>
       <td>(string) Unique ID of the record.</td>
     </tr>
