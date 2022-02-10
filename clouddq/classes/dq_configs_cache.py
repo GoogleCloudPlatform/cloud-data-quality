@@ -266,6 +266,7 @@ class DqConfigsCache:
                 clouddq_entity = self._resolve_bigquery_entity_uri(
                     entity_uri=entity_uri,
                     client=client,
+                    bigquery_client=bigquery_client,
                     enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
                 )
             else:
@@ -443,7 +444,7 @@ class DqConfigsCache:
     def _resolve_bigquery_entity_uri(
         self,
         entity_uri: dq_entity_uri.EntityUri,
-        client: clouddq_dataplex.CloudDqDataplexClient,
+        bigquery_client: BigQueryClient,
         enable_experimental_bigquery_entity_uris: bool = True,
     ) -> dq_entity.DqEntity:
         if not enable_experimental_bigquery_entity_uris:
@@ -461,7 +462,7 @@ class DqConfigsCache:
                 "metadata_default_registries YAML configs, e.g.\n"
                 f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
             )
-        required_arguments = ["projects", "lakes", "locations", "zones"]
+        required_arguments = ["projects", "datasets", "tables"]
         for argument in required_arguments:
             uri_argument = entity_uri.get_configs(argument)
             if not uri_argument:
@@ -477,26 +478,21 @@ class DqConfigsCache:
                     "metadata_default_registries YAML configs, e.g.\n"
                     f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
                 )
-        dataplex_entities_match = client.list_dataplex_entities(
-            gcp_project_id=entity_uri.get_configs("projects"),
-            location_id=entity_uri.get_configs("locations"),
-            lake_name=entity_uri.get_configs("lakes"),
-            zone_id=entity_uri.get_configs("zones"),
-            data_path=entity_uri.get_entity_id(),
-        )
-        logger.info(f"Retrieved Dataplex Entities:\n{pformat(dataplex_entities_match)}")
-        if len(dataplex_entities_match) != 1:
-            raise RuntimeError(
-                "Failed to retrieve Dataplex Metadata entry for "
-                f"entity_uri '{entity_uri.complete_uri_string}' "
-                f"with error:\n"
-                f"{pformat(dataplex_entities_match.json())}\n\n"
-                f"Parsed entity_uri configs:\n"
-                f"{pformat(entity_uri.to_dict())}\n\n"
-            )
-        dataplex_entity = dataplex_entities_match[0]
-        clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
-            entity_id=entity_uri.get_db_primary_key(),
-            dataplex_entity=dataplex_entity,
-        )
-        return clouddq_entity
+            else:
+                project_id = entity_uri.get_project_id_from_uri()
+                table_name = entity_uri.get_table_name_from_entity_uri()
+                bq_native_table_exists = bigquery_client.is_table_exists(table=table_name,
+                                                                         project_id=project_id)
+                if bq_native_table_exists:
+                    logger.debug(f"BQ native Table {table_name} Exists")
+                    configs = entity_uri.configs_dict
+                    columns_dict = bigquery_client.get_table_schema(table=table_name,
+                                                                     project_id=project_id)
+                    clouddq_entity = dq_entity.DqEntity.from_bq_table_configs(
+                        entity_id=entity_uri.get_entity_id(),
+                        bq_configs=configs,
+                        columns_dict=columns_dict,
+                    )
+                    return clouddq_entity
+                else:
+                    raise RuntimeError(f"BQ native table {table_name} doesn't exists")

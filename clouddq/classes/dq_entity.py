@@ -288,9 +288,12 @@ class DqEntity:
                     "dataplex_location": self.dataplex_location,
                     "dataplex_asset_id": self.dataplex_asset_id,
                     "dataplex_createTime": self.dataplex_createTime,
-                    "partition_fields": self.partition_fields,
                 }
             )
+        if self.partition_fields:
+            output.update({
+                "partition_fields": self.partition_fields,
+            })
         return dict({f"{self.entity_id}": output})
 
     def dict_values(self: DqEntity) -> dict:
@@ -361,6 +364,29 @@ class DqEntity:
                 f"Dataplex entity system {dataplex_entity.system} "
                 f"is unsupported for entity:\n {dataplex_entity.to_dict()}"
             )
+
+    @classmethod
+    def from_bq_table_configs(self, entity_id: str, bq_configs: dict, columns_dict: dict) -> DqEntity:
+        entity_configs = {
+            "source_database": "BIGQUERY",
+            "resource_type": "BIGQUERY",
+            "table_name": bq_configs.get("tables"),
+            "dataset_name": bq_configs.get("datasets"),
+            "project_name": bq_configs.get("projects"),
+            "columns": columns_dict.get("columns"),
+            "environment_override": {},
+            "entity_id": entity_id,
+            "dataplex_name": bq_configs.get("dataplex_name", None),
+            "dataplex_lake": bq_configs.get("dataplex_lake", None),
+            "dataplex_zone": bq_configs.get("dataplex_zone", None),
+            "dataplex_location": bq_configs.get("dataplex_location", None),
+            "dataplex_asset_id": bq_configs.get("dataplex_asset_id", None),
+            "dataplex_createTime": bq_configs.get("dataplex_createTime", None) ,
+            "dataplex_updateTime": bq_configs.get("dataplex_updateTime", None),
+            "partition_fields": columns_dict.get("partition_fields"),
+        }
+
+        return DqEntity.from_dict(entity_id=entity_id.upper(), kwargs=entity_configs)
 
     def get_table_name(self):
         return f"{self.instance_name}.{self.database_name}.{self.table_name}"
