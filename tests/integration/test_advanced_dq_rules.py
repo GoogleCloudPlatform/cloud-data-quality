@@ -37,7 +37,6 @@ from clouddq.utils import working_directory
 
 logger = logging.getLogger(__name__)
 
-@pytest.mark.dataplex
 class TestDqAdvancedRules:
 
     @pytest.fixture(scope="session")

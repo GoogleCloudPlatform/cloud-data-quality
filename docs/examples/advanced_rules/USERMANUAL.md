@@ -286,6 +286,7 @@ Note2: Below queries assumes that reference data table is within the same projec
 Input parameters:
 - ref_data_dataset - dataset name where the reference data table is
 - ref_data_table_id - reference data table id
+- ref_data_column_id - a column in the the reference data table to check against
 
 Example config:
 ```yaml

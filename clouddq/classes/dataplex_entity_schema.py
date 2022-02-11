@@ -64,6 +64,7 @@ class DataplexEntitySchema:
                     f"'partitionFields'.",
                 )
                 partition_fields.append(partition_field.to_dict())
+                fields.append(partition_field.to_fields_dict())
         else:
             partition_fields = None
 
