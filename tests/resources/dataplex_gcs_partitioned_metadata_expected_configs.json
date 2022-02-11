@@ -22,6 +22,10 @@
       "TS": {
         "name": "ts",
         "data_type": "STRING"
+      },
+      "DT": {
+        "name": "dt",
+        "data_type": "TIMESTAMP"
       }
     },
     "dataset_name": "<your_dataplex_bigquery_dataset_id>",
