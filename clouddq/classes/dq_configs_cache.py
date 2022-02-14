@@ -265,7 +265,6 @@ class DqConfigsCache:
             elif entity_uri.scheme == "BIGQUERY":
                 clouddq_entity = self._resolve_bigquery_entity_uri(
                     entity_uri=entity_uri,
-                    client=client,
                     bigquery_client=bigquery_client,
                     enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
                 )
