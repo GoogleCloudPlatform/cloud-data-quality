@@ -209,28 +209,24 @@ class BigQueryClient:
 
         return query_job
 
-    def get_table_schema(
-        self, table: str, project_id: str = None
-    ) -> dict:
+    def get_table_schema(self, table: str, project_id: str = None) -> dict:
 
         try:
             client = self.get_connection(project_id=project_id)
             table_ref = client.get_table(table)
             columns = {}
             for column in table_ref.schema:
-                column_configs = {}
-                column_configs["name"] = column.name
-                column_configs["type"] = column.field_type
-                column_configs["mode"] = column.mode
-                column_configs["data_type"] = column.field_type
+                column_configs = {
+                    "name": column.name,
+                    "type": column.field_type,
+                    "mode": column.mode,
+                    "data_type": column.field_type,
+                }
                 columns[column.name.upper()] = column_configs
-            logger.debug(columns)
             table_type = table_ref.table_type
-            logger.debug("table type")
-            logger.debug(table_type)
+            logger.debug(f"Table Type is : {table_type}")
             table_partitioning_type = table_ref.partitioning_type
-            logger.debug("table partitioning type")
-            logger.debug(table_partitioning_type)
+            logger.debug(f"Table Partitioning Type is : {table_partitioning_type}")
             if table_partitioning_type:
                 partition_fields = []
                 time_partitioning = table_ref.time_partitioning
@@ -242,14 +238,16 @@ class BigQueryClient:
                     if not time_partitioning_field:
                         partition_fields = "_PARTITIONTIME"
                     else:
-                        partition_field['name'] = time_partitioning_field
-                        partition_field['type'] = columns[time_partitioning_field.upper()]['type']
-                        partition_field['partitioning_type'] = time_partitioning_type
+                        partition_field["name"] = time_partitioning_field
+                        partition_field["type"] = columns[
+                            time_partitioning_field.upper()
+                        ]["type"]
+                        partition_field["partitioning_type"] = time_partitioning_type
                         partition_fields.append(partition_field)
 
                 if range_partitioning:
                     raise NotImplementedError(
-                        logger.debug(f"Range partitioning is not implemented")
+                        logger.debug(f"Range Partitioning is not supported currently.")
                     )
                 columns_dict = {
                     "columns": columns,
@@ -261,7 +259,7 @@ class BigQueryClient:
                     "partition_fields": None,
                 }
 
-            logger.debug(columns_dict)
+            logger.debug(f"Schema for table {table} is: {columns_dict}")
             return columns_dict
 
         except KeyError as error:

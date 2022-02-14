@@ -467,27 +467,28 @@ class DqConfigsCache:
             uri_argument = entity_uri.get_configs(argument)
             if not uri_argument:
                 raise RuntimeError(
-                    f"Failed to retrieve default Dataplex '{argument}' for "
+                    f"Failed to retrieve default Bigquery '{argument}' for "
                     f"entity_uri: {entity_uri.complete_uri_string}. \n"
                     f"'{argument}' is a required argument to look-up metadata for the entity_uri "
-                    "using Dataplex Metadata API.\n"
-                    "Ensure the BigQuery dataset containing this table "
-                    "is registered as an asset in Dataplex.\n"
-                    "You can then specify the corresponding Dataplex "
-                    "projects/locations/lakes/zones as part of the "
-                    "metadata_default_registries YAML configs, e.g.\n"
-                    f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
+                    "using Bigquery API.\n"
+                    "Ensure the BigQuery dataset contains this table."
                 )
             else:
                 project_id = entity_uri.get_project_id_from_uri()
                 table_name = entity_uri.get_table_name_from_entity_uri()
-                bq_native_table_exists = bigquery_client.is_table_exists(table=table_name,
-                                                                         project_id=project_id)
+                bq_native_table_exists = bigquery_client.is_table_exists(
+                    table=table_name, project_id=project_id
+                )
                 if bq_native_table_exists:
-                    logger.debug(f"BQ native Table {table_name} Exists")
+                    logger.debug(
+                        f"The Table {table_name} in the "
+                        f"specified entity_uri {entity_uri} \n"
+                        f"exists is Bigquery."
+                    )
                     configs = entity_uri.configs_dict
-                    columns_dict = bigquery_client.get_table_schema(table=table_name,
-                                                                     project_id=project_id)
+                    columns_dict = bigquery_client.get_table_schema(
+                        table=table_name, project_id=project_id
+                    )
                     clouddq_entity = dq_entity.DqEntity.from_bq_table_configs(
                         entity_id=entity_uri.get_entity_id(),
                         bq_configs=configs,
@@ -495,4 +496,4 @@ class DqConfigsCache:
                     )
                     return clouddq_entity
                 else:
-                    raise RuntimeError(f"BQ native table {table_name} doesn't exists")
+                    raise RuntimeError(f"Bigquery Table {table_name} does not exists")

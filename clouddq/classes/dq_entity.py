@@ -291,9 +291,11 @@ class DqEntity:
                 }
             )
         if self.partition_fields:
-            output.update({
-                "partition_fields": self.partition_fields,
-            })
+            output.update(
+                {
+                    "partition_fields": self.partition_fields,
+                }
+            )
         return dict({f"{self.entity_id}": output})
 
     def dict_values(self: DqEntity) -> dict:
@@ -366,7 +368,9 @@ class DqEntity:
             )
 
     @classmethod
-    def from_bq_table_configs(self, entity_id: str, bq_configs: dict, columns_dict: dict) -> DqEntity:
+    def from_bq_table_configs(
+        self, entity_id: str, bq_configs: dict, columns_dict: dict
+    ) -> DqEntity:
         entity_configs = {
             "source_database": "BIGQUERY",
             "resource_type": "BIGQUERY",
@@ -381,7 +385,7 @@ class DqEntity:
             "dataplex_zone": bq_configs.get("dataplex_zone", None),
             "dataplex_location": bq_configs.get("dataplex_location", None),
             "dataplex_asset_id": bq_configs.get("dataplex_asset_id", None),
-            "dataplex_createTime": bq_configs.get("dataplex_createTime", None) ,
+            "dataplex_createTime": bq_configs.get("dataplex_createTime", None),
             "dataplex_updateTime": bq_configs.get("dataplex_updateTime", None),
             "partition_fields": columns_dict.get("partition_fields"),
         }
