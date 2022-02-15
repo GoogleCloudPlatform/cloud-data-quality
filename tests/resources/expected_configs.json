@@ -46,6 +46,7 @@
         }
       },
       "instance_name": "<your_gcp_project_id>",
+      "partition_fields": null,
       "project_name": "<your_gcp_project_id>",
       "source_database": "BIGQUERY",
       "resource_type": "BIGQUERY",

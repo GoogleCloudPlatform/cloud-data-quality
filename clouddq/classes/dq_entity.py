@@ -269,6 +269,7 @@ class DqEntity:
             "instance_name": self.instance_name,
             "columns": columns,
             "resource_type": self.resource_type,
+            "partition_fields": self.partition_fields,
         }
         if self.source_database == "BIGQUERY":
             output.update(
@@ -288,12 +289,6 @@ class DqEntity:
                     "dataplex_location": self.dataplex_location,
                     "dataplex_asset_id": self.dataplex_asset_id,
                     "dataplex_createTime": self.dataplex_createTime,
-                }
-            )
-        if self.partition_fields:
-            output.update(
-                {
-                    "partition_fields": self.partition_fields,
                 }
             )
         return dict({f"{self.entity_id}": output})

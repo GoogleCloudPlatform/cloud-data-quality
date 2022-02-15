@@ -152,14 +152,24 @@ class TestDataplexMetadataUriTemplates:
             )
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
-                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")\
-                .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")\
-                .replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")\
-                .replace(rule_binding_id, "<rule_binding_id>")
-            expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
+                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
+            if gcp_dataplex_zone_id in output:
+                output = output.replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")
+            else:
+                output = output.replace("CAST(NULL AS STRING) AS dataplex_zone",
+                                        "'<your_dataplex_zone_id>' AS dataplex_zone")
+            if gcp_dataplex_lake_name in output:
+                output = output.replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")
+            else:
+                output = output.replace("CAST(NULL AS STRING) AS dataplex_lake",
+                                        "'<your_dataplex_lake_id>' AS dataplex_lake")
+
+            output = output.replace(rule_binding_id, "<rule_binding_id>")
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
+            output = output.replace("CAST(NULL AS STRING) AS dataplex_asset_id,", ASSET_ID_REP)
+            expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             assert output == expected
 
     def test_rule_bindings_class_resolve_configs_from_file(
@@ -247,16 +257,26 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
             )
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
-            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
-                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")\
-                .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")\
-                .replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")\
-                .replace(rule_binding_id, "<rule_binding_id>")
+                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
+            if gcp_dataplex_zone_id in output:
+                output = output.replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")
+            else:
+                output = output.replace("CAST(NULL AS STRING) AS dataplex_zone",
+                                        "'<your_dataplex_zone_id>' AS dataplex_zone")
+            if gcp_dataplex_lake_name in output:
+                output = output.replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")
+            else:
+                output = output.replace("CAST(NULL AS STRING) AS dataplex_lake",
+                                        "'<your_dataplex_lake_id>' AS dataplex_lake")
+
+            output = output.replace(rule_binding_id, "<rule_binding_id>")
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             print(output)
             output = re.sub(RE_NEWLINES, '\n', output).strip()
+            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
+            output = output.replace("CAST(NULL AS STRING) AS dataplex_asset_id,", ASSET_ID_REP)
             assert output == expected
 
     def test_rule_bindings_class_resolve_gcs_configs(
