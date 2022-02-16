@@ -470,10 +470,9 @@ class DqConfigsCache:
                     f"entity_uri: {entity_uri.complete_uri_string}. \n"
                     f"'{argument}' is a required argument to look-up metadata for the entity_uri "
                     "using Bigquery API.\n"
-                    "Ensure the BigQuery dataset contains this table."
                 )
             else:
-                project_id = entity_uri.get_project_id_from_uri()
+                project_id = entity_uri.configs_dict.get("projects")
                 table_name = entity_uri.get_table_name_from_entity_uri()
                 bq_native_table_exists = bigquery_client.is_table_exists(
                     table=table_name, project_id=project_id

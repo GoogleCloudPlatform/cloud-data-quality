@@ -25,7 +25,7 @@ rule_bindings:
       brand: one
 
 
-  T9_URI_DP_EMAIL_DUPLICATE:
+  T9_URI_GCS_EMAIL_DUPLICATE:
     entity_uri: dataplex://zones/<my-gcp-dataplex-zone-id>/entities/asset_bucket
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
