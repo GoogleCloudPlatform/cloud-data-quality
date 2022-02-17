@@ -1,0 +1,130 @@
+{
+  "column_configs": {
+    "data_type": "STRING",
+    "name": "unique_key"
+  },
+  "column_id": "UNIQUE_KEY",
+  "entity_configs": {
+    "columns": {
+      "CITY": {
+        "data_type": "STRING",
+        "name": "city"
+      },
+      "CLOSE_DATE": {
+        "data_type": "TIMESTAMP",
+        "name": "close_date"
+      },
+      "COMPLAINT_DESCRIPTION": {
+        "data_type": "STRING",
+        "name": "complaint_description"
+      },
+      "COUNCIL_DISTRICT_CODE": {
+        "data_type": "INTEGER",
+        "name": "council_district_code"
+      },
+      "COUNTY": {
+        "data_type": "STRING",
+        "name": "county"
+      },
+      "CREATED_DATE": {
+        "data_type": "TIMESTAMP",
+        "name": "created_date"
+      },
+      "INCIDENT_ADDRESS": {
+        "data_type": "STRING",
+        "name": "incident_address"
+      },
+      "INCIDENT_ZIP": {
+        "data_type": "INTEGER",
+        "name": "incident_zip"
+      },
+      "LAST_UPDATE_DATE": {
+        "data_type": "TIMESTAMP",
+        "name": "last_update_date"
+      },
+      "LATITUDE": {
+        "data_type": "FLOAT",
+        "name": "latitude"
+      },
+      "LOCATION": {
+        "data_type": "STRING",
+        "name": "location"
+      },
+      "LONGITUDE": {
+        "data_type": "FLOAT",
+        "name": "longitude"
+      },
+      "MAP_PAGE": {
+        "data_type": "STRING",
+        "name": "map_page"
+      },
+      "MAP_TILE": {
+        "data_type": "STRING",
+        "name": "map_tile"
+      },
+      "SOURCE": {
+        "data_type": "STRING",
+        "name": "source"
+      },
+      "STATE_PLANE_X_COORDINATE": {
+        "data_type": "STRING",
+        "name": "state_plane_x_coordinate"
+      },
+      "STATE_PLANE_Y_COORDINATE": {
+        "data_type": "FLOAT",
+        "name": "state_plane_y_coordinate"
+      },
+      "STATUS": {
+        "data_type": "STRING",
+        "name": "status"
+      },
+      "STATUS_CHANGE_DATE": {
+        "data_type": "TIMESTAMP",
+        "name": "status_change_date"
+      },
+      "STREET_NAME": {
+        "data_type": "STRING",
+        "name": "street_name"
+      },
+      "STREET_NUMBER": {
+        "data_type": "STRING",
+        "name": "street_number"
+      },
+      "UNIQUE_KEY": {
+        "data_type": "STRING",
+        "name": "unique_key"
+      }
+    },
+    "database_name": "<your_bigquery_dataset_id>",
+    "dataset_name": "<your_bigquery_dataset_id>",
+    "instance_name": "<your-gcp-project-id>",
+    "partition_fields": null,
+    "project_name": "<your-gcp-project-id>",
+    "resource_type": "BIGQUERY",
+    "source_database": "BIGQUERY",
+    "table_name": "311_service_requests"
+  },
+  "entity_id": "<entity_id>",
+  "incremental_time_filter_column": null,
+  "metadata": {
+    "brand": "one"
+  },
+  "row_filter_configs": {
+    "filter_sql_expr": "True"
+  },
+  "row_filter_id": "NONE",
+  "rule_binding_id": "<rule_binding_id>",
+  "rule_configs_dict": {
+    "NOT_NULL_SIMPLE": {
+      "dimension": null,
+      "params": {
+        "rule_binding_arguments": null
+      },
+      "rule_sql_expr": "unique_key IS NOT NULL",
+      "rule_type": "NOT_NULL"
+    }
+  },
+  "rule_ids": [
+    "NOT_NULL_SIMPLE"
+  ]
+}
