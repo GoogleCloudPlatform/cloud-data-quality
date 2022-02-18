@@ -83,7 +83,9 @@ def run_dbt(
                     logger.info("\nExecuting dbt command:\n %s", command)
                     dbt(command)
                 else:
-                    logger.info("\ndbt command generated as part of dry-run:\n %s", command)
+                    logger.info(
+                        "\ndbt command generated as part of dry-run:\n %s", command
+                    )
     except SystemExit as sysexit:
         if sysexit.code == 0:
             logger.debug("dbt run completed successfully.")

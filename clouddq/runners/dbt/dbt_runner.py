@@ -80,9 +80,7 @@ class DbtRunner:
         )
         logger.debug(f"Using 'dbt_profiles_dir': {self.dbt_profiles_dir}")
 
-    def run(
-        self, configs: Dict, debug: bool = False, dry_run: bool = False
-    ) -> None:
+    def run(self, configs: Dict, debug: bool = False, dry_run: bool = False) -> None:
         logger.debug(f"Running dbt in path: {self.dbt_path}")
         if debug:
             self.test_dbt_connection()
@@ -248,9 +246,7 @@ class DbtRunner:
 
     def _prepare_entity_summary_path(self, write_log: bool = False) -> None:
         assert self.dbt_path.is_dir()
-        self.dbt_entity_summary_path = (
-            self.dbt_path / "models" / "entity_dq_statistics"
-        )
+        self.dbt_entity_summary_path = self.dbt_path / "models" / "entity_dq_statistics"
         self.dbt_entity_summary_path.mkdir(parents=True, exist_ok=True)
         if write_log:
             logger.debug(
