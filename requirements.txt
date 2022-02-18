@@ -1,5 +1,6 @@
 click==7.1.2
 coloredlogs==15.0.1
+MarkupSafe==2.0.1
 jinja2==2.11.3
 pyyaml==5.4.1
 dbt-bigquery==0.20.2
