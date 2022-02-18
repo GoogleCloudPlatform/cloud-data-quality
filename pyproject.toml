@@ -30,6 +30,7 @@ google-api-python-client = "^2.27.0"
 google-cloud-storage = "^1.42.3"
 google-cloud-logging = "^2.7.0"
 pyrate-limiter = "^2.6.0"
+markupsafe = "^2.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
@@ -98,5 +99,5 @@ src_paths = ["clouddq", "tests"]
 skip_glob = ["*/setup.py"]
 filter_files = true
 known_first_party = "clouddq"
-known_third_party = ['click','jinja2','pytest','yaml', 'pyyaml', 'dbt', 'gitpython', 'coloredlogs']
+known_third_party = ['click','jinja2','pytest','yaml', 'pyyaml', 'dbt', 'gitpython', 'coloredlogs', 'markupsafe']
 no_lines_before = "LOCALFOLDER"
