@@ -1,11 +1,10 @@
 steps:
-  - name: debian:11-slim
+  - name: us-central1-docker.pkg.dev/dataplex-clouddq/clouddq-images/clouddq
     args:
       - '-c'
       - |
         set -x
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
-        source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
+        source scripts/cloud_build_test_custom_image.sh "3.9.7"
         make check
         make test test_dataplex_metadata
         make test test_dataplex_metadata_uri_templates
@@ -31,4 +30,4 @@ steps:
 timeout: 3600s
 options:
   machineType: 'E2_HIGHCPU_8'
-logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
+logsBucket: '${_GCS_CLOUD_BUILD_LOGS_BUCKET}'

@@ -41,10 +41,11 @@ which python3
 python3 --version
 
 # create temporary virtualenv
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
+#export PYENV_ROOT="$HOME/.pyenv"
+#export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
+pyenv version
 pyenv virtualenv clouddq || true
 pyenv shell clouddq
 pip3 --version

@@ -22,9 +22,9 @@ if [[ ! "$OSTYPE" == "linux-gnu"* ]]; then
     exit 1
 fi
 
-GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE}"
-PYTHON_VERSION="3.9.7"
-PYTHON_VERSION_MINOR="${PYTHON_VERSION%.*}"
+export GCS_BAZEL_CACHE="${GCS_BAZEL_CACHE}"
+export PYTHON_VERSION="3.9.7"
+export PYTHON_VERSION_MINOR="${PYTHON_VERSION%.*}"
 
 function main() {
     if ! [[ "${1}" == "3.8"* || "${1}" == "3.9"* ]]; then
@@ -37,13 +37,23 @@ function main() {
     env 
     cat /etc/*-release
     sudo rm -f /usr/bin/lsb_release || true
-    . ./scripts/install_development_dependencies.sh --silent # > /dev/null
-    . ./scripts/install_python3.sh "${PYTHON_VERSION}" # > /dev/null
+    #. ./scripts/install_development_dependencies.sh --silent # > /dev/null
+    #. ./scripts/install_python3.sh "${PYTHON_VERSION}" # > /dev/null
+    
+    export PYENV_ROOT="/root/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"    
+    eval "$(pyenv init --path)"
+    eval "$(pyenv init -)"    
+    #pyenv install "$PYTHON_VERSION"
+    pyenv global "$PYTHON_VERSION"
+    pyenv shell "$PYTHON_VERSION"
+    export PATH=$PATH:/usr/local/go/bin
+
     pyenv virtualenv "${PYTHON_VERSION}" clouddq -f
     pyenv shell clouddq
-    ls -la ~/.pyenv/shims/python"${PYTHON_VERSION_MINOR}"
-    sudo ln -sf ~/.pyenv/shims/python"${PYTHON_VERSION_MINOR}" /usr/bin/python3
-    sudo ln -sf ~/.pyenv/shims/python"${PYTHON_VERSION_MINOR}" /usr/bin/python
+    ls -la ${PYENV_ROOT}/shims/python"${PYTHON_VERSION_MINOR}"
+    sudo ln -sf ${PYENV_ROOT}/shims/python"${PYTHON_VERSION_MINOR}" /usr/bin/python3
+    sudo ln -sf ${PYENV_ROOT}/shims/python"${PYTHON_VERSION_MINOR}" /usr/bin/python
     which /usr/bin/python3
     python3 --version
     python --version

@@ -1,5 +1,5 @@
 steps:
-  - name: 'debian:11-slim'
+  - name: us-central1-docker.pkg.dev/dataplex-clouddq/clouddq-images/clouddq
     env:
       - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
       - 'CLOUDDQ_BIGQUERY_DATASET=${_CLOUDDQ_BIGQUERY_DATASET}'
@@ -22,22 +22,13 @@ steps:
       - >
         set -x
 
-        DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq
-        tzdata sudo lsb-release apt-utils curl
-
-        source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
+        source scripts/cloud_build_test_custom_image.sh "3.9.7"
 
         make check
-
         make test test_dataplex_dq_configs_cache
-
         make test test_dataplex_metadata
-
         make test test_dataplex_metadata_uri_templates
-
         make test test_dataplex_task
-
-        source scripts/install_gcloud.sh
 
         gsutil ls gs://$_GCS_RELEASE_BUCKET
 

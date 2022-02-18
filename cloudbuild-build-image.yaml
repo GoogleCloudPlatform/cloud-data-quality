@@ -1,0 +1,5 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'us-central1-docker.pkg.dev/dataplex-clouddq/clouddq-images/clouddq', '-f', 'Dockerfile', '.' ]
+images: ['us-central1-docker.pkg.dev/dataplex-clouddq/clouddq-images/clouddq']
+timeout: 3600s

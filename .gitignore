@@ -3,7 +3,6 @@
 .vscode
 **.json
 **.patch
-dbt/
 .user.yml
 profiles.yml
 bazel-*
@@ -22,5 +21,5 @@ setenvs.sh
 tmp
 cloudbuild-workspace/
 *~
-dbt
 *.db
+/dbt/
