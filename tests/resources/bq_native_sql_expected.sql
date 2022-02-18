@@ -22,7 +22,7 @@ data AS (
       *,
       '<rule_binding_id>' AS rule_binding_id,
     FROM
-      `bigquery-public-data.austin_311.311_service_requests` d
+      `<your-gcp-project-id>.austin_311.311_service_requests` d
     WHERE
       True
 ),
@@ -30,7 +30,7 @@ last_mod AS (
     SELECT
         project_id || '.' || dataset_id || '.' || table_id AS table_id,
         TIMESTAMP_MILLIS(last_modified_time) AS last_modified
-    FROM `bigquery-public-data.austin_311.__TABLES__`
+    FROM `<your-gcp-project-id>.austin_311.__TABLES__`
 ),
 validation_results AS (
 
@@ -38,7 +38,7 @@ SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     '<rule_binding_id>' AS rule_binding_id,
     'NOT_NULL_SIMPLE' AS rule_id,
-    'bigquery-public-data.austin_311.311_service_requests' AS table_id,
+    '<your-gcp-project-id>.austin_311.311_service_requests' AS table_id,
     'unique_key' AS column_id,
     data.unique_key AS column_value,
 
