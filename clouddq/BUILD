@@ -70,6 +70,7 @@ py_library(
         requirement("jinja2"),
         requirement("dbt-bigquery"),
         requirement("google-cloud-logging"),
+        requirement("MarkupSafe"),
     ],
 )
 
@@ -80,6 +81,7 @@ py_library(
     deps = [
         requirement("jinja2"),
         requirement("sqlite-utils"),
+        requirement("MarkupSafe"),
     ],
 )
 
