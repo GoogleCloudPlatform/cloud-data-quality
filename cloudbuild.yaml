@@ -5,6 +5,7 @@ steps:
       - |
         set -x
         source scripts/cloud_build_test_custom_image.sh "3.9.7"
+        make check
         make test test_dataplex_metadata
         make test test_dataplex_metadata_uri_templates
         make test test_dataplex_dq_configs_cache

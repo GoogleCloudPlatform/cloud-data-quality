@@ -64,3 +64,20 @@ class DataplexEntityPartitionSchemaField:
             name=name,
             type=type,
         )
+
+    def to_fields_dict(self: DataplexEntityPartitionSchemaField) -> dict:
+        """
+        Args:
+          self: DataplexEntityPartitionSchemaField:
+
+        Returns:
+
+        """
+
+        output = {
+            "name": self.name,
+            "type": "TIMESTAMP",
+            "mode": "Required",
+        }
+
+        return dict(output)
