@@ -215,7 +215,6 @@ class BigQueryClient:
         try:
             table_ref = client.get_table(table)
         except KeyError as error:
-            logger.fatal(f"Input table `{table}` is not valid.", exc_info=True)
             raise KeyError(f"\n\nInput table `{table}` is not valid.\n{error}")
         columns = {}
         for column in table_ref.schema:
@@ -250,7 +249,10 @@ class BigQueryClient:
             range_partitioning = table_ref.range_partitioning
             if range_partitioning:
                 raise NotImplementedError(
-                    logger.debug(f"Range Partitioning is not supported currently.")
+                    logger.debug(
+                        f"Bigquery Range Partitioning for table '{table}' is "
+                        f"currently not supported."
+                    )
                 )
             columns_dict = {
                 "columns": columns,
