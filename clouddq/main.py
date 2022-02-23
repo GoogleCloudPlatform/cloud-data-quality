@@ -709,4 +709,15 @@ def main(  # noqa: C901
 
 
 if __name__ == "__main__":
+    from pyhive import hive
+    from contextlib import closing
+    connection = hive.connect(
+        host="localhost", port=10005, database='clouddq_staging_schema'
+    )
+    with closing(connection):
+        cursor = connection.cursor()
+        cursor.execute("SHOW TABLES;")
+        rows = list(cursor.fetchall())
+        print(f"Connected to hive metastore successfully. We have {len(rows)} tables in default database.")
+
     main()

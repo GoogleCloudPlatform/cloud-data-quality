@@ -264,18 +264,18 @@ class TestSparkDataplexIntegration:
     @pytest.mark.parametrize(
         "input_configs,expected,test_driver",
         [
-            pytest.param(
-                'gcs_clouddq_configs_standard',
-                "SUCCEEDED",
-                True,
-                id="without_clouddq_executable"
-            ),
             # pytest.param(
-            #     'gcs_clouddq_configs_standard',
-            #     "SUCCEEDED",
-            #     False,
-            #     id="configs_standard"
-            # ),
+            #    'gcs_clouddq_configs_standard',
+            #    "SUCCEEDED",
+            #    True,
+            #    id="without_clouddq_executable"
+            #),
+            pytest.param(
+                 'gcs_clouddq_configs_standard',
+                 "SUCCEEDED",
+                 False,
+                 id="configs_standard"
+             ),
             # pytest.param(
             #     'gcs_clouddq_configs_nonstandard',
             #     "SUCCEEDED",

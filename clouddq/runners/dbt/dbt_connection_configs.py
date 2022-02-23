@@ -184,7 +184,7 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
 class SparkDbtConnectionConfig(DbtConnectionConfig):
     """Data class for dbt connection profiles configurations to Spark."""
 
-    schema: str = "clouddq_staging_schema"
+    schema: str = "clouddq_staging_schema_test"
     connection_method: str = "thrift"
     threads: int = 1
     host: str = "127.0.0.1"
