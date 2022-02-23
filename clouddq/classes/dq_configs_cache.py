@@ -457,7 +457,7 @@ class DqConfigsCache:
                     f"'{argument}' is a required argument to look-up metadata for the entity_uri "
                     "using Dataplex Metadata API.\n"
                     "Ensure the BigQuery dataset containing this table "
-                    "is registered as an asset in Dataplex.\n"
+                    "is attached as an asset in Dataplex.\n"
                     "You can then specify the corresponding Dataplex "
                     "projects/locations/lakes/zones as part of the "
                     "metadata_default_registries YAML configs, e.g.\n"
@@ -552,5 +552,5 @@ class DqConfigsCache:
                 else:
                     raise RuntimeError(
                         f"Bigquery Table '{table_name}' specified in the "
-                        f"entity uri '{entity_uri}' does not exists"
+                        f"entity uri '{entity_uri}' does not exist"
                     )
