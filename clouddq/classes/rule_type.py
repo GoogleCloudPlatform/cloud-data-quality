@@ -184,13 +184,13 @@ def to_sql_regex(params: dict, resource_type: str) -> Template:
     if resource_type == "BIGQUERY":
         return Template(REGEX_SQL.safe_substitute(pattern=pattern))
 
-    elif resource_type == "STORAGE_BUCKET":
+    elif resource_type == "CLOUD_STORAGE":
         return Template(REGEX_SPARK_SQL.safe_substitute(pattern=pattern))
 
 
 def not_null_sql(resource_type: str) -> Template:
 
-    if resource_type == "STORAGE_BUCKET":
+    if resource_type == "CLOUD_STORAGE":
         return NOT_BLANK_SQL
     else:
         return NOT_NULL_SQL

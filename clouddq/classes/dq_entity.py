@@ -65,7 +65,7 @@ def get_custom_entity_configs(
     )
     entity_config_arguments = dict()
     for argument in entity_config_template_arguments:
-        if source_database == "DATAPLEX" and argument == "dataplex_zone":
+        if source_database == "DATAPLEX" and argument == "dataplex_lake":
             argument_value = configs_map.get(argument).replace("-", "_")
         else:
             argument_value = configs_map.get(argument)

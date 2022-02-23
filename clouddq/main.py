@@ -454,7 +454,7 @@ def main(  # noqa: C901
             dq_summary_table_exists = False
             if gcp_region_id and not skip_sql_validation:
                 dq_summary_table_ref = bigquery_client.table_from_string(
-                    dq_summary_table_name
+                   bq_dq_summary_table_name
                 )
                 dq_summary_project_id = dq_summary_table_ref.project
                 dq_summary_dataset = dq_summary_table_ref.dataset_id
@@ -467,10 +467,10 @@ def main(  # noqa: C901
                     project_id=dq_summary_project_id,
                 )
                 dq_summary_table_exists = bigquery_client.is_table_exists(
-                    table=dq_summary_table_name, project_id=dq_summary_project_id
+                    table=bq_dq_summary_table_name, project_id=dq_summary_project_id
                 )
                 bigquery_client.assert_required_columns_exist_in_table(
-                    table=dq_summary_table_name, project_id=dq_summary_project_id
+                    table=bq_dq_summary_table_name, project_id=dq_summary_project_id
                 )
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
@@ -709,15 +709,15 @@ def main(  # noqa: C901
 
 
 if __name__ == "__main__":
-    from pyhive import hive
-    from contextlib import closing
-    connection = hive.connect(
-        host="localhost", port=10005, database='clouddq_staging_schema'
-    )
-    with closing(connection):
-        cursor = connection.cursor()
-        cursor.execute("SHOW TABLES;")
-        rows = list(cursor.fetchall())
-        print(f"Connected to hive metastore successfully. We have {len(rows)} tables in default database.")
+    # from pyhive import hive
+    # from contextlib import closing
+    # connection = hive.connect(
+    #     host="localhost", port=10005, database='clouddq_staging_schema'
+    # )
+    # with closing(connection):
+    #     cursor = connection.cursor()
+    #     cursor.execute("SHOW TABLES;")
+    #     rows = list(cursor.fetchall())
+    #     print(f"Connected to hive metastore successfully. We have {len(rows)} tables in default database.")
 
     main()
