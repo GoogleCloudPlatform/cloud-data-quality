@@ -464,34 +464,31 @@ class DqConfigsCache:
                     f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
                 )
                 return False
-            else:
-                dataplex_entities_match = client.list_dataplex_entities(
-                    gcp_project_id=entity_uri.get_configs("projects"),
-                    location_id=entity_uri.get_configs("locations"),
-                    lake_name=entity_uri.get_configs("lakes"),
-                    zone_id=entity_uri.get_configs("zones"),
-                    data_path=entity_uri.get_entity_id(),
-                )
-                logger.info(
-                    f"Retrieved Dataplex Entities:\n{pformat(dataplex_entities_match)}"
-                )
-                if len(dataplex_entities_match) != 1:
-                    logger.info(
-                        "Failed to retrieve Dataplex Metadata entry for "
-                        f"entity_uri '{entity_uri.complete_uri_string}' "
-                        f"with error:\n"
-                        f"{pformat(json.dumps(dataplex_entities_match))}\n\n"
-                        f"Parsed entity_uri configs:\n"
-                        f"{pformat(entity_uri.to_dict())}\n\n"
-                    )
-                    return False
-                else:
-                    dataplex_entity = dataplex_entities_match[0]
-                    clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
-                        entity_id=entity_uri.get_db_primary_key(),
-                        dataplex_entity=dataplex_entity,
-                    )
-                    return clouddq_entity
+        dataplex_entities_match = client.list_dataplex_entities(
+            gcp_project_id=entity_uri.get_configs("projects"),
+            location_id=entity_uri.get_configs("locations"),
+            lake_name=entity_uri.get_configs("lakes"),
+            zone_id=entity_uri.get_configs("zones"),
+            data_path=entity_uri.get_entity_id(),
+        )
+        logger.info(f"Retrieved Dataplex Entities:\n{pformat(dataplex_entities_match)}")
+        if len(dataplex_entities_match) != 1:
+            logger.info(
+                "Failed to retrieve Dataplex Metadata entry for "
+                f"entity_uri '{entity_uri.complete_uri_string}' "
+                f"with error:\n"
+                f"{pformat(json.dumps(dataplex_entities_match))}\n\n"
+                f"Parsed entity_uri configs:\n"
+                f"{pformat(entity_uri.to_dict())}\n\n"
+            )
+            return False
+        else:
+            dataplex_entity = dataplex_entities_match[0]
+            clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
+                entity_id=entity_uri.get_db_primary_key(),
+                dataplex_entity=dataplex_entity,
+            )
+        return clouddq_entity
 
     def _resolve_bigquery_entity_uri(
         self,
