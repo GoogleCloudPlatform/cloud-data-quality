@@ -31,6 +31,8 @@
 {% elif rule_configs.get("rule_type") == "NOT_BLANK" %}
       WHEN {{ column_name }} IS NULL THEN CAST(NULL AS BOOLEAN)
       WHEN {{ rule_configs.get("rule_sql_expr") }} THEN TRUE
+{% elif rule_configs.get("rule_type") == "CUSTOM_SQL_EXPR" %}
+      WHEN {{ rule_configs.get("rule_sql_expr") }} THEN TRUE
 {% else %}
       WHEN ({{ column_name }} IS NULL OR TRIM ({{ column_name }}) = '') THEN CAST(NULL AS BOOLEAN)
       WHEN {{ rule_configs.get("rule_sql_expr") }} THEN TRUE
