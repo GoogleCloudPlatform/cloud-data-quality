@@ -180,7 +180,7 @@ class EntityUri:
                     f"{SAMPLE_DEFAULT_REGISTRIES_YAML}",
                 )
 
-    def get_table_name_from_entity_uri(self: EntityUri):
+    def get_table_name(self: EntityUri):
         configs = self.configs_dict
         project_id = configs.get("projects")
         dataset_id = configs.get("datasets")

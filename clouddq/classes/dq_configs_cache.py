@@ -525,32 +525,32 @@ class DqConfigsCache:
                     f"'{argument}' is a required argument to look-up metadata for the entity_uri "
                     "using Bigquery API.\n"
                 )
+
+        project_id = entity_uri.get_configs("projects")
+        table_name = entity_uri.get_table_name()
+        bq_native_table_exists = bigquery_client.is_table_exists(
+            table=table_name, project_id=project_id
+        )
+        if bq_native_table_exists:
+            logger.debug(
+                f"The Table '{table_name}' in the "
+                f"specified entity_uri '{entity_uri}' "
+                f"exists is Bigquery."
+            )
+            dataplex_entity = self.is_dataplex_entity(
+                entity_uri=entity_uri, client=client
+            )
+            if dataplex_entity:
+                clouddq_entity = dataplex_entity
             else:
-                project_id = entity_uri.get_configs("projects")
-                table_name = entity_uri.get_table_name_from_entity_uri()
-                bq_native_table_exists = bigquery_client.is_table_exists(
-                    table=table_name, project_id=project_id
+                clouddq_entity = dq_entity.DqEntity.from_bq_entity_uri(
+                    entity_id=entity_uri.get_entity_id(),
+                    entity_uri=entity_uri,
+                    bigquery_client=bigquery_client,
                 )
-                if bq_native_table_exists:
-                    logger.debug(
-                        f"The Table '{table_name}' in the "
-                        f"specified entity_uri '{entity_uri}' "
-                        f"exists is Bigquery."
-                    )
-                    dataplex_entity = self.is_dataplex_entity(
-                        entity_uri=entity_uri, client=client
-                    )
-                    if dataplex_entity:
-                        clouddq_entity = dataplex_entity
-                    else:
-                        clouddq_entity = dq_entity.DqEntity.from_bq_entity_uri(
-                            entity_id=entity_uri.get_entity_id(),
-                            entity_uri=entity_uri,
-                            bigquery_client=bigquery_client,
-                        )
-                    return clouddq_entity
-                else:
-                    raise RuntimeError(
-                        f"Bigquery Table '{table_name}' specified in the "
-                        f"entity uri '{entity_uri}' does not exist"
-                    )
+            return clouddq_entity
+        else:
+            raise RuntimeError(
+                f"Bigquery Table '{table_name}' specified in the "
+                f"entity uri '{entity_uri}' does not exist"
+            )

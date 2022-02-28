@@ -369,7 +369,7 @@ class DqEntity:
         self, entity_id: str, entity_uri: EntityUri, bigquery_client: BigQueryClient
     ) -> DqEntity:
         project_id = entity_uri.get_configs("projects")
-        table_name = entity_uri.get_table_name_from_entity_uri()
+        table_name = entity_uri.get_table_name()
         configs = entity_uri.configs_dict
         columns_dict = bigquery_client.get_table_schema(
             table=table_name, project_id=project_id
