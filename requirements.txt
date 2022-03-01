@@ -18,3 +18,4 @@ filelock==3.3.2
 sqlite-utils==3.18
 pyrate-limiter==2.6.0
 setuptools==60.6.0
+markupsafe==2.0.1

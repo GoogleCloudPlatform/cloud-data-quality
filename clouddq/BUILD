@@ -56,6 +56,7 @@ py_binary(
         requirement("click"),
         requirement("coloredlogs"),
         requirement("sqlite-utils"),
+        requirement("markupsafe"),
     ],
 )
 
@@ -70,6 +71,7 @@ py_library(
         requirement("jinja2"),
         requirement("dbt-bigquery"),
         requirement("google-cloud-logging"),
+        requirement("markupsafe"),
     ],
 )
 
@@ -80,6 +82,7 @@ py_library(
     deps = [
         requirement("jinja2"),
         requirement("sqlite-utils"),
+        requirement("markupsafe"),
     ],
 )
 
