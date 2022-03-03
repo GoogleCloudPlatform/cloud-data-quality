@@ -249,8 +249,8 @@ class BigQueryClient:
             range_partitioning = table_ref.range_partitioning
             if range_partitioning:
                 raise NotImplementedError(
-                        f"Bigquery Range Partitioning for table '{table}' is "
-                        f"currently not supported."
+                    f"Bigquery Range Partitioning for table '{table}' is "
+                    f"currently not supported."
                 )
             columns_dict = {
                 "columns": columns,

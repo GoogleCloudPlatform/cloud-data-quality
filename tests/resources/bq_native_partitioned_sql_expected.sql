@@ -1,14 +1,28 @@
+-- Copyright 2021 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--      http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
 WITH
 zero_record AS (
     SELECT
-        'T14_URI_BQ_PARTITIONED_EMAIL_DUPLICATE' AS rule_binding_id,
+        '<rule_binding_id>' AS rule_binding_id,
 ),
 data AS (
     SELECT
       *,
-      'T14_URI_BQ_PARTITIONED_EMAIL_DUPLICATE' AS rule_binding_id,
+      '<rule_binding_id>' AS rule_binding_id,
     FROM
-      `dataplex-clouddq.austin_311.contact_details_partitioned` d
+      `<your-gcp-project-id>.austin_311.contact_details_partitioned` d
     WHERE
       contact_type = 'email'
 
@@ -18,15 +32,15 @@ last_mod AS (
     SELECT
         project_id || '.' || dataset_id || '.' || table_id AS table_id,
         TIMESTAMP_MILLIS(last_modified_time) AS last_modified
-    FROM `dataplex-clouddq.austin_311.__TABLES__`
+    FROM `<your-gcp-project-id>.austin_311.__TABLES__`
 ),
 validation_results AS (
 
 SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
-    'T14_URI_BQ_PARTITIONED_EMAIL_DUPLICATE' AS rule_binding_id,
+    '<rule_binding_id>' AS rule_binding_id,
     'NO_DUPLICATES_IN_COLUMN_GROUPS' AS rule_id,
-    'dataplex-clouddq.austin_311.contact_details_partitioned' AS table_id,
+    '<your-gcp-project-id>.austin_311.contact_details_partitioned' AS table_id,
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
 
@@ -45,7 +59,7 @@ SELECT
   LEFT JOIN
     (
       SELECT 
-        'T14_URI_BQ_PARTITIONED_EMAIL_DUPLICATE' AS _rule_binding_id,
+        '<rule_binding_id>' AS _rule_binding_id,
         COUNT(*) AS complex_rule_validation_errors_count,
       FROM (
       select a.*
@@ -66,9 +80,9 @@ using (contact_type,value)
     UNION ALL
     SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
-    'T14_URI_BQ_PARTITIONED_EMAIL_DUPLICATE' AS rule_binding_id,
+    '<rule_binding_id>' AS rule_binding_id,
     'NOT_NULL_SIMPLE' AS rule_id,
-    'dataplex-clouddq.austin_311.contact_details_partitioned' AS table_id,
+    '<your-gcp-project-id>.austin_311.contact_details_partitioned' AS table_id,
     'value' AS column_id,
     data.value AS column_value,
 
@@ -109,7 +123,7 @@ all_validation_results AS (
     (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{"brand": "one"}' AS metadata_json_string,
-    '75e1c2c9d78b7a9c38b881262f8cc0bd6c7133069681343ca037bb0a62dbcfe1' AS configs_hashsum,
+    '' AS configs_hashsum,
     CAST(NULL AS STRING) AS dataplex_lake,
     CAST(NULL AS STRING) AS dataplex_zone,
     CAST(NULL AS STRING) AS dataplex_asset_id,
