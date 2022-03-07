@@ -18,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pprint import pformat
 
+import json
 import logging
 import re
 import sqlite3
@@ -229,7 +230,6 @@ class DqConfigsCache:
         bigquery_client: BigQueryClient,
         target_rule_binding_ids: list[str],
         default_configs: dict | None = None,
-        enable_experimental_bigquery_entity_uris: bool = True,
         enable_experimental_dataplex_gcs_validation: bool = True,
     ) -> None:
         logger.debug(
@@ -266,7 +266,6 @@ class DqConfigsCache:
                 clouddq_entity = self._resolve_bigquery_entity_uri(
                     entity_uri=entity_uri,
                     client=client,
-                    enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
                 )
             else:
                 raise RuntimeError(f"Invalid Entity URI scheme: {entity_uri.scheme}")
@@ -444,23 +443,7 @@ class DqConfigsCache:
         self,
         entity_uri: dq_entity_uri.EntityUri,
         client: clouddq_dataplex.CloudDqDataplexClient,
-        enable_experimental_bigquery_entity_uris: bool = True,
     ) -> dq_entity.DqEntity:
-        if not enable_experimental_bigquery_entity_uris:
-            raise NotImplementedError(
-                f"entity_uri '{entity_uri.complete_uri_string}' "
-                "has unsupported scheme 'bigquery://'.\n"
-                "Use CLI flag --enable_experimental_bigquery_entity_uris "
-                "to enable looking up bigquery:// entity_uri scheme in format "
-                "bigquery://projects/<project-id>/datasets/<dataset-id>/tables/<table-id> "
-                "schemes using Dataplex Metadata API.\n"
-                "Ensure the BigQuery dataset containing this table "
-                "is registered as an asset in Dataplex.\n"
-                "You can then specify the corresponding Dataplex "
-                "projects/locations/lakes/zones as part of the "
-                "metadata_default_registries YAML configs, e.g.\n"
-                f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
-            )
         required_arguments = ["projects", "lakes", "locations", "zones"]
         for argument in required_arguments:
             uri_argument = entity_uri.get_configs(argument)
@@ -490,7 +473,7 @@ class DqConfigsCache:
                 "Failed to retrieve Dataplex Metadata entry for "
                 f"entity_uri '{entity_uri.complete_uri_string}' "
                 f"with error:\n"
-                f"{pformat(dataplex_entities_match.json())}\n\n"
+                f"{pformat(json.dumps(dataplex_entities_match))}\n\n"
                 f"Parsed entity_uri configs:\n"
                 f"{pformat(entity_uri.to_dict())}\n\n"
             )

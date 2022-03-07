@@ -193,7 +193,6 @@ class TestDqAdvancedRules:
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--gcp_region_id={gcp_bq_region}",
                     f"--target_bigquery_summary_table={target_table}",
-                    "--enable_experimental_bigquery_entity_uris"
                     ]
                 result = runner.invoke(main, args)
                 logger.info(result.output)
