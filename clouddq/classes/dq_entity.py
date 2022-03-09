@@ -26,6 +26,8 @@ from clouddq.classes.dataplex_entity_schema_partition_fields import (
     DataplexEntityPartitionSchemaField,
 )
 from clouddq.classes.dq_entity_column import DqEntityColumn
+from clouddq.classes.dq_entity_uri import EntityUri
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_format_string_arguments
 from clouddq.utils import get_from_dict_and_assert
@@ -269,6 +271,7 @@ class DqEntity:
             "instance_name": self.instance_name,
             "columns": columns,
             "resource_type": self.resource_type,
+            "partition_fields": self.partition_fields,
         }
         if self.source_database == "BIGQUERY":
             output.update(
@@ -288,7 +291,6 @@ class DqEntity:
                     "dataplex_location": self.dataplex_location,
                     "dataplex_asset_id": self.dataplex_asset_id,
                     "dataplex_createTime": self.dataplex_createTime,
-                    "partition_fields": self.partition_fields,
                 }
             )
         return dict({f"{self.entity_id}": output})
@@ -361,6 +363,38 @@ class DqEntity:
                 f"Dataplex entity system {dataplex_entity.system} "
                 f"is unsupported for entity:\n {dataplex_entity.to_dict()}"
             )
+
+    @classmethod
+    def from_bq_entity_uri(
+        self, entity_uri: EntityUri, bigquery_client: BigQueryClient
+    ) -> DqEntity:
+        project_id = entity_uri.get_configs("projects")
+        table_name = entity_uri.get_table_name()
+        configs = entity_uri.configs_dict
+        entity_id = entity_uri.get_entity_id()
+        columns_dict = bigquery_client.get_table_schema(
+            table=table_name, project_id=project_id
+        )
+        entity_configs = {
+            "source_database": "BIGQUERY",
+            "resource_type": "BIGQUERY",
+            "table_name": configs.get("tables"),
+            "dataset_name": configs.get("datasets"),
+            "project_name": configs.get("projects"),
+            "columns": columns_dict.get("columns"),
+            "environment_override": {},
+            "entity_id": entity_id,
+            "dataplex_name": configs.get("dataplex_name", None),
+            "dataplex_lake": configs.get("dataplex_lake", None),
+            "dataplex_zone": configs.get("dataplex_zone", None),
+            "dataplex_location": configs.get("dataplex_location", None),
+            "dataplex_asset_id": configs.get("dataplex_asset_id", None),
+            "dataplex_createTime": configs.get("dataplex_createTime", None),
+            "dataplex_updateTime": configs.get("dataplex_updateTime", None),
+            "partition_fields": columns_dict.get("partition_fields"),
+        }
+
+        return DqEntity.from_dict(entity_id=entity_id.upper(), kwargs=entity_configs)
 
     def get_table_name(self):
         return f"{self.instance_name}.{self.database_name}.{self.table_name}"

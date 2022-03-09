@@ -124,6 +124,7 @@ class TestClasses:
             "dataset_name": "dataset_name",
             "project_name": "project_name",
             "resource_type": "BIGQUERY",
+            "partition_fields": None,
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -139,6 +140,7 @@ class TestClasses:
                 "database_name": "dataset_name",
                 "dataset_name": "dataset_name",
                 "instance_name": "project_name",
+                "partition_fields": None,
                 "project_name": "project_name",
                 "resource_type": "BIGQUERY",
                 "columns": {
@@ -159,6 +161,7 @@ class TestClasses:
             "database_name": "dataset_name",
             "instance_name": "project_name",
             "resource_type": "BIGQUERY",
+            "partition_fields": None,
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -176,6 +179,7 @@ class TestClasses:
                 "instance_name": "project_name",
                 "project_name": "project_name",
                 "resource_type": "BIGQUERY",
+                "partition_fields": None,
                 "columns": {
                     "TEST_COLUMN": {
                         "description": "test column description",
