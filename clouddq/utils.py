@@ -101,6 +101,26 @@ def write_templated_file_to_path(path: Path, lookup_table: typing.Dict) -> None:
     path.write_text(get_template_file(lookup_table.get(path.name)))
 
 
+def set_dbt_intermediate_expiration_hours(
+    path: Path, intermediate_table_expiration_hours: int, lookup_table: typing.Dict
+):
+    logger.debug(
+        f"Intermediate table expiration hours "
+        f"is set to {intermediate_table_expiration_hours}"
+    )
+    template_text = get_template_file(lookup_table.get(path.name))
+    template_text = template_text.replace(
+        "+hours_to_expiration: 24",
+        f"+hours_to_expiration: {intermediate_table_expiration_hours}",
+    )
+    logger.debug(f"Writing templated file {get_templates_path(path.name)} to {path}")
+    path.write_text(template_text)
+    logger.debug(
+        "Contents of dbt_project.yml after setting dbt intermediate table expiration hours are:"
+    )
+    logger.debug(template_text)
+
+
 @contextlib.contextmanager
 def working_directory(path):
     """Changes working directory and returns to previous on exit."""

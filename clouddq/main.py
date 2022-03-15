@@ -211,6 +211,13 @@ coloredlogs.install(logger=logger)
     is_flag=True,
     default=False,
 )
+@click.option(
+    "--intermediate_table_expiration_hours",
+    help="Configure the DBT created intermediate tables expiration hours"
+    "Defaults to 24 hours if not set. ",
+    default=24,
+    type=int,
+)
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
@@ -226,6 +233,7 @@ def main(  # noqa: C901
     dry_run: bool,
     progress_watermark: bool,
     target_bigquery_summary_table: Optional[str],
+    intermediate_table_expiration_hours: Optional[int],
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
@@ -321,6 +329,7 @@ def main(  # noqa: C901
             bigquery_client=bigquery_client,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
+            intermediate_table_expiration_hours=intermediate_table_expiration_hours,
         )
         dbt_path = dbt_runner.get_dbt_path()
         dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
