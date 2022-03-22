@@ -110,7 +110,6 @@ class TestBigQueryClient:
                 table=table_name,
                 project_id=project_id
             )
-            print(table_schema)
             expected_table_schema = {
                 'columns': {
                     'COMMIT': {'name': 'commit', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
@@ -133,7 +132,6 @@ class TestBigQueryClient:
         else:
             print(f'`{table_name}` does not exists in the project `{project_id}`')
 
-
     def test_get_table_schema_with_partition_fields(self,
         gcp_project_id,
         test_bigquery_client):
@@ -151,15 +149,15 @@ class TestBigQueryClient:
                 table=table_name,
                 project_id=project_id
             )
-            print(table_schema)
             expected_table_schema = {
-            'columns': {
-                'ROW_ID': {'name': 'row_id', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
-                'CONTACT_TYPE': {'name': 'contact_type', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
-                'VALUE': {'name': 'value', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
-                'TS': {'name': 'ts', 'type': 'TIMESTAMP', 'mode': 'NULLABLE', 'data_type': 'TIMESTAMP'}
-            },
-            'partition_fields': [{'name': 'ts', 'type': 'TIMESTAMP', 'partitioning_type': 'DAY'}]
+                'columns': {
+                    'ROW_ID': {'name': 'row_id', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
+                    'CONTACT_TYPE': {'name': 'contact_type', 'type': 'STRING', 'mode': 'NULLABLE',
+                                     'data_type': 'STRING'},
+                    'VALUE': {'name': 'value', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
+                    'TS': {'name': 'ts', 'type': 'TIMESTAMP', 'mode': 'NULLABLE', 'data_type': 'TIMESTAMP'}
+                },
+                'partition_fields': [{'name': 'ts', 'type': 'TIMESTAMP', 'partitioning_type': 'DAY'}]
             }
             assert table_schema == expected_table_schema
         else:
@@ -182,15 +180,15 @@ class TestBigQueryClient:
                 table=table_name,
                 project_id=project_id
             )
-            print(table_schema)
             expected_table_schema = {
-            'columns': {
-                'ROW_ID': {'name': 'row_id', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
-                'CONTACT_TYPE': {'name': 'contact_type', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
-                'VALUE': {'name': 'value', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
-                'TS': {'name': 'ts', 'type': 'TIMESTAMP', 'mode': 'NULLABLE', 'data_type': 'TIMESTAMP'}
-            },
-            'partition_fields': [{'name': '_PARTITIONTIME', 'partitioning_type': 'DAY', 'type': 'TIMESTAMP'}]
+                'columns': {
+                    'ROW_ID': {'name': 'row_id', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
+                    'CONTACT_TYPE': {'name': 'contact_type', 'type': 'STRING', 'mode': 'NULLABLE',
+                                     'data_type': 'STRING'},
+                    'VALUE': {'name': 'value', 'type': 'STRING', 'mode': 'NULLABLE', 'data_type': 'STRING'},
+                    'TS': {'name': 'ts', 'type': 'TIMESTAMP', 'mode': 'NULLABLE', 'data_type': 'TIMESTAMP'}
+                },
+                'partition_fields': [{'name': '_PARTITIONTIME', 'partitioning_type': 'DAY', 'type': 'TIMESTAMP'}]
             }
             assert table_schema == expected_table_schema
         else:
