@@ -47,7 +47,7 @@ models:
       +materialized: view
     entity_dq_statistics:
       +materialized: table
-      +hours_to_expiration: 6
+      +hours_to_expiration: 24
 
 
 vars:
