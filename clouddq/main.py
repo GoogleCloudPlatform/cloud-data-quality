@@ -483,7 +483,7 @@ def main(  # noqa: C901
         # Load all configs into a local cache
         configs_cache = lib.prepare_configs_cache(configs_path=Path(configs_path))
         configs_cache.resolve_dataplex_entity_uris(
-            client=dataplex_client,
+            dataplex_client=dataplex_client,
             bigquery_client=bigquery_client,
             default_configs=dataplex_registry_defaults,
             target_rule_binding_ids=target_rule_binding_ids,

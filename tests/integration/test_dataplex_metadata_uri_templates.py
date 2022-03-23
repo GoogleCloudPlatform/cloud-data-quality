@@ -548,7 +548,10 @@ class TestDataplexMetadataUriTemplates:
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_8.items():
-
+            if rule_binding_id in ["T16_URI_BQ_PARTITIONED_EMAIL_DUPLICATE", "T17_URI_BQ_PARTITIONED_EMAIL_DUPLICATE"]:
+                expected_configs_filename = "bq_native_default_partitioned_expected_configs.json"
+            else:
+                expected_configs_filename = "bq_native_partitioned_expected_configs.json"
             env = "DEV"
             metadata = {"brand": "one"}
             configs = lib.prepare_configs_from_rule_binding_id(
@@ -569,7 +572,7 @@ class TestDataplexMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataset_name"] = "<your_bigquery_dataset_id>"
             configs["configs"]["entity_configs"]["project_name"] = "<your-gcp-project-id>"
 
-            with open(test_resources / "bq_native_partitioned_expected_configs.json") as f:
+            with open(test_resources / expected_configs_filename) as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
             metadata.update(rule_binding_configs["metadata"])
@@ -591,7 +594,12 @@ class TestDataplexMetadataUriTemplates:
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_8.items():
 
-            with open(test_resources / "bq_native_partitioned_sql_expected.sql") as f:
+            if rule_binding_id in ["T16_URI_BQ_PARTITIONED_EMAIL_DUPLICATE", "T17_URI_BQ_PARTITIONED_EMAIL_DUPLICATE"]:
+                expected_sql_filename = "bq_native_default_partitioned_sql_expected.sql"
+            else:
+                expected_sql_filename = "bq_native_partitioned_sql_expected.sql"
+
+            with open(test_resources / expected_sql_filename) as f:
                 expected = f.read()
             output = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,

@@ -226,7 +226,7 @@ class DqConfigsCache:
 
     def resolve_dataplex_entity_uris(  # noqa: C901
         self,
-        client: clouddq_dataplex.CloudDqDataplexClient,
+        dataplex_client: clouddq_dataplex.CloudDqDataplexClient,
         bigquery_client: BigQueryClient,
         target_rule_binding_ids: list[str],
         default_configs: dict | None = None,
@@ -259,14 +259,14 @@ class DqConfigsCache:
             if entity_uri.scheme == "DATAPLEX":
                 clouddq_entity = self._resolve_dataplex_entity_uri(
                     entity_uri=entity_uri,
-                    client=client,
+                    dataplex_client=dataplex_client,
                     bigquery_client=bigquery_client,
                     enable_experimental_dataplex_gcs_validation=enable_experimental_dataplex_gcs_validation,
                 )
             elif entity_uri.scheme == "BIGQUERY":
                 clouddq_entity = self._resolve_bigquery_entity_uri(
                     entity_uri=entity_uri,
-                    client=client,
+                    dataplex_client=dataplex_client,
                     bigquery_client=bigquery_client,
                     enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
                 )
@@ -399,11 +399,11 @@ class DqConfigsCache:
     def _resolve_dataplex_entity_uri(
         self,
         entity_uri: dq_entity_uri.EntityUri,
-        client: clouddq_dataplex.CloudDqDataplexClient,
+        dataplex_client: clouddq_dataplex.CloudDqDataplexClient,
         bigquery_client: BigQueryClient,
         enable_experimental_dataplex_gcs_validation: bool = True,
     ) -> dq_entity.DqEntity:
-        dataplex_entity = client.get_dataplex_entity(
+        dataplex_entity = dataplex_client.get_dataplex_entity(
             gcp_project_id=entity_uri.get_configs("projects"),
             location_id=entity_uri.get_configs("locations"),
             lake_name=entity_uri.get_configs("lakes"),
@@ -445,7 +445,7 @@ class DqConfigsCache:
     def is_dataplex_entity(
         self,
         entity_uri: dq_entity_uri.EntityUri,
-        client: clouddq_dataplex.CloudDqDataplexClient,
+        dataplex_client: clouddq_dataplex.CloudDqDataplexClient,
     ):
         required_arguments = ["projects", "lakes", "locations", "zones"]
         for argument in required_arguments:
@@ -464,7 +464,7 @@ class DqConfigsCache:
                     f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
                 )
                 return False
-        dataplex_entities_match = client.list_dataplex_entities(
+        dataplex_entities_match = dataplex_client.list_dataplex_entities(
             gcp_project_id=entity_uri.get_configs("projects"),
             location_id=entity_uri.get_configs("locations"),
             lake_name=entity_uri.get_configs("lakes"),
@@ -493,7 +493,7 @@ class DqConfigsCache:
     def _resolve_bigquery_entity_uri(
         self,
         entity_uri: dq_entity_uri.EntityUri,
-        client: clouddq_dataplex.CloudDqDataplexClient,
+        dataplex_client: clouddq_dataplex.CloudDqDataplexClient,
         bigquery_client: BigQueryClient,
         enable_experimental_bigquery_entity_uris: bool = True,
     ) -> dq_entity.DqEntity:
@@ -535,7 +535,7 @@ class DqConfigsCache:
                 f"exists in Bigquery."
             )
             dataplex_entity = self.is_dataplex_entity(
-                entity_uri=entity_uri, client=client
+                entity_uri=entity_uri, dataplex_client=dataplex_client
             )
             if dataplex_entity:
                 clouddq_entity = dataplex_entity

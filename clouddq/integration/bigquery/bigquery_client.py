@@ -237,7 +237,10 @@ class BigQueryClient:
                 time_partitioning_type = time_partitioning.type_
                 time_partitioning_field = time_partitioning.field
                 if not time_partitioning_field:
-                    partition_fields = "_PARTITIONTIME"
+                    partition_field["name"] = "_PARTITIONTIME"
+                    partition_field["partitioning_type"] = time_partitioning_type
+                    partition_field["type"] = "TIMESTAMP"
+                    partition_fields.append(partition_field)
                 else:
                     partition_field["name"] = time_partitioning_field
                     partition_field["type"] = columns[time_partitioning_field.upper()][
