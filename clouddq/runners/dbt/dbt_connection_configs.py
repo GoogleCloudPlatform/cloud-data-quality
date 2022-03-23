@@ -81,7 +81,7 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
     connection_method: DbtBigQueryConnectionMethod = None
     gcp_service_account_key_path: Optional[str] = None
     service_account_gcp_impersonation_credentials: Optional[str] = None
-    threads: int = 4
+    threads: int = 8
     timeout_seconds: int = 3600
     priority: str = "interactive"
     retries: int = 1
