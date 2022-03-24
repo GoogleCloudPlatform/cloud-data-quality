@@ -13,25 +13,20 @@
 # limitations under the License.
 
 rule_bindings:
-  T8_URI_GCS_EMAIL_DUPLICATE:
-    entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/entities/asset_bucket
-    column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
+  T12_URI_NATIVE_BQ_NOT_NULL:
+    entity_uri: bigquery://locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/projects/<my-gcp-project-id>/datasets/austin_311/tables/311_service_requests
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
     rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: "contact_type,value"
       - NOT_NULL_SIMPLE
     metadata:
       brand: one
 
-
-  T9_URI_GCS_EMAIL_DUPLICATE:
-    entity_uri: dataplex://zones/<my-gcp-dataplex-zone-id>/entities/asset_bucket
-    column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
+  T13_URI_NATIVE_BQ_NOT_NULL:
+    entity_uri: bigquery://projects/<my-gcp-project-id>/datasets/austin_311/tables/311_service_requests
+    column_id: UNIQUE_KEY
+    row_filter_id: NONE
     rule_ids:
-      - NO_DUPLICATES_IN_COLUMN_GROUPS:
-          column_names: "contact_type,value"
       - NOT_NULL_SIMPLE
     metadata:
       brand: one

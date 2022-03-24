@@ -23,6 +23,7 @@ from clouddq import lib
 from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_entity import get_custom_entity_configs
+from clouddq.classes.dq_entity_uri import EntityUri
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
@@ -124,6 +125,7 @@ class TestClasses:
             "dataset_name": "dataset_name",
             "project_name": "project_name",
             "resource_type": "BIGQUERY",
+            "partition_fields": None,
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -139,6 +141,7 @@ class TestClasses:
                 "database_name": "dataset_name",
                 "dataset_name": "dataset_name",
                 "instance_name": "project_name",
+                "partition_fields": None,
                 "project_name": "project_name",
                 "resource_type": "BIGQUERY",
                 "columns": {
@@ -159,6 +162,7 @@ class TestClasses:
             "database_name": "dataset_name",
             "instance_name": "project_name",
             "resource_type": "BIGQUERY",
+            "partition_fields": None,
             "columns": {
                 "TEST_COLUMN": {
                     "description": "test column description",
@@ -176,6 +180,7 @@ class TestClasses:
                 "instance_name": "project_name",
                 "project_name": "project_name",
                 "resource_type": "BIGQUERY",
+                "partition_fields": None,
                 "columns": {
                     "TEST_COLUMN": {
                         "description": "test column description",
@@ -476,6 +481,43 @@ class TestClasses:
             rule_loaded = cache.get_rule_id(rule_id)
             assert rule_loaded.dimension is None, rule_id
             assertRulesEqual(rule_id, rule_config, rule_loaded)
+
+    def test_dq_entity_parse_bigquery_uri(self,
+        gcp_project_id,
+        test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,):
+
+        bq_entity_uri_string = f"bigquery://projects/{gcp_project_id}/datasets/" \
+                               f"austin_311/tables/contact_details_partitioned"
+        bq_entity_uri = EntityUri.from_uri(
+            uri_string=bq_entity_uri_string,
+            default_configs=test_dataplex_metadata_defaults_configs,
+        )
+        clouddq_entity = DqEntity.from_bq_entity_uri(
+            entity_uri=bq_entity_uri,
+            bigquery_client=test_bigquery_client)
+        clouddq_entity_expected_dict = {bq_entity_uri_string.upper().split("://")[1]: {
+            'source_database': 'BIGQUERY',
+            'table_name': 'contact_details_partitioned',
+            'database_name': 'austin_311',
+            'instance_name': f'{gcp_project_id}',
+            'columns': {
+                'ROW_ID': {'name': 'row_id', 'data_type': 'STRING'},
+                'CONTACT_TYPE': {'name': 'contact_type', 'data_type': 'STRING'},
+                'VALUE': {'name': 'value', 'data_type': 'STRING'},
+                'TS': {'name': 'ts', 'data_type': 'TIMESTAMP'}
+            },
+            'resource_type': 'BIGQUERY',
+            'partition_fields': [{
+                'name': 'ts',
+                'type': 'TIMESTAMP',
+                'partitioning_type': 'DAY'
+            }],
+            'dataset_name': 'austin_311',
+            'project_name': f'{gcp_project_id}'
+        }}
+
+        assert clouddq_entity.to_dict() == clouddq_entity_expected_dict
 
 
 if __name__ == "__main__":

@@ -179,3 +179,10 @@ class EntityUri:
                     f"input config under headings 'metadata_default_registries', e.g.\n"
                     f"{SAMPLE_DEFAULT_REGISTRIES_YAML}",
                 )
+
+    def get_table_name(self: EntityUri):
+        configs = self.configs_dict
+        project_id = configs.get("projects")
+        dataset_id = configs.get("datasets")
+        table_id = configs.get("tables")
+        return f"{project_id}.{dataset_id}.{table_id}"

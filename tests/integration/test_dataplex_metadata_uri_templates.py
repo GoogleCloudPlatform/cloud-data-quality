@@ -60,6 +60,20 @@ class TestDataplexMetadataUriTemplates:
         )
 
     @pytest.fixture(scope="function")
+    def test_rule_bindings_collection_team_7(self, temp_configs_dir):
+        """ """
+        return lib.load_rule_bindings_config(
+            Path(temp_configs_dir / "rule_bindings/team-7-rule-bindings.yml")
+        )
+
+    @pytest.fixture(scope="function")
+    def test_rule_bindings_collection_team_8(self, temp_configs_dir):
+        """ """
+        return lib.load_rule_bindings_config(
+            Path(temp_configs_dir / "rule_bindings/team-8-rule-bindings.yml")
+        )
+
+    @pytest.fixture(scope="function")
     def test_rule_bindings_collection_from_configs_file(self, temp_configs_from_file):
         """ """
         return lib.load_rule_bindings_config(
@@ -152,14 +166,24 @@ class TestDataplexMetadataUriTemplates:
             )
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
-                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")\
-                .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")\
-                .replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")\
-                .replace(rule_binding_id, "<rule_binding_id>")
-            expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
+                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
+            if gcp_dataplex_zone_id in output:
+                output = output.replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")
+            else:
+                output = output.replace("CAST(NULL AS STRING) AS dataplex_zone",
+                                        "'<your_dataplex_zone_id>' AS dataplex_zone")
+            if gcp_dataplex_lake_name in output:
+                output = output.replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")
+            else:
+                output = output.replace("CAST(NULL AS STRING) AS dataplex_lake",
+                                        "'<your_dataplex_lake_id>' AS dataplex_lake")
+
+            output = output.replace(rule_binding_id, "<rule_binding_id>")
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
+            output = output.replace("CAST(NULL AS STRING) AS dataplex_asset_id,", ASSET_ID_REP)
+            expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             assert output == expected
 
     def test_rule_bindings_class_resolve_configs_from_file(
@@ -247,16 +271,26 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
             )
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
-            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
-                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")\
-                .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")\
-                .replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")\
-                .replace(rule_binding_id, "<rule_binding_id>")
+                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
+            if gcp_dataplex_zone_id in output:
+                output = output.replace(gcp_dataplex_zone_id, "<your_dataplex_zone_id>")
+            else:
+                output = output.replace("CAST(NULL AS STRING) AS dataplex_zone",
+                                        "'<your_dataplex_zone_id>' AS dataplex_zone")
+            if gcp_dataplex_lake_name in output:
+                output = output.replace(gcp_dataplex_lake_name, "<your_dataplex_lake_id>")
+            else:
+                output = output.replace("CAST(NULL AS STRING) AS dataplex_lake",
+                                        "'<your_dataplex_lake_id>' AS dataplex_lake")
+
+            output = output.replace(rule_binding_id, "<rule_binding_id>")
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             print(output)
             output = re.sub(RE_NEWLINES, '\n', output).strip()
+            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
+            output = output.replace("CAST(NULL AS STRING) AS dataplex_asset_id,", ASSET_ID_REP)
             assert output == expected
 
     def test_rule_bindings_class_resolve_gcs_configs(
@@ -429,6 +463,162 @@ class TestDataplexMetadataUriTemplates:
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
+            assert output == expected
+
+    def test_prepare_configs_from_bq_native_rule_binding(
+        self,
+        test_rule_bindings_collection_team_7,
+        test_default_dataplex_configs_cache,
+        test_resources,
+        test_dataplex_metadata_defaults_configs,
+    ):
+        """ """
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_7.items():
+
+            env = "DEV"
+            metadata = {"brand": "one"}
+            configs = lib.prepare_configs_from_rule_binding_id(
+                rule_binding_id=rule_binding_id,
+                rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
+                environment=env,
+                metadata=metadata,
+                configs_cache=test_default_dataplex_configs_cache,
+                default_configs=test_dataplex_metadata_defaults_configs,
+            )
+            logger.info(pformat(json.dumps(configs["configs"])))
+            print(configs)
+            configs["configs"]["rule_binding_id"] = "<rule_binding_id>"
+            configs["configs"]["entity_id"] = "<entity_id>"
+            configs["configs"]["entity_configs"]["database_name"] = "<your_bigquery_dataset_id>"
+            configs["configs"]["entity_configs"]["instance_name"] = "<your-gcp-project-id>"
+            configs["configs"]["entity_configs"]["dataset_name"] = "<your_bigquery_dataset_id>"
+            configs["configs"]["entity_configs"]["project_name"] = "<your-gcp-project-id>"
+
+            with open(test_resources / "bq_native_expected_configs.json") as f:
+                expected_configs = json.loads(f.read())
+                assert configs["configs"] == dict(expected_configs)
+            metadata.update(rule_binding_configs["metadata"])
+            assert configs["metadata"] == dict(metadata)
+            assert configs["environment"] == env
+
+    def test_render_run_dq_main_sql_bq_native(
+        self,
+        test_rule_bindings_collection_team_7,
+        test_default_dataplex_configs_cache,
+        test_resources,
+        gcp_project_id,
+        test_dataplex_metadata_defaults_configs,
+        gcp_dataplex_zone_id,
+        gcp_dataplex_lake_name,
+        gcp_dataplex_bigquery_dataset_id,
+        gcp_bq_dataset,
+    ):
+        """ """
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_7.items():
+
+            with open(test_resources / "bq_native_sql_expected.sql") as f:
+                expected = f.read()
+            output = lib.create_rule_binding_view_model(
+                rule_binding_id=rule_binding_id,
+                rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
+                configs_cache=test_default_dataplex_configs_cache,
+                environment="DEV",
+                debug=True,
+                default_configs=test_dataplex_metadata_defaults_configs,
+            )
+            print(output)
+            output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
+                .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
+                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
+            output = output.replace(rule_binding_id, "<rule_binding_id>")
+            output = re.sub(RE_NEWLINES, '\n', output).strip()
+            output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
+            expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
+            assert output == expected
+
+    def test_prepare_configs_from_bq_native_partitioned_rule_binding(
+        self,
+        test_rule_bindings_collection_team_8,
+        test_default_dataplex_configs_cache,
+        test_resources,
+        test_dataplex_metadata_defaults_configs,
+    ):
+        """ """
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_8.items():
+            if rule_binding_id in ["T16_URI_BQ_PARTITIONED_EMAIL_DUPLICATE", "T17_URI_BQ_PARTITIONED_EMAIL_DUPLICATE"]:
+                expected_configs_filename = "bq_native_default_partitioned_expected_configs.json"
+            else:
+                expected_configs_filename = "bq_native_partitioned_expected_configs.json"
+            env = "DEV"
+            metadata = {"brand": "one"}
+            configs = lib.prepare_configs_from_rule_binding_id(
+                rule_binding_id=rule_binding_id,
+                rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
+                environment=env,
+                metadata=metadata,
+                configs_cache=test_default_dataplex_configs_cache,
+                default_configs=test_dataplex_metadata_defaults_configs,
+            )
+            logger.info(pformat(json.dumps(configs["configs"])))
+            print(configs)
+            configs["configs"]["rule_binding_id"] = "<rule_binding_id>"
+            configs["configs"]["entity_id"] = "<entity_id>"
+            configs["configs"]["entity_configs"]["database_name"] = "<your_bigquery_dataset_id>"
+            configs["configs"]["entity_configs"]["instance_name"] = "<your-gcp-project-id>"
+            configs["configs"]["entity_configs"]["dataset_name"] = "<your_bigquery_dataset_id>"
+            configs["configs"]["entity_configs"]["project_name"] = "<your-gcp-project-id>"
+
+            with open(test_resources / expected_configs_filename) as f:
+                expected_configs = json.loads(f.read())
+                assert configs["configs"] == dict(expected_configs)
+            metadata.update(rule_binding_configs["metadata"])
+            assert configs["metadata"] == dict(metadata)
+            assert configs["environment"] == env
+
+    def test_render_run_dq_main_sql_bq_native_partitioned(
+        self,
+        test_rule_bindings_collection_team_8,
+        test_default_dataplex_configs_cache,
+        test_resources,
+        gcp_project_id,
+        test_dataplex_metadata_defaults_configs,
+        gcp_dataplex_zone_id,
+        gcp_dataplex_lake_name,
+        gcp_dataplex_bigquery_dataset_id,
+        gcp_bq_dataset,
+    ):
+        """ """
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_8.items():
+
+            if rule_binding_id in ["T16_URI_BQ_PARTITIONED_EMAIL_DUPLICATE", "T17_URI_BQ_PARTITIONED_EMAIL_DUPLICATE"]:
+                expected_sql_filename = "bq_native_default_partitioned_sql_expected.sql"
+            else:
+                expected_sql_filename = "bq_native_partitioned_sql_expected.sql"
+
+            with open(test_resources / expected_sql_filename) as f:
+                expected = f.read()
+            output = lib.create_rule_binding_view_model(
+                rule_binding_id=rule_binding_id,
+                rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
+                configs_cache=test_default_dataplex_configs_cache,
+                environment="DEV",
+                debug=True,
+                default_configs=test_dataplex_metadata_defaults_configs,
+            )
+            print(output)
+            output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
+                .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
+                .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
+            output = output.replace(rule_binding_id, "<rule_binding_id>")
+            output = re.sub(RE_NEWLINES, '\n', output).strip()
+            output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+            output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
+            expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             assert output == expected
 
 
