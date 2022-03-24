@@ -204,6 +204,13 @@ coloredlogs.install(logger=logger)
     is_flag=True,
     default=False,
 )
+@click.option(
+    "--enable_experimental_bigquery_entity_uris",
+    help="If True, allows looking up entity_uris with scheme 'bigquery://' "
+    "using Dataplex Metadata API. ",
+    is_flag=True,
+    default=True,
+)
 def main(  # noqa: C901
     rule_binding_ids: str,
     rule_binding_config_path: str,
@@ -223,6 +230,7 @@ def main(  # noqa: C901
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
     summary_to_stdout: bool = False,
+    enable_experimental_bigquery_entity_uris: bool = True,
     enable_experimental_dataplex_gcs_validation: bool = False,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
