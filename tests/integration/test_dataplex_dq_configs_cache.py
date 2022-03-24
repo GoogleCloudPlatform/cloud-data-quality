@@ -62,7 +62,7 @@ class TestDqConfigsCache:
                     configs_cache._cache_db.query("select id from rule_bindings")
                 ]
                 configs_cache.resolve_dataplex_entity_uris(
-                    client=test_dq_dataplex_client,
+                    dataplex_client=test_dq_dataplex_client,
                     bigquery_client=test_bigquery_client,
                     default_configs=test_dataplex_metadata_defaults_configs,
                     target_rule_binding_ids=target_rule_binding_ids

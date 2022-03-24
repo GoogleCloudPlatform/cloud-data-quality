@@ -34,3 +34,25 @@ rule_bindings:
       - NOT_NULL_SIMPLE
     metadata:
       brand: one
+
+  T16_URI_BQ_PARTITIONED_EMAIL_DUPLICATE:
+    entity_uri: bigquery://projects/<my-gcp-project-id>/datasets/austin_311/tables/contact_details_ingestion_time_partitioned
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: "contact_type,value"
+      - NOT_NULL_SIMPLE
+    metadata:
+      brand: one
+
+  T17_URI_BQ_PARTITIONED_EMAIL_DUPLICATE:
+    entity_uri: bigquery://locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/projects/<my-gcp-project-id>/datasets/austin_311/tables/contact_details_ingestion_time_partitioned
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    rule_ids:
+      - NO_DUPLICATES_IN_COLUMN_GROUPS:
+          column_names: "contact_type,value"
+      - NOT_NULL_SIMPLE
+    metadata:
+      brand: one
