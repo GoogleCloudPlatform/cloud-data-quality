@@ -199,7 +199,7 @@ class TestDqAdvancedRules:
                 logger.info(result.output)
                 assert result.exit_code == 0
 
-                num_dbt_threads=8
+                num_bigquery_threads=8
                 # Prepare dbt runtime
                 dbt_runner = DbtRunner(
                     dbt_path=None,
@@ -210,7 +210,7 @@ class TestDqAdvancedRules:
                     gcp_bq_dataset_id=gcp_bq_dataset,
                     gcp_service_account_key_path=gcp_sa_key,
                     gcp_impersonation_credentials=gcp_impersonation_credentials,
-                    num_dbt_threads=num_dbt_threads,
+                    num_bigquery_threads=num_bigquery_threads,
                 )
                 dbt_path = dbt_runner.get_dbt_path()
                 invocation_id = get_dbt_invocation_id(dbt_path)
