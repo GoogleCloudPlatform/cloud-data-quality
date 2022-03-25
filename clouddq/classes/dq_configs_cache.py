@@ -231,7 +231,6 @@ class DqConfigsCache:
         target_rule_binding_ids: list[str],
         default_configs: dict | None = None,
         enable_experimental_bigquery_entity_uris: bool = True,
-        enable_experimental_dataplex_gcs_validation: bool = True,
     ) -> None:
         logger.debug(
             f"Using Dataplex default configs for resolving entity_uris:\n{pformat(default_configs)}"
@@ -261,7 +260,6 @@ class DqConfigsCache:
                     entity_uri=entity_uri,
                     dataplex_client=dataplex_client,
                     bigquery_client=bigquery_client,
-                    enable_experimental_dataplex_gcs_validation=enable_experimental_dataplex_gcs_validation,
                 )
             elif entity_uri.scheme == "BIGQUERY":
                 clouddq_entity = self._resolve_bigquery_entity_uri(
@@ -401,7 +399,6 @@ class DqConfigsCache:
         entity_uri: dq_entity_uri.EntityUri,
         dataplex_client: clouddq_dataplex.CloudDqDataplexClient,
         bigquery_client: BigQueryClient,
-        enable_experimental_dataplex_gcs_validation: bool = True,
     ) -> dq_entity.DqEntity:
         dataplex_entity = dataplex_client.get_dataplex_entity(
             gcp_project_id=entity_uri.get_configs("projects"),
@@ -410,13 +407,6 @@ class DqConfigsCache:
             zone_id=entity_uri.get_configs("zones"),
             entity_id=entity_uri.get_entity_id(),
         )
-        if dataplex_entity.system == "CLOUD_STORAGE":
-            if not enable_experimental_dataplex_gcs_validation:
-                raise NotImplementedError(
-                    "Use CLI flag --enable_experimental_dataplex_gcs_validation "
-                    "to enable validating Dataplex GCS resources using BigQuery "
-                    "External Tables"
-                )
         clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
             entity_id=entity_uri.get_db_primary_key(),
             dataplex_entity=dataplex_entity,

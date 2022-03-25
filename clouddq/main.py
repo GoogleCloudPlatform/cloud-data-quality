@@ -202,7 +202,7 @@ coloredlogs.install(logger=logger)
     help="If True, allows validating Dataplex GCS resources using "
     "BigQuery External Tables",
     is_flag=True,
-    default=False,
+    default=True,
 )
 @click.option(
     "--enable_experimental_bigquery_entity_uris",
@@ -231,7 +231,7 @@ def main(  # noqa: C901
     skip_sql_validation: bool = False,
     summary_to_stdout: bool = False,
     enable_experimental_bigquery_entity_uris: bool = False,
-    enable_experimental_dataplex_gcs_validation: bool = False,
+    enable_experimental_dataplex_gcs_validation: bool = True,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -479,7 +479,6 @@ def main(  # noqa: C901
             default_configs=dataplex_registry_defaults,
             target_rule_binding_ids=target_rule_binding_ids,
             enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
-            enable_experimental_dataplex_gcs_validation=enable_experimental_dataplex_gcs_validation,
         )
         # Get Entities for entity-level summary views
         target_entity_summary_configs: dict = (
