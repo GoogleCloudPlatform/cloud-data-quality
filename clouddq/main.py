@@ -212,7 +212,7 @@ coloredlogs.install(logger=logger)
     default=False,
 )
 @click.option(
-    "--num_bigquery_threads",
+    "--num_threads",
     help="Number of concurrent bigquery operations that can be "
     "increased to reduce run-time. We advice setting "
     "this to number of cores of your run-environment machines",
@@ -234,7 +234,7 @@ def main(  # noqa: C901
     dry_run: bool,
     progress_watermark: bool,
     target_bigquery_summary_table: Optional[str],
-    num_bigquery_threads: Optional[int],
+    num_threads: Optional[int],
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
@@ -330,7 +330,7 @@ def main(  # noqa: C901
             bigquery_client=bigquery_client,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
-            num_bigquery_threads=num_bigquery_threads,
+            num_threads=num_threads,
         )
         dbt_path = dbt_runner.get_dbt_path()
         dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
