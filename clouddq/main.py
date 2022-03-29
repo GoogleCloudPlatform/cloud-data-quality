@@ -214,10 +214,10 @@ coloredlogs.install(logger=logger)
 @click.option(
     "--intermediate_table_expiration_hours",
     help="Configure the bigquery job intermediate tables expiration hours "
-    "in the provided dataset '--gcp_bq_dataset_id' . Expiration time "
-    "defaults to 24 hours if not set. ",
+    "in the provided dataset '--gcp_bq_dataset_id' ",
     default=24,
     type=int,
+    show_default=True,
 )
 def main(  # noqa: C901
     rule_binding_ids: str,

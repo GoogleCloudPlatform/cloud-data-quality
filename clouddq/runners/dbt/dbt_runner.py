@@ -222,29 +222,22 @@ class DbtRunner:
                                   intermediate_table_expiration_hours: Optional[int]) -> None:
 
         dbt_project_path = self.dbt_path.absolute().joinpath("dbt_project.yml")
-        if not dbt_project_path.is_file():
-            logger.debug(
-                f"Cannot find `dbt_project.yml` in path: {dbt_project_path} \n"
-                f"Writing templated file to: {dbt_project_path}/dbt_project.yml"
+        if intermediate_table_expiration_hours:
+            if not dbt_project_path.is_file():
+                logger.debug(
+                    f"Cannot find `dbt_project.yml` in path: {dbt_project_path} \n"
+                    f"Writing templated file to: {dbt_project_path}/dbt_project.yml"
+                )
+            else:
+                logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
+            set_dbt_intermediate_expiration_hours(
+                path=dbt_project_path,
+                intermediate_table_expiration_hours=intermediate_table_expiration_hours,
+                lookup_table=DBT_TEMPLATED_FILE_LOCATIONS
             )
-            if intermediate_table_expiration_hours:
-                set_dbt_intermediate_expiration_hours(
-                    path=dbt_project_path,
-                    intermediate_table_expiration_hours=intermediate_table_expiration_hours,
-                    lookup_table=DBT_TEMPLATED_FILE_LOCATIONS
-                )
-            else:
-                write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
         else:
-            if intermediate_table_expiration_hours:
-                set_dbt_intermediate_expiration_hours(
-                    path=dbt_project_path,
-                    intermediate_table_expiration_hours=intermediate_table_expiration_hours,
-                    lookup_table=DBT_TEMPLATED_FILE_LOCATIONS
-                )
-                logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
-            else:
-                logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
+            logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
+            write_templated_file_to_path(dbt_project_path, DBT_TEMPLATED_FILE_LOCATIONS)
 
     def _prepare_dbt_main_path(self) -> None:
         assert self.dbt_path.is_dir()
