@@ -199,10 +199,11 @@ coloredlogs.install(logger=logger)
 )
 @click.option(
     "--enable_experimental_dataplex_gcs_validation",
-    help="If True, allows validating Dataplex GCS resources using "
-    "BigQuery External Tables",
+    help="This flag is set to True by default, it allows validating Dataplex GCS resources using "
+    "BigQuery External Tables. The flag is deprecated and will be removed in future.",
     is_flag=True,
     default=True,
+    hidden=True,
 )
 @click.option(
     "--enable_experimental_bigquery_entity_uris",
