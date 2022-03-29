@@ -206,10 +206,11 @@ coloredlogs.install(logger=logger)
 )
 @click.option(
     "--enable_experimental_bigquery_entity_uris",
-    help="If True, allows looking up entity_uris with scheme 'bigquery://' "
-    "using Dataplex Metadata API. ",
+    help="This flag is set to True by default, allows looking up entity_uris with scheme 'bigquery://' "
+    "using Dataplex Metadata API. The flag is deprecated and will be removed in future. ",
     is_flag=True,
     default=True,
+    hidden=True,
 )
 def main(  # noqa: C901
     rule_binding_ids: str,
