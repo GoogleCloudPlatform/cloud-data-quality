@@ -54,7 +54,7 @@ class DataplexEntitySchemaField:
         assert_not_none_or_empty(
             value=name,
             error_msg=f"DataplexEntity '{entity_id}': have schema field with missing non-empty value: 'name'"
-                      f"{kwargs}",
+            f"{kwargs}",
         )
 
         type = kwargs.get("type", None)
