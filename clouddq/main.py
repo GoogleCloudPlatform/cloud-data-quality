@@ -200,8 +200,8 @@ coloredlogs.install(logger=logger)
 @click.option(
     "--enable_experimental_dataplex_gcs_validation",
     help="This flag has no effect and is now deprecated. GCS resource validation via BigQuery "
-         "External Tables is supported regardless of the value of this flag. "
-         "Please remove it from your script.",
+    "External Tables is supported regardless of the value of this flag. "
+    "Please remove it from your script.",
     is_flag=True,
     default=True,
 )
