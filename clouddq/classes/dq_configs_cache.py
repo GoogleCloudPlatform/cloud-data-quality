@@ -230,7 +230,6 @@ class DqConfigsCache:
         bigquery_client: BigQueryClient,
         target_rule_binding_ids: list[str],
         default_configs: dict | None = None,
-        enable_experimental_bigquery_entity_uris: bool = True,
     ) -> None:
         logger.debug(
             f"Using Dataplex default configs for resolving entity_uris:\n{pformat(default_configs)}"
@@ -266,7 +265,6 @@ class DqConfigsCache:
                     entity_uri=entity_uri,
                     dataplex_client=dataplex_client,
                     bigquery_client=bigquery_client,
-                    enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
                 )
             else:
                 raise RuntimeError(f"Invalid Entity URI scheme: {entity_uri.scheme}")
@@ -485,23 +483,7 @@ class DqConfigsCache:
         entity_uri: dq_entity_uri.EntityUri,
         dataplex_client: clouddq_dataplex.CloudDqDataplexClient,
         bigquery_client: BigQueryClient,
-        enable_experimental_bigquery_entity_uris: bool = True,
     ) -> dq_entity.DqEntity:
-        if not enable_experimental_bigquery_entity_uris:
-            raise NotImplementedError(
-                f"entity_uri '{entity_uri.complete_uri_string}' "
-                "has unsupported scheme 'bigquery://'.\n"
-                "Use CLI flag --enable_experimental_bigquery_entity_uris "
-                "to enable looking up bigquery:// entity_uri scheme in format "
-                "bigquery://projects/<project-id>/datasets/<dataset-id>/tables/<table-id> "
-                "schemes using Dataplex Metadata API.\n"
-                "Ensure the BigQuery dataset containing this table "
-                "is registered as an asset in Dataplex.\n"
-                "You can then specify the corresponding Dataplex "
-                "projects/locations/lakes/zones as part of the "
-                "metadata_default_registries YAML configs, e.g.\n"
-                f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
-            )
         required_arguments = ["projects", "datasets", "tables"]
         for argument in required_arguments:
             uri_argument = entity_uri.get_configs(argument)

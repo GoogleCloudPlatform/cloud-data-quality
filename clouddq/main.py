@@ -207,10 +207,11 @@ coloredlogs.install(logger=logger)
 )
 @click.option(
     "--enable_experimental_bigquery_entity_uris",
-    help="If True, allows looking up entity_uris with scheme 'bigquery://' "
-    "using Dataplex Metadata API. ",
+    help="This flag has no effect and is now deprecated. "
+    "BigQuery entity URI is supported regardless of the value of this flag. "
+    "Please remove it from your script. ",
     is_flag=True,
-    default=False,
+    default=True,
 )
 def main(  # noqa: C901
     rule_binding_ids: str,
@@ -231,7 +232,7 @@ def main(  # noqa: C901
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
     summary_to_stdout: bool = False,
-    enable_experimental_bigquery_entity_uris: bool = False,
+    enable_experimental_bigquery_entity_uris: bool = True,
     enable_experimental_dataplex_gcs_validation: bool = True,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
@@ -479,7 +480,6 @@ def main(  # noqa: C901
             bigquery_client=bigquery_client,
             default_configs=dataplex_registry_defaults,
             target_rule_binding_ids=target_rule_binding_ids,
-            enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
         )
         # Get Entities for entity-level summary views
         target_entity_summary_configs: dict = (
