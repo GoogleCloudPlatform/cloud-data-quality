@@ -68,7 +68,6 @@ class TestDataplexPerformanceIntegration:
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--target_bigquery_summary_table={target_table}",
                     "--enable_experimental_dataplex_gcs_validation",
-                    "--enable_experimental_bigquery_entity_uris",
                     "--debug",
                     ]
                 logger.info(f"Args: {' '.join(args)}")
