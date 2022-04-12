@@ -56,7 +56,7 @@ from
     entities e
 inner join
     rule_bindings rb
-    on e.id = rb.entity_id
+    on UPPER(e.id) = UPPER(rb.entity_id)
 where
     rb.id in ({target_rule_binding_ids_list})
 group by
@@ -349,48 +349,56 @@ class DqConfigsCache:
             )
         )
         target_entity_summary_views_configs = {}
-        for record in self._cache_db.query(query):
-            num_rules_per_table_count = 0
-            entity_table_id = "__".join(
-                [
-                    record["instance_name"],
-                    record["database_name"],
-                    record["table_name"],
-                    record["column_id"],
-                ]
+        entity_summary = self._cache_db.query(query)
+        if entity_summary:
+            for record in entity_summary:
+                num_rules_per_table_count = 0
+                entity_table_id = "__".join(
+                    [
+                        record["instance_name"],
+                        record["database_name"],
+                        record["table_name"],
+                        record["column_id"],
+                    ]
+                )
+                entity_table_id = re.sub(RE_NON_ALPHANUMERIC, "_", entity_table_id)
+                if len(entity_table_id) > 1023:
+                    entity_table_id = entity_table_id[-1022:]
+                rule_binding_ids = record["rule_binding_ids_list"].split(",")
+                rules_per_rule_binding = record["rules_per_rule_binding"].split(",")
+                in_scope_rule_bindings = []
+                table_increment = 0
+                for index in range(0, len(rules_per_rule_binding)):
+                    in_scope_rule_bindings.append(rule_binding_ids[index])
+                    num_rules_per_table_count += int(rules_per_rule_binding[index])
+                    if num_rules_per_table_count > NUM_RULES_PER_TABLE:
+                        table_increment += 1
+                        target_entity_summary_views_configs[
+                            f"{entity_table_id}_{table_increment}"
+                        ] = {
+                            "rule_binding_ids_list": in_scope_rule_bindings.copy(),
+                        }
+                        in_scope_rule_bindings = []
+                        num_rules_per_table_count = 0
+                else:
+                    if in_scope_rule_bindings:
+                        table_increment += 1
+                        target_entity_summary_views_configs[
+                            f"{entity_table_id}_{table_increment}"
+                        ] = {
+                            "rule_binding_ids_list": in_scope_rule_bindings.copy(),
+                        }
+            logger.debug(
+                f"target_entity_summary_views_configs:\n"
+                f"{pformat(target_entity_summary_views_configs)}"
             )
-            entity_table_id = re.sub(RE_NON_ALPHANUMERIC, "_", entity_table_id)
-            if len(entity_table_id) > 1023:
-                entity_table_id = entity_table_id[-1022:]
-            rule_binding_ids = record["rule_binding_ids_list"].split(",")
-            rules_per_rule_binding = record["rules_per_rule_binding"].split(",")
-            in_scope_rule_bindings = []
-            table_increment = 0
-            for index in range(0, len(rules_per_rule_binding)):
-                in_scope_rule_bindings.append(rule_binding_ids[index])
-                num_rules_per_table_count += int(rules_per_rule_binding[index])
-                if num_rules_per_table_count > NUM_RULES_PER_TABLE:
-                    table_increment += 1
-                    target_entity_summary_views_configs[
-                        f"{entity_table_id}_{table_increment}"
-                    ] = {
-                        "rule_binding_ids_list": in_scope_rule_bindings.copy(),
-                    }
-                    in_scope_rule_bindings = []
-                    num_rules_per_table_count = 0
-            else:
-                if in_scope_rule_bindings:
-                    table_increment += 1
-                    target_entity_summary_views_configs[
-                        f"{entity_table_id}_{table_increment}"
-                    ] = {
-                        "rule_binding_ids_list": in_scope_rule_bindings.copy(),
-                    }
-        logger.debug(
-            f"target_entity_summary_views_configs:\n"
-            f"{pformat(target_entity_summary_views_configs)}"
-        )
-        return target_entity_summary_views_configs
+            return target_entity_summary_views_configs
+
+        else:
+            raise ValueError(
+                f"""Failed to retrieve entity and target rule binding id's \n 
+                    {target_rule_binding_ids} associated with it"""
+            )
 
     def _resolve_dataplex_entity_uri(
         self,
