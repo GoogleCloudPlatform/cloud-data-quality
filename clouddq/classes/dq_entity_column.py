@@ -175,6 +175,7 @@ class DatabaseColumnType(str, Enum):
     TIME = "TIME"
     ARRAY = "ARRAY"
     STRUCT = "STRUCT"
+    RECORD = "RECORD"
     BINARY = "BINARY"
     BYTES = "BYTES"
     INTERVAL = "INTERVAL"
@@ -211,6 +212,7 @@ BIGQUERY_COLUMN_TYPES_MAPPING: dict = {
     DatabaseColumnType.TIME: "TIME",
     DatabaseColumnType.ARRAY: "ARRAY",
     DatabaseColumnType.STRUCT: "STRUCT",
+    DatabaseColumnType.RECORD: "STRUCT",
     DatabaseColumnType.BINARY: "BYTES",
     DatabaseColumnType.BYTES: "BYTES",
     DatabaseColumnType.INTERVAL: None,  # BQ has no INTERVAL type
