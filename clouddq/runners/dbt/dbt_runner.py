@@ -58,7 +58,7 @@ class DbtRunner:
         gcp_bq_dataset_id: Optional[str],
         gcp_service_account_key_path: Optional[Path],
         gcp_impersonation_credentials: Optional[str],
-        intermediate_table_expiration_hours: Optional[int],
+        intermediate_table_expiration_hours: int,
         bigquery_client: Optional[BigQueryClient] = None,
         create_paths_if_not_exists: bool = True,
     ):
@@ -221,41 +221,40 @@ class DbtRunner:
         return dbt_path
 
     def _prepare_dbt_project_path(self,
-                                  intermediate_table_expiration_hours: Optional[int]) -> None:
+                                  intermediate_table_expiration_hours: int) -> None:
 
         dbt_project_path = self.dbt_path.absolute().joinpath("dbt_project.yml")
-        if intermediate_table_expiration_hours:
-            if not dbt_project_path.is_file():
-                logger.debug(
-                    f"Cannot find `dbt_project.yml` in path: {dbt_project_path} \n"
-                    f"Writing templated file to: {dbt_project_path}/dbt_project.yml"
-                )
-            else:
-                logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
-
+        if not dbt_project_path.is_file():
             logger.debug(
-                f"Started setting Intermediate table expiration hours "
-                f"value to {intermediate_table_expiration_hours}"
+                f"Cannot find `dbt_project.yml` in path: {dbt_project_path} \n"
+                f"Writing templated file to: {dbt_project_path}/dbt_project.yml"
             )
-            template_text = get_template_file(
-                DBT_TEMPLATED_FILE_LOCATIONS.get(dbt_project_path.name)
+        else:
+            logger.debug(f"Using 'dbt_project_path': {dbt_project_path}")
+
+        logger.debug(
+            f"Started setting Intermediate table expiration hours "
+            f"value to {intermediate_table_expiration_hours}"
+        )
+        template_text = get_template_file(
+            DBT_TEMPLATED_FILE_LOCATIONS.get(dbt_project_path.name)
+        )
+        if HOURS_TO_EXPIRATION in template_text:
+            template_text = template_text.replace(
+                HOURS_TO_EXPIRATION,
+                f"{HOURS_TO_EXPIRATION.split(':')[0]}: {intermediate_table_expiration_hours}",
             )
-            if HOURS_TO_EXPIRATION in template_text:
-                template_text = template_text.replace(
-                    HOURS_TO_EXPIRATION,
-                    f"{HOURS_TO_EXPIRATION.split(':')[0]}: {intermediate_table_expiration_hours}",
-                )
-                logger.debug(f"Writing templated file "
-                             f"{get_templates_path(dbt_project_path.name)} to "
-                             f"{dbt_project_path}")
-                dbt_project_path.write_text(template_text)
-                logger.debug(
-                    f"Intermediate table expiration value is set to"
-                    f"{intermediate_table_expiration_hours} hours successfully."
-                )
-            else:
-                raise ValueError(f"Failed to set intermediate table expiration "
-                                 f"value to {intermediate_table_expiration_hours} hours")
+            logger.debug(f"Writing templated file "
+                         f"{get_templates_path(dbt_project_path.name)} to "
+                         f"{dbt_project_path}")
+            dbt_project_path.write_text(template_text)
+            logger.debug(
+                f"Intermediate table expiration value is set to"
+                f"{intermediate_table_expiration_hours} hours successfully."
+            )
+        else:
+            raise ValueError(f"Failed to set intermediate table expiration "
+                             f"value to {intermediate_table_expiration_hours} hours")
 
     def _prepare_dbt_main_path(self) -> None:
         assert self.dbt_path.is_dir()
