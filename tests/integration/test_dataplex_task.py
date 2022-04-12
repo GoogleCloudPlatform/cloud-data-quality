@@ -369,9 +369,7 @@ class TestDataplexIntegration:
                     clouddq_executable_path=clouddq_executable_path,
                     clouddq_executable_checksum_path=clouddq_executable_checksum_path,
                     clouddq_pyspark_driver_path=clouddq_pyspark_driver_path,
-                    clouddq_pyspark_driver_filename=clouddq_pyspark_driver_filename,
-                    enable_experimental_bigquery_entity_uris=True,
-                    enable_experimental_dataplex_gcs_validation=True,)
+                    clouddq_pyspark_driver_filename=clouddq_pyspark_driver_filename,)
         # Check that the task has been created successfully
         print(f"CloudDQ task creation response is {response.text}")
         assert response.status_code == 200
