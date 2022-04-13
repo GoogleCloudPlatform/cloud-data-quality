@@ -56,7 +56,7 @@ from
     entities e
 inner join
     rule_bindings rb
-    on e.id = rb.entity_id
+    on UPPER(e.id) = UPPER(rb.entity_id)
 where
     rb.id in ({target_rule_binding_ids_list})
 group by
@@ -230,8 +230,6 @@ class DqConfigsCache:
         bigquery_client: BigQueryClient,
         target_rule_binding_ids: list[str],
         default_configs: dict | None = None,
-        enable_experimental_bigquery_entity_uris: bool = True,
-        enable_experimental_dataplex_gcs_validation: bool = True,
     ) -> None:
         logger.debug(
             f"Using Dataplex default configs for resolving entity_uris:\n{pformat(default_configs)}"
@@ -261,14 +259,12 @@ class DqConfigsCache:
                     entity_uri=entity_uri,
                     dataplex_client=dataplex_client,
                     bigquery_client=bigquery_client,
-                    enable_experimental_dataplex_gcs_validation=enable_experimental_dataplex_gcs_validation,
                 )
             elif entity_uri.scheme == "BIGQUERY":
                 clouddq_entity = self._resolve_bigquery_entity_uri(
                     entity_uri=entity_uri,
                     dataplex_client=dataplex_client,
                     bigquery_client=bigquery_client,
-                    enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
                 )
             else:
                 raise RuntimeError(f"Invalid Entity URI scheme: {entity_uri.scheme}")
@@ -353,55 +349,62 @@ class DqConfigsCache:
             )
         )
         target_entity_summary_views_configs = {}
-        for record in self._cache_db.query(query):
-            num_rules_per_table_count = 0
-            entity_table_id = "__".join(
-                [
-                    record["instance_name"],
-                    record["database_name"],
-                    record["table_name"],
-                    record["column_id"],
-                ]
+        entity_summary = self._cache_db.query(query)
+        if entity_summary:
+            for record in entity_summary:
+                num_rules_per_table_count = 0
+                entity_table_id = "__".join(
+                    [
+                        record["instance_name"],
+                        record["database_name"],
+                        record["table_name"],
+                        record["column_id"],
+                    ]
+                )
+                entity_table_id = re.sub(RE_NON_ALPHANUMERIC, "_", entity_table_id)
+                if len(entity_table_id) > 1023:
+                    entity_table_id = entity_table_id[-1022:]
+                rule_binding_ids = record["rule_binding_ids_list"].split(",")
+                rules_per_rule_binding = record["rules_per_rule_binding"].split(",")
+                in_scope_rule_bindings = []
+                table_increment = 0
+                for index in range(0, len(rules_per_rule_binding)):
+                    in_scope_rule_bindings.append(rule_binding_ids[index])
+                    num_rules_per_table_count += int(rules_per_rule_binding[index])
+                    if num_rules_per_table_count > NUM_RULES_PER_TABLE:
+                        table_increment += 1
+                        target_entity_summary_views_configs[
+                            f"{entity_table_id}_{table_increment}"
+                        ] = {
+                            "rule_binding_ids_list": in_scope_rule_bindings.copy(),
+                        }
+                        in_scope_rule_bindings = []
+                        num_rules_per_table_count = 0
+                else:
+                    if in_scope_rule_bindings:
+                        table_increment += 1
+                        target_entity_summary_views_configs[
+                            f"{entity_table_id}_{table_increment}"
+                        ] = {
+                            "rule_binding_ids_list": in_scope_rule_bindings.copy(),
+                        }
+            logger.debug(
+                f"target_entity_summary_views_configs:\n"
+                f"{pformat(target_entity_summary_views_configs)}"
             )
-            entity_table_id = re.sub(RE_NON_ALPHANUMERIC, "_", entity_table_id)
-            if len(entity_table_id) > 1023:
-                entity_table_id = entity_table_id[-1022:]
-            rule_binding_ids = record["rule_binding_ids_list"].split(",")
-            rules_per_rule_binding = record["rules_per_rule_binding"].split(",")
-            in_scope_rule_bindings = []
-            table_increment = 0
-            for index in range(0, len(rules_per_rule_binding)):
-                in_scope_rule_bindings.append(rule_binding_ids[index])
-                num_rules_per_table_count += int(rules_per_rule_binding[index])
-                if num_rules_per_table_count > NUM_RULES_PER_TABLE:
-                    table_increment += 1
-                    target_entity_summary_views_configs[
-                        f"{entity_table_id}_{table_increment}"
-                    ] = {
-                        "rule_binding_ids_list": in_scope_rule_bindings.copy(),
-                    }
-                    in_scope_rule_bindings = []
-                    num_rules_per_table_count = 0
-            else:
-                if in_scope_rule_bindings:
-                    table_increment += 1
-                    target_entity_summary_views_configs[
-                        f"{entity_table_id}_{table_increment}"
-                    ] = {
-                        "rule_binding_ids_list": in_scope_rule_bindings.copy(),
-                    }
-        logger.debug(
-            f"target_entity_summary_views_configs:\n"
-            f"{pformat(target_entity_summary_views_configs)}"
-        )
-        return target_entity_summary_views_configs
+            return target_entity_summary_views_configs
+
+        else:
+            raise ValueError(
+                f"""Failed to retrieve entity and target rule binding id's \n 
+                    {target_rule_binding_ids} associated with it"""
+            )
 
     def _resolve_dataplex_entity_uri(
         self,
         entity_uri: dq_entity_uri.EntityUri,
         dataplex_client: clouddq_dataplex.CloudDqDataplexClient,
         bigquery_client: BigQueryClient,
-        enable_experimental_dataplex_gcs_validation: bool = True,
     ) -> dq_entity.DqEntity:
         dataplex_entity = dataplex_client.get_dataplex_entity(
             gcp_project_id=entity_uri.get_configs("projects"),
@@ -410,13 +413,6 @@ class DqConfigsCache:
             zone_id=entity_uri.get_configs("zones"),
             entity_id=entity_uri.get_entity_id(),
         )
-        if dataplex_entity.system == "CLOUD_STORAGE":
-            if not enable_experimental_dataplex_gcs_validation:
-                raise NotImplementedError(
-                    "Use CLI flag --enable_experimental_dataplex_gcs_validation "
-                    "to enable validating Dataplex GCS resources using BigQuery "
-                    "External Tables"
-                )
         clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
             entity_id=entity_uri.get_db_primary_key(),
             dataplex_entity=dataplex_entity,
@@ -495,23 +491,7 @@ class DqConfigsCache:
         entity_uri: dq_entity_uri.EntityUri,
         dataplex_client: clouddq_dataplex.CloudDqDataplexClient,
         bigquery_client: BigQueryClient,
-        enable_experimental_bigquery_entity_uris: bool = True,
     ) -> dq_entity.DqEntity:
-        if not enable_experimental_bigquery_entity_uris:
-            raise NotImplementedError(
-                f"entity_uri '{entity_uri.complete_uri_string}' "
-                "has unsupported scheme 'bigquery://'.\n"
-                "Use CLI flag --enable_experimental_bigquery_entity_uris "
-                "to enable looking up bigquery:// entity_uri scheme in format "
-                "bigquery://projects/<project-id>/datasets/<dataset-id>/tables/<table-id> "
-                "schemes using Dataplex Metadata API.\n"
-                "Ensure the BigQuery dataset containing this table "
-                "is registered as an asset in Dataplex.\n"
-                "You can then specify the corresponding Dataplex "
-                "projects/locations/lakes/zones as part of the "
-                "metadata_default_registries YAML configs, e.g.\n"
-                f"{SAMPLE_DEFAULT_REGISTRIES_YAML}"
-            )
         required_arguments = ["projects", "datasets", "tables"]
         for argument in required_arguments:
             uri_argument = entity_uri.get_configs(argument)

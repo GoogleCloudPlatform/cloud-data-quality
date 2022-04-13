@@ -199,17 +199,27 @@ coloredlogs.install(logger=logger)
 )
 @click.option(
     "--enable_experimental_dataplex_gcs_validation",
-    help="If True, allows validating Dataplex GCS resources using "
-    "BigQuery External Tables",
+    help="This flag has no effect and is now deprecated. GCS resource validation via BigQuery "
+    "External Tables is supported regardless of the value of this flag. "
+    "Please remove it from your script.",
     is_flag=True,
-    default=False,
+    default=True,
 )
 @click.option(
     "--enable_experimental_bigquery_entity_uris",
-    help="If True, allows looking up entity_uris with scheme 'bigquery://' "
-    "using Dataplex Metadata API. ",
+    help="This flag has no effect and is now deprecated. "
+    "BigQuery entity URI is supported regardless of the value of this flag. "
+    "Please remove it from your script. ",
     is_flag=True,
-    default=False,
+    default=True,
+)
+@click.option(
+    "--intermediate_table_expiration_hours",
+    help="Configure the bigquery job intermediate tables expiration hours "
+    "in the provided dataset '--gcp_bq_dataset_id' ",
+    default=24,
+    type=int,
+    show_default=True,
 )
 @click.option(
     "--num_threads",
@@ -234,13 +244,14 @@ def main(  # noqa: C901
     dry_run: bool,
     progress_watermark: bool,
     target_bigquery_summary_table: Optional[str],
+    intermediate_table_expiration_hours: int,
     num_threads: Optional[int],
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,
     summary_to_stdout: bool = False,
-    enable_experimental_bigquery_entity_uris: bool = False,
-    enable_experimental_dataplex_gcs_validation: bool = False,
+    enable_experimental_bigquery_entity_uris: bool = True,
+    enable_experimental_dataplex_gcs_validation: bool = True,
 ) -> None:
     """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
 
@@ -330,6 +341,7 @@ def main(  # noqa: C901
             bigquery_client=bigquery_client,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
+            intermediate_table_expiration_hours=intermediate_table_expiration_hours,
             num_threads=num_threads,
         )
         dbt_path = dbt_runner.get_dbt_path()
@@ -488,8 +500,6 @@ def main(  # noqa: C901
             bigquery_client=bigquery_client,
             default_configs=dataplex_registry_defaults,
             target_rule_binding_ids=target_rule_binding_ids,
-            enable_experimental_bigquery_entity_uris=enable_experimental_bigquery_entity_uris,
-            enable_experimental_dataplex_gcs_validation=enable_experimental_dataplex_gcs_validation,
         )
         # Get Entities for entity-level summary views
         target_entity_summary_configs: dict = (
