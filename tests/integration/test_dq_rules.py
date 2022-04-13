@@ -105,7 +105,7 @@ class TestDqRules:
                     ]
                 result = runner.invoke(main, args)
                 assert result.exit_code == 0
-
+                intermediate_table_expiration_hours = 24
                 # Prepare dbt runtime
                 dbt_runner = DbtRunner(
                     dbt_path=None,
@@ -116,6 +116,7 @@ class TestDqRules:
                     gcp_bq_dataset_id=gcp_bq_dataset,
                     gcp_service_account_key_path=gcp_sa_key,
                     gcp_impersonation_credentials=gcp_impersonation_credentials,
+                    intermediate_table_expiration_hours=intermediate_table_expiration_hours,
                 )
                 dbt_path = dbt_runner.get_dbt_path()
                 invocation_id = get_dbt_invocation_id(dbt_path)
