@@ -85,6 +85,10 @@ class TestDbtRunner:
                     profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-project-id>', gcp_project_id)
                     profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-dataset-id>', gcp_bq_dataset)
                     profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-region-id>', gcp_bq_region)
+                    profiles_yml_expected = profiles_yml_expected\
+                        .replace('<my-gcp-impersonation-credentials>', gcp_impersonation_credentials)
+                    profiles_yml_expected = profiles_yml_expected\
+                        .replace('<my-gcp-sa-key>', gcp_sa_key)
                     profiles_yml_expected = profiles_yml_expected.replace("'", "")
                     assert profiles_yml_actual == profiles_yml_expected
 
