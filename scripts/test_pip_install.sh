@@ -110,13 +110,18 @@ sed -i s/\<my-gcp-project-id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/configs/m
 sed -i s/\<my-gcp-dataplex-zone-id\>/"${DATAPLEX_ZONE_ID}"/g "$TEST_DIR"/configs/metadata_registry_defaults.yml
 
 # run with --dbt_profiles_dir
-python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs --dbt_profiles_dir="$TEST_DIR"  \
+python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs \
+    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
+    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
+    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
     --debug  \
     --dry_run \
     --enable_experimental_bigquery_entity_uris \
     --enable_experimental_dataplex_gcs_validation
-python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs --dbt_profiles_dir="$TEST_DIR" \
-    --dbt_path="$TEST_DIR"  \
+python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs \
+    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
+    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
+    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
     --debug  \
     --dry_run \
     --enable_experimental_bigquery_entity_uris \
