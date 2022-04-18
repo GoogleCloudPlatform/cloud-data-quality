@@ -53,19 +53,16 @@ class DataplexEntitySchemaField:
         name = kwargs.get("name")
         assert_not_none_or_empty(
             value=name,
-            error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'name'",
+            error_msg=f"DataplexEntity '{entity_id}': have schema field with missing non-empty value: 'name'"
+            f"{kwargs}",
         )
 
-        type = kwargs.get("type")
-        assert_not_none_or_empty(
-            value=type,
-            error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'type'",
-        )
+        type = kwargs.get("type", None)
 
         mode = kwargs.get("mode")
         assert_not_none_or_empty(
             value=mode,
-            error_msg=f"DataplexEntity {entity_id}: must define non-empty value: 'mode'",
+            error_msg=f"Schema Field '{name}' in DataplexEntity '{entity_id}':  must define non-empty value: 'mode'",
         )
 
         return DataplexEntitySchemaField(

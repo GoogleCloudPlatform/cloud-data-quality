@@ -102,11 +102,10 @@ class TestDqRules:
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--gcp_region_id={gcp_bq_region}",
                     f"--target_bigquery_summary_table={target_table}",
-                    "--enable_experimental_bigquery_entity_uris",
                     ]
                 result = runner.invoke(main, args)
                 assert result.exit_code == 0
-
+                intermediate_table_expiration_hours = 24
                 # Prepare dbt runtime
                 dbt_runner = DbtRunner(
                     environment_target="Dev",
@@ -115,6 +114,7 @@ class TestDqRules:
                     gcp_bq_dataset_id=gcp_bq_dataset,
                     gcp_service_account_key_path=gcp_sa_key,
                     gcp_impersonation_credentials=gcp_impersonation_credentials,
+                    intermediate_table_expiration_hours=intermediate_table_expiration_hours,
                 )
                 dbt_path = dbt_runner.get_dbt_path()
                 invocation_id = get_dbt_invocation_id(dbt_path)
