@@ -35,10 +35,7 @@ filegroup(
 
 filegroup(
     name = "test_dbt_profiles_dir",
-    srcs = glob([
-        "resources/test_dbt_profiles_dir/profiles.yml",
-        "resources/test_dbt_profiles_dir/test_profiles.yml",
-    ]),
+    srcs = glob(["resources/test_dbt_profiles_dir/profiles.yml"]),
     visibility = ["//tests:__subpackages__"],
 )
 

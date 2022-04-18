@@ -63,7 +63,7 @@ class TestDbtRunner:
                 profiles_yml_actual = dbt_runner.connection_config.to_dbt_profiles_yml(environment_target="Dev")\
                                                 .strip()
 
-                with open(test_resources / "test_dbt_profiles_dir/test_profiles.yml") as source_file:
+                with open(test_resources / "expected_test_profiles.yml") as source_file:
                     profiles_yml_expected = source_file.read().strip()
                     profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-project-id>', gcp_project_id)
                     profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-dataset-id>', gcp_bq_dataset)
