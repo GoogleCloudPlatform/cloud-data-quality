@@ -35,7 +35,10 @@ filegroup(
 
 filegroup(
     name = "test_dbt_profiles_dir",
-    srcs = glob(["resources/test_dbt_profiles_dir/profiles.yml"]),
+    srcs = glob([
+        "resources/test_dbt_profiles_dir/profiles.yml",
+        "resources/test_dbt_profiles_dir/test_profiles.yml",
+    ]),
     visibility = ["//tests:__subpackages__"],
 )
 
@@ -225,6 +228,14 @@ py_test(
 
 py_test(
     name = "test_advanced_dq_rules",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
+
+py_test(
+    name = "test_dbt_runner",
     srcs = SRCS,
     data = DATA,
     legacy_create_init = 0,

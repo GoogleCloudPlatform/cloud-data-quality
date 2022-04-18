@@ -245,7 +245,7 @@ def main(  # noqa: C901
     progress_watermark: bool,
     target_bigquery_summary_table: Optional[str],
     intermediate_table_expiration_hours: int,
-    num_threads: Optional[int],
+    num_threads: int,
     debug: bool = False,
     print_sql_queries: bool = False,
     skip_sql_validation: bool = False,

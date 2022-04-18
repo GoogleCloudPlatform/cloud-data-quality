@@ -60,7 +60,7 @@ class DbtRunner:
         gcp_service_account_key_path: Optional[Path],
         gcp_impersonation_credentials: Optional[str],
         intermediate_table_expiration_hours: int,
-        num_threads: Optional[int],
+        num_threads: int,
         bigquery_client: Optional[BigQueryClient] = None,
         create_paths_if_not_exists: bool = True,
     ):
@@ -155,7 +155,7 @@ class DbtRunner:
         self,
         dbt_profiles_dir: Optional[str],
         environment_target: Optional[str],
-        num_threads: Optional[int],
+        num_threads: int,
         bigquery_client: Optional[BigQueryClient] = None,
         gcp_project_id: Optional[str] = None,
         gcp_region_id: Optional[str] = None,
