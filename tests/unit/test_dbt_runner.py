@@ -25,6 +25,22 @@ from clouddq.utils import working_directory
 
 logger = logging.getLogger(__name__)
 
+GOOGLE_LICENSE: str = """
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+
 class TestDbtRunner:
 
     def test_num_threads(
@@ -65,6 +81,7 @@ class TestDbtRunner:
 
                 with open(test_resources / "expected_test_profiles.yml") as source_file:
                     profiles_yml_expected = source_file.read().strip()
+                    profiles_yml_expected = profiles_yml_expected.replace(GOOGLE_LICENSE.strip(), "").strip()
                     profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-project-id>', gcp_project_id)
                     profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-dataset-id>', gcp_bq_dataset)
                     profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-region-id>', gcp_bq_region)
