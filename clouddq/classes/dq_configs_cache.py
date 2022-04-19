@@ -396,7 +396,7 @@ class DqConfigsCache:
 
         else:
             raise ValueError(
-                f"""Failed to retrieve entity and target rule binding id's \n 
+                f"""Failed to retrieve entity and target rule binding id's \n
                     {target_rule_binding_ids} associated with it"""
             )
 

@@ -251,7 +251,7 @@ def main(  # noqa: C901
 
     if not gcp_project_id or not gcp_bq_dataset_id:
         raise ValueError(
-            "CLI input must define connection configs  individually using the parameters: "
+            "CLI input must define connection configs using the parameters: "
             "'--gcp_project_id', '--gcp_bq_dataset_id', '--gcp_region_id')."
         )
     bigquery_client = None
@@ -283,18 +283,21 @@ def main(  # noqa: C901
         dbt_path = dbt_runner.get_dbt_path()
         dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
         dbt_entity_summary_path = dbt_runner.get_entity_summary_path()
-        dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir(
+
+        dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir_and_environment_target(
             gcp_project_id=gcp_project_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
             gcp_region_id=gcp_region_id,
             bigquery_client=bigquery_client,
-        )
-        environment_target = dbt_runner.get_dbt_environment_target(
+        ).get("dbt_profiles_dir")
+
+        environment_target = dbt_runner.get_dbt_profiles_dir_and_environment_target(
             gcp_project_id=gcp_project_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
             gcp_region_id=gcp_region_id,
             bigquery_client=bigquery_client,
-        )
+        ).get("environment_target")
+
         # Prepare DQ Summary Table
         dq_summary_table_name = get_bigquery_dq_summary_table_name(
             dbt_path=Path(dbt_path),

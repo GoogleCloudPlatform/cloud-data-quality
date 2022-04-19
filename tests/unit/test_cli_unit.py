@@ -141,7 +141,7 @@ class TestCli:
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{source_configs_path}",
-                    f"--gcp_project_id=gcp_project_id",
+                    "--gcp_project_id=gcp_project_id",
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--gcp_region_id={gcp_bq_region}",
                     f"--target_bigquery_summary_table={gcp_project_id}.{gcp_bq_dataset}.dq_summary_target",

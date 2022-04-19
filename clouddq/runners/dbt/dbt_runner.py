@@ -117,12 +117,12 @@ class DbtRunner:
         self._prepare_entity_summary_path()
         return Path(self.dbt_entity_summary_path)
 
-    def get_dbt_profiles_dir(self,
-                             gcp_project_id: str,
-                             gcp_bq_dataset_id: str,
-                             gcp_region_id: Optional[str] = None,
-                             bigquery_client: Optional[BigQueryClient] = None,
-                             ) -> Path:
+    def get_dbt_profiles_dir_and_environment_target(self,
+                                                    gcp_project_id: str,
+                                                    gcp_bq_dataset_id: str,
+                                                    gcp_region_id: Optional[str] = None,
+                                                    bigquery_client: Optional[BigQueryClient] = None,
+                                                    ) -> dict:
         self._resolve_connection_configs(
             gcp_project_id=gcp_project_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
@@ -130,22 +130,11 @@ class DbtRunner:
             bigquery_client=bigquery_client,
             environment_target=self.environment_target,
         )
-        return Path(self.dbt_profiles_dir)
 
-    def get_dbt_environment_target(self,
-                                   gcp_project_id: str,
-                                   gcp_bq_dataset_id: str,
-                                   gcp_region_id: Optional[str] = None,
-                                   bigquery_client: Optional[BigQueryClient] = None,
-                                   ) -> str:
-        self._resolve_connection_configs(
-            gcp_project_id=gcp_project_id,
-            gcp_bq_dataset_id=gcp_bq_dataset_id,
-            gcp_region_id=gcp_region_id,
-            bigquery_client=bigquery_client,
-            environment_target=self.environment_target,
-        )
-        return self.environment_target
+        return {
+            "dbt_profiles_dir": Path(self.dbt_profiles_dir),
+            "environment_target": self.environment_target
+        }
 
     def get_dq_summary_dataset_region(self, gcp_project_id, gcp_bq_dataset_id ) -> str:
         self._resolve_connection_configs(
@@ -200,10 +189,7 @@ class DbtRunner:
     ) -> Path:
         logger.debug(f"Current working directory: {Path().cwd()}")
         dbt_path = Path().cwd().joinpath("dbt").absolute()
-        logger.debug(
-            "No argument 'dbt_path' provided. Defaulting to use "
-            f"'dbt' directory in current working directory at: {dbt_path}"
-        )
+        logger.debug(f"Defaulting to use 'dbt' directory in current working directory at: {dbt_path}")
         if not dbt_path.is_dir():
             if create_paths_if_not_exists:
                 logger.debug(f"Creating a new dbt directory at 'dbt_path': {dbt_path}")
