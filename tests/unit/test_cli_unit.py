@@ -123,41 +123,5 @@ class TestCli:
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_cli_dry_run_incompatiable_arguments_failure(
-        self,
-        runner,
-        tmp_path,
-        source_configs_path,
-        gcp_application_credentials,
-        gcp_project_id,
-        gcp_bq_dataset,
-        gcp_bq_region):
-        logger.info(f"Running test_cli_dbt_path with {gcp_project_id}, {gcp_bq_dataset}, {gcp_bq_region}")
-        logger.info(f"test_cli_dbt_path {gcp_application_credentials}")
-        try:
-            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_dry_run_3")
-            temp_dir.mkdir(parents=True)
-            with working_directory(temp_dir):
-                args = [
-                    "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
-                    f"{source_configs_path}",
-                    "--gcp_project_id=gcp_project_id",
-                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
-                    f"--gcp_region_id={gcp_bq_region}",
-                    f"--target_bigquery_summary_table={gcp_project_id}.{gcp_bq_dataset}.dq_summary_target",
-                    "--debug",
-                    "--dry_run",
-                    "--summary_to_stdout",
-                    ]
-                logger.info(f"Args: {' '.join(args)}")
-
-                result = runner.invoke(main, args)
-                print(result.output)
-                assert result.exit_code == 1
-                assert isinstance(result.exception, SystemExit)
-        finally:
-            shutil.rmtree(temp_dir)
-
-
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

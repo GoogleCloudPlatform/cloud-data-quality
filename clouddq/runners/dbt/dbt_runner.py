@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from pathlib import Path
 from typing import Dict
 from typing import Optional
 
 import logging
+import typing
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_DBT_ENVIRONMENT_TARGET
@@ -122,7 +122,7 @@ class DbtRunner:
                                                     gcp_bq_dataset_id: str,
                                                     gcp_region_id: Optional[str] = None,
                                                     bigquery_client: Optional[BigQueryClient] = None,
-                                                    ) -> dict:
+                                                    ) -> typing.Tuple:
         self._resolve_connection_configs(
             gcp_project_id=gcp_project_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
@@ -131,12 +131,12 @@ class DbtRunner:
             environment_target=self.environment_target,
         )
 
-        return {
-            "dbt_profiles_dir": Path(self.dbt_profiles_dir),
-            "environment_target": self.environment_target
-        }
+        return (
+            Path(self.dbt_profiles_dir),
+            self.environment_target
+        )
 
-    def get_dq_summary_dataset_region(self, gcp_project_id, gcp_bq_dataset_id ) -> str:
+    def get_dq_summary_dataset_region(self, gcp_project_id, gcp_bq_dataset_id) -> str:
         self._resolve_connection_configs(
             gcp_project_id=gcp_project_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
@@ -172,15 +172,13 @@ class DbtRunner:
         if environment_target:
             logger.debug(f"Using `environment_target`: {environment_target}")
             self.environment_target = environment_target
-            self.connection_config.to_dbt_profiles_yml(
-                target_directory=self.dbt_profiles_dir,
-                environment_target=self.environment_target,
-            )
         else:
             self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
-            self.connection_config.to_dbt_profiles_yml(
-                target_directory=self.dbt_profiles_dir
-            )
+
+        self.connection_config.to_dbt_profiles_yml(
+            target_directory=self.dbt_profiles_dir,
+            environment_target=self.environment_target,
+        )
 
     def _resolve_dbt_path(
         self,

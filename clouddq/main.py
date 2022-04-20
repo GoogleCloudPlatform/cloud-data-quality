@@ -284,19 +284,15 @@ def main(  # noqa: C901
         dbt_rule_binding_views_path = dbt_runner.get_rule_binding_view_path()
         dbt_entity_summary_path = dbt_runner.get_entity_summary_path()
 
-        dbt_profiles_dir = dbt_runner.get_dbt_profiles_dir_and_environment_target(
+        (
+            dbt_profiles_dir,
+            environment_target,
+        ) = dbt_runner.get_dbt_profiles_dir_and_environment_target(
             gcp_project_id=gcp_project_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
             gcp_region_id=gcp_region_id,
             bigquery_client=bigquery_client,
-        ).get("dbt_profiles_dir")
-
-        environment_target = dbt_runner.get_dbt_profiles_dir_and_environment_target(
-            gcp_project_id=gcp_project_id,
-            gcp_bq_dataset_id=gcp_bq_dataset_id,
-            gcp_region_id=gcp_region_id,
-            bigquery_client=bigquery_client,
-        ).get("environment_target")
+        )
 
         # Prepare DQ Summary Table
         dq_summary_table_name = get_bigquery_dq_summary_table_name(

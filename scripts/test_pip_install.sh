@@ -109,20 +109,6 @@ sed -i s/\<my-gcp-dataplex-region-id\>/"${DATAPLEX_REGION_ID}"/g "$TEST_DIR"/con
 sed -i s/\<my-gcp-project-id\>/"${GOOGLE_CLOUD_PROJECT}"/g "$TEST_DIR"/configs/metadata_registry_defaults.yml
 sed -i s/\<my-gcp-dataplex-zone-id\>/"${DATAPLEX_ZONE_ID}"/g "$TEST_DIR"/configs/metadata_registry_defaults.yml
 
-# run with --dbt_profiles_dir
-python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs \
-    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
-    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
-    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
-    --debug  \
-    --dry_run
-python3 -m clouddq T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE configs \
-    --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \
-    --gcp_bq_dataset_id="${CLOUDDQ_BIGQUERY_DATASET}" \
-    --gcp_region_id="${CLOUDDQ_BIGQUERY_REGION}" \
-    --debug  \
-    --dry_run
-
 # test clouddq with direct connection profiles
 python3 -m clouddq ALL configs \
     --gcp_project_id="${GOOGLE_CLOUD_PROJECT}" \

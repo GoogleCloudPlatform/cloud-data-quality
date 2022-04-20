@@ -66,36 +66,6 @@ class TestCliIntegration:
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_cli_dry_run(
-        self,
-        runner,
-        temp_configs_dir,
-        gcp_application_credentials,
-        tmp_path,
-        gcp_project_id,
-        gcp_bq_region,
-        gcp_bq_dataset
-    ):
-        try:
-            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_2")
-            temp_dir.mkdir(parents=True)
-            with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run {gcp_application_credentials}")
-                args = [
-                    "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
-                    f"{temp_configs_dir}",
-                    f"--gcp_project_id={gcp_project_id}",
-                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
-                    f"--gcp_region_id={gcp_bq_region}",
-                    "--dry_run",
-                    "--debug"
-                    ]
-                result = runner.invoke(main, args)
-                print(result.output)
-                assert result.exit_code == 0
-        finally:
-            shutil.rmtree(temp_dir)
-
     def test_cli_dry_run_oauth_configs(
         self,
         runner,
