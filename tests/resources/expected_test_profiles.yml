@@ -14,11 +14,9 @@
 default:
   outputs:
     Dev:
-      dataset: '<my-gcp-dataset-id>'
-      impersonate_service_account: '<my-gcp-impersonation-credentials>'
-      keyfile: '<my-gcp-sa-key>'
+      dataset: '<my-bq-dataset-id>'
       location: '<my-gcp-region-id>'
-      method: service-account
+      method: oauth
       priority: interactive
       project: '<my-gcp-project-id>'
       retries: 1

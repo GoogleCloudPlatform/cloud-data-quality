@@ -46,15 +46,9 @@ class TestDbtRunner:
     def test_num_threads(
         self,
         runner,
-        gcp_application_credentials,
-        gcp_project_id,
-        gcp_bq_dataset,
-        gcp_bq_region,
         target_bq_result_dataset_name,
         target_bq_result_table_name,
         tmp_path,
-        gcp_impersonation_credentials,
-        gcp_sa_key,
         test_resources,
     ):
         try:
@@ -68,11 +62,11 @@ class TestDbtRunner:
                     dbt_path=None,
                     dbt_profiles_dir=None,
                     environment_target="Dev",
-                    gcp_project_id=gcp_project_id,
-                    gcp_region_id=gcp_bq_region,
-                    gcp_bq_dataset_id=gcp_bq_dataset,
-                    gcp_service_account_key_path=gcp_sa_key,
-                    gcp_impersonation_credentials=gcp_impersonation_credentials,
+                    gcp_project_id="<my-gcp-project-id>",
+                    gcp_region_id="<my-gcp-region-id>",
+                    gcp_bq_dataset_id="<my-bq-dataset-id>",
+                    gcp_service_account_key_path=None,
+                    gcp_impersonation_credentials=None,
                     intermediate_table_expiration_hours=intermediate_table_expiration_hours,
                     num_threads=num_threads,
                 )
@@ -82,13 +76,6 @@ class TestDbtRunner:
                 with open(test_resources / "expected_test_profiles.yml") as source_file:
                     profiles_yml_expected = source_file.read().strip()
                     profiles_yml_expected = profiles_yml_expected.replace(GOOGLE_LICENSE.strip(), "").strip()
-                    profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-project-id>', gcp_project_id)
-                    profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-dataset-id>', gcp_bq_dataset)
-                    profiles_yml_expected = profiles_yml_expected.replace('<my-gcp-region-id>', gcp_bq_region)
-                    profiles_yml_expected = profiles_yml_expected\
-                        .replace('<my-gcp-impersonation-credentials>', gcp_impersonation_credentials)
-                    profiles_yml_expected = profiles_yml_expected\
-                        .replace('<my-gcp-sa-key>', gcp_sa_key)
                     profiles_yml_expected = profiles_yml_expected.replace("'", "")
                     assert profiles_yml_actual == profiles_yml_expected
 
