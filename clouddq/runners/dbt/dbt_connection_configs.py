@@ -78,10 +78,10 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
     gcp_project_id: str
     gcp_region_id: str
     gcp_bq_dataset_id: str
+    threads: int
     connection_method: DbtBigQueryConnectionMethod = None
     gcp_service_account_key_path: Optional[str] = None
     service_account_gcp_impersonation_credentials: Optional[str] = None
-    threads: int = 8
     timeout_seconds: int = 3600
     priority: str = "interactive"
     retries: int = 1
@@ -90,6 +90,7 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
         self,
         gcp_project_id: str,
         gcp_bq_dataset_id: str,
+        threads: int,
         gcp_region_id: Optional[str] = None,
         bigquery_client: Optional[BigQueryClient] = None,
         gcp_service_account_key_path: Optional[str] = None,
@@ -121,6 +122,7 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
             self.gcp_region_id = dq_summary_dataset_region
         self.gcp_project_id = gcp_project_id
         self.gcp_bq_dataset_id = gcp_bq_dataset_id
+        self.threads = threads
         if gcp_service_account_key_path:
             logger.info("Using exported service account key to authenticate to GCP...")
             self.gcp_service_account_key_path = gcp_service_account_key_path
