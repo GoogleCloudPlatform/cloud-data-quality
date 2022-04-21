@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from pathlib import Path
 from typing import Dict
 from typing import Optional
@@ -141,15 +142,6 @@ class DbtRunner:
             self.environment_target
         )
 
-    def get_dq_summary_dataset_region(self, gcp_project_id, gcp_bq_dataset_id) -> str:
-        self._resolve_connection_configs(
-            gcp_project_id=gcp_project_id,
-            gcp_bq_dataset_id=gcp_bq_dataset_id,
-            environment_target=self.environment_target,
-        )
-        Path(self.dbt_profiles_dir)
-        return self.environment_target
-
     def _resolve_connection_configs(
         self,
         gcp_project_id: str,
@@ -161,48 +153,11 @@ class DbtRunner:
         gcp_service_account_key_path: Optional[Path] = None,
         gcp_impersonation_credentials: Optional[str] = None,
     ) -> None:
-        if dbt_profiles_dir:
-            dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
-            if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
-                raise ValueError(
-                    f"Cannot find connection `profiles.yml` configurations at "
-                    f"`dbt_profiles_dir` path: {dbt_profiles_dir}"
-                )
-            self.dbt_profiles_dir = dbt_profiles_dir
-            self.environment_target = environment_target
-            self.num_threads = num_threads
-        else:
-            # create GcpDbtConnectionConfig
-            connection_config = GcpDbtConnectionConfig(
-                gcp_project_id=gcp_project_id,
-                gcp_bq_dataset_id=gcp_bq_dataset_id,
-                threads=num_threads,
-                bigquery_client=bigquery_client,
-                gcp_region_id=gcp_region_id,
-                gcp_service_account_key_path=gcp_service_account_key_path,
-                gcp_impersonation_credentials=gcp_impersonation_credentials,
-            )
-            self.connection_config = connection_config
-            self.dbt_profiles_dir = Path(self.dbt_path)
-            logger.debug(
-                "Using dbt profiles.yml path: {self.dbt_profiles_dir}",
-            )
-            if environment_target:
-                logger.debug(f"Using `environment_target`: {environment_target}")
-                self.environment_target = environment_target
-                self.connection_config.to_dbt_profiles_yml(
-                    target_directory=self.dbt_profiles_dir,
-                    environment_target=self.environment_target,
-                )
-            else:
-                self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
-                self.connection_config.to_dbt_profiles_yml(
-                    target_directory=self.dbt_profiles_dir
-                )
         # create GcpDbtConnectionConfig
         connection_config = GcpDbtConnectionConfig(
             gcp_project_id=gcp_project_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
+            threads=num_threads,
             bigquery_client=bigquery_client,
             gcp_region_id=gcp_region_id,
             gcp_service_account_key_path=gcp_service_account_key_path,

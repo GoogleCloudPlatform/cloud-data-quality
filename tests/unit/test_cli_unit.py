@@ -123,5 +123,6 @@ class TestCli:
         finally:
             shutil.rmtree(temp_dir)
 
+
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))
