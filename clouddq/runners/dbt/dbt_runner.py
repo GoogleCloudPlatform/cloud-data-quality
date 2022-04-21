@@ -42,6 +42,7 @@ HOURS_TO_EXPIRATION = "+hours_to_expiration: 24"
 class DbtRunner:
     environment_target: str
     intermediate_table_expiration_hours: int
+    num_threads: int
     connection_config: DbtConnectionConfig
     dbt_rule_binding_views_path: Path
     dbt_entity_summary_path: Path
@@ -55,6 +56,7 @@ class DbtRunner:
         gcp_service_account_key_path: Optional[Path],
         gcp_impersonation_credentials: Optional[str],
         intermediate_table_expiration_hours: int,
+        num_threads: int,
         bigquery_client: Optional[BigQueryClient] = None,
         create_paths_if_not_exists: bool = True,
     ):
@@ -69,6 +71,7 @@ class DbtRunner:
         self._prepare_dbt_main_path()
         self._prepare_rule_binding_view_path(write_log=True)
         self._prepare_entity_summary_path(write_log=True)
+        self.num_threads = num_threads
         # Prepare connection configurations
         self._resolve_connection_configs(
             gcp_project_id=gcp_project_id,
@@ -78,6 +81,7 @@ class DbtRunner:
             gcp_region_id=gcp_region_id,
             gcp_service_account_key_path=gcp_service_account_key_path,
             gcp_impersonation_credentials=gcp_impersonation_credentials,
+            num_threads=num_threads,
         )
         logger.debug(f"Using 'dbt_profiles_dir': {self.dbt_profiles_dir}")
 
@@ -129,6 +133,7 @@ class DbtRunner:
             gcp_region_id=gcp_region_id,
             bigquery_client=bigquery_client,
             environment_target=self.environment_target,
+            num_threads=self.num_threads,
         )
 
         return (
@@ -150,11 +155,50 @@ class DbtRunner:
         gcp_project_id: str,
         gcp_bq_dataset_id: str,
         environment_target: Optional[str],
+        num_threads: int,
         bigquery_client: Optional[BigQueryClient] = None,
         gcp_region_id: Optional[str] = None,
         gcp_service_account_key_path: Optional[Path] = None,
         gcp_impersonation_credentials: Optional[str] = None,
     ) -> None:
+        if dbt_profiles_dir:
+            dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
+            if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
+                raise ValueError(
+                    f"Cannot find connection `profiles.yml` configurations at "
+                    f"`dbt_profiles_dir` path: {dbt_profiles_dir}"
+                )
+            self.dbt_profiles_dir = dbt_profiles_dir
+            self.environment_target = environment_target
+            self.num_threads = num_threads
+        else:
+            # create GcpDbtConnectionConfig
+            connection_config = GcpDbtConnectionConfig(
+                gcp_project_id=gcp_project_id,
+                gcp_bq_dataset_id=gcp_bq_dataset_id,
+                threads=num_threads,
+                bigquery_client=bigquery_client,
+                gcp_region_id=gcp_region_id,
+                gcp_service_account_key_path=gcp_service_account_key_path,
+                gcp_impersonation_credentials=gcp_impersonation_credentials,
+            )
+            self.connection_config = connection_config
+            self.dbt_profiles_dir = Path(self.dbt_path)
+            logger.debug(
+                "Using dbt profiles.yml path: {self.dbt_profiles_dir}",
+            )
+            if environment_target:
+                logger.debug(f"Using `environment_target`: {environment_target}")
+                self.environment_target = environment_target
+                self.connection_config.to_dbt_profiles_yml(
+                    target_directory=self.dbt_profiles_dir,
+                    environment_target=self.environment_target,
+                )
+            else:
+                self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
+                self.connection_config.to_dbt_profiles_yml(
+                    target_directory=self.dbt_profiles_dir
+                )
         # create GcpDbtConnectionConfig
         connection_config = GcpDbtConnectionConfig(
             gcp_project_id=gcp_project_id,

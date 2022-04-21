@@ -198,6 +198,8 @@ class TestDqAdvancedRules:
                 logger.info(result.output)
                 assert result.exit_code == 0
                 intermediate_table_expiration_hours = 24
+
+                num_threads = 8
                 # Prepare dbt runtime
                 dbt_runner = DbtRunner(
                     environment_target="Dev",
@@ -207,6 +209,7 @@ class TestDqAdvancedRules:
                     gcp_service_account_key_path=gcp_sa_key,
                     gcp_impersonation_credentials=gcp_impersonation_credentials,
                     intermediate_table_expiration_hours=intermediate_table_expiration_hours,
+                    num_threads=num_threads,
                 )
                 dbt_path = dbt_runner.get_dbt_path()
                 invocation_id = get_dbt_invocation_id(dbt_path)
