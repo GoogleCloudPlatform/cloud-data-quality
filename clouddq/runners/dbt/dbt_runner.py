@@ -17,6 +17,7 @@ from typing import Dict
 from typing import Optional
 
 import logging
+import typing
 
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.runners.dbt.dbt_connection_configs import DEFAULT_DBT_ENVIRONMENT_TARGET
@@ -40,8 +41,6 @@ DBT_TEMPLATED_FILE_LOCATIONS = {
 HOURS_TO_EXPIRATION = "+hours_to_expiration: 24"
 
 class DbtRunner:
-    dbt_path: Path
-    dbt_profiles_dir: Path
     environment_target: str
     intermediate_table_expiration_hours: int
     num_threads: int
@@ -51,12 +50,10 @@ class DbtRunner:
 
     def __init__(
         self,
-        dbt_path: Optional[Path],
-        dbt_profiles_dir: Optional[str],
+        gcp_project_id: str,
+        gcp_bq_dataset_id: str,
         environment_target: Optional[str],
-        gcp_project_id: Optional[str],
         gcp_region_id: Optional[str],
-        gcp_bq_dataset_id: Optional[str],
         gcp_service_account_key_path: Optional[Path],
         gcp_impersonation_credentials: Optional[str],
         intermediate_table_expiration_hours: int,
@@ -66,7 +63,6 @@ class DbtRunner:
     ):
         # Prepare local dbt environment
         self.dbt_path = self._resolve_dbt_path(
-            dbt_path=dbt_path,
             create_paths_if_not_exists=create_paths_if_not_exists,
             write_log=True,
         )
@@ -79,10 +75,9 @@ class DbtRunner:
         self.num_threads = num_threads
         # Prepare connection configurations
         self._resolve_connection_configs(
-            dbt_profiles_dir=dbt_profiles_dir,
-            environment_target=environment_target,
             gcp_project_id=gcp_project_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
+            environment_target=environment_target,
             bigquery_client=bigquery_client,
             gcp_region_id=gcp_region_id,
             gcp_service_account_key_path=gcp_service_account_key_path,
@@ -127,98 +122,71 @@ class DbtRunner:
         self._prepare_entity_summary_path()
         return Path(self.dbt_entity_summary_path)
 
-    def get_dbt_profiles_dir(self) -> Path:
+    def get_dbt_profiles_dir_and_environment_target(self,
+                                                    gcp_project_id: str,
+                                                    gcp_bq_dataset_id: str,
+                                                    gcp_region_id: Optional[str] = None,
+                                                    bigquery_client: Optional[BigQueryClient] = None,
+                                                    ) -> typing.Tuple:
         self._resolve_connection_configs(
-            dbt_profiles_dir=self.dbt_profiles_dir,
+            gcp_project_id=gcp_project_id,
+            gcp_bq_dataset_id=gcp_bq_dataset_id,
+            gcp_region_id=gcp_region_id,
+            bigquery_client=bigquery_client,
             environment_target=self.environment_target,
             num_threads=self.num_threads,
         )
-        return Path(self.dbt_profiles_dir)
 
-    def get_dbt_environment_target(self) -> str:
-        self._resolve_connection_configs(
-            dbt_profiles_dir=self.dbt_profiles_dir,
-            environment_target=self.environment_target,
-            num_threads=self.num_threads,
+        return (
+            Path(self.dbt_profiles_dir),
+            self.environment_target
         )
-        return self.environment_target
-
-    def get_dq_summary_dataset_region(self) -> str:
-        self._resolve_connection_configs(
-            dbt_profiles_dir=self.dbt_profiles_dir,
-            environment_target=self.environment_target,
-        )
-        Path(self.dbt_profiles_dir)
-        return self.environment_target
 
     def _resolve_connection_configs(
         self,
-        dbt_profiles_dir: Optional[str],
+        gcp_project_id: str,
+        gcp_bq_dataset_id: str,
         environment_target: Optional[str],
         num_threads: int,
         bigquery_client: Optional[BigQueryClient] = None,
-        gcp_project_id: Optional[str] = None,
         gcp_region_id: Optional[str] = None,
-        gcp_bq_dataset_id: Optional[str] = None,
         gcp_service_account_key_path: Optional[Path] = None,
         gcp_impersonation_credentials: Optional[str] = None,
     ) -> None:
-        if dbt_profiles_dir:
-            dbt_profiles_dir = Path(dbt_profiles_dir).absolute()
-            if not dbt_profiles_dir.joinpath("profiles.yml").is_file():
-                raise ValueError(
-                    f"Cannot find connection `profiles.yml` configurations at "
-                    f"`dbt_profiles_dir` path: {dbt_profiles_dir}"
-                )
-            self.dbt_profiles_dir = dbt_profiles_dir
+        # create GcpDbtConnectionConfig
+        connection_config = GcpDbtConnectionConfig(
+            gcp_project_id=gcp_project_id,
+            gcp_bq_dataset_id=gcp_bq_dataset_id,
+            threads=num_threads,
+            bigquery_client=bigquery_client,
+            gcp_region_id=gcp_region_id,
+            gcp_service_account_key_path=gcp_service_account_key_path,
+            gcp_impersonation_credentials=gcp_impersonation_credentials,
+        )
+        self.connection_config = connection_config
+        self.dbt_profiles_dir = Path(self.dbt_path)
+        logger.debug(
+            "Using dbt profiles.yml path: {self.dbt_profiles_dir}",
+        )
+        if environment_target:
+            logger.debug(f"Using `environment_target`: {environment_target}")
             self.environment_target = environment_target
-            self.num_threads = num_threads
         else:
-            # create GcpDbtConnectionConfig
-            connection_config = GcpDbtConnectionConfig(
-                gcp_project_id=gcp_project_id,
-                gcp_bq_dataset_id=gcp_bq_dataset_id,
-                threads=num_threads,
-                bigquery_client=bigquery_client,
-                gcp_region_id=gcp_region_id,
-                gcp_service_account_key_path=gcp_service_account_key_path,
-                gcp_impersonation_credentials=gcp_impersonation_credentials,
-            )
-            self.connection_config = connection_config
-            self.dbt_profiles_dir = Path(self.dbt_path)
-            logger.debug(
-                "Using dbt profiles.yml path: {self.dbt_profiles_dir}",
-            )
-            if environment_target:
-                logger.debug(f"Using `environment_target`: {environment_target}")
-                self.environment_target = environment_target
-                self.connection_config.to_dbt_profiles_yml(
-                    target_directory=self.dbt_profiles_dir,
-                    environment_target=self.environment_target,
-                )
-            else:
-                self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
-                self.connection_config.to_dbt_profiles_yml(
-                    target_directory=self.dbt_profiles_dir
-                )
+            self.environment_target = DEFAULT_DBT_ENVIRONMENT_TARGET
+
+        self.connection_config.to_dbt_profiles_yml(
+            target_directory=self.dbt_profiles_dir,
+            environment_target=self.environment_target,
+        )
 
     def _resolve_dbt_path(
         self,
-        dbt_path: str,
         create_paths_if_not_exists: bool = False,
         write_log: bool = False,
     ) -> Path:
         logger.debug(f"Current working directory: {Path().cwd()}")
-        if not dbt_path:
-            dbt_path = Path().cwd().joinpath("dbt").absolute()
-            logger.debug(
-                "No argument 'dbt_path' provided. Defaulting to use "
-                f"'dbt' directory in current working directory at: {dbt_path}"
-            )
-        else:
-            dbt_path = Path(dbt_path).absolute()
-            if dbt_path.name != "dbt":
-                dbt_path = dbt_path / "dbt"
+        dbt_path = Path().cwd().joinpath("dbt").absolute()
+        logger.debug(f"Defaulting to use 'dbt' directory in current working directory at: {dbt_path}")
         if not dbt_path.is_dir():
             if create_paths_if_not_exists:
                 logger.debug(f"Creating a new dbt directory at 'dbt_path': {dbt_path}")

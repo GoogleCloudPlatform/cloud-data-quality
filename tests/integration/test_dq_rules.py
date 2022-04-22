@@ -110,8 +110,6 @@ class TestDqRules:
                 num_threads = 8
                 # Prepare dbt runtime
                 dbt_runner = DbtRunner(
-                    dbt_path=None,
-                    dbt_profiles_dir=None,
                     environment_target="Dev",
                     gcp_project_id=gcp_project_id,
                     gcp_region_id=gcp_bq_region,

@@ -42,7 +42,7 @@ class TestCli:
         logger.info(result.output)
         assert result.exit_code == 0
 
-    def test_cli_missing_dbt_profiles_dir_fail(
+    def test_cli_missing_connection_configs_fail(
         self,
         runner,
         tmp_path,
@@ -70,7 +70,10 @@ class TestCli:
         runner,
         tmp_path,
         source_configs_path,
-        test_profiles_dir):
+        gcp_project_id,
+        gcp_bq_region,
+        gcp_bq_dataset
+    ):
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_dry_run_2")
             temp_dir.mkdir(parents=True)
@@ -78,7 +81,9 @@ class TestCli:
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{source_configs_path}",
-                    f"--dbt_profiles_dir={test_profiles_dir}",
+                    f"--gcp_project_id={gcp_project_id}",
+                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+                    f"--gcp_region_id={gcp_bq_region}",
                     "--dry_run",
                     "--debug",
                     "--skip_sql_validation"
@@ -93,7 +98,10 @@ class TestCli:
         self,
         runner,
         tmp_path,
-        test_profiles_dir):
+        gcp_project_id,
+        gcp_bq_region,
+        gcp_bq_dataset
+    ):
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_dry_run_100_rules")
             temp_dir.mkdir(parents=True)
@@ -102,7 +110,9 @@ class TestCli:
                 args = [
                     "ALL",
                     f"{configs_100_rules}",
-                    f"--dbt_profiles_dir={test_profiles_dir}",
+                    f"--gcp_project_id={gcp_project_id}",
+                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+                    f"--gcp_region_id={gcp_bq_region}",
                     "--dry_run",
                     "--debug",
                     "--skip_sql_validation"
@@ -110,43 +120,6 @@ class TestCli:
                 result = runner.invoke(main, args)
                 logger.info(result.output)
                 assert result.exit_code == 0
-        finally:
-            shutil.rmtree(temp_dir)
-
-    def test_cli_dry_run_incompatiable_arguments_failure(
-        self,
-        runner,
-        tmp_path,
-        source_configs_path,
-        test_profiles_dir,
-        gcp_application_credentials,
-        gcp_project_id,
-        gcp_bq_dataset,
-        gcp_bq_region):
-        logger.info(f"Running test_cli_dbt_path with {gcp_project_id}, {gcp_bq_dataset}, {gcp_bq_region}")
-        logger.info(f"test_cli_dbt_path {gcp_application_credentials}")
-        try:
-            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_dry_run_3")
-            temp_dir.mkdir(parents=True)
-            with working_directory(temp_dir):
-                args = [
-                    "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
-                    f"{source_configs_path}",
-                    f"--dbt_profiles_dir={test_profiles_dir}",
-                    f"--gcp_project_id={gcp_project_id}",
-                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
-                    f"--gcp_region_id={gcp_bq_region}",
-                    f"--target_bigquery_summary_table={gcp_project_id}.{gcp_bq_dataset}.dq_summary_target",
-                    "--debug",
-                    "--dry_run",
-                    "--summary_to_stdout",
-                    ]
-                logger.info(f"Args: {' '.join(args)}")
-
-                result = runner.invoke(main, args)
-                print(result.output)
-                assert result.exit_code == 1
-                assert isinstance(result.exception, ValueError)
         finally:
             shutil.rmtree(temp_dir)
 

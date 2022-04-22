@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.e2e
 class TestCliIntegration:
 
-    def test_cli_dbt_path(
+    def test_cli(
         self,
         runner,
         temp_configs_dir,
@@ -60,32 +60,6 @@ class TestCliIntegration:
                     ]
                 logger.info(f"Args: {' '.join(args)}")
 
-                result = runner.invoke(main, args)
-                print(result.output)
-                assert result.exit_code == 0
-        finally:
-            shutil.rmtree(temp_dir)
-
-    def test_cli_dry_run_dbt_path(
-        self,
-        runner,
-        temp_configs_dir,
-        test_profiles_dir,
-        gcp_application_credentials,
-        tmp_path
-    ):
-        try:
-            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_2")
-            temp_dir.mkdir(parents=True)
-            with working_directory(temp_dir):
-                logger.info(f"test_cli_dry_run_dbt_path {gcp_application_credentials}")
-                args = [
-                    "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
-                    f"{temp_configs_dir}",
-                    f"--dbt_profiles_dir={test_profiles_dir}",
-                    "--dry_run",
-                    "--debug",
-                    ]
                 result = runner.invoke(main, args)
                 print(result.output)
                 assert result.exit_code == 0

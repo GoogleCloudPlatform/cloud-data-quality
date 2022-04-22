@@ -59,8 +59,6 @@ class TestDbtRunner:
                 intermediate_table_expiration_hours = 24
                 num_threads = 10
                 dbt_runner = DbtRunner(
-                    dbt_path=None,
-                    dbt_profiles_dir=None,
                     environment_target="Dev",
                     gcp_project_id="<my-gcp-project-id>",
                     gcp_region_id="<my-gcp-region-id>",
