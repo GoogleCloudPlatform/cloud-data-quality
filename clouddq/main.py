@@ -207,7 +207,7 @@ def main(  # noqa: C901
     metadata: Optional[str],
     dry_run: bool,
     progress_watermark: bool,
-    target_bigquery_summary_table: Optional[str],
+    target_bigquery_summary_table: str,
     intermediate_table_expiration_hours: int,
     num_threads: int,
     debug: bool = False,
@@ -582,18 +582,17 @@ def main(  # noqa: C901
                 )
                 logger.info("Job completed successfully.")
             else:
-                logger.warning(
-                    "'--target_bigquery_summary_table' was not provided. "
-                    "It is needed to append the dq summary results to the "
-                    "provided target bigquery table. This will become a "
-                    "required argument in v1.0.0"
-                )
                 if summary_to_stdout:
                     logger.warning(
                         "'--summary_to_stdout' was set but does"
                         " not take effect unless "
                         "'--target_bigquery_summary_table' is provided"
                     )
+                raise ValueError(
+                    "'--target_bigquery_summary_table' was not provided. "
+                    "It is needed to append the dq summary results to the "
+                    "provided target bigquery table."
+                )
     except Exception as error:
         logger.error(error, exc_info=True)
         json_logger.error(error, exc_info=True)
