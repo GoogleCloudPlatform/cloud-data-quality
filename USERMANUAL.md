@@ -606,12 +606,9 @@ CloudDQ supports the follow methods for authenticating to GCP:
 3. [Service Account impersonation](https://cloud.google.com/iam/docs/impersonating-service-accounts) via a source credentials if the argument `--gcp_impersonation_credentials` is provided. The source credentials can be obtained from either `--gcp_service_account_key_path` or from the local ADC credentials.
 
 ### Materialization Hours
-1. Configure the bigquery job intermediate tables expiration hours in the provided dataset `--gcp_bq_dataset_id`.
-2. if the CLI argument `--intermediate_table_expiration_hours` is defined, CloudDQ will set the same as expiration hours for intermediate tables. 
-  `--intermediate_table_expiration_hours` is currently an optional argument and has a default value of `24 hours`.
+1. `--intermediate_table_expiration_hours` CLI argument specifies the bigquery job intermediate tables expiration hours in the provided dataset `--gcp_bq_dataset_id`.
+2. The default "expiration hours" for BigQuery job intermediate tables in the provided dataset `--gcp_bq_dataset_id` is set to 24 hours. If you'd like to change it, use `--intermediate_table_expiration_hours` CLI argument.
 
 ### Number of Concurrent Bigquery Threads
-1. CLI argumnet `--num_threads` specifies the number of concurrent bigquery operations that can be increased to reduce run-time. 
-    We advice setting this to number of cores of your run-environment machines. 
-2. One worker thread per core seemed a good number for how many threads to run at once. This number is chosen much more carefully based on other factors, such as other applications and services running on the same machine.
-3. if the CLI argument `--num_threads` is defined, CloudDQ will limit the number of threads to this value. `--num_threads` is currently an optional argument and has a default value of `8 threads`.
+1. `--num_threads` CLI argument specifies the number of concurrent bigquery operations that can be increased to reduce run-time.
+2. `--num_threads` is currently an optional argument and has a default value of `8 threads`. We advice setting this to number of cores of your run-environment machines. One worker thread per core seemed a good number for how many threads to run at once. This number is chosen much more carefully based on other factors, such as other applications and services running on the same machine.
