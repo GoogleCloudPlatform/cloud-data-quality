@@ -16,7 +16,7 @@ For example, on [Cloud Shell](https://cloud.google.com/shell/docs/launching-clou
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.2"
+export CLOUDDQ_RELEASE_VERSION="1.0.0"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 source cloud-data-quality/scripts/install_python3.sh "3.9.7"
 python3 --version
@@ -32,7 +32,7 @@ For example, from [Cloud Shell](https://shell.cloud.google.com/?show=ide%2Ctermi
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.2"
+export CLOUDDQ_RELEASE_VERSION="1.0.0"
 export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
@@ -43,7 +43,7 @@ If you do not have Python 3.9 installed, you could install Python 3.9 on an `Ubu
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.2"
+export CLOUDDQ_RELEASE_VERSION="1.0.0"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 source cloud-data-quality/scripts/install_python3.sh "3.9.7"
 python3 --version
@@ -68,7 +68,7 @@ From either [Cloud Shell](https://shell.cloud.google.com) or a `Ubuntu`/`Debian`
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.2"
+export CLOUDDQ_RELEASE_VERSION="1.0.0"
 git clone -b "v${CLOUDDQ_RELEASE_VERSION}" https://github.com/GoogleCloudPlatform/cloud-data-quality.git
 ```
 
@@ -76,7 +76,7 @@ Then change directory to the git project and get the pre-built executable from G
 
 ```bash
 #!/bin/bash
-export CLOUDDQ_RELEASE_VERSION="0.5.2"
+export CLOUDDQ_RELEASE_VERSION="1.0.0"
 export TARGET_OS="debian_11"  # can be either "debian_11" or "ubuntu_18"
 export TARGET_PYTHON_INTERPRETER="3.9"  # can be either "3.8" or "3.9"
 cd cloud-data-quality
@@ -604,3 +604,11 @@ CloudDQ supports the follow methods for authenticating to GCP:
 1. OAuth via locally discovered [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/best-practices-applications#overview_of_application_default_credentials) if only the arguments `--gcp_project_id`, `--gcp_bq_dataset_id`, and `--gcp_region_id` are provided.
 2. Using an [exported JSON service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) if the argument `--gcp_service_account_key_path` is provided.
 3. [Service Account impersonation](https://cloud.google.com/iam/docs/impersonating-service-accounts) via a source credentials if the argument `--gcp_impersonation_credentials` is provided. The source credentials can be obtained from either `--gcp_service_account_key_path` or from the local ADC credentials.
+
+### Materialization Hours
+1. `--intermediate_table_expiration_hours` CLI argument specifies the bigquery job intermediate tables expiration hours in the provided dataset `--gcp_bq_dataset_id`.
+2. The default "expiration hours" for BigQuery job intermediate tables in the provided dataset `--gcp_bq_dataset_id` is set to 24 hours. If you'd like to change it, use `--intermediate_table_expiration_hours` CLI argument.
+
+### Number of Concurrent Bigquery Threads
+1. `--num_threads` CLI argument specifies the number of concurrent bigquery operations that can be increased to reduce run-time.
+2. `--num_threads` is currently an optional argument and has a default value of `8 threads`. We advice setting this to number of cores of your run-environment machines. One worker thread per core seemed a good number for how many threads to run at once. This number is chosen much more carefully based on other factors, such as other applications and services running on the same machine.
