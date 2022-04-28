@@ -395,6 +395,42 @@ class TestCliIntegration:
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_target_table_dq_summary_duplicate(
+            self,
+            runner,
+            temp_configs_dir,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            tmp_path
+    ):
+        try:
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_1")
+            temp_dir.mkdir(parents=True)
+            with working_directory(temp_dir):
+                logger.info(
+                    f"Running test_cli_dbt_path with {gcp_project_id}, {gcp_bq_dataset}, {gcp_bq_region}")
+                logger.info(f"test_cli_dbt_path {gcp_application_credentials}")
+                target_table = f"{gcp_project_id}.{gcp_bq_dataset}.dq_summary"
+                args = [
+                    "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
+                    f"{temp_configs_dir}",
+                    f"--gcp_project_id={gcp_project_id}",
+                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+                    f"--gcp_region_id={gcp_bq_region}",
+                    f"--target_bigquery_summary_table={target_table}",
+                    "--debug",
+                    "--summary_to_stdout",
+                ]
+                logger.info(f"Args: {' '.join(args)}")
+
+                result = runner.invoke(main, args)
+                print(result.output)
+                assert result.exit_code == 1
+        finally:
+            shutil.rmtree(temp_dir)
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

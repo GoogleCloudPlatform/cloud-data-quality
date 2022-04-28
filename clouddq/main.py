@@ -553,41 +553,42 @@ def main(  # noqa: C901
         )
         if not dry_run:
             if target_bigquery_summary_table:
-                invocation_id = get_dbt_invocation_id(dbt_path)
-                logger.info(
-                    f"dbt invocation id for current execution " f"is {invocation_id}"
-                )
-                partition_date = datetime.now(timezone.utc).date()
-                target_table = TargetTable(invocation_id, bigquery_client)
-                num_rows = target_table.write_to_target_bq_table(
-                    partition_date,
-                    target_bigquery_summary_table,
-                    dq_summary_table_name,
-                    summary_to_stdout,
-                )
-                json_logger.info(
-                    json.dumps(
-                        {
-                            "clouddq_job_completion_config": {
-                                "invocation_id": invocation_id,
-                                "target_bigquery_summary_table": target_bigquery_summary_table,
-                                "summary_to_stdout": summary_to_stdout,
-                                "target_rule_binding_ids": target_rule_binding_ids,
-                                "partition_date": partition_date,
-                                "num_rows_loaded_to_target_table": num_rows,
-                            }
-                        },
-                        cls=JsonEncoderDatetime,
+                if target_bigquery_summary_table == dq_summary_table_name:
+                    raise ValueError(
+                        f"The target bigquery summary table name `{target_bigquery_summary_table}` "
+                        f"must not be same as dq summary table name `{dq_summary_table_name}`"
                     )
-                )
-                logger.info("Job completed successfully.")
+                else:
+                    invocation_id = get_dbt_invocation_id(dbt_path)
+                    logger.info(
+                        f"dbt invocation id for current execution "
+                        f"is {invocation_id}"
+                    )
+                    partition_date = datetime.now(timezone.utc).date()
+                    target_table = TargetTable(invocation_id, bigquery_client)
+                    num_rows = target_table.write_to_target_bq_table(
+                        partition_date,
+                        target_bigquery_summary_table,
+                        dq_summary_table_name,
+                        summary_to_stdout,
+                    )
+                    json_logger.info(
+                        json.dumps(
+                            {
+                                "clouddq_job_completion_config": {
+                                    "invocation_id": invocation_id,
+                                    "target_bigquery_summary_table": target_bigquery_summary_table,
+                                    "summary_to_stdout": summary_to_stdout,
+                                    "target_rule_binding_ids": target_rule_binding_ids,
+                                    "partition_date": partition_date,
+                                    "num_rows_loaded_to_target_table": num_rows,
+                                }
+                            },
+                            cls=JsonEncoderDatetime,
+                        )
+                    )
+                    logger.info("Job completed successfully.")
             else:
-                if summary_to_stdout:
-                    logger.warning(
-                        "'--summary_to_stdout' was set but does"
-                        " not take effect unless "
-                        "'--target_bigquery_summary_table' is provided"
-                    )
                 raise ValueError(
                     "'--target_bigquery_summary_table' was not provided. "
                     "It is needed to append the dq summary results to the "
