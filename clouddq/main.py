@@ -556,7 +556,9 @@ def main(  # noqa: C901
                 if target_bigquery_summary_table == dq_summary_table_name:
                     raise ValueError(
                         f"The target bigquery summary table name `{target_bigquery_summary_table}` "
-                        f"must not be same as dq summary table name `{dq_summary_table_name}`"
+                        f"cannot be same as dq summary table name `{dq_summary_table_name}` which "
+                        f"is reserved for storing the intermediate results which will be used by "
+                        f"clouddq for further processing in case of incremental validation."
                     )
                 else:
                     invocation_id = get_dbt_invocation_id(dbt_path)
