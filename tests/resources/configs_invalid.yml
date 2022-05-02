@@ -1,0 +1,34 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+metadata_registry_defaults:
+  dataplex:
+    projects: <my-gcp-project-id>
+    locations: <my-gcp-dataplex-region-id>
+    lakes: <my-gcp-dataplex-lake-id>
+    zones: <my-gcp-dataplex-zone-id>
+row_filters:
+  NONE:
+    filter_sql_expr: 'True'
+rule_bindings:
+  4209174c-2568-49d2-8d6d-7abeae4435fc:
+    entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/entities/contact_details
+    column_id: VALUE
+    row_filter_id: NONE
+    rule_ids: NOT_NULL_SIMPLE
+    metadata:
+      brand: one
+rules:
+  NOT_NULL_SIMPLE:
+    rule_type: NOT_NULL

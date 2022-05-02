@@ -15,6 +15,7 @@
 """todo: add utils docstring."""
 from inspect import getsourcefile
 from pathlib import Path
+from pprint import pformat
 
 import contextlib
 import hashlib
@@ -139,8 +140,8 @@ def get_from_dict_and_assert(
     )
     if assertion and not assertion(value):
         raise ValueError(
-            f"Assertion failed on value {value}.\n"
-            f"Config ID: {config_id}, kwargs: {kwargs}.\n"
+            f"Assertion failed on value '{value}'.\n"
+            f"Config ID: {config_id}, kwargs: {pformat(kwargs)}.\n"
             f"Error: {error_msg}"
         )
     return value
@@ -160,7 +161,7 @@ def get_keys_from_dict_and_assert_oneof(
         )
     if assertion and not assertion(value):
         raise ValueError(
-            f"Assertion failed on value {value}.\n"
+            f"Assertion failed on value '{value}'.\n"
             f"Config ID: {config_id}, kwargs: {kwargs}.\n"
             f"Error: {error_msg}"
         )

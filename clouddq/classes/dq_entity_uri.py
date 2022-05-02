@@ -60,7 +60,10 @@ class EntityUri:
 
     @classmethod
     def from_uri(
-        cls: EntityUri, uri_string: str, default_configs: dict | None = None
+        cls: EntityUri,
+        uri_string: str,
+        default_configs: dict | None = None,
+        validate_uri: bool = True,
     ) -> EntityUri:
         if "://" not in uri_string:
             raise ValueError(
@@ -79,7 +82,8 @@ class EntityUri:
             uri_configs_string=uri_configs_string,
             default_configs=default_scheme_configs,
         )
-        entity_uri.validate()
+        if validate_uri:
+            entity_uri.validate()
         return entity_uri
 
     def to_dict(self: EntityUri) -> dict:
