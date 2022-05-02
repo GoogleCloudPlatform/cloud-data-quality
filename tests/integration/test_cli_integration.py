@@ -428,7 +428,6 @@ class TestCliIntegration:
                 result = runner.invoke(main, args)
                 print(result.output)
                 assert result.exit_code == 1
-                assert isinstance(result.exception, SystemExit)
         finally:
             shutil.rmtree(temp_dir)
 
