@@ -428,6 +428,11 @@ class TestCliIntegration:
                 result = runner.invoke(main, args)
                 print(result.output)
                 assert result.exit_code == 1
+                error_message = f"ValueError: The target bigquery summary table name `{target_table}` "\
+                        f"cannot be same as dq summary table name `{target_table}` which "\
+                        f"is reserved for storing the intermediate results used by clouddq "\
+                        f"for further processing in case of incremental validation."
+                assert error_message in result.output
         finally:
             shutil.rmtree(temp_dir)
 
