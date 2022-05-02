@@ -141,7 +141,7 @@ def get_from_dict_and_assert(
     if assertion and not assertion(value):
         raise ValueError(
             f"Assertion failed on value '{value}'.\n"
-            f"Config ID: {config_id}, kwargs: {pformat(kwargs)}.\n"
+            f"Config ID: {config_id}, Config arguments:\n{pformat(kwargs)}.\n"
             f"Error: {error_msg}"
         )
     return value
@@ -162,7 +162,7 @@ def get_keys_from_dict_and_assert_oneof(
     if assertion and not assertion(value):
         raise ValueError(
             f"Assertion failed on value '{value}'.\n"
-            f"Config ID: {config_id}, kwargs: {kwargs}.\n"
+            f"Config ID: {config_id}, Config arguments:\n{pformat(kwargs)}.\n"
             f"Error: {error_msg}"
         )
     return value
