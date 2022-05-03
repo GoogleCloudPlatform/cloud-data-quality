@@ -207,7 +207,7 @@ def main(  # noqa: C901
     metadata: Optional[str],
     dry_run: bool,
     progress_watermark: bool,
-    target_bigquery_summary_table: Optional[str],
+    target_bigquery_summary_table: str,
     intermediate_table_expiration_hours: int,
     num_threads: int,
     debug: bool = False,
@@ -553,47 +553,49 @@ def main(  # noqa: C901
         )
         if not dry_run:
             if target_bigquery_summary_table:
-                invocation_id = get_dbt_invocation_id(dbt_path)
-                logger.info(
-                    f"dbt invocation id for current execution " f"is {invocation_id}"
-                )
-                partition_date = datetime.now(timezone.utc).date()
-                target_table = TargetTable(invocation_id, bigquery_client)
-                num_rows = target_table.write_to_target_bq_table(
-                    partition_date,
-                    target_bigquery_summary_table,
-                    dq_summary_table_name,
-                    summary_to_stdout,
-                )
-                json_logger.info(
-                    json.dumps(
-                        {
-                            "clouddq_job_completion_config": {
-                                "invocation_id": invocation_id,
-                                "target_bigquery_summary_table": target_bigquery_summary_table,
-                                "summary_to_stdout": summary_to_stdout,
-                                "target_rule_binding_ids": target_rule_binding_ids,
-                                "partition_date": partition_date,
-                                "num_rows_loaded_to_target_table": num_rows,
-                            }
-                        },
-                        cls=JsonEncoderDatetime,
+                if target_bigquery_summary_table == dq_summary_table_name:
+                    raise ValueError(
+                        f"The target bigquery summary table name `{target_bigquery_summary_table}` "
+                        f"cannot be same as dq summary table name `{dq_summary_table_name}` which "
+                        f"is reserved for storing the intermediate results used by clouddq "
+                        f"for further processing in case of incremental validation."
                     )
-                )
-                logger.info("Job completed successfully.")
+                else:
+                    invocation_id = get_dbt_invocation_id(dbt_path)
+                    logger.info(
+                        f"dbt invocation id for current execution "
+                        f"is {invocation_id}"
+                    )
+                    partition_date = datetime.now(timezone.utc).date()
+                    target_table = TargetTable(invocation_id, bigquery_client)
+                    num_rows = target_table.write_to_target_bq_table(
+                        partition_date,
+                        target_bigquery_summary_table,
+                        dq_summary_table_name,
+                        summary_to_stdout,
+                    )
+                    json_logger.info(
+                        json.dumps(
+                            {
+                                "clouddq_job_completion_config": {
+                                    "invocation_id": invocation_id,
+                                    "target_bigquery_summary_table": target_bigquery_summary_table,
+                                    "summary_to_stdout": summary_to_stdout,
+                                    "target_rule_binding_ids": target_rule_binding_ids,
+                                    "partition_date": partition_date,
+                                    "num_rows_loaded_to_target_table": num_rows,
+                                }
+                            },
+                            cls=JsonEncoderDatetime,
+                        )
+                    )
+                    logger.info("Job completed successfully.")
             else:
-                logger.warning(
+                raise ValueError(
                     "'--target_bigquery_summary_table' was not provided. "
                     "It is needed to append the dq summary results to the "
-                    "provided target bigquery table. This will become a "
-                    "required argument in v1.0.0"
+                    "provided target bigquery table."
                 )
-                if summary_to_stdout:
-                    logger.warning(
-                        "'--summary_to_stdout' was set but does"
-                        " not take effect unless "
-                        "'--target_bigquery_summary_table' is provided"
-                    )
     except Exception as error:
         logger.error(error, exc_info=True)
         json_logger.error(error, exc_info=True)

@@ -104,19 +104,23 @@ class TestCliIntegration:
         gcp_bq_region,
         gcp_bq_dataset,
         gcp_application_credentials,
-        tmp_path
+        tmp_path,
+        target_bq_result_dataset_name,
+        target_bq_result_table_name,
     ):
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_4")
             temp_dir.mkdir(parents=True)
             with working_directory(temp_dir):
                 logger.info(f"test_last_modified_in_dq_summary {gcp_application_credentials}")
+                target_table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
                 args = [
                     "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
                     f"{temp_configs_dir}",
                     f"--gcp_project_id={gcp_project_id}",
                     f"--gcp_bq_dataset_id={gcp_bq_dataset}",
                     f"--gcp_region_id={gcp_bq_region}",
+                    f"--target_bigquery_summary_table={target_table}",
                     "--debug"
                     ]
                 result = runner.invoke(main, args)
@@ -135,7 +139,7 @@ class TestCliIntegration:
                         )
 
                         SELECT count(*) as errors
-                        FROM `{gcp_project_id}.{gcp_bq_dataset}.dq_summary` d
+                        FROM `{target_table}` d
                         JOIN last_mod ON last_mod.full_table_id = d.table_id
                         WHERE d.last_modified IS NOT NULL
                             AND NOT d.last_modified = last_mod.last_modified
@@ -388,6 +392,47 @@ class TestCliIntegration:
                 result = runner.invoke(main, args)
                 print(result.output)
                 assert result.exit_code == 0
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_target_table_dq_summary_duplicate(
+            self,
+            runner,
+            temp_configs_dir,
+            gcp_application_credentials,
+            gcp_project_id,
+            gcp_bq_dataset,
+            gcp_bq_region,
+            tmp_path
+    ):
+        try:
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_integration_1")
+            temp_dir.mkdir(parents=True)
+            with working_directory(temp_dir):
+                logger.info(
+                    f"Running test_cli_dbt_path with {gcp_project_id}, {gcp_bq_dataset}, {gcp_bq_region}")
+                logger.info(f"test_cli_dbt_path {gcp_application_credentials}")
+                target_table = f"{gcp_project_id}.{gcp_bq_dataset}.dq_summary"
+                args = [
+                    "T1_DQ_1_VALUE_NOT_NULL,T2_DQ_1_EMAIL,T3_DQ_1_EMAIL_DUPLICATE",
+                    f"{temp_configs_dir}",
+                    f"--gcp_project_id={gcp_project_id}",
+                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+                    f"--gcp_region_id={gcp_bq_region}",
+                    f"--target_bigquery_summary_table={target_table}",
+                    "--debug",
+                    "--summary_to_stdout",
+                ]
+                logger.info(f"Args: {' '.join(args)}")
+
+                result = runner.invoke(main, args)
+                print(result.output)
+                assert result.exit_code == 1
+                error_message = f"ValueError: The target bigquery summary table name `{target_table}` "\
+                        f"cannot be same as dq summary table name `{target_table}` which "\
+                        f"is reserved for storing the intermediate results used by clouddq "\
+                        f"for further processing in case of incremental validation."
+                assert error_message in result.output
         finally:
             shutil.rmtree(temp_dir)
 
