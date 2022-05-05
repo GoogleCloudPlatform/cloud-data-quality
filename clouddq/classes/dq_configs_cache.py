@@ -174,6 +174,12 @@ class DqConfigsCache:
         )
         rule_bindings_rows = unnest_object_to_list(rule_binding_collection)
         for record in rule_bindings_rows:
+            try:
+                dq_rule_binding.DqRuleBinding.from_dict(
+                    rule_binding_id=record["id"], kwargs=record, validate_uri=False
+                )
+            except Exception as e:
+                raise ValueError(f"Failed to parse Rule Binding with error:\n{e}\n")
             if "entity_uri" not in record:
                 record.update({"entity_uri": None})
         self._cache_db["rule_bindings"].upsert_all(
@@ -200,6 +206,13 @@ class DqConfigsCache:
         logger.debug(
             f"Loading 'row_filters' configs into cache:\n{pformat(row_filters_collection.keys())}"
         )
+        for row_filter_id, row_filter_record in row_filters_collection.items():
+            try:
+                dq_row_filter.DqRowFilter.from_dict(
+                    row_filter_id=row_filter_id, kwargs=row_filter_record
+                )
+            except Exception as e:
+                raise ValueError(f"Failed to parse Row Filter with error:\n{e}\n")
         self._cache_db["row_filters"].upsert_all(
             unnest_object_to_list(row_filters_collection), pk="id", alter=True
         )
@@ -208,6 +221,11 @@ class DqConfigsCache:
         logger.debug(
             f"Loading 'rules' configs into cache:\n{pformat(rules_collection.keys())}"
         )
+        for rules_id, rules_record in rules_collection.items():
+            try:
+                dq_rule.DqRule.from_dict(rule_id=rules_id, kwargs=rules_record)
+            except Exception as e:
+                raise ValueError(f"Failed to parse Rule with error:\n{e}\n")
         self._cache_db["rules"].upsert_all(
             unnest_object_to_list(rules_collection), pk="id", alter=True
         )

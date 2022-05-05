@@ -55,6 +55,7 @@ class DqRuleBinding:
         rule_binding_id: str,
         kwargs: dict,
         default_configs: dict | None = None,
+        validate_uri: bool = True,
     ) -> DqRuleBinding:
         """
 
@@ -76,7 +77,9 @@ class DqRuleBinding:
             entity_uri = None
         if "entity_uri" in entity_config:
             parsed_entity_uri = EntityUri.from_uri(
-                entity_config["entity_uri"], default_configs=default_configs
+                entity_config["entity_uri"],
+                default_configs=default_configs,
+                validate_uri=validate_uri,
             )
             entity_id = parsed_entity_uri.get_entity_id()
             entity_uri = parsed_entity_uri

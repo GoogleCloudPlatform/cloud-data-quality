@@ -123,6 +123,38 @@ class TestCli:
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_cli_dry_run_invalid_configs_fail(
+        self,
+        runner,
+        tmp_path,
+        gcp_project_id,
+        gcp_bq_region,
+        gcp_bq_dataset
+    ):
+        try:
+            temp_dir = Path(tmp_path).joinpath("clouddq_test_cli_dry_run_invalid_configs_fail")
+            temp_dir.mkdir(parents=True)
+            configs_invalid = Path("tests").joinpath("resources", "configs_invalid.yml").absolute()
+            with working_directory(temp_dir):
+                args = [
+                    "ALL",
+                    f"{configs_invalid}",
+                    f"--gcp_project_id={gcp_project_id}",
+                    f"--gcp_bq_dataset_id={gcp_bq_dataset}",
+                    f"--gcp_region_id={gcp_bq_region}",
+                    "--dry_run",
+                    "--debug",
+                    "--skip_sql_validation"
+                    ]
+                result = runner.invoke(main, args)
+                logger.info(result.output)
+                assert result.exit_code == 1
+                error_message = (
+                    "must have defined value 'rule_ids' of type 'list'."
+                )
+                assert error_message in result.output
+        finally:
+            shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

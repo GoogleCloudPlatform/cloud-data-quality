@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """todo: add lib docstring."""
+from __future__ import annotations
+
 from pathlib import Path
 from pprint import pformat
 
@@ -35,7 +37,7 @@ from clouddq.utils import sha256_digest
 logger = logging.getLogger(__name__)
 
 
-def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
+def load_configs(configs_path: Path, configs_type: DqConfigType) -> dict:
 
     if configs_path.is_file():
         yaml_files = [configs_path]
@@ -60,7 +62,7 @@ def load_configs(configs_path: Path, configs_type: DqConfigType) -> typing.Dict:
     return all_configs
 
 
-def load_rule_bindings_config(configs_path: Path) -> typing.Dict:
+def load_rule_bindings_config(configs_path: Path) -> dict:
     return load_configs(configs_path, DqConfigType.RULE_BINDINGS)
 
 
@@ -68,15 +70,15 @@ def load_rule_dimensions_config(configs_path: Path) -> list:
     return load_configs(configs_path, DqConfigType.RULE_DIMENSIONS)
 
 
-def load_entities_config(configs_path: Path) -> typing.Dict:
+def load_entities_config(configs_path: Path) -> dict:
     return load_configs(configs_path, DqConfigType.ENTITIES)
 
 
-def load_rules_config(configs_path: Path) -> typing.Dict:
+def load_rules_config(configs_path: Path) -> dict:
     return load_configs(configs_path, DqConfigType.RULES)
 
 
-def load_row_filters_config(configs_path: Path) -> typing.Dict:
+def load_row_filters_config(configs_path: Path) -> dict:
     return load_configs(configs_path, DqConfigType.ROW_FILTERS)
 
 
@@ -93,15 +95,15 @@ def load_metadata_registry_default_configs(
 
 def create_rule_binding_view_model(
     rule_binding_id: str,
-    rule_binding_configs: typing.Dict,
+    rule_binding_configs: dict,
     dq_summary_table_name: str,
     environment: str,
     configs_cache: DqConfigsCache,
     dq_summary_table_exists: bool = False,
-    metadata: typing.Optional[typing.Dict] = None,
+    metadata: dict | None = None,
     debug: bool = False,
     progress_watermark: bool = True,
-    default_configs: typing.Optional[typing.Dict] = None,
+    default_configs: dict | None = None,
 ) -> str:
     template = load_jinja_template(
         template_path=Path("dbt", "macros", "create_rule_binding_view.sql")
@@ -162,22 +164,22 @@ def write_sql_string_as_dbt_model(
 
 def prepare_configs_from_rule_binding_id(
     rule_binding_id: str,
-    rule_binding_configs: typing.Dict,
+    rule_binding_configs: dict,
     dq_summary_table_name: str,
-    environment: typing.Optional[str],
+    environment: str | None,
     configs_cache: DqConfigsCache,
     dq_summary_table_exists: bool = False,
-    metadata: typing.Optional[typing.Dict] = None,
+    metadata: dict | None = None,
     progress_watermark: bool = True,
-    default_configs: typing.Optional[typing.Dict] = None,
-) -> typing.Dict:
+    default_configs: dict | None = None,
+) -> dict:
     rule_binding = DqRuleBinding.from_dict(
         rule_binding_id, rule_binding_configs, default_configs
     )
     resolved_rule_binding_configs = rule_binding.resolve_all_configs_to_dict(
         configs_cache=configs_cache,
     )
-    configs: typing.Dict[typing.Any, typing.Any] = {
+    configs: dict[typing.Any, typing.Any] = {
         "configs": dict(resolved_rule_binding_configs)
     }
     if environment:
