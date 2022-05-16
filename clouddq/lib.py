@@ -15,7 +15,6 @@
 """todo: add lib docstring."""
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
 from pprint import pformat
 
@@ -125,16 +124,10 @@ def create_rule_binding_view_model(
         high_watermark_filter_exists=high_watermark_filter_exists,
         bigquery_client=bigquery_client,
     )
-    # print("Incremental time fileter column")
-    # incremental_time_filter_column = configs['configs']['incremental_time_filter_column']
-    # print(incremental_time_filter_column)
-    # if incremental_time_filter_column:
-    #     high_watermark_filter_exists = True
     sql_string = template.render(configs)
     if debug:
         configs.update({"generated_sql_string": sql_string})
         logger.info(pformat(configs))
-    # configs.update({"high_watermark_filter_exists": high_watermark_filter_exists})
     return sql_string
 
 
@@ -266,19 +259,17 @@ def get_high_watermark_value(
         WHERE table_id = '{fully_qualified_table_name}'
         AND rule_binding_id = '{rule_binding_id}'
         AND progress_watermark IS TRUE ;"""
-    print(f"High watermark query is \n {query}")
+    logger.info(f"High watermark query is \n {query}")
     query_job = bigquery_client.execute_query(query_string=query).result()
     high_watermark_value = ""
     current_timestamp_value = ""
     for row in query_job:
         # Row values can be accessed by field name or index.
-        print(f"High watermark value is {row['high_watermark']}")
-        high_watermark_value = row["high_watermark"].strftime("%m/%d/%Y %H:%M:%S")
-        current_timestamp_value = row["current_timestamp_value"].strftime(
-            "%m/%d/%Y %H:%M:%S"
-        )
+        logger.info(f"High watermark value is {row['high_watermark']}")
+        high_watermark_value = row["high_watermark"]
+        current_timestamp_value = row["current_timestamp_value"]
     out_dict = {
         "high_watermark_value": high_watermark_value,
-        "current_timestamp": current_timestamp_value,
+        "current_timestamp_value": current_timestamp_value,
     }
     return out_dict

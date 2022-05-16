@@ -495,6 +495,8 @@ def main(  # noqa: C901
                 high_watermark_filter_exists=high_watermark_filter_exists,
                 bigquery_client=bigquery_client,
             )
+            print("sql string is ***")
+            print(sql_string)
             if not skip_sql_validation:
                 logger.debug(
                     f"Validating generated SQL code for rule binding "

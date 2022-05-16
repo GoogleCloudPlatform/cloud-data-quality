@@ -13,7 +13,7 @@
 -- limitations under the License.
 {% from 'macros.sql' import validate_simple_rule -%}
 {% from 'macros.sql' import validate_complex_rule -%}
-{%- macro create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -%}
+{%- macro create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value) -%}
 {% set rule_binding_id = configs.get('rule_binding_id') -%}
 {% set rule_configs_dict = configs.get('rule_configs_dict') -%}
 {% set filter_sql_expr = configs.get('row_filter_configs').get('filter_sql_expr') -%}
@@ -47,14 +47,6 @@
 WITH
 {%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists -%}
 {% set time_column_id = configs.get('incremental_time_filter_column') %}
-high_watermark_filter AS (
-    SELECT
-        IFNULL(MAX(execution_ts), TIMESTAMP("1970-01-01 00:00:00")) as high_watermark
-    FROM `{{ dq_summary_table_name }}`
-    WHERE table_id = '{{ fully_qualified_table_name }}'
-      AND rule_binding_id = '{{ rule_binding_id }}'
-      AND progress_watermark IS TRUE
-),
 {% endif %}
 zero_record AS (
     SELECT
@@ -67,10 +59,9 @@ data AS (
     FROM
       `{{- fully_qualified_table_name -}}` d
 {%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists %}
-      ,high_watermark_filter
     WHERE
       CAST(d.{{ time_column_id }} AS TIMESTAMP)
-          > high_watermark_filter.high_watermark
+          BETWEEN CAST('{{ high_watermark_value }}' AS TIMESTAMP) AND CAST('{{ current_timestamp_value }}' AS TIMESTAMP)
     AND
       {{ filter_sql_expr }}
 {% else %}
@@ -147,4 +138,4 @@ FROM
 
 {%- endmacro -%}
 
-{{-  create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists) -}}
+{{-  create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value) -}}
