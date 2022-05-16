@@ -16,7 +16,7 @@
 {%- macro create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value) -%}
 {% set rule_binding_id = configs.get('rule_binding_id') -%}
 {% set rule_configs_dict = configs.get('rule_configs_dict') -%}
-{% set filter_sql_expr = configs.get('row_filter_configs').get('filter_sql_expr') -%}
+{% set row_filter_configs = configs.get('row_filter_configs') -%}
 {% set column_name = configs.get('column_configs').get('name') -%}
 {% set entity_configs = configs.get('entity_configs') -%}
 {% set partition_fields = entity_configs.get('partition_fields')-%}
@@ -64,16 +64,20 @@ data AS (
       CAST(d.{{ time_column_id }} AS TIMESTAMP)
           BETWEEN CAST('{{ high_watermark_value }}' AS TIMESTAMP) AND CAST('{{ current_timestamp_value }}' AS TIMESTAMP)
     AND
-      {{ filter_sql_expr }}
-{% else %}
+{%- else %}
     WHERE
-      {{ filter_sql_expr }}
-{% endif -%}
+{%- endif %}
+      {%- for id, row_filter_config in row_filter_configs.items() %}
+        {{ row_filter_config.get('filter_sql_expr') -}} 
+        {%- if loop.nextitem is defined %}
+        AND
+        {%- endif -%}
+      {%- endfor %}
 {%- if partition_fields %}
     {% for field in partition_fields %}
         AND {{ field['name'] }} IS NOT NULL
     {%- endfor -%}
-{% endif -%}
+{%- endif -%}
 ),
 last_mod AS (
     SELECT

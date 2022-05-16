@@ -45,7 +45,7 @@ class DqRuleBinding:
     entity_id: str | None
     entity_uri: EntityUri | None
     column_id: str
-    row_filter_id: str
+    row_filter_ids: list
     incremental_time_filter_column_id: str | None
     rule_ids: list
     reference_columns_id: str | None
@@ -94,13 +94,14 @@ class DqRuleBinding:
         )
         if column_id:
             column_id.upper()
-        row_filter_id: str = get_from_dict_and_assert(
+        row_filter_ids: list[str] = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
-            key="row_filter_id",
+            key="row_filter_ids",
+            assertion=lambda x: type(x) == list,
+            error_msg=f"Rule Binding ID: '{rule_binding_id}' must have defined value "
+            f"'row_filter_ids' of type 'list'.",
         )
-        if row_filter_id:
-            row_filter_id.upper()
         rule_ids: list[str] = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
@@ -129,7 +130,7 @@ class DqRuleBinding:
             entity_id=entity_id,
             entity_uri=entity_uri,
             column_id=column_id,
-            row_filter_id=row_filter_id,
+            row_filter_ids=row_filter_ids,
             incremental_time_filter_column_id=incremental_time_filter_column_id,
             rule_ids=rule_ids,
             reference_columns_id=reference_columns_id,
@@ -156,7 +157,7 @@ class DqRuleBinding:
                     "entity_id": self.entity_id,
                     "entity_uri": entity_uri,
                     "column_id": self.column_id,
-                    "row_filter_id": self.row_filter_id,
+                    "row_filter_ids": self.row_filter_ids,
                     "incremental_time_filter_column_id": self.incremental_time_filter_column_id,  # noqa: E501
                     "rule_ids": self.rule_ids,
                     "reference_columns_id": self.reference_columns_id,
@@ -258,12 +259,35 @@ class DqRuleBinding:
         )
         return resolved_rule_config_list
 
-    def resolve_row_filter_config(
+    def resolve_row_filter_config_list(
         self: DqRuleBinding,
         configs_cache: dq_configs_cache.DqConfigsCache,
-    ) -> DqRowFilter:
-        row_filter = configs_cache.get_row_filter_id(self.row_filter_id.upper())
-        return row_filter
+    ) -> list[DqRowFilter]:
+        resolved_row_filter_config_list = []
+        for row_filter in self.row_filter_ids:
+            if type(row_filter) == dict:
+                if len(row_filter) > 1:
+                    raise ValueError(
+                        f"Rule Binding {self.rule_binding_id} has "
+                        f"invalid configs in rule_ids. "
+                        f"Each nested row_filter_id objects cannot "
+                        f"have more than one rule_id. "
+                        f"Current value: \n {row_filter}"
+                    )
+                else:
+                    row_filter_id = next(iter(row_filter))
+                    arguments = row_filter[row_filter_id]
+            else:
+                row_filter_id = row_filter
+                arguments = None
+            row_filter_config = configs_cache.get_row_filter_id(row_filter_id.upper())
+            row_filter_config.resolve_sql_expr(arguments)
+            resolved_row_filter_config_list.append(row_filter_config)
+        assert_not_none_or_empty(
+            resolved_row_filter_config_list,
+            "Rule Binding must have non-empty row_filter list.",
+        )
+        return resolved_row_filter_config_list
 
     def resolve_reference_columns_config(
         self: DqRuleBinding,
@@ -331,7 +355,8 @@ class DqRuleBinding:
                     rule_config["rule_sql_expr"] = rule_sql_expr
                     rule_configs_dict[rule_id] = rule_config
             # Resolve filter configs
-            row_filter_config = self.resolve_row_filter_config(configs_cache)
+            row_filters_configs = {row_filter.row_filter_id: row_filter.dict_values()
+                for row_filter in self.resolve_row_filter_config_list(configs_cache)}
             # resolve reference columns config
             if self.reference_columns_id:
                 include_reference_columns = self.resolve_reference_columns_config(
@@ -351,8 +376,8 @@ class DqRuleBinding:
                     "column_configs": dict(column_configs.dict_values()),
                     "rule_ids": list(self.rule_ids),
                     "rule_configs_dict": rule_configs_dict,
-                    "row_filter_id": self.row_filter_id,
-                    "row_filter_configs": dict(row_filter_config.dict_values()),
+                    "row_filter_ids": self.row_filter_ids,
+                    "row_filter_configs": row_filters_configs,
                     "incremental_time_filter_column": incremental_time_filter_column,
                     "metadata": self.metadata,
                 }
