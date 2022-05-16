@@ -278,8 +278,6 @@ class TestJinjaTemplates:
             high_watermark_filter_exists=False,
             bigquery_client=test_bigquery_client,
         )
-        print("####")
-        print(output)
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         output = re.sub(RE_HIGH_WATERMARK_TIMESTAMP, HIGH_WATERMARK_VALUE_REP, output)
         output = re.sub(RE_CURRENT_TIMESTAMP, CURRENT_TIMESTAMP_VALUE_REP, output)
