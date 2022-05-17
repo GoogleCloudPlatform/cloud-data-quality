@@ -94,14 +94,22 @@ class DqRuleBinding:
         )
         if column_id:
             column_id.upper()
-        row_filter_ids: list[str] = get_from_dict_and_assert(
+        row_filter_config: dict = get_keys_from_dict_and_assert_oneof(
             config_id=rule_binding_id,
             kwargs=kwargs,
-            key="row_filter_ids",
-            assertion=lambda x: type(x) == list,
-            error_msg=f"Rule Binding ID: '{rule_binding_id}' must have defined value "
-            f"'row_filter_ids' of type 'list'.",
+            keys=["row_filter_id", "row_filter_ids"]
         )
+        row_filter_ids = []
+        if "row_filter_id" in row_filter_config:
+            row_filter_ids.append(row_filter_config["row_filter_id"].upper())
+        if "row_filter_ids" in row_filter_config:            
+            for row_filter in row_filter_config["row_filter_ids"]:
+                if type(row_filter) == str:
+                    row_filter_ids.append(row_filter.upper())
+                if type(row_filter) == dict:
+                    row_filter_ids.extend(
+                        [id.upper() for id in row_filter]
+                    )
         rule_ids: list[str] = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
@@ -269,9 +277,9 @@ class DqRuleBinding:
                 if len(row_filter) > 1:
                     raise ValueError(
                         f"Rule Binding {self.rule_binding_id} has "
-                        f"invalid configs in rule_ids. "
+                        f"invalid configs in row_filter_ids. "
                         f"Each nested row_filter_id objects cannot "
-                        f"have more than one rule_id. "
+                        f"have more than one row_filter_id. "
                         f"Current value: \n {row_filter}"
                     )
                 else:
@@ -280,7 +288,7 @@ class DqRuleBinding:
             else:
                 row_filter_id = row_filter
                 arguments = None
-            row_filter_config = configs_cache.get_row_filter_id(row_filter_id.upper())
+            row_filter_config = configs_cache.get_row_filter_id(row_filter_id)
             row_filter_config.resolve_sql_expr(arguments)
             resolved_row_filter_config_list.append(row_filter_config)
         assert_not_none_or_empty(
