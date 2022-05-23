@@ -202,11 +202,10 @@ def prepare_configs_from_rule_binding_id(
         {"configs_hashsum": sha256_digest(json.dumps(resolved_rule_binding_configs))}
     )
     configs.update({"progress_watermark": progress_watermark})
-    print("Incremental time fileter column")
     incremental_time_filter_column = configs["configs"][
         "incremental_time_filter_column"
     ]
-    print(incremental_time_filter_column)
+    logger.debug(f"Incremental time filter column {incremental_time_filter_column}")
     if incremental_time_filter_column:
         high_watermark_filter_exists = True
         fully_qualified_table_name = (
@@ -220,8 +219,8 @@ def prepare_configs_from_rule_binding_id(
             dq_summary_table_name=dq_summary_table_name,
             bigquery_client=bigquery_client,
         )
-        configs.update({"high_watermark_filter_exists": high_watermark_filter_exists})
         configs.update(high_watermark_dict)
+    configs.update({"high_watermark_filter_exists": high_watermark_filter_exists})
     logger.debug(f"Prepared json configs for {rule_binding_id}:\n{pformat(configs)}")
     return configs
 
