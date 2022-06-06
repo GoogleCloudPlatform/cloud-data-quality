@@ -75,10 +75,11 @@
         ELSE COUNTIF(simple_rule_row_is_valid IS NULL) / rows_validated
       END
       AS null_percentage,
+      """select rule_binding_id, rule_id, table_id, column_id, dimension, column_value, skip_null_count, simple_rule_row_is_valid, complex_rule_validation_success_flag FROM {% raw -%}{{ ref('{%- endraw %}{{ rule_binding_id }}{% raw -%}') }}{%- endraw %} WHERE simple_rule_row_is_valid is False or complex_rule_validation_success_flag is false and DATE(execution_ts) = CAST(CURRENT_TIMESTAMP as DATE) order by rule_id;""" as failed_records_query,
   FROM
       {% raw -%}{{ ref('{%- endraw %}{{ rule_binding_id }}{% raw -%}') }}{%- endraw %}
   GROUP BY
-      1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+      1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,25
 
   {% if loop.nextitem is defined %}
   UNION ALL
