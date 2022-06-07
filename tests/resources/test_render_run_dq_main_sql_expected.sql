@@ -40,8 +40,8 @@ SELECT
     'NOT_NULL_SIMPLE' AS rule_id,
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    data.value AS column_value,
-
+--    data.value AS column_value,
+    data.* except(rule_binding_id),
     CAST(NULL AS STRING) AS dimension,
 
     CASE
@@ -70,8 +70,8 @@ SELECT
     'REGEX_VALID_EMAIL' AS rule_id,
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    data.value AS column_value,
-
+--    data.value AS column_value,
+    data.* except(rule_binding_id),
     CAST(NULL AS STRING) AS dimension,
 
     CASE
@@ -101,8 +101,8 @@ SELECT
     'CUSTOM_SQL_LENGTH_LE_30' AS rule_id,
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    data.value AS column_value,
-
+--    data.value AS column_value,
+    data.* except(rule_binding_id),
     CAST(NULL AS STRING) AS dimension,
 
     CASE
@@ -133,7 +133,8 @@ SELECT
     
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    data.value AS column_value,
+--    data.value AS column_value,
+    data.* except(rule_binding_id),
     CAST(NULL AS STRING) AS dimension,
     CASE
 
@@ -159,8 +160,8 @@ SELECT
     'NOT_BLANK' AS rule_id,
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    data.value AS column_value,
-
+--    data.value AS column_value,
+    data.* except(rule_binding_id),
     CAST(NULL AS STRING) AS dimension,
 
     CASE
@@ -185,17 +186,18 @@ SELECT
 ),
 all_validation_results AS (
   SELECT
-    r.execution_ts AS execution_ts,
-    r.rule_binding_id AS rule_binding_id,
-    r.rule_id AS rule_id,
-    r.table_id AS table_id,
-    r.column_id AS column_id,
-    CAST(r.dimension AS STRING) AS dimension,
-    r.skip_null_count AS skip_null_count,
-    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
-    r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
-    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-    r.column_value AS column_value,
+--    r.execution_ts AS execution_ts,
+--    r.rule_binding_id AS rule_binding_id,
+--    r.rule_id AS rule_id,
+--    r.table_id AS table_id,
+--    r.column_id AS column_id,
+--    CAST(r.dimension AS STRING) AS dimension,
+--    r.skip_null_count AS skip_null_count,
+--    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
+--    r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+--    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+--    r.column_value AS column_value,
+    r.*,
     (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{"brand": "one"}' AS metadata_json_string,

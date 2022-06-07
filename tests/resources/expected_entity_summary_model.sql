@@ -69,7 +69,7 @@ SELECT
         ELSE COUNTIF(simple_rule_row_is_valid IS NULL) / rows_validated
     END
     AS null_percentage,
-    """select rule_binding_id, rule_id, table_id, column_id, dimension, column_value, skip_null_count, simple_rule_row_is_valid, complex_rule_validation_success_flag FROM {{ ref('rule_binding_id_1') }} WHERE simple_rule_row_is_valid is False or complex_rule_validation_success_flag is false and DATE(execution_ts) = CAST(CURRENT_TIMESTAMP as DATE) order by rule_id;""" as failed_records_query,
+    """select * except(last_modified, metadata_json_string, configs_hashsum, dataplex_lake, dataplex_zone, dataplex_asset_id, dq_run_id, progress_watermark, rows_validated) FROM {{ ref('rule_binding_id_1') }} WHERE simple_rule_row_is_valid is False or complex_rule_validation_success_flag is False and DATE(execution_ts) = CAST(CURRENT_TIMESTAMP as DATE) order by rule_id;""" as failed_records_query,
 FROM
     {{ ref('rule_binding_id_1') }}
 GROUP BY
@@ -132,7 +132,7 @@ SELECT
         ELSE COUNTIF(simple_rule_row_is_valid IS NULL) / rows_validated
     END
     AS null_percentage,
-    """select rule_binding_id, rule_id, table_id, column_id, dimension, column_value, skip_null_count, simple_rule_row_is_valid, complex_rule_validation_success_flag FROM {{ ref('rule_binding_id_2') }} WHERE simple_rule_row_is_valid is False or complex_rule_validation_success_flag is false and DATE(execution_ts) = CAST(CURRENT_TIMESTAMP as DATE) order by rule_id;""" as failed_records_query,
+    """select * except(last_modified, metadata_json_string, configs_hashsum, dataplex_lake, dataplex_zone, dataplex_asset_id, dq_run_id, progress_watermark, rows_validated) FROM {{ ref('rule_binding_id_2') }} WHERE simple_rule_row_is_valid is False or complex_rule_validation_success_flag is False and DATE(execution_ts) = CAST(CURRENT_TIMESTAMP as DATE) order by rule_id;""" as failed_records_query,
 FROM
     {{ ref('rule_binding_id_2') }}
 GROUP BY

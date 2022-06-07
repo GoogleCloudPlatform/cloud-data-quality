@@ -19,7 +19,8 @@
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
-    data.{{ column_name }} AS column_value,
+--    data.{{ column_name }} AS column_value,
+    data.* except(rule_binding_id),
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
@@ -57,7 +58,8 @@
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     CAST(NULL AS STRING) AS column_id,
-    NULL AS column_value,
+--    NULL AS column_value,
+    data.* except(rule_binding_id),
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
@@ -73,6 +75,10 @@
     END AS complex_rule_validation_success_flag,
   FROM
     zero_record
+  LEFT JOIN
+    data
+  ON
+    zero_record.rule_binding_id = data.rule_binding_id
   LEFT JOIN
     (
       SELECT 
