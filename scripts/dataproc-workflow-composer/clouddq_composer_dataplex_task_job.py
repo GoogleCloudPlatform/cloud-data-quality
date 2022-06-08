@@ -18,25 +18,25 @@ import json
 import requests
 import time
 
-DATAPLEX_PROJECT_ID = "dataplex-clouddq"  # The Google Cloud Project where the Dataplex task will be created
-DATAPLEX_REGION = "us-central1"  # The region of the Dataplex Lake where the data quality task will be created.
-DATAPLEX_LAKE_ID = "amandeep-dev-lake"  # dataplex lake id
-SERVICE_ACC = "168141520116-compute@developer.gserviceaccount.com"  # The service account used for executing the task. Ensure this service account has sufficient IAM permissions on your project including BigQuery Data Editor, BigQuery Job User, Dataplex Editor, Dataproc Worker, Service Usage Consumer
+DATAPLEX_PROJECT_ID = "your-dataplex-project-id"  # The Google Cloud Project where the Dataplex task will be created
+DATAPLEX_REGION = "your-dataplex-region-id"  # The region of the Dataplex Lake where the data quality task will be created.
+DATAPLEX_LAKE_ID = "your-dataplex-lake-id"  # dataplex lake id
+SERVICE_ACC = "service-account-to-execute-task"  # The service account used for executing the task. Ensure this service account has sufficient IAM permissions on your project including BigQuery Data Editor, BigQuery Job User, Dataplex Editor, Dataproc Worker, Service Usage Consumer
 SPARK_FILE_FULL_PATH = f"gs://dataplex-clouddq-artifacts-us-central1/clouddq_pyspark_driver.py"
+PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME = "your-public-bucket-with-clouddq-executable-and-hashsum" #Public Cloud Storage bucket containing the prebuilt data quality executable artifact and hashsum. There is one bucket per GCP region.
 # Public Cloud Storage bucket containing the driver code for executing data quality job. There is one bucket per GCP region.
-CLOUDDQ_EXECUTABLE_FILE_PATH = "gs://dataplex-clouddq-artifacts-us-central1/clouddq-executable.zip"  # Public Cloud Storage bucket containing the prebuilt data quality executable artifact. There is one bucket per GCP region.
-CLOUDDQ_EXECUTABLE_HASHSUM_FILE_PATH = "gs://dataplex-clouddq-artifacts-us-central1/clouddq-executable.zip.hashsum"
-# Public Cloud Storage bucket containing the prebuilt data quality executable artifact hashsum. There is one bucket per GCP region.
-CONFIGS_PATH = "gs://dataplex-clouddq-api-integration/clouddq-configs-updated.zip"  # The Cloud Storage path to your data quality YAML configurations input to the data quality task. You can have a single yaml file in .yml or yaml format or a .zip archive containing multiple YAML files.
-DATAPLEX_TASK_ID = "clouddq-composer-test-task"  # The unique identifier for the task
+CLOUDDQ_EXECUTABLE_FILE_PATH = f"gs://{PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME}-{DATAPLEX_REGION}/clouddq-executable.zip" # The Cloud Storage path containing the prebuilt data quality executable artifact. There is one bucket per GCP region.
+CLOUDDQ_EXECUTABLE_HASHSUM_FILE_PATH = f"gs://{PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME}-{DATAPLEX_REGION}/clouddq-executable.zip.hashsum" # The Cloud Storage path containing the prebuilt data quality executable artifact hashsum. There is one bucket per GCP region.
+CONFIGS_BUCKET_NAME = "your-gcs-configs-bucket" # The gcs bucket to store data quality YAML configurations input to the data quality task. You can have a single yaml file in .yml or yaml format or a .zip archive containing multiple YAML files.
+CONFIGS_PATH = f"gs://{CONFIGS_BUCKET_NAME}/clouddq-configs-updated.zip"  # The Cloud Storage path to your data quality YAML configurations input to the data quality task. You can have a single yaml file in .yml or yaml format or a .zip archive containing multiple YAML files.
+DATAPLEX_TASK_ID = "your-dq-dataplex-task-id"  # The unique identifier for the task
 TRIGGER_SPEC_TYPE = "ON_DEMAND"  # Trigger type for the job
-DATAPLEX_ENDPOINT = 'https://dataplex.googleapis.com'
-GCP_PROJECT_ID = "dataplex-clouddq"  # The Google Cloud Project where the BQ jobs will be created
-GCP_BQ_DATASET_ID = "spark_dq_summary_dataset"  # The BigQuery dataset used for storing the intermediate data quality summary results and the BigQuery views associated with each rule binding
-TARGET_BQ_DATASET = "spark_dq_summary_dataset"  # The BigQuery dataset where the final results of the data quality checks are stored. This could be the same as GCP_BQ_DATASET_ID.
-TARGET_BQ_TABLE = "test_target_table"  # The BigQuery table where the final results of the data quality checks are stored.
-GCP_BQ_REGION = "us-central1"  # GCP BQ region where the data is stored
-FULL_TARGET_TABLE_NAME = f"{GCP_PROJECT_ID}.{TARGET_BQ_DATASET}.{TARGET_BQ_TABLE}"  # The BigQuery table where the final results of the data quality checks are stored.
+DATAPLEX_ENDPOINT = 'https://dataplex.googleapis.com' # dataplex endpoint
+GCP_PROJECT_ID = "your-gcp-project-id"  # The Google Cloud Project where the BQ jobs will be created
+GCP_BQ_DATASET_ID = "your-gcp-bq-dataset-id"  # The BigQuery dataset used for storing the intermediate data quality summary results and the BigQuery views associated with each rule binding
+TARGET_BQ_TABLE = "your-target-table-name"  # The BigQuery table where the final results of the data quality checks are stored.
+GCP_BQ_REGION = "your-gcp-region-id"  # GCP BQ region where the data is stored
+FULL_TARGET_TABLE_NAME = f"{GCP_PROJECT_ID}.{GCP_BQ_DATASET_ID}.{TARGET_BQ_TABLE}"  # The BigQuery table where the final results of the data quality checks are stored.
 
 EXAMPLE_TASK_BODY = {
     "spark": {
