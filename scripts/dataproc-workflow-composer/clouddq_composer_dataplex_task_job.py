@@ -22,8 +22,8 @@ DATAPLEX_PROJECT_ID = "your-dataplex-project-id"  # The Google Cloud Project whe
 DATAPLEX_REGION = "your-dataplex-region-id"  # The region of the Dataplex Lake where the data quality task will be created.
 DATAPLEX_LAKE_ID = "your-dataplex-lake-id"  # dataplex lake id
 SERVICE_ACC = "service-account-to-execute-task"  # The service account used for executing the task. Ensure this service account has sufficient IAM permissions on your project including BigQuery Data Editor, BigQuery Job User, Dataplex Editor, Dataproc Worker, Service Usage Consumer
-SPARK_FILE_FULL_PATH = f"gs://dataplex-clouddq-artifacts-us-central1/clouddq_pyspark_driver.py"
 PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME = "your-public-bucket-with-clouddq-executable-and-hashsum" #Public Cloud Storage bucket containing the prebuilt data quality executable artifact and hashsum. There is one bucket per GCP region.
+SPARK_FILE_FULL_PATH = f"gs://{PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME}-{DATAPLEX_REGION}/clouddq_pyspark_driver.py"
 # Public Cloud Storage bucket containing the driver code for executing data quality job. There is one bucket per GCP region.
 CLOUDDQ_EXECUTABLE_FILE_PATH = f"gs://{PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME}-{DATAPLEX_REGION}/clouddq-executable.zip" # The Cloud Storage path containing the prebuilt data quality executable artifact. There is one bucket per GCP region.
 CLOUDDQ_EXECUTABLE_HASHSUM_FILE_PATH = f"gs://{PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME}-{DATAPLEX_REGION}/clouddq-executable.zip.hashsum" # The Cloud Storage path containing the prebuilt data quality executable artifact hashsum. There is one bucket per GCP region.
