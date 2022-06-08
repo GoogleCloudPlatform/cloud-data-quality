@@ -26,6 +26,7 @@
 {% set instance_name = entity_configs.get('instance_name') -%}
 {% set database_name = entity_configs.get('database_name') -%}
 {% set table_name = entity_configs.get('table_name') -%}
+{% set reference_cols =  configs.get('reference_cols') -%}
 {% set incremental_time_filter_column_id = configs.get('incremental_time_filter_column_id') %}
 {% if environment and entity_configs.get('environment_override') -%}
   {% set env_override = entity_configs.get('environment_override') %}
@@ -93,9 +94,9 @@ validation_results AS (
 
 {% for rule_id, rule_configs in rule_configs_dict.items() %}
     {%- if rule_configs.get('rule_type') == "CUSTOM_SQL_STATEMENT" -%}
-      {{ validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name) }}
+      {{ validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, reference_cols) }}
     {%- else -%}
-      {{ validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name) }}
+      {{ validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, reference_cols) }}
     {%- endif -%}
     {% if loop.nextitem is defined %}
     UNION ALL
@@ -104,18 +105,19 @@ validation_results AS (
 ),
 all_validation_results AS (
   SELECT
---    r.execution_ts AS execution_ts,
---    r.rule_binding_id AS rule_binding_id,
---    r.rule_id AS rule_id,
---    r.table_id AS table_id,
---    r.column_id AS column_id,
---    CAST(r.dimension AS STRING) AS dimension,
---    r.skip_null_count AS skip_null_count,
---    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
---    r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
---    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
---    r.column_value AS column_value,
-     r.*,
+    r.execution_ts AS execution_ts,
+    r.rule_binding_id AS rule_binding_id,
+    r.rule_id AS rule_id,
+    r.table_id AS table_id,
+    r.column_id AS column_id,
+    CAST(r.dimension AS STRING) AS dimension,
+    r.skip_null_count AS skip_null_count,
+    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
+    r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+    {% for ref_column_name in reference_cols %}
+        r.{{ref_column_name}} as {{ref_column_name}},
+    {%- endfor -%}
     (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{{ metadata|tojson }}' AS metadata_json_string,

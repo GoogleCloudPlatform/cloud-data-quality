@@ -47,6 +47,7 @@ class DqRuleBinding:
     row_filter_id: str
     incremental_time_filter_column_id: str | None
     rule_ids: list
+    reference_cols: list
     metadata: dict | None
 
     @classmethod
@@ -107,6 +108,14 @@ class DqRuleBinding:
             error_msg=f"Rule Binding ID: '{rule_binding_id}' must have defined value "
             f"'rule_ids' of type 'list'.",
         )
+        reference_cols: list[str] = get_from_dict_and_assert(
+            config_id=rule_binding_id,
+            kwargs=kwargs,
+            key="reference_cols",
+            assertion=lambda x: type(x) == list,
+            error_msg=f"Rule Binding ID: '{rule_binding_id}' must have defined value "
+            f"'reference_cols' of type 'list'.",
+        )
         incremental_time_filter_column_id: str | None = kwargs.get(
             "incremental_time_filter_column_id", None
         )
@@ -127,6 +136,7 @@ class DqRuleBinding:
             row_filter_id=row_filter_id,
             incremental_time_filter_column_id=incremental_time_filter_column_id,
             rule_ids=rule_ids,
+            reference_cols=reference_cols,
             metadata=metadata,
         )
 
@@ -153,6 +163,7 @@ class DqRuleBinding:
                     "row_filter_id": self.row_filter_id,
                     "incremental_time_filter_column_id": self.incremental_time_filter_column_id,  # noqa: E501
                     "rule_ids": self.rule_ids,
+                    "reference_cols": self.reference_cols,
                     "metadata": self.metadata,
                 }
             }
@@ -322,6 +333,7 @@ class DqRuleBinding:
                     "entity_id": self.entity_id,
                     "entity_configs": dict(table_entity.dict_values()),
                     "column_id": self.column_id,
+                    "reference_cols": list(self.reference_cols),
                     "column_configs": dict(column_configs.dict_values()),
                     "rule_ids": list(self.rule_ids),
                     "rule_configs_dict": rule_configs_dict,

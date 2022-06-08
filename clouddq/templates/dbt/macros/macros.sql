@@ -12,15 +12,16 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-{% macro validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name ) -%}
+{% macro validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, reference_cols ) -%}
   SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     '{{ rule_binding_id }}' AS rule_binding_id,
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
---    data.{{ column_name }} AS column_value,
-    data.* except(rule_binding_id),
+    {% for ref_column_name in reference_cols %}
+        data.{{ref_column_name}} as {{ref_column_name}},
+    {%- endfor -%}
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
@@ -51,15 +52,16 @@
     zero_record.rule_binding_id = data.rule_binding_id
 {% endmacro -%}
 
-{% macro validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name ) -%}
+{% macro validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, reference_cols ) -%}
   SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     '{{ rule_binding_id }}' AS rule_binding_id,
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     CAST(NULL AS STRING) AS column_id,
---    NULL AS column_value,
-    data.* except(rule_binding_id),
+    {% for ref_column_name in reference_cols %}
+        data.{{ref_column_name}} as {{ref_column_name}},
+    {%- endfor -%}
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
