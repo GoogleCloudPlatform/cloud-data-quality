@@ -104,7 +104,7 @@ def create_rule_binding_view_model(
     debug: bool = False,
     progress_watermark: bool = True,
     default_configs: dict | None = None,
-) -> str:
+) -> tuple:
     template = load_jinja_template(
         template_path=Path("dbt", "macros", "create_rule_binding_view.sql")
     )
@@ -123,7 +123,7 @@ def create_rule_binding_view_model(
     if debug:
         configs.update({"generated_sql_string": sql_string})
         logger.info(pformat(configs))
-    return sql_string
+    return sql_string, configs
 
 
 def create_entity_summary_model(
@@ -131,6 +131,7 @@ def create_entity_summary_model(
     entity_target_rule_binding_configs: dict,
     gcp_project_id: str,
     gcp_bq_dataset_id: str,
+    dq_rule_binding_configs_dict: dict,
     debug: bool = False,
 ) -> str:
     if debug:
@@ -146,6 +147,7 @@ def create_entity_summary_model(
         "entity_target_rule_binding_configs": entity_target_rule_binding_configs,
         "gcp_project_id": gcp_project_id,
         "gcp_bq_dataset_id": gcp_bq_dataset_id,
+        "rule_binding_configs": dq_rule_binding_configs_dict,
     }
     sql_string = template.render(configs)
     if debug:

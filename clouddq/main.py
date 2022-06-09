@@ -32,6 +32,7 @@ from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
+from clouddq.lib import prepare_configs_from_rule_binding_id
 from clouddq.log import JsonEncoderDatetime
 from clouddq.log import add_cloud_logging_handler
 from clouddq.log import get_json_logger
@@ -462,6 +463,7 @@ def main(  # noqa: C901
                 target_rule_binding_ids=target_rule_binding_ids,
             )
         )
+        dq_rule_binding_configs_dict = None
         # Create Rule_binding views
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
@@ -478,7 +480,7 @@ def main(  # noqa: C901
                 logger.debug(
                     f"Rule binding config json:\n{pformat(rule_binding_configs)}"
                 )
-            sql_string = lib.create_rule_binding_view_model(
+            sql_string, dq_rule_binding_configs_dict = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name=dq_summary_table_name,
@@ -522,12 +524,15 @@ def main(  # noqa: C901
                 rule_binding_ids_list,
                 f"Internal Error: no rule_binding_id found for entity_table_id {entity_table_id}.",
             )
+            print("***testing***")
+            print(dq_rule_binding_configs_dict)
             sql_string = lib.create_entity_summary_model(
                 entity_table_id=entity_table_id,
                 entity_target_rule_binding_configs=entity_configs_dict,
                 gcp_project_id=gcp_project_id,
                 gcp_bq_dataset_id=gcp_bq_dataset_id,
                 debug=print_sql_queries,
+                dq_rule_binding_configs_dict=dq_rule_binding_configs_dict,
             )
             logger.debug(
                 f"*** Writing sql to {dbt_entity_summary_path.absolute()}/"
