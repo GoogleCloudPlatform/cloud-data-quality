@@ -411,6 +411,7 @@ def main(  # noqa: C901
         configs_path = Path(rule_binding_config_path)
         logger.debug(f"Loading rule bindings from: {configs_path.absolute()}")
         all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
+        print(all_rule_bindings)
         # Prepare list of Rule Bindings in-scope for run
         target_rule_binding_ids = [
             r.strip().upper() for r in rule_binding_ids.split(",")
@@ -478,6 +479,8 @@ def main(  # noqa: C901
                 logger.debug(
                     f"Rule binding config json:\n{pformat(rule_binding_configs)}"
                 )
+            high_watermark_filter_exists = False
+
             sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
@@ -489,7 +492,11 @@ def main(  # noqa: C901
                 progress_watermark=progress_watermark,
                 default_configs=dataplex_registry_defaults,
                 dq_summary_table_exists=dq_summary_table_exists,
+                high_watermark_filter_exists=high_watermark_filter_exists,
+                bigquery_client=bigquery_client,
             )
+            print("sql string is ***")
+            print(sql_string)
             if not skip_sql_validation:
                 logger.debug(
                     f"Validating generated SQL code for rule binding "

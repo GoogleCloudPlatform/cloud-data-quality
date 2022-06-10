@@ -13,15 +13,6 @@
 -- limitations under the License.
 
 WITH
-high_watermark_filter AS (
-    SELECT
-        IFNULL(MAX(execution_ts), TIMESTAMP("1970-01-01 00:00:00")) as high_watermark
-    FROM `<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary`
-    WHERE table_id = '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details'
-      AND rule_binding_id = 'T1_DQ_1_VALUE_NOT_NULL'
-      AND progress_watermark IS TRUE
-),
-
 zero_record AS (
     SELECT
         'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
@@ -32,10 +23,9 @@ data AS (
       'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
     FROM
       `<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details` d
-      ,high_watermark_filter
     WHERE
       CAST(d.ts AS TIMESTAMP)
-          > high_watermark_filter.high_watermark
+        BETWEEN CAST(HIGH_WATERMARK_VALUE AS TIMESTAMP) AND CAST(CURRENT_TIMESTAMP_VALUE AS TIMESTAMP)
     AND
       True
 ),
