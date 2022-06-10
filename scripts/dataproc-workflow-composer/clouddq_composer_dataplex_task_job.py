@@ -21,10 +21,7 @@ from airflow.operators.python import BranchPythonOperator
 from airflow.providers.google.cloud.operators.dataplex import (
     DataplexCreateTaskOperator,
     DataplexDeleteTaskOperator,
-    DataplexGetTaskOperator,
-    DataplexListTasksOperator,
 )
-from airflow.providers.google.cloud.sensors.dataplex import DataplexTaskStateSensor
 
 import google.auth
 from requests_oauth2 import OAuth2BearerToken
@@ -36,7 +33,7 @@ DATAPLEX_PROJECT_ID = "your-dataplex-project-id"  # The Google Cloud Project whe
 DATAPLEX_REGION = "your-dataplex-region-id"  # The region of the Dataplex Lake where the data quality task will be created.
 DATAPLEX_LAKE_ID = "your-dataplex-lake-id"  # dataplex lake id
 SERVICE_ACC = "service-account-to-execute-task"  # The service account used for executing the task. Ensure this service account has sufficient IAM permissions on your project including BigQuery Data Editor, BigQuery Job User, Dataplex Editor, Dataproc Worker, Service Usage Consumer
-PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME = "your-public-bucket-with-clouddq-executable-and-hashsum" #Public Cloud Storage bucket containing the prebuilt data quality executable artifact and hashsum. There is one bucket per GCP region.
+PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME = "your-public-bucket-with-clouddq-executable-and-hashsum" # Public Cloud Storage bucket containing the prebuilt data quality executable artifact and hashsum. There is one bucket per GCP region.
 SPARK_FILE_FULL_PATH = f"gs://{PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME}-{DATAPLEX_REGION}/clouddq_pyspark_driver.py"
 # Public Cloud Storage bucket containing the driver code for executing data quality job. There is one bucket per GCP region.
 CLOUDDQ_EXECUTABLE_FILE_PATH = f"gs://{PUBLIC_CLOUDDQ_EXECUTABLE_BUCKET_NAME}-{DATAPLEX_REGION}/clouddq-executable.zip" # The Cloud Storage path containing the prebuilt data quality executable artifact. There is one bucket per GCP region.
@@ -106,12 +103,8 @@ def get_session_headers() -> tuple:
     # getting request object
     auth_req = google.auth.transport.requests.Request()
 
-    print(credentials.valid)  # logger.debugs False
     credentials.refresh(auth_req)  # refresh token
-    # cehck for valid credentials
-    print(credentials.valid)  # logger.debugs True
     auth_token = credentials.token
-    print(auth_token)
 
     headers = {
         'Accept': 'application/json',
@@ -158,7 +151,8 @@ def _get_dataplex_job_state() -> str:
     Returns: str
     """
     task_status = get_clouddq_task_status()
-    while (task_status != 'SUCCEEDED' and task_status != 'FAILED'):
+    while (task_status != 'SUCCEEDED' and task_status != 'FAILED' and task_status != 'CANCELLED'
+           and task_status != 'ABORTED'):
         print(time.ctime())
         time.sleep(30)
         task_status = get_clouddq_task_status()
