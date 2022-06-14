@@ -102,6 +102,7 @@ class TestDataplexMetadataUriTemplates:
         test_default_dataplex_configs_cache,
         test_resources,
         test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_4.items():
@@ -116,6 +117,9 @@ class TestDataplexMetadataUriTemplates:
                 metadata=metadata,
                 configs_cache=test_default_dataplex_configs_cache,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                dq_summary_table_exists=False,
+                high_watermark_filter_exists=False,
+                bigquery_client=test_bigquery_client,
             )
             logger.info(pformat(json.dumps(configs["configs"])))
 
@@ -150,6 +154,7 @@ class TestDataplexMetadataUriTemplates:
         test_dataplex_metadata_defaults_configs,
         gcp_dataplex_zone_id,
         gcp_dataplex_lake_name,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_4.items():
@@ -163,6 +168,7 @@ class TestDataplexMetadataUriTemplates:
                 environment="DEV",
                 debug=True,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                bigquery_client=test_bigquery_client,
             )
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
@@ -208,6 +214,7 @@ class TestDataplexMetadataUriTemplates:
             test_default_dataplex_configs_cache_from_file,
             test_resources,
             test_dataplex_metadata_defaults_configs,
+            test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
@@ -221,6 +228,9 @@ class TestDataplexMetadataUriTemplates:
                 metadata=metadata,
                 configs_cache=test_default_dataplex_configs_cache_from_file,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                dq_summary_table_exists=False,
+                high_watermark_filter_exists=False,
+                bigquery_client=test_bigquery_client,
             )
             logger.info(pformat(json.dumps(configs["configs"])))
 
@@ -254,7 +264,8 @@ class TestDataplexMetadataUriTemplates:
         gcp_bq_dataset,
         test_dataplex_metadata_defaults_configs,
         gcp_dataplex_zone_id,
-        gcp_dataplex_lake_name
+        gcp_dataplex_lake_name,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
@@ -269,6 +280,7 @@ class TestDataplexMetadataUriTemplates:
                 environment="DEV",
                 debug=True,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                bigquery_client=test_bigquery_client,
             )
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
@@ -315,6 +327,7 @@ class TestDataplexMetadataUriTemplates:
         test_default_dataplex_configs_cache,
         test_resources,
         test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_5.items():
@@ -329,6 +342,9 @@ class TestDataplexMetadataUriTemplates:
                 metadata=metadata,
                 configs_cache=test_default_dataplex_configs_cache,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                dq_summary_table_exists=False,
+                high_watermark_filter_exists=False,
+                bigquery_client=test_bigquery_client,
             )
             logger.info(pformat(json.dumps(configs["configs"])))
 
@@ -361,6 +377,7 @@ class TestDataplexMetadataUriTemplates:
         test_dataplex_metadata_defaults_configs,
         gcp_dataplex_zone_id,
         gcp_dataplex_lake_name,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_5.items():
@@ -375,6 +392,7 @@ class TestDataplexMetadataUriTemplates:
                 environment="DEV",
                 debug=True,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                bigquery_client=test_bigquery_client,
             )
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_zone_id.replace('-', '_'), "<your_dataplex_zone_name>")\
@@ -393,6 +411,7 @@ class TestDataplexMetadataUriTemplates:
         test_default_dataplex_configs_cache,
         test_resources,
         test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_6.items():
@@ -407,6 +426,9 @@ class TestDataplexMetadataUriTemplates:
                 metadata=metadata,
                 configs_cache=test_default_dataplex_configs_cache,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                dq_summary_table_exists=False,
+                high_watermark_filter_exists=False,
+                bigquery_client=test_bigquery_client,
             )
             logger.info(pformat(json.dumps(configs["configs"])))
 
@@ -439,6 +461,7 @@ class TestDataplexMetadataUriTemplates:
         test_dataplex_metadata_defaults_configs,
         gcp_dataplex_zone_id,
         gcp_dataplex_lake_name,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_6.items():
@@ -453,6 +476,7 @@ class TestDataplexMetadataUriTemplates:
                 environment="DEV",
                 debug=True,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                bigquery_client=test_bigquery_client,
             )
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_zone_id.replace('-', '_'), "<your_dataplex_zone_name>")\
@@ -471,6 +495,7 @@ class TestDataplexMetadataUriTemplates:
         test_default_dataplex_configs_cache,
         test_resources,
         test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_7.items():
@@ -485,6 +510,9 @@ class TestDataplexMetadataUriTemplates:
                 metadata=metadata,
                 configs_cache=test_default_dataplex_configs_cache,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                dq_summary_table_exists=False,
+                high_watermark_filter_exists=False,
+                bigquery_client=test_bigquery_client,
             )
             logger.info(pformat(json.dumps(configs["configs"])))
             print(configs)
@@ -513,6 +541,7 @@ class TestDataplexMetadataUriTemplates:
         gcp_dataplex_lake_name,
         gcp_dataplex_bigquery_dataset_id,
         gcp_bq_dataset,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_7.items():
@@ -527,6 +556,7 @@ class TestDataplexMetadataUriTemplates:
                 environment="DEV",
                 debug=True,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                bigquery_client=test_bigquery_client,
             )
             print(output)
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
@@ -545,6 +575,7 @@ class TestDataplexMetadataUriTemplates:
         test_default_dataplex_configs_cache,
         test_resources,
         test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_8.items():
@@ -562,6 +593,9 @@ class TestDataplexMetadataUriTemplates:
                 metadata=metadata,
                 configs_cache=test_default_dataplex_configs_cache,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                dq_summary_table_exists=False,
+                high_watermark_filter_exists=False,
+                bigquery_client=test_bigquery_client,
             )
             logger.info(pformat(json.dumps(configs["configs"])))
             print(configs)
@@ -590,6 +624,7 @@ class TestDataplexMetadataUriTemplates:
         gcp_dataplex_lake_name,
         gcp_dataplex_bigquery_dataset_id,
         gcp_bq_dataset,
+        test_bigquery_client,
     ):
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_8.items():
@@ -609,6 +644,7 @@ class TestDataplexMetadataUriTemplates:
                 environment="DEV",
                 debug=True,
                 default_configs=test_dataplex_metadata_defaults_configs,
+                bigquery_client=test_bigquery_client,
             )
             print(output)
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\

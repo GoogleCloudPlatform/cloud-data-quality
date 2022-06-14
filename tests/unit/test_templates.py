@@ -34,6 +34,10 @@ logger = logging.getLogger(__name__)
 RE_NEWLINES = r"(\n( )*)+"
 RE_CONFIGS_HASHSUM = r"'[\w\d]+' AS configs_hashsum,"
 CONFIGS_HASHSUM_REP = "'' AS configs_hashsum,"
+RE_HIGH_WATERMARK_TIMESTAMP = r"'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}:\d{2}' AS TIMESTAMP"
+HIGH_WATERMARK_VALUE_REP = "HIGH_WATERMARK_VALUE AS TIMESTAMP"
+RE_CURRENT_TIMESTAMP = r"'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\d{2}' AS TIMESTAMP"
+CURRENT_TIMESTAMP_VALUE_REP = "CURRENT_TIMESTAMP_VALUE AS TIMESTAMP"
 
 
 class TestJinjaTemplates:
@@ -152,7 +156,8 @@ class TestJinjaTemplates:
         self,
         test_rule_bindings_collection_team_2,
         test_configs_cache,
-        test_resources
+        test_resources,
+        test_bigquery_client,
     ):
         """
 
@@ -179,6 +184,8 @@ class TestJinjaTemplates:
             configs_cache=test_configs_cache,
             environment="DEV",
             debug=True,
+            high_watermark_filter_exists=False,
+            bigquery_client=test_bigquery_client,
         )
         output = re.sub(RE_NEWLINES, '\n', output).strip()
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
@@ -190,6 +197,7 @@ class TestJinjaTemplates:
         test_rule_bindings_collection_team_2,
         test_configs_cache,
         test_resources,
+        test_bigquery_client,
     ):
         """
 
@@ -216,6 +224,8 @@ class TestJinjaTemplates:
             configs_cache=test_configs_cache,
             environment="TEST",
             debug=True,
+            high_watermark_filter_exists=False,
+            bigquery_client=test_bigquery_client,
         )
         expected = expected.replace(
             "<your_gcp_project_id>.<your_bigquery_dataset_id>", "<your_gcp_project_id_2>.<your_bigquery_dataset_id_2>"
@@ -232,7 +242,10 @@ class TestJinjaTemplates:
         self,
         test_rule_bindings_collection_team_1,
         test_configs_cache,
-        test_resources
+        test_resources,
+        gcp_project_id,
+        gcp_bq_dataset,
+        test_bigquery_client,
     ):
         """
 
@@ -257,13 +270,17 @@ class TestJinjaTemplates:
         output = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
-            dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
+            dq_summary_table_name=f"{gcp_project_id}.{gcp_bq_dataset}.dq_summary",
             configs_cache=test_configs_cache,
             environment="DEV",
             debug=True,
             dq_summary_table_exists=True,
+            high_watermark_filter_exists=False,
+            bigquery_client=test_bigquery_client,
         )
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
+        output = re.sub(RE_HIGH_WATERMARK_TIMESTAMP, HIGH_WATERMARK_VALUE_REP, output)
+        output = re.sub(RE_CURRENT_TIMESTAMP, CURRENT_TIMESTAMP_VALUE_REP, output)
         output = re.sub(RE_NEWLINES, '\n', output).strip()
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
         assert output == expected
@@ -272,7 +289,8 @@ class TestJinjaTemplates:
         self,
         test_rule_bindings_collection_team_3,
         test_configs_cache,
-        test_resources
+        test_resources,
+        test_bigquery_client,
     ):
         """
 
@@ -301,6 +319,8 @@ class TestJinjaTemplates:
             configs_cache=test_configs_cache,
             environment="DEV",
             debug=True,
+            high_watermark_filter_exists=False,
+            bigquery_client=test_bigquery_client,
         )
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         output = re.sub(RE_NEWLINES, '\n', output).strip()
@@ -308,7 +328,7 @@ class TestJinjaTemplates:
         assert output == expected
 
     def test_prepare_configs_from_rule_binding(
-        self, test_rule_bindings_collection_team_2, test_configs_cache, test_resources
+        self, test_rule_bindings_collection_team_2, test_configs_cache, test_resources, test_bigquery_client,
     ):
         """ """
         rule_binding_id, rule_binding_configs = (
@@ -325,6 +345,7 @@ class TestJinjaTemplates:
             environment=env,
             metadata=metadata,
             configs_cache=test_configs_cache,
+            bigquery_client=test_bigquery_client,
         )
         logger.info(pformat(json.dumps(configs["configs"])))
         with open(test_resources / "expected_configs.json") as f:
