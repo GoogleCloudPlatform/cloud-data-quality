@@ -16,7 +16,7 @@
 
 {% set rule_binding_ids_list = entity_target_rule_binding_configs.get('rule_binding_ids_list') %}
 {% set configs =  rule_binding_configs.get('configs') -%}
-{% set reference_cols =  configs.get('reference_cols') -%}
+{% set failed_records_sql_string = rule_binding_configs.get('failed_records_sql_string') -%}
 {%- for rule_binding_id in rule_binding_ids_list -%}
 
   SELECT
@@ -76,26 +76,7 @@
         ELSE COUNTIF(simple_rule_row_is_valid IS NULL) / rows_validated
       END
       AS null_percentage,
-      """select
-      rule_binding_id,
-      rule_id,
-      table_id,
-      dimension,
-      column_id,
-      skip_null_count,
-      simple_rule_row_is_valid,
-      complex_rule_validation_errors_count,
-      complex_rule_validation_success_flag,
-      {% for ref_column_name in reference_cols %}
-          {{ref_column_name}} as {{ref_column_name}}
-          {% if loop.nextitem is defined %}
-            ,
-          {% endif %}
-      {%- endfor -%}
-      FROM {% raw -%}{{ ref('{%- endraw %}{{ rule_binding_id }}{% raw -%}') }}{%- endraw %}
-      WHERE simple_rule_row_is_valid is False or complex_rule_validation_success_flag is False
-      and DATE(execution_ts) = CAST(CURRENT_TIMESTAMP as DATE) order by rule_id;"""
-      as failed_records_query,
+      """{{ failed_records_sql_string }}""" as failed_records_query,
   FROM
       {% raw -%}{{ ref('{%- endraw %}{{ rule_binding_id }}{% raw -%}') }}{%- endraw %}
   GROUP BY

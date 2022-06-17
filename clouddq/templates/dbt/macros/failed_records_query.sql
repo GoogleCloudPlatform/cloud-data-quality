@@ -99,45 +99,26 @@ all_validation_results AS (
     r.execution_ts AS execution_ts,
     r.rule_binding_id AS rule_binding_id,
     r.rule_id AS rule_id,
-    r.table_id AS table_id,
     r.column_id AS column_id,
-    CAST(r.dimension AS STRING) AS dimension,
-    r.skip_null_count AS skip_null_count,
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
-    r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
     {% for ref_column_name in include_reference_columns %}
         r.{{ ref_column_name }} as {{ ref_column_name }},
     {%- endfor -%}
-    (SELECT COUNT(*) FROM data) AS rows_validated,
-    last_mod.last_modified,
-    '{{ metadata|tojson }}' AS metadata_json_string,
-    '{{ configs_hashsum }}' AS configs_hashsum,
-{%- if dataplex_lake %}
-    '{{ dataplex_lake }}' AS dataplex_lake,
-{%- else %}
-    CAST(NULL AS STRING) AS dataplex_lake,
-{%- endif %}
-{%- if dataplex_zone %}
-    '{{ dataplex_zone }}' AS dataplex_zone,
-{%- else %}
-    CAST(NULL AS STRING) AS dataplex_zone,
-{%- endif %}
-{%- if dataplex_asset_id %}
-    '{{ dataplex_asset_id }}' AS dataplex_asset_id,
-{%- else %}
-    CAST(NULL AS STRING) AS dataplex_asset_id,
-{%- endif %}
-    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', {{ progress_watermark }}) AS dq_run_id,
-    {{ progress_watermark|upper }} AS progress_watermark,
+
   FROM
     validation_results r
-  JOIN last_mod USING(table_id)
 )
 SELECT
   *
 FROM
   all_validation_results
+
+WHERE
+simple_rule_row_is_valid is False
+OR 	complex_rule_validation_success_flag is False
+AND 	DATE(execution_ts) = CAST(CURRENT_TIMESTAMP as DATE)
+ORDER BY rule_id
 
 {%- endmacro -%}
 

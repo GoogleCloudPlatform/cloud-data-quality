@@ -412,7 +412,6 @@ def main(  # noqa: C901
         configs_path = Path(rule_binding_config_path)
         logger.debug(f"Loading rule bindings from: {configs_path.absolute()}")
         all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
-        print(all_rule_bindings)
         # Prepare list of Rule Bindings in-scope for run
         target_rule_binding_ids = [
             r.strip().upper() for r in rule_binding_ids.split(",")
@@ -483,7 +482,7 @@ def main(  # noqa: C901
                 )
             high_watermark_filter_exists = False
 
-            sql_string, dq_rule_binding_configs_dict = lib.create_rule_binding_view_model(
+            sql_string, dq_rule_binding_configs_dict, failed_records_sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name=dq_summary_table_name,
@@ -497,8 +496,6 @@ def main(  # noqa: C901
                 high_watermark_filter_exists=high_watermark_filter_exists,
                 bigquery_client=bigquery_client,
             )
-            print("sql string is ***")
-            print(sql_string)
             if not skip_sql_validation:
                 logger.debug(
                     f"Validating generated SQL code for rule binding "
@@ -514,6 +511,7 @@ def main(  # noqa: C901
                 sql_string=sql_string,
                 dbt_model_path=dbt_rule_binding_views_path,
             )
+            dq_rule_binding_configs_dict.update({"failed_records_sql_string": failed_records_sql_string})
         # clean up old rule_bindings
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem.upper() not in target_rule_binding_ids:
@@ -531,8 +529,6 @@ def main(  # noqa: C901
                 rule_binding_ids_list,
                 f"Internal Error: no rule_binding_id found for entity_table_id {entity_table_id}.",
             )
-            print("***testing***")
-            print(dq_rule_binding_configs_dict)
             sql_string = lib.create_entity_summary_model(
                 entity_table_id=entity_table_id,
                 entity_target_rule_binding_configs=entity_configs_dict,

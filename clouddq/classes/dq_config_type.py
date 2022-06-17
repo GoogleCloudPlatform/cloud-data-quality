@@ -19,6 +19,7 @@ from enum import Enum
 from enum import unique
 
 from clouddq.classes.dq_entity import DqEntity
+from clouddq.classes.dq_reference_columns import DqReferenceColumns
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
@@ -34,6 +35,7 @@ class DqConfigType(str, Enum):
     RULE_BINDINGS = "rule_bindings"
     RULE_DIMENSIONS = "rule_dimensions"
     ROW_FILTERS = "row_filters"
+    REFERENCE_COLUMNS = "reference_columns"
     ENTITIES = "entities"
     METADATA_REGISTRY_DEFAULTS = "metadata_registry_defaults"
 
@@ -47,6 +49,8 @@ class DqConfigType(str, Enum):
         elif self == DqConfigType.RULE_DIMENSIONS:
             return False
         elif self == DqConfigType.ROW_FILTERS:
+            return True
+        elif self == DqConfigType.REFERENCE_COLUMNS:
             return True
         elif self == DqConfigType.ENTITIES:
             return False
@@ -68,6 +72,8 @@ class DqConfigType(str, Enum):
             return DqRuleDimensions
         elif self == DqConfigType.ROW_FILTERS:
             return DqRowFilter
+        elif self == DqConfigType.REFERENCE_COLUMNS:
+            return DqReferenceColumns
         elif self == DqConfigType.ENTITIES:
             return DqEntity
         elif self == DqConfigType.METADATA_REGISTRY_DEFAULTS:

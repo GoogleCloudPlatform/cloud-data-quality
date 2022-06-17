@@ -24,6 +24,7 @@ import logging
 from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_entity_column import DqEntityColumn
 from clouddq.classes.dq_entity_uri import EntityUri
+from clouddq.classes.dq_reference_columns import DqReferenceColumns
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.utils import assert_not_none_or_empty
@@ -47,7 +48,7 @@ class DqRuleBinding:
     row_filter_id: str
     incremental_time_filter_column_id: str | None
     rule_ids: list
-    reference_cols: list
+    reference_columns_id: str
     metadata: dict | None
 
     @classmethod
@@ -108,14 +109,21 @@ class DqRuleBinding:
             error_msg=f"Rule Binding ID: '{rule_binding_id}' must have defined value "
             f"'rule_ids' of type 'list'.",
         )
-        reference_cols: list[str] = get_from_dict_and_assert(
+        reference_columns_id: str = get_from_dict_and_assert(
             config_id=rule_binding_id,
             kwargs=kwargs,
-            key="reference_cols",
-            assertion=lambda x: type(x) == list,
-            error_msg=f"Rule Binding ID: '{rule_binding_id}' must have defined value "
-            f"'reference_cols' of type 'list'.",
+            key="reference_columns_id",
         )
+        if reference_columns_id:
+            reference_columns_id.upper()
+        # include_reference_columns: list[str] = get_from_dict_and_assert(
+        #     config_id=rule_binding_id,
+        #     kwargs=kwargs,
+        #     key="include_reference_columns",
+        #     assertion=lambda x: type(x) == list,
+        #     error_msg=f"Rule Binding ID: '{rule_binding_id}' must have defined value "
+        #     f"'include_reference_columns' of type 'list'.",
+        # )
         incremental_time_filter_column_id: str | None = kwargs.get(
             "incremental_time_filter_column_id", None
         )
@@ -136,7 +144,7 @@ class DqRuleBinding:
             row_filter_id=row_filter_id,
             incremental_time_filter_column_id=incremental_time_filter_column_id,
             rule_ids=rule_ids,
-            reference_cols=reference_cols,
+            reference_columns_id=reference_columns_id,
             metadata=metadata,
         )
 
@@ -163,7 +171,7 @@ class DqRuleBinding:
                     "row_filter_id": self.row_filter_id,
                     "incremental_time_filter_column_id": self.incremental_time_filter_column_id,  # noqa: E501
                     "rule_ids": self.rule_ids,
-                    "reference_cols": self.reference_cols,
+                    "reference_columns_id": self.reference_columns_id,
                     "metadata": self.metadata,
                 }
             }
@@ -269,6 +277,13 @@ class DqRuleBinding:
         row_filter = configs_cache.get_row_filter_id(self.row_filter_id.upper())
         return row_filter
 
+    def resolve_reference_columns_config(
+        self: DqRuleBinding,
+        configs_cache: dq_configs_cache.DqConfigsCache,
+    ) -> DqReferenceColumns:
+        reference_columns = configs_cache.get_reference_columns_id(self.reference_columns_id.upper())
+        return reference_columns
+
     def resolve_all_configs_to_dict(
         self: DqRuleBinding,
         configs_cache: dq_configs_cache.DqConfigsCache,
@@ -327,13 +342,19 @@ class DqRuleBinding:
                     rule_configs_dict[rule_id] = rule_config
             # Resolve filter configs
             row_filter_config = self.resolve_row_filter_config(configs_cache)
+            # resolve reference columns config
+            reference_columns_config = self.resolve_reference_columns_config(configs_cache)
+            include_reference_columns = reference_columns_config.include_reference_columns.strip("[]").replace(" ", "")\
+                .replace('"', "").split(",")
+
             return dict(
                 {
                     "rule_binding_id": self.rule_binding_id,
                     "entity_id": self.entity_id,
                     "entity_configs": dict(table_entity.dict_values()),
                     "column_id": self.column_id,
-                    "reference_cols": list(self.reference_cols),
+                    "reference_columns_id": self.reference_columns_id,
+                    "include_reference_columns": include_reference_columns,
                     "column_configs": dict(column_configs.dict_values()),
                     "rule_ids": list(self.rule_ids),
                     "rule_configs_dict": rule_configs_dict,
