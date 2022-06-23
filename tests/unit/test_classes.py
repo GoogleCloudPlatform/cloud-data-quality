@@ -293,6 +293,7 @@ class TestClasses:
             "entity_id": "TEST_TABLE",
             "column_id": "data",
             "row_filter_id": "NONE",
+            "reference_columns_id": "CONTACT_DETAILS_REFERENCE_COLUMNS",
             "rule_ids": ["REGEX_VALID_EMAIL"],
             "metadata": {"key": "value"}
         }
@@ -318,6 +319,7 @@ class TestClasses:
             "entity_id": "TEST_TABLE",
             "column_id": "data",
             "row_filter_id": "NONE",
+            "reference_columns_id": "CONTACT_DETAILS_REFERENCE_COLUMNS",
             "rule_ids": [{"NO_DUPLICATES_IN_COLUMN_GROUPS": {"column_names": "data"}}],
             "metadata": {"key": "value"}
         }

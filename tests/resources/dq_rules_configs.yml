@@ -67,12 +67,14 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NOT_NULL_SIMPLE
   T2_DQ_1_EMAIL_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NOT_NULL_SIMPLE
       - REGEX_VALID_EMAIL
@@ -84,6 +86,7 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type,value"
@@ -93,6 +96,7 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: ROW_ID
     row_filter_id: NONE
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "row_id"
@@ -102,6 +106,7 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "row_id,contact_type"
@@ -111,6 +116,7 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "value"
@@ -120,6 +126,7 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: CONTACT_TYPE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type"
@@ -129,6 +136,7 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NO_ROWS
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type,value"
@@ -138,6 +146,7 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     incremental_time_filter_column_id: TS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
@@ -148,12 +157,14 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: ROW_ID
     row_filter_id: NONE
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - UNIQUE
   CUSTOM_SQL_EXPR_PARAMETRIZED_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - CUSTOM_SQL_LENGTH_LE_PARAMETRIZED:
           upper_bound: 30
@@ -199,3 +210,12 @@ rules:
         select $column from data
         group by $column
         having count(*) > 1
+        
+
+reference_columns:
+
+  CONTACT_DETAILS_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - row_id
+      - contact_type
+      - value

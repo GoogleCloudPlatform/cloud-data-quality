@@ -40,8 +40,9 @@ SELECT
     'NO_DUPLICATES_IN_COLUMN_GROUPS' AS rule_id,
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     CAST(NULL AS STRING) AS column_id,
-    NULL AS column_value,
-
+    data.row_id AS row_id,
+    data.contact_type AS contact_type,
+    data.value AS value,
     CAST(NULL AS STRING) AS dimension,
 
     CAST(NULL AS BOOLEAN) AS simple_rule_row_is_valid,
@@ -54,6 +55,10 @@ SELECT
     END AS complex_rule_validation_success_flag,
   FROM
     zero_record
+  LEFT JOIN
+  data
+  ON
+  zero_record.rule_binding_id = data.rule_binding_id
   LEFT JOIN
     (
       SELECT 
@@ -82,8 +87,9 @@ using (contact_type,value)
     'NOT_NULL_SIMPLE' AS rule_id,
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    data.value AS column_value,
-
+    data.row_id AS row_id,
+    data.contact_type AS contact_type,
+    data.value AS value,
     CAST(NULL AS STRING) AS dimension,
 
     CASE
@@ -117,7 +123,9 @@ all_validation_results AS (
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-    r.column_value AS column_value,
+    r.row_id AS row_id,
+    r.contact_type AS contact_type,
+    r.value AS value,
     (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{"brand": "one"}' AS metadata_json_string,

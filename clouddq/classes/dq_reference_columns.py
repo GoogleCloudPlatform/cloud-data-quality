@@ -16,7 +16,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 
 from clouddq.utils import assert_not_none_or_empty
 

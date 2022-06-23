@@ -107,7 +107,10 @@ all_validation_results AS (
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
     {% for ref_column_name in include_reference_columns %}
-        r.{{ ref_column_name }} as {{ ref_column_name }},
+        r.{{ ref_column_name }} AS {{ ref_column_name }},
+        {% if loop.last %}
+            {{ '\n' }}
+        {% endif %}
     {%- endfor -%}
     (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,

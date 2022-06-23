@@ -16,9 +16,9 @@
 
 {% set rule_binding_ids_list = entity_target_rule_binding_configs.get('rule_binding_ids_list') %}
 {% set configs =  rule_binding_configs.get('configs') -%}
-{% set failed_records_sql_string = rule_binding_configs.get('failed_records_sql_string') -%}
+{% set ns = namespace() %}
 {%- for rule_binding_id in rule_binding_ids_list -%}
-
+{% set ns.failed_records_sql_string = rule_binding_configs.get(rule_binding_id ~ '_failed_records_sql_string') -%}
   SELECT
       execution_ts,
       rule_binding_id,
@@ -76,7 +76,7 @@
         ELSE COUNTIF(simple_rule_row_is_valid IS NULL) / rows_validated
       END
       AS null_percentage,
-      """{{ failed_records_sql_string }}""" as failed_records_query,
+      """{{ ns.failed_records_sql_string }}""" as failed_records_query,
   FROM
       {% raw -%}{{ ref('{%- endraw %}{{ rule_binding_id }}{% raw -%}') }}{%- endraw %}
   GROUP BY

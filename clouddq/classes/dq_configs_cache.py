@@ -150,10 +150,14 @@ class DqConfigsCache:
         )
         return row_filter
 
-    def get_reference_columns_id(self, reference_columns_id: str) -> dq_reference_columns.DqReferenceColumns:
+    def get_reference_columns_id(
+        self, reference_columns_id: str
+    ) -> dq_reference_columns.DqReferenceColumns:
         reference_columns_id = reference_columns_id.upper()
         try:
-            reference_columns_record = self._cache_db["reference_columns"].get(reference_columns_id)
+            reference_columns_record = self._cache_db["reference_columns"].get(
+                reference_columns_id
+            )
         except NotFoundError:
             error_message = (
                 f"Reference Column ID: {reference_columns_id} not found in 'reference_columns' config cache:\n"
@@ -233,17 +237,25 @@ class DqConfigsCache:
             unnest_object_to_list(row_filters_collection), pk="id", alter=True
         )
 
-    def load_all_reference_columns_collection(self, reference_columns_collection: dict) -> None:
+    def load_all_reference_columns_collection(
+        self, reference_columns_collection: dict
+    ) -> None:
         logger.debug(
             f"Loading 'reference_columns' configs into cache:\n{pformat(reference_columns_collection.keys())}"
         )
-        for reference_columns_id, reference_columns_record in reference_columns_collection.items():
+        for (
+            reference_columns_id,
+            reference_columns_record,
+        ) in reference_columns_collection.items():
             try:
                 dq_reference_columns.DqReferenceColumns.from_dict(
-                    reference_columns_id=reference_columns_id, kwargs=reference_columns_record
+                    reference_columns_id=reference_columns_id,
+                    kwargs=reference_columns_record,
                 )
             except Exception as e:
-                raise ValueError(f"Failed to parse Reference Columns with error:\n{e}\n")
+                raise ValueError(
+                    f"Failed to parse Reference Columns with error:\n{e}\n"
+                )
         self._cache_db["reference_columns"].upsert_all(
             unnest_object_to_list(reference_columns_collection), pk="id", alter=True
         )

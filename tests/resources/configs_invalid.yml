@@ -26,9 +26,18 @@ rule_bindings:
     entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/entities/contact_details
     column_id: VALUE
     row_filter_id: NONE
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids: NOT_NULL_SIMPLE
     metadata:
       brand: one
 rules:
   NOT_NULL_SIMPLE:
     rule_type: NOT_NULL
+
+reference_columns:
+
+  CONTACT_DETAILS_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - row_id
+      - contact_type
+      - value

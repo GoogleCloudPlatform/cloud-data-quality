@@ -72,6 +72,7 @@ rule_bindings:
     entity_id: TEST_DATA
     column_id: UNIQUE_KEY
     row_filter_id: NONE
+    reference_columns_id: TEST_DATA_REFERENCE_COLUMNS
     rule_ids:
       - UNIQUE
 
@@ -79,6 +80,7 @@ rule_bindings:
     entity_id: TEST_DATA
     column_id: UNIQUE_KEY
     row_filter_id: NONE
+    reference_columns_id: TEST_DATA_REFERENCE_COLUMNS
     rule_ids:
       - UNIQUE_MULTIPLE:
           columns: unique_key, date
@@ -87,6 +89,19 @@ rule_bindings:
     entity_id: TEST_DATA
     column_id: TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: TEST_DATA_REFERENCE_COLUMNS
     rule_ids:
       - GAP:
           max_gap: 24
+
+
+reference_columns:
+
+  TEST_DATA_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - unique_key
+      - descript
+      - date
+      - time
+      - address
+

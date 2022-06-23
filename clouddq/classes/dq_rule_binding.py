@@ -281,7 +281,9 @@ class DqRuleBinding:
         self: DqRuleBinding,
         configs_cache: dq_configs_cache.DqConfigsCache,
     ) -> DqReferenceColumns:
-        reference_columns = configs_cache.get_reference_columns_id(self.reference_columns_id.upper())
+        reference_columns = configs_cache.get_reference_columns_id(
+            self.reference_columns_id.upper()
+        )
         return reference_columns
 
     def resolve_all_configs_to_dict(
@@ -343,9 +345,15 @@ class DqRuleBinding:
             # Resolve filter configs
             row_filter_config = self.resolve_row_filter_config(configs_cache)
             # resolve reference columns config
-            reference_columns_config = self.resolve_reference_columns_config(configs_cache)
-            include_reference_columns = reference_columns_config.include_reference_columns.strip("[]").replace(" ", "")\
-                .replace('"', "").split(",")
+            reference_columns_config = self.resolve_reference_columns_config(
+                configs_cache
+            )
+            include_reference_columns = (
+                reference_columns_config.include_reference_columns.strip("[]")
+                .replace(" ", "")
+                .replace('"', "")
+                .split(",")
+            )
 
             return dict(
                 {

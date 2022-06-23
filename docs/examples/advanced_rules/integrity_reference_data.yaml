@@ -82,6 +82,7 @@ rule_bindings:
     entity_id: REFERENCE_DATA_CHECK_NOT_OK
     column_id: ART_NO
     row_filter_id: NONE
+    reference_columns_id: REFERENCE_DATA_CHECK_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
           ref_data_dataset: <my_bigquery_input_data_dataset_id>
@@ -93,6 +94,7 @@ rule_bindings:
     entity_id: REFERENCE_DATA_CHECK_OK
     column_id: ART_NO
     row_filter_id: NONE
+    reference_columns_id: REFERENCE_DATA_CHECK_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_IN_OPERATOR:
           ref_data_dataset: <my_bigquery_input_data_dataset_id>
@@ -104,6 +106,7 @@ rule_bindings:
     entity_id: REFERENCE_DATA_CHECK_NOT_OK
     column_id: ART_NO
     row_filter_id: NONE
+    reference_columns_id: REFERENCE_DATA_CHECK_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
           ref_data_dataset: <my_bigquery_input_data_dataset_id>
@@ -115,6 +118,7 @@ rule_bindings:
     entity_id: REFERENCE_DATA_CHECK_OK
     column_id: ART_NO
     row_filter_id: NONE
+    reference_columns_id: REFERENCE_DATA_CHECK_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_REFERENTIAL_INTEGRITY_VIOLATION_EXISTS_OPERATOR:
           ref_data_dataset: <my_bigquery_input_data_dataset_id>
@@ -122,3 +126,13 @@ rule_bindings:
           ref_data_column_id: art_no
     metadata:
       brand: one
+
+reference_columns:
+
+  REFERENCE_DATA_CHECK_OK_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - art_no
+
+  REFERENCE_DATA_CHECK_NOT_OK_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - art_no

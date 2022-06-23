@@ -32,7 +32,6 @@ from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.integration.bigquery.dq_target_table_utils import TargetTable
 from clouddq.integration.dataplex.clouddq_dataplex import CloudDqDataplexClient
 from clouddq.integration.gcp_credentials import GcpCredentials
-from clouddq.lib import prepare_configs_from_rule_binding_id
 from clouddq.log import JsonEncoderDatetime
 from clouddq.log import add_cloud_logging_handler
 from clouddq.log import get_json_logger
@@ -463,7 +462,7 @@ def main(  # noqa: C901
                 target_rule_binding_ids=target_rule_binding_ids,
             )
         )
-        dq_rule_binding_configs_dict = None
+        dq_target_rule_binding_configs_dict = dict()
         # Create Rule_binding views
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
@@ -482,7 +481,7 @@ def main(  # noqa: C901
                 )
             high_watermark_filter_exists = False
 
-            sql_string, dq_rule_binding_configs_dict, failed_records_sql_string = lib.create_rule_binding_view_model(
+            sql_string, failed_records_sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name=dq_summary_table_name,
@@ -511,7 +510,12 @@ def main(  # noqa: C901
                 sql_string=sql_string,
                 dbt_model_path=dbt_rule_binding_views_path,
             )
-            dq_rule_binding_configs_dict.update({"failed_records_sql_string": failed_records_sql_string})
+            dq_target_rule_binding_configs_dict[
+                f"{rule_binding_id}_failed_records_sql_string"
+            ] = failed_records_sql_string
+        logger.debug(
+            f"dq_target_rule_binding_configs_dict:\n{pformat(dq_target_rule_binding_configs_dict)}"
+        )
         # clean up old rule_bindings
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem.upper() not in target_rule_binding_ids:
@@ -535,7 +539,7 @@ def main(  # noqa: C901
                 gcp_project_id=gcp_project_id,
                 gcp_bq_dataset_id=gcp_bq_dataset_id,
                 debug=print_sql_queries,
-                dq_rule_binding_configs_dict=dq_rule_binding_configs_dict,
+                dq_target_rule_binding_configs_dict=dq_target_rule_binding_configs_dict,
             )
             logger.debug(
                 f"*** Writing sql to {dbt_entity_summary_path.absolute()}/"

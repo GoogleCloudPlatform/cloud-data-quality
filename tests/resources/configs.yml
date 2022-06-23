@@ -28,6 +28,7 @@ rule_bindings:
     entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/entities/contact_details
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type,value"
@@ -38,6 +39,7 @@ rule_bindings:
     entity_uri: bigquery://locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/projects/<my-gcp-project-id>/datasets/<my_bigquery_dataset_id>/tables/contact_details
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type,value"
@@ -48,6 +50,7 @@ rule_bindings:
     entity_uri: bigquery://projects/<my-gcp-project-id>/datasets/<my_bigquery_dataset_id>/tables/contact_details
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type,value"
@@ -58,6 +61,7 @@ rule_bindings:
     entity_uri: dataplex://zones/<my-gcp-dataplex-zone-id>/entities/contact_details
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "contact_type,value"
@@ -86,3 +90,11 @@ rules:
     params:
       pattern: ^[^@]+[@]{1}[^@]+$
     rule_type: REGEX
+
+reference_columns:
+
+  CONTACT_DETAILS_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - row_id
+      - contact_type
+      - value

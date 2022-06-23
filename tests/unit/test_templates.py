@@ -177,7 +177,7 @@ class TestJinjaTemplates:
             .__iter__()
             .__next__()  # use first rule binding
         )
-        output = lib.create_rule_binding_view_model(
+        output, failed_records_output = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -217,7 +217,7 @@ class TestJinjaTemplates:
             .__iter__()
             .__next__()  # use first rule binding
         )
-        output = lib.create_rule_binding_view_model(
+        output, failed_records_output = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -267,7 +267,7 @@ class TestJinjaTemplates:
             .__iter__()
             .__next__()  # use first rule binding
         )
-        output = lib.create_rule_binding_view_model(
+        output, failed_records_output = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name=f"{gcp_project_id}.{gcp_bq_dataset}.dq_summary",
@@ -312,7 +312,7 @@ class TestJinjaTemplates:
             .__iter__()
             .__next__()  # use first rule binding
         )
-        output = lib.create_rule_binding_view_model(
+        output, failed_records_output = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -362,12 +362,20 @@ class TestJinjaTemplates:
                 "rule_binding_id_2",
             ]
         }
+
+        dq_target_rule_binding_configs_dict = dict()
+        dq_target_rule_binding_configs_dict['rule_binding_id_1_failed_records_sql_string'] \
+            = "rule_binding_id_1_failed_records_sql_string"
+        dq_target_rule_binding_configs_dict['rule_binding_id_2_failed_records_sql_string'] \
+            = "rule_binding_id_2_failed_records_sql_string"
+
         entity_summary_model = lib.create_entity_summary_model(
             entity_table_id="entity_table_id",
             entity_target_rule_binding_configs=entity_target_rule_binding_configs,
             gcp_project_id="gcp_project_id",
             gcp_bq_dataset_id="gcp_bq_dataset_id",
-            debug=True)
+            debug=True,
+            dq_target_rule_binding_configs_dict=dq_target_rule_binding_configs_dict,)
         with open(test_resources / "expected_entity_summary_model.sql") as f:
             expected_entity_summary_model = f.read()
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected_entity_summary_model)).strip()

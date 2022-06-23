@@ -115,6 +115,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -127,6 +128,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -139,6 +141,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_SPECIFIC_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -151,6 +154,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -164,6 +168,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -177,6 +182,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_AVERAGE_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -190,6 +196,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -203,6 +210,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -216,6 +224,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -229,6 +238,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -242,6 +252,7 @@ rule_bindings:
     entity_id: DIFFERENT_VOLUMES_PER_PERIOD
     column_id: DANA_INGESTION_TIMESTAMP
     row_filter_id: NONE
+    reference_columns_id: DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS
     rule_ids:
       - NO_DIFFERENT_VOLUMES_PER_LAST_PERIOD:
           ts_column: dana_ingestion_timestamp
@@ -251,3 +262,9 @@ rule_bindings:
           deviation_threshold_pct: 10
     metadata:
       brand: one
+
+reference_columns:
+
+  DIFFERENT_VOLUMES_PER_PERIOD_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - dana_ingestion_timestamp
