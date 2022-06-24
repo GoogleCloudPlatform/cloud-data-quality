@@ -130,7 +130,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: paid_by_patient
     row_filter_id: NONE
-    reference_columns_id: COST_ENTITY_COLUMNS
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - VALUE_ZERO_OR_POSITIVE1
       - VALUE_ZERO_OR_POSITIVE2
