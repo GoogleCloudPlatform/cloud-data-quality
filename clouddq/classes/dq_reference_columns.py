@@ -45,8 +45,6 @@ class DqReferenceColumns:
         """
 
         include_reference_columns: list = kwargs.get("include_reference_columns", "")
-        print(f"reference columns {include_reference_columns}")
-        print(f"type of reference columns {type(include_reference_columns)}")
         assert_not_none_or_empty(
             include_reference_columns,
             f"Reference Columns ID: {reference_columns_id} must define attribute "

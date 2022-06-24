@@ -116,14 +116,6 @@ class DqRuleBinding:
         )
         if reference_columns_id:
             reference_columns_id.upper()
-        # include_reference_columns: list[str] = get_from_dict_and_assert(
-        #     config_id=rule_binding_id,
-        #     kwargs=kwargs,
-        #     key="include_reference_columns",
-        #     assertion=lambda x: type(x) == list,
-        #     error_msg=f"Rule Binding ID: '{rule_binding_id}' must have defined value "
-        #     f"'include_reference_columns' of type 'list'.",
-        # )
         incremental_time_filter_column_id: str | None = kwargs.get(
             "incremental_time_filter_column_id", None
         )
