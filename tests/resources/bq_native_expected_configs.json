@@ -124,6 +124,8 @@
       "rule_type": "NOT_NULL"
     }
   },
+  "reference_columns_id": "311_SERVICE_REQUESTS_REFERENCE_COLUMNS",
+  "include_reference_columns": ["unique_key", "complaint_description", "source", "status"],
   "rule_ids": [
     "NOT_NULL_SIMPLE"
   ]

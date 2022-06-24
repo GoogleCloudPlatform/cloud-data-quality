@@ -160,7 +160,7 @@ class TestDataplexMetadataUriTemplates:
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_4.items():
             with open(test_resources / "dataplex_metadata_sql_expected.sql") as f:
                 expected = f.read()
-            output = lib.create_rule_binding_view_model(
+            output, failed_records_sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -272,7 +272,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / "dataplex_metadata_sql_expected.sql") as f:
                 expected = f.read()
-            output = lib.create_rule_binding_view_model(
+            output, failed_records_sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -384,7 +384,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / "dataplex_gcs_metadata_sql_expected.sql") as f:
                 expected = f.read()
-            output = lib.create_rule_binding_view_model(
+            output, failed_records_sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -468,7 +468,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / "dataplex_gcs_partitioned_metadata_sql_expected.sql") as f:
                 expected = f.read()
-            output = lib.create_rule_binding_view_model(
+            output, failed_records_sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -548,7 +548,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / "bq_native_sql_expected.sql") as f:
                 expected = f.read()
-            output = lib.create_rule_binding_view_model(
+            output, failed_records_sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -636,7 +636,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / expected_sql_filename) as f:
                 expected = f.read()
-            output = lib.create_rule_binding_view_model(
+            output, failed_records_sql_string = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
