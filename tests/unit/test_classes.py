@@ -32,6 +32,7 @@ from clouddq.classes.rule_type import RuleType
 from clouddq.utils import strip_margin
 from clouddq.utils import working_directory
 
+
 logger = logging.getLogger(__name__)
 
 
