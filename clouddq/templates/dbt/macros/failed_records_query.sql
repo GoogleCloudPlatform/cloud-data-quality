@@ -100,6 +100,7 @@ all_validation_results AS (
     r.rule_binding_id AS rule_binding_id,
     r.rule_id AS rule_id,
     r.column_id AS column_id,
+    CAST(r.dimension AS STRING) AS dimension,
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
     {% for ref_column_name in include_reference_columns %}
@@ -116,8 +117,10 @@ FROM
 
 WHERE
 simple_rule_row_is_valid is False
-OR 	complex_rule_validation_success_flag is False
-AND 	DATE(execution_ts) = CAST(CURRENT_TIMESTAMP as DATE)
+OR
+complex_rule_validation_success_flag is False
+AND
+DATE(execution_ts) = CAST('{{ current_timestamp_value }}' AS DATE)
 ORDER BY rule_id
 
 {%- endmacro -%}

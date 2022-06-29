@@ -42,6 +42,7 @@ class TestDqConfigsCache:
                 assert configs_cache._cache_db["rules"].exists()
                 assert configs_cache._cache_db["row_filters"].exists()
                 assert configs_cache._cache_db["rule_bindings"].exists()
+                assert configs_cache._cache_db["reference_columns"].exists()
         finally:
             shutil.rmtree(temp_dir)
 

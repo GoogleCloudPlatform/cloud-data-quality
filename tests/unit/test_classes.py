@@ -24,13 +24,13 @@ from clouddq.classes.dq_configs_cache import DqConfigsCache
 from clouddq.classes.dq_entity import DqEntity
 from clouddq.classes.dq_entity import get_custom_entity_configs
 from clouddq.classes.dq_entity_uri import EntityUri
+from clouddq.classes.dq_reference_columns import DqReferenceColumns
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
 from clouddq.classes.dq_rule_binding import DqRuleBinding
 from clouddq.classes.rule_type import RuleType
 from clouddq.utils import strip_margin
 from clouddq.utils import working_directory
-
 
 logger = logging.getLogger(__name__)
 
@@ -304,7 +304,7 @@ class TestClasses:
         ).resolve_all_configs_to_dict(configs_cache=configs_cache)
 
         assert output["rule_configs_dict"]["REGEX_VALID_EMAIL"]["rule_sql_expr"] == \
-            "REGEXP_CONTAINS( CAST( data.data  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
+               "REGEXP_CONTAINS( CAST( data.data  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
 
     def test_dq_rule_binding_conflicted_column_id_is_not_escaped_for_sql_statement(self, temp_configs_dir, tmp_path):
         try:
@@ -342,7 +342,7 @@ class TestClasses:
         |) duplicates
         |using (data)"""
         assert strip_margin(text.replace(r"\s\s+", " ")) == \
-            strip_margin(expected.replace(r"\s\s+", " "))
+               strip_margin(expected.replace(r"\s\s+", " "))
 
     def test_rule_type_not_implemented(self):
         """ """
@@ -520,6 +520,42 @@ class TestClasses:
         }}
 
         assert clouddq_entity.to_dict() == clouddq_entity_expected_dict
+
+    def test_dq_reference_columns_parse_failure(self):
+        """"""
+        with pytest.raises(ValueError):
+            DqReferenceColumns.from_dict(reference_columns_id="valid", kwargs=dict())
+
+    def test_dq_reference_columns_parse_success(self):
+        dq_reference_columns_dict = {
+            "include_reference_columns": ["row_id", "contact_type", "value"]
+        }
+        dq_reference_columns = DqReferenceColumns.from_dict(reference_columns_id="valid",
+                                                            kwargs=dq_reference_columns_dict)
+
+        expected_dq_refereence_columns_dict = {
+            "valid": {
+                "include_reference_columns": ["row_id", "contact_type", "value"]
+            }
+        }
+
+        assert dq_reference_columns.to_dict() == expected_dq_refereence_columns_dict
+
+    def test_dq_rule_binding_invalid_reference_column_id_parse_failure(self):
+        """ """
+        dq_rule_binding_dict_not_valid = {
+            "entity_id": "TEST_TABLE",
+            "column_id": "data",
+            "row_filter_id": "NONE",
+            "rule_ids": ["REGEX_VALID_EMAIL"],
+            "reference_columns_id": "",
+            "metadata": {"key": "value"}
+        }
+        with pytest.raises(ValueError):
+            DqRuleBinding.from_dict(
+                rule_binding_id="valid",
+                kwargs=dq_rule_binding_dict_not_valid,
+            )
 
 
 if __name__ == "__main__":
