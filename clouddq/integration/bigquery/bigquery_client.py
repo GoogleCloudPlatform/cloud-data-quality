@@ -35,6 +35,7 @@ REQUIRED_COLUMN_TYPES = {
     "dataplex_zone": "STRING",
     "dataplex_asset_id": "STRING",
     "complex_rule_validation_success_flag": "BOOLEAN",
+    "failed_records_query": "STRING",
 }
 
 from clouddq.integration.gcp_credentials import GcpCredentials
@@ -144,7 +145,7 @@ class BigQueryClient:
 
     def assert_required_columns_exist_in_table(
         self, table: str, project_id: str = None
-    ) -> None:
+    ) -> dict:
         try:
             client = self.get_connection(project_id=project_id)
             table_ref = client.get_table(table)
@@ -156,11 +157,12 @@ class BigQueryClient:
                         column_name
                     ] = f"ALTER TABLE `{table}` ADD COLUMN {column_name} {column_type};\n"
             if failures:
-                raise ValueError(
+                logger.info(
                     f"Cannot find required column '{list(failures.keys())}' in BigQuery table '{table}'.\n"
-                    f"Ensure they are created by running the following SQL script and retry:\n"
+                    f"These will created by running the following SQL script :\n"
                     "```\n" + "\n".join(failures.values()) + "```"
                 )
+                return failures
         except NotFound:
             logger.warning(
                 f"Table {table} does not yet exist. It will be created in this run."

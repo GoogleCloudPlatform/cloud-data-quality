@@ -342,9 +342,14 @@ def main(  # noqa: C901
                 f"'{dq_summary_project_id}.{dq_summary_dataset}' region: "
                 f"'{dq_summary_dataset_region}'."
             )
-        bigquery_client.assert_required_columns_exist_in_table(
-            table=dq_summary_table_name, project_id=dq_summary_project_id
+        dq_summary_missing_required_fields = (
+            bigquery_client.assert_required_columns_exist_in_table(
+                table=dq_summary_table_name, project_id=dq_summary_project_id
+            )
         )
+        if dq_summary_missing_required_fields:
+            for field in dq_summary_missing_required_fields.values():
+                bigquery_client.execute_query(query_string=field).result()
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             logger.info(
@@ -388,9 +393,14 @@ def main(  # noqa: C901
                     f"'{dq_summary_project_id}.{dq_summary_dataset}': "
                     f"'{target_dataset_region}'"
                 )
-            bigquery_client.assert_required_columns_exist_in_table(
-                table=target_bigquery_summary_table, project_id=target_project_id
+            target_table_missing_required_fields = (
+                bigquery_client.assert_required_columns_exist_in_table(
+                    table=target_bigquery_summary_table, project_id=target_project_id
+                )
             )
+            if target_table_missing_required_fields:
+                for field in target_table_missing_required_fields.values():
+                    bigquery_client.execute_query(query_string=field).result()
         else:
             logger.warning(
                 "CLI --target_bigquery_summary_table is not set. This will become a required argument in v1.0.0."
