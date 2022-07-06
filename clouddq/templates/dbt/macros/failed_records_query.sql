@@ -96,7 +96,6 @@ validation_results AS (
 ),
 all_validation_results AS (
   SELECT
-    r.execution_ts AS execution_ts,
     r.rule_binding_id AS rule_binding_id,
     r.rule_id AS rule_id,
     r.column_id AS column_id,
@@ -119,8 +118,6 @@ WHERE
 simple_rule_row_is_valid is False
 OR
 complex_rule_validation_success_flag is False
-AND
-DATE(execution_ts) = CAST('{{ current_timestamp_value }}' AS DATE)
 ORDER BY rule_id
 
 {%- endmacro -%}
