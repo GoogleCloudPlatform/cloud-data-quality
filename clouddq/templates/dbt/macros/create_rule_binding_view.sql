@@ -106,6 +106,7 @@ all_validation_results AS (
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+    r.column_value AS column_value,
     {% for ref_column_name in include_reference_columns %}
         r.{{ ref_column_name }} AS {{ ref_column_name }},
         {% if loop.last %}

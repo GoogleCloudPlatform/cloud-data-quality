@@ -51,7 +51,7 @@ class DqConfigType(str, Enum):
         elif self == DqConfigType.ROW_FILTERS:
             return True
         elif self == DqConfigType.REFERENCE_COLUMNS:
-            return True
+            return False
         elif self == DqConfigType.ENTITIES:
             return False
         elif self == DqConfigType.METADATA_REGISTRY_DEFAULTS:

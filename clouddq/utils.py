@@ -127,6 +127,21 @@ def assert_not_none_or_empty(value: typing.Any, error_msg: str) -> None:
         raise ValueError(error_msg)
 
 
+def assert_list_type(value: typing.Any, error_msg: str) -> None:
+    """
+
+    Args:
+      value: typing.Any:
+      error_msg: str:
+
+    Returns:
+
+    """
+
+    if type(value) is not list:
+        raise TypeError(error_msg)
+
+
 def get_from_dict_and_assert(
     config_id: str,
     kwargs: typing.Dict,
@@ -254,3 +269,13 @@ def update_dict(dict1: dict, dict2: dict) -> dict:
             output_dict[key].append(dict2[key])
 
     return output_dict
+
+
+def transform_json_str_to_dict(value: dict) -> dict:
+
+    return dict(
+        {
+            "id": value["id"],
+            "include_reference_columns": eval(value["include_reference_columns"]),
+        }
+    )

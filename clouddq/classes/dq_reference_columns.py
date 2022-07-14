@@ -17,12 +17,37 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from clouddq.utils import assert_list_type
 from clouddq.utils import assert_not_none_or_empty
 
 
 @dataclass
 class DqReferenceColumns:
-    """ """
+    """
+    A class to represent a DqReferenceColumns.
+
+    ...
+
+    Attributes
+    ----------
+        reference_columns_id : str
+            reference columns id
+        include_reference_columns : list
+            List of reference columns to be included.
+
+    Methods
+    -------
+    from_dict(reference_columns_id: str, kwargs: dict):
+        Returns the DqReferenceColumns object for
+        the given reference_columns_id.
+
+    to_dict(cls: DqReferenceColumns):
+        Returns the DqReferenceColumns object for
+        the given reference_columns_id.
+
+    dict_values(cls: DqReferenceColumns):
+        Returns the DqReferenceColumns dict.
+    """
 
     reference_columns_id: str
     include_reference_columns: list
@@ -38,7 +63,7 @@ class DqReferenceColumns:
         Args:
           cls: DqReferenceColumns:
           reference_columns_id: str:
-          kwargs: typing.Dict:
+          kwargs: dict:
 
         Returns:
 
@@ -49,6 +74,11 @@ class DqReferenceColumns:
             include_reference_columns,
             f"Reference Columns ID: {reference_columns_id} must define attribute "
             f"'include_reference_columns'.",
+        )
+        assert_list_type(
+            include_reference_columns,
+            f"Reference Columns ID: {reference_columns_id} must define attribute "
+            f"'include_reference_columns' of type list.",
         )
         return DqReferenceColumns(
             reference_columns_id=str(reference_columns_id),

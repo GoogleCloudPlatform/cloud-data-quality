@@ -177,7 +177,7 @@ class TestJinjaTemplates:
             .__iter__()
             .__next__()  # use first rule binding
         )
-        output, failed_records_output = lib.create_rule_binding_view_model(
+        configs = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -187,6 +187,7 @@ class TestJinjaTemplates:
             high_watermark_filter_exists=False,
             bigquery_client=test_bigquery_client,
         )
+        output = configs.get("generated_sql_string")
         output = re.sub(RE_NEWLINES, '\n', output).strip()
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
@@ -217,7 +218,7 @@ class TestJinjaTemplates:
             .__iter__()
             .__next__()  # use first rule binding
         )
-        output, failed_records_output = lib.create_rule_binding_view_model(
+        configs = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -227,6 +228,7 @@ class TestJinjaTemplates:
             high_watermark_filter_exists=False,
             bigquery_client=test_bigquery_client,
         )
+        output = configs.get("generated_sql_string")
         expected = expected.replace(
             "<your_gcp_project_id>.<your_bigquery_dataset_id>", "<your_gcp_project_id_2>.<your_bigquery_dataset_id_2>"
         )
@@ -267,7 +269,7 @@ class TestJinjaTemplates:
             .__iter__()
             .__next__()  # use first rule binding
         )
-        output, failed_records_output = lib.create_rule_binding_view_model(
+        configs = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name=f"{gcp_project_id}.{gcp_bq_dataset}.dq_summary",
@@ -278,6 +280,7 @@ class TestJinjaTemplates:
             high_watermark_filter_exists=False,
             bigquery_client=test_bigquery_client,
         )
+        output = configs.get("generated_sql_string")
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         output = re.sub(RE_HIGH_WATERMARK_TIMESTAMP, HIGH_WATERMARK_VALUE_REP, output)
         output = re.sub(RE_CURRENT_TIMESTAMP, CURRENT_TIMESTAMP_VALUE_REP, output)
@@ -312,7 +315,7 @@ class TestJinjaTemplates:
             .__iter__()
             .__next__()  # use first rule binding
         )
-        output, failed_records_output = lib.create_rule_binding_view_model(
+        configs = lib.create_rule_binding_view_model(
             rule_binding_id=rule_binding_id,
             rule_binding_configs=rule_binding_configs,
             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -322,6 +325,7 @@ class TestJinjaTemplates:
             high_watermark_filter_exists=False,
             bigquery_client=test_bigquery_client,
         )
+        output = configs.get("generated_sql_string")
         output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
         output = re.sub(RE_NEWLINES, '\n', output).strip()
         expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
@@ -363,10 +367,10 @@ class TestJinjaTemplates:
             ]
         }
 
-        dq_target_rule_binding_configs_dict = dict()
-        dq_target_rule_binding_configs_dict['rule_binding_id_1_failed_records_sql_string'] \
+        failed_queries_configs = dict()
+        failed_queries_configs['rule_binding_id_1_failed_records_sql_string'] \
             = "rule_binding_id_1_failed_records_sql_string"
-        dq_target_rule_binding_configs_dict['rule_binding_id_2_failed_records_sql_string'] \
+        failed_queries_configs['rule_binding_id_2_failed_records_sql_string'] \
             = "rule_binding_id_2_failed_records_sql_string"
 
         entity_summary_model = lib.create_entity_summary_model(
@@ -375,7 +379,7 @@ class TestJinjaTemplates:
             gcp_project_id="gcp_project_id",
             gcp_bq_dataset_id="gcp_bq_dataset_id",
             debug=True,
-            dq_target_rule_binding_configs_dict=dq_target_rule_binding_configs_dict,)
+            failed_queries_configs=failed_queries_configs,)
         with open(test_resources / "expected_entity_summary_model.sql") as f:
             expected_entity_summary_model = f.read()
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected_entity_summary_model)).strip()

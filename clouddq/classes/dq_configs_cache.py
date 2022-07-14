@@ -30,6 +30,7 @@ from clouddq.classes import dq_reference_columns
 from clouddq.classes.metadata_registry_defaults import SAMPLE_DEFAULT_REGISTRIES_YAML
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.utils import convert_json_value_to_dict
+from clouddq.utils import transform_json_str_to_dict
 from clouddq.utils import unnest_object_to_list
 
 import clouddq.classes.dq_entity as dq_entity
@@ -158,14 +159,18 @@ class DqConfigsCache:
             reference_columns_record = self._cache_db["reference_columns"].get(
                 reference_columns_id
             )
+            reference_columns_record_obj = transform_json_str_to_dict(
+                reference_columns_record
+            )
         except NotFoundError:
             error_message = (
                 f"Reference Column ID: {reference_columns_id} not found in 'reference_columns' config cache:\n"
+                f"List of available Reference Column ID's is \n "
                 f"{pformat(list(self._cache_db.query('select id from reference_columns')))}"
             )
             raise NotFoundError(error_message)
         reference_columns = dq_reference_columns.DqReferenceColumns.from_dict(
-            reference_columns_id, reference_columns_record
+            reference_columns_id, reference_columns_record_obj
         )
         return reference_columns
 

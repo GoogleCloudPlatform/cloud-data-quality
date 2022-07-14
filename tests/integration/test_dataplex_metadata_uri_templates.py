@@ -160,7 +160,7 @@ class TestDataplexMetadataUriTemplates:
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_4.items():
             with open(test_resources / "dataplex_metadata_sql_expected.sql") as f:
                 expected = f.read()
-            output, failed_records_sql_string = lib.create_rule_binding_view_model(
+            configs = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -170,6 +170,7 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
+            output = configs.get("generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
@@ -272,7 +273,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / "dataplex_metadata_sql_expected.sql") as f:
                 expected = f.read()
-            output, failed_records_sql_string = lib.create_rule_binding_view_model(
+            configs = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -282,6 +283,7 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
+            output = configs.get("generated_sql_string")
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
@@ -384,7 +386,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / "dataplex_gcs_metadata_sql_expected.sql") as f:
                 expected = f.read()
-            output, failed_records_sql_string = lib.create_rule_binding_view_model(
+            configs = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -394,6 +396,7 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
+            output = configs.get("generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_zone_id.replace('-', '_'), "<your_dataplex_zone_name>")\
                 .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_name>")\
@@ -468,7 +471,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / "dataplex_gcs_partitioned_metadata_sql_expected.sql") as f:
                 expected = f.read()
-            output, failed_records_sql_string = lib.create_rule_binding_view_model(
+            configs = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -478,6 +481,7 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
+            output = configs.get("generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_zone_id.replace('-', '_'), "<your_dataplex_zone_name>")\
                 .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_name>")\
@@ -548,7 +552,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / "bq_native_sql_expected.sql") as f:
                 expected = f.read()
-            output, failed_records_sql_string = lib.create_rule_binding_view_model(
+            configs = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -558,7 +562,7 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            print(output)
+            output = configs.get("generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
@@ -636,7 +640,7 @@ class TestDataplexMetadataUriTemplates:
 
             with open(test_resources / expected_sql_filename) as f:
                 expected = f.read()
-            output, failed_records_sql_string = lib.create_rule_binding_view_model(
+            configs = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -646,7 +650,7 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            print(output)
+            output = configs.get("generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")

@@ -48,7 +48,7 @@ class DqRuleBinding:
     row_filter_id: str
     incremental_time_filter_column_id: str | None
     rule_ids: list
-    reference_columns_id: str
+    reference_columns_id: str | None
     metadata: dict | None
 
     @classmethod
@@ -337,15 +337,9 @@ class DqRuleBinding:
             # Resolve filter configs
             row_filter_config = self.resolve_row_filter_config(configs_cache)
             # resolve reference columns config
-            reference_columns_config = self.resolve_reference_columns_config(
+            include_reference_columns = self.resolve_reference_columns_config(
                 configs_cache
-            )
-            include_reference_columns = (
-                reference_columns_config.include_reference_columns.strip("[]")
-                .replace(" ", "")
-                .replace('"', "")
-                .split(",")
-            )
+            ).include_reference_columns
 
             return dict(
                 {
