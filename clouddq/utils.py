@@ -269,13 +269,3 @@ def update_dict(dict1: dict, dict2: dict) -> dict:
             output_dict[key].append(dict2[key])
 
     return output_dict
-
-
-def transform_json_str_to_dict(value: dict) -> dict:
-
-    return dict(
-        {
-            "id": value["id"],
-            "include_reference_columns": eval(value["include_reference_columns"]),
-        }
-    )

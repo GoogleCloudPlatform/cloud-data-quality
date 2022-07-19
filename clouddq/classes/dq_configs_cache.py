@@ -27,10 +27,10 @@ from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
 
 from clouddq.classes import dq_reference_columns
+from clouddq.classes.dq_reference_columns import transform_dq_reference_columns_to_dict
 from clouddq.classes.metadata_registry_defaults import SAMPLE_DEFAULT_REGISTRIES_YAML
 from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.utils import convert_json_value_to_dict
-from clouddq.utils import transform_json_str_to_dict
 from clouddq.utils import unnest_object_to_list
 
 import clouddq.classes.dq_entity as dq_entity
@@ -159,7 +159,7 @@ class DqConfigsCache:
             reference_columns_record = self._cache_db["reference_columns"].get(
                 reference_columns_id
             )
-            reference_columns_record_obj = transform_json_str_to_dict(
+            reference_columns_record_obj = transform_dq_reference_columns_to_dict(
                 reference_columns_record
             )
         except NotFoundError:

@@ -12,13 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""todo: add classes docstring."""
 from __future__ import annotations
 
 from dataclasses import dataclass
 
 from clouddq.utils import assert_list_type
 from clouddq.utils import assert_not_none_or_empty
+
+
+def transform_dq_reference_columns_to_dict(reference_columns_record: dict) -> dict:
+    return dict(
+        {
+            "id": reference_columns_record["id"],
+            "include_reference_columns": eval(
+                reference_columns_record["include_reference_columns"]
+            ),
+        }
+    )
 
 
 @dataclass

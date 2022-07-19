@@ -26,6 +26,7 @@ install: ## create python virtualen and install clouddq
 
 .PHONY: addlicense
 addlicense: bin/addlicense ## run addlicense check
+	bin/addlicense -ignore clouddq/templates/dbt/macros/*.sql
 	bin/addlicense -check clouddq tests tools scripts
 
 .PHONY: clean
