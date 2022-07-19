@@ -24,9 +24,12 @@ def transform_dq_reference_columns_to_dict(reference_columns_record: dict) -> di
     return dict(
         {
             "id": reference_columns_record["id"],
-            "include_reference_columns": eval(
-                reference_columns_record["include_reference_columns"]
-            ),
+            "include_reference_columns": reference_columns_record[
+                "include_reference_columns"
+            ]
+            .strip("[]")
+            .replace('"', "")
+            .split(", "),
         }
     )
 
