@@ -127,7 +127,9 @@ class TestDataplexIntegration:
             # Create single malformed YAML config called 'malformed-configs.yml'
             # This breaks because there are two nodes for rules: on the same file, meaning one will be ignored
             single_malformed_yaml_path = Path(configs_files_path).joinpath("malformed-configs.yml")
-            single_malformed_yaml_path.write_text("\n".join(configs_content))
+            # only taking entities and ignoring other configs to make it a malformed yaml
+            malformed_content = [content for content in configs_content if "entities:" in content]
+            single_malformed_yaml_path.write_text("\n".join(malformed_content))
             assert configs_files_path.joinpath("malformed-configs.yml").is_file()
             # Fix the above issue and write to a YAML config called 'configs.yml'
             merged_configs = defaultdict(dict)
