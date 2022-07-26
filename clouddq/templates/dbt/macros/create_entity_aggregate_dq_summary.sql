@@ -12,8 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-{% macro create_entity_aggregate_dq_summary(entity_target_rule_binding_configs, gcp_project_id, gcp_bq_dataset_id, failed_queries_configs) -%}
-
+{% macro create_entity_aggregate_dq_summary(entity_target_rule_binding_configs, gcp_project_id, gcp_bq_dataset_id) -%}
 {% set rule_binding_ids_list = entity_target_rule_binding_configs.get('rule_binding_ids_list') %}
 {%- for rule_binding_id in rule_binding_ids_list -%}
   SELECT
@@ -73,7 +72,7 @@
         ELSE COUNTIF(simple_rule_row_is_valid IS NULL) / rows_validated
       END
       AS null_percentage,
-      """{{ failed_queries_configs.get(rule_binding_id ~ '_failed_records_sql_string') }}""" as failed_records_query,
+      failed_records_query as failed_records_query,
   FROM
       {% raw -%}{{ ref('{%- endraw %}{{ rule_binding_id }}{% raw -%}') }}{%- endraw %}
   GROUP BY
@@ -86,4 +85,4 @@
 
 {%- endmacro -%}
 
-{{  create_entity_aggregate_dq_summary(entity_target_rule_binding_configs, gcp_project_id, gcp_bq_dataset_id, failed_queries_configs) }}
+{{  create_entity_aggregate_dq_summary(entity_target_rule_binding_configs, gcp_project_id, gcp_bq_dataset_id) }}

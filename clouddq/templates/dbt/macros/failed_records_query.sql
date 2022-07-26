@@ -1,8 +1,9 @@
-{% from 'macros.sql' import validate_simple_rule -%}
-{% from 'macros.sql' import validate_complex_rule -%}
-{%- macro create_failed_records_sql(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value, generated_sql_string) -%}
+{% from 'macros.sql' import validate_simple_rule_failed_records_query -%}
+{% from 'macros.sql' import validate_complex_rule_failed_records_query -%}
+{%- macro create_failed_records_sql(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value, rule_id, rule_type) -%}
 {% set rule_binding_id = configs.get('rule_binding_id') -%}
 {% set rule_configs_dict = configs.get('rule_configs_dict') -%}
+{% set rule_configs = rule_configs_dict.get(rule_id) -%}
 {% set filter_sql_expr = configs.get('row_filter_configs').get('filter_sql_expr') -%}
 {% set column_name = configs.get('column_configs').get('name') -%}
 {% set entity_configs = configs.get('entity_configs') -%}
@@ -70,16 +71,11 @@ last_mod AS (
 ),
 validation_results AS (
 
-{% for rule_id, rule_configs in rule_configs_dict.items() %}
-    {%- if rule_configs.get('rule_type') == "CUSTOM_SQL_STATEMENT" -%}
-      {{ validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) }}
-    {%- else -%}
-      {{ validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) }}
-    {%- endif -%}
-    {% if loop.nextitem is defined %}
-    UNION ALL
-    {% endif %}
-{%- endfor -%}
+{%- if rule_type == "CUSTOM_SQL_STATEMENT" -%}
+  {{ validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) }}
+{%- else -%}
+  {{ validate_simple_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) }}
+{%- endif -%}
 ),
 all_validation_results AS (
   SELECT
@@ -88,11 +84,12 @@ all_validation_results AS (
     r.column_id AS column_id,
     CAST(r.dimension AS STRING) AS dimension,
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
+    r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+    r.column_value AS column_value,
     {% for ref_column_name in include_reference_columns %}
-        r.{{ ref_column_name }} as {{ ref_column_name }},
+        r.{{ ref_column_name }} AS {{ ref_column_name }},
     {%- endfor -%}
-
   FROM
     validation_results r
 )
@@ -109,4 +106,4 @@ ORDER BY rule_id
 
 {%- endmacro -%}
 
-{{-  create_failed_records_sql(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value, generated_sql_string) -}}
+{{-  create_failed_records_sql(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value, rule_id, rule_type) -}}

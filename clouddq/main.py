@@ -472,7 +472,6 @@ def main(  # noqa: C901
                 target_rule_binding_ids=target_rule_binding_ids,
             )
         )
-        failed_queries_configs = dict()
         # Create Rule_binding views
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
@@ -511,7 +510,9 @@ def main(  # noqa: C901
                     f"{rule_binding_id} using BigQuery dry-run client.",
                 )
                 bigquery_client.check_query_dry_run(
-                    query_string=configs.get("generated_sql_string")
+                    query_string=configs.get("generated_sql_string_dict").get(
+                        f"{rule_binding_id}_generated_sql_string"
+                    )
                 )
             logger.debug(
                 f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
@@ -519,13 +520,12 @@ def main(  # noqa: C901
             )
             lib.write_sql_string_as_dbt_model(
                 model_id=rule_binding_id,
-                sql_string=configs.get("generated_sql_string"),
+                sql_string=configs.get("generated_sql_string_dict").get(
+                    f"{rule_binding_id}_generated_sql_string"
+                ),
                 dbt_model_path=dbt_rule_binding_views_path,
             )
-            failed_queries_configs[
-                f"{rule_binding_id}_failed_records_sql_string"
-            ] = configs.get("failed_records_sql_string")
-        logger.debug(f"failed_queries_configs:\n{pformat(failed_queries_configs)}")
+
         # clean up old rule_bindings
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem.upper() not in target_rule_binding_ids:
@@ -549,7 +549,6 @@ def main(  # noqa: C901
                 gcp_project_id=gcp_project_id,
                 gcp_bq_dataset_id=gcp_bq_dataset_id,
                 debug=print_sql_queries,
-                failed_queries_configs=failed_queries_configs,
             )
             logger.debug(
                 f"*** Writing sql to {dbt_entity_summary_path.absolute()}/"
