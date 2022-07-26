@@ -44,6 +44,10 @@
         failed_percentage,
         null_count,
         null_percentage,
+        CASE
+        WHEN failed_count > 0 THEN failed_records_query
+        WHEN complex_rule_validation_errors_count > 0 THEN failed_records_query
+        ELSE "" END AS failed_records_query,
     FROM
         {{ ref(entity_dq_statistics_model) }}
     {% if loop.nextitem is defined %}

@@ -76,6 +76,8 @@
   "row_filter_configs": {
     "filter_sql_expr": "contact_type = 'email'"
   },
+  "reference_columns_id": "CONTACT_DETAILS_REFERENCE_COLUMNS",
+  "include_reference_columns": ["row_id", "contact_type", "value"],
   "incremental_time_filter_column": null,
   "metadata": {
     "brand": "one"

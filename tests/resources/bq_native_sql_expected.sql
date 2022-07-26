@@ -41,6 +41,10 @@ SELECT
     '<your-gcp-project-id>.austin_311.311_service_requests' AS table_id,
     'unique_key' AS column_id,
     data.unique_key AS column_value,
+    data.unique_key AS unique_key,
+    data.complaint_description AS complaint_description,
+    data.source AS source,
+    data.status AS status,
 
     CAST(NULL AS STRING) AS dimension,
 
@@ -76,6 +80,10 @@ all_validation_results AS (
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
     r.column_value AS column_value,
+    r.unique_key AS unique_key,
+    r.complaint_description AS complaint_description,
+    r.source AS source,
+    r.status AS status,
     (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{"brand": "one"}' AS metadata_json_string,

@@ -17,5 +17,6 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: NONE
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NOT_NULL_SIMPLE

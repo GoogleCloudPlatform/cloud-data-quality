@@ -83,6 +83,10 @@ def load_row_filters_config(configs_path: Path) -> dict:
     return load_configs(configs_path, DqConfigType.ROW_FILTERS)
 
 
+def load_reference_columns_config(configs_path: Path) -> dict:
+    return load_configs(configs_path, DqConfigType.REFERENCE_COLUMNS)
+
+
 def load_metadata_registry_default_configs(
     configs_path: Path,
 ) -> MetadataRegistryDefaults:
@@ -107,9 +111,12 @@ def create_rule_binding_view_model(
     progress_watermark: bool = True,
     default_configs: dict | None = None,
     high_watermark_filter_exists: bool = False,
-) -> str:
+) -> dict:
     template = load_jinja_template(
         template_path=Path("dbt", "macros", "create_rule_binding_view.sql")
+    )
+    failed_records_template = load_jinja_template(
+        template_path=Path("dbt", "macros", "failed_records_query.sql")
     )
     configs = prepare_configs_from_rule_binding_id(
         rule_binding_id=rule_binding_id,
@@ -124,11 +131,14 @@ def create_rule_binding_view_model(
         high_watermark_filter_exists=high_watermark_filter_exists,
         bigquery_client=bigquery_client,
     )
+
     sql_string = template.render(configs)
+    failed_records_sql_string = failed_records_template.render(configs)
+    configs.update({"generated_sql_string": sql_string})
+    configs.update({"failed_records_sql_string": failed_records_sql_string})
     if debug:
-        configs.update({"generated_sql_string": sql_string})
         logger.info(pformat(configs))
-    return sql_string
+    return configs
 
 
 def create_entity_summary_model(
@@ -136,6 +146,7 @@ def create_entity_summary_model(
     entity_target_rule_binding_configs: dict,
     gcp_project_id: str,
     gcp_bq_dataset_id: str,
+    failed_queries_configs: dict,
     debug: bool = False,
 ) -> str:
     if debug:
@@ -151,6 +162,7 @@ def create_entity_summary_model(
         "entity_target_rule_binding_configs": entity_target_rule_binding_configs,
         "gcp_project_id": gcp_project_id,
         "gcp_bq_dataset_id": gcp_bq_dataset_id,
+        "failed_queries_configs": failed_queries_configs,
     }
     sql_string = template.render(configs)
     if debug:
@@ -231,6 +243,8 @@ def prepare_configs_cache(configs_path: Path) -> DqConfigsCache:
     configs_cache.load_all_entities_collection(entities_collection)
     row_filters_collection = load_row_filters_config(configs_path)
     configs_cache.load_all_row_filters_collection(row_filters_collection)
+    reference_columns_collection = load_reference_columns_config(configs_path)
+    configs_cache.load_all_reference_columns_collection(reference_columns_collection)
     rule_dimensions_collection = load_rule_dimensions_config(configs_path)
     configs_cache.load_all_rule_dimensions_collection(rule_dimensions_collection)
     rules_collection = load_rules_config(configs_path)

@@ -76,6 +76,7 @@ rule_bindings:
     entity_id: COMPLETENESS_CHECK_NOT_OK
     column_id: DATA
     row_filter_id: NONE
+    reference_columns_id: COMPLETENESS_CHECK_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_ISSUES_WITH_COMPLETENESS:
           condition: data.data IS NOT NULL
@@ -86,6 +87,7 @@ rule_bindings:
     entity_id: COMPLETENESS_CHECK_NOT_OK
     column_id: DATA
     row_filter_id: NONE
+    reference_columns_id: COMPLETENESS_CHECK_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_ISSUES_WITH_COMPLETENESS:
           condition: data.data IS NOT NULL
@@ -96,6 +98,7 @@ rule_bindings:
     entity_id: COMPLETENESS_CHECK_OK
     column_id: DATA
     row_filter_id: NONE
+    reference_columns_id: COMPLETENESS_CHECK_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_ISSUES_WITH_COMPLETENESS:
           condition: data.data IS NOT NULL
@@ -106,9 +109,20 @@ rule_bindings:
     entity_id: COMPLETENESS_CHECK_NOT_OK
     column_id: DATA
     row_filter_id: NONE
+    reference_columns_id: COMPLETENESS_CHECK_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_ISSUES_WITH_COMPLETENESS:
           condition: data.data IS NOT NULL
           threshold_pct: 85
     metadata:
       brand: one
+
+reference_columns:
+
+  COMPLETENESS_CHECK_OK_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - data
+
+  COMPLETENESS_CHECK_NOT_OK_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - data

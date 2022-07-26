@@ -51,7 +51,8 @@ with dq_summary as (
       failed_count,
       failed_percentage,
       null_count,
-      null_percentage
+      null_percentage,
+      failed_records_query,
     from {{ ref('main') }}
 
 )

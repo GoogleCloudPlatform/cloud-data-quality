@@ -69,10 +69,11 @@ SELECT
         ELSE COUNTIF(simple_rule_row_is_valid IS NULL) / rows_validated
     END
     AS null_percentage,
+    """rule_binding_id_1_failed_records_sql_string""" as failed_records_query,
 FROM
     {{ ref('rule_binding_id_1') }}
 GROUP BY
-    1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+    1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,25
 UNION ALL
 SELECT
     execution_ts,
@@ -131,7 +132,8 @@ SELECT
         ELSE COUNTIF(simple_rule_row_is_valid IS NULL) / rows_validated
     END
     AS null_percentage,
+    """rule_binding_id_2_failed_records_sql_string""" as failed_records_query,
 FROM
     {{ ref('rule_binding_id_2') }}
 GROUP BY
-    1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+    1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,25

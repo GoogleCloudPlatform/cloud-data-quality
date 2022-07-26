@@ -342,9 +342,14 @@ def main(  # noqa: C901
                 f"'{dq_summary_project_id}.{dq_summary_dataset}' region: "
                 f"'{dq_summary_dataset_region}'."
             )
-        bigquery_client.assert_required_columns_exist_in_table(
-            table=dq_summary_table_name, project_id=dq_summary_project_id
+        dq_summary_missing_required_fields = (
+            bigquery_client.assert_required_columns_exist_in_table(
+                table=dq_summary_table_name, project_id=dq_summary_project_id
+            )
         )
+        if dq_summary_missing_required_fields:
+            for field in dq_summary_missing_required_fields.values():
+                bigquery_client.execute_query(query_string=field).result()
         # Check existence of dataset for target BQ table in the selected GCP region
         if target_bigquery_summary_table:
             logger.info(
@@ -388,9 +393,14 @@ def main(  # noqa: C901
                     f"'{dq_summary_project_id}.{dq_summary_dataset}': "
                     f"'{target_dataset_region}'"
                 )
-            bigquery_client.assert_required_columns_exist_in_table(
-                table=target_bigquery_summary_table, project_id=target_project_id
+            target_table_missing_required_fields = (
+                bigquery_client.assert_required_columns_exist_in_table(
+                    table=target_bigquery_summary_table, project_id=target_project_id
+                )
             )
+            if target_table_missing_required_fields:
+                for field in target_table_missing_required_fields.values():
+                    bigquery_client.execute_query(query_string=field).result()
         else:
             logger.warning(
                 "CLI --target_bigquery_summary_table is not set. This will become a required argument in v1.0.0."
@@ -411,7 +421,6 @@ def main(  # noqa: C901
         configs_path = Path(rule_binding_config_path)
         logger.debug(f"Loading rule bindings from: {configs_path.absolute()}")
         all_rule_bindings = lib.load_rule_bindings_config(Path(configs_path))
-        print(all_rule_bindings)
         # Prepare list of Rule Bindings in-scope for run
         target_rule_binding_ids = [
             r.strip().upper() for r in rule_binding_ids.split(",")
@@ -463,6 +472,7 @@ def main(  # noqa: C901
                 target_rule_binding_ids=target_rule_binding_ids,
             )
         )
+        failed_queries_configs = dict()
         # Create Rule_binding views
         for rule_binding_id in target_rule_binding_ids:
             rule_binding_configs = all_rule_bindings.get(rule_binding_id, None)
@@ -481,7 +491,7 @@ def main(  # noqa: C901
                 )
             high_watermark_filter_exists = False
 
-            sql_string = lib.create_rule_binding_view_model(
+            configs = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
                 rule_binding_configs=rule_binding_configs,
                 dq_summary_table_name=dq_summary_table_name,
@@ -495,23 +505,27 @@ def main(  # noqa: C901
                 high_watermark_filter_exists=high_watermark_filter_exists,
                 bigquery_client=bigquery_client,
             )
-            print("sql string is ***")
-            print(sql_string)
             if not skip_sql_validation:
                 logger.debug(
                     f"Validating generated SQL code for rule binding "
                     f"{rule_binding_id} using BigQuery dry-run client.",
                 )
-                bigquery_client.check_query_dry_run(query_string=sql_string)
+                bigquery_client.check_query_dry_run(
+                    query_string=configs.get("generated_sql_string")
+                )
             logger.debug(
                 f"*** Writing sql to {dbt_rule_binding_views_path.absolute()}/"
                 f"{rule_binding_id}.sql",
             )
             lib.write_sql_string_as_dbt_model(
                 model_id=rule_binding_id,
-                sql_string=sql_string,
+                sql_string=configs.get("generated_sql_string"),
                 dbt_model_path=dbt_rule_binding_views_path,
             )
+            failed_queries_configs[
+                f"{rule_binding_id}_failed_records_sql_string"
+            ] = configs.get("failed_records_sql_string")
+        logger.debug(f"failed_queries_configs:\n{pformat(failed_queries_configs)}")
         # clean up old rule_bindings
         for view in dbt_rule_binding_views_path.glob("*.sql"):
             if view.stem.upper() not in target_rule_binding_ids:
@@ -535,6 +549,7 @@ def main(  # noqa: C901
                 gcp_project_id=gcp_project_id,
                 gcp_bq_dataset_id=gcp_bq_dataset_id,
                 debug=print_sql_queries,
+                failed_queries_configs=failed_queries_configs,
             )
             logger.debug(
                 f"*** Writing sql to {dbt_entity_summary_path.absolute()}/"

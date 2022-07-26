@@ -66,6 +66,7 @@ rule_bindings:
     entity_id: TEST_DATA
     column_id: UNIQUE_KEY
     row_filter_id: NONE
+    reference_columns_id: TEST_DATA_REFERENCE_COLUMNS
     rule_ids:
       - REF_SUBQUERY:
           start_date: '2016-01-01'
@@ -74,7 +75,18 @@ rule_bindings:
     entity_id: TEST_DATA
     column_id: UNIQUE_KEY
     row_filter_id: NONE
+    reference_columns_id: TEST_DATA_REFERENCE_COLUMNS
     rule_ids:
       - FOREIGN_KEY_VALID
+
+reference_columns:
+
+  TEST_DATA_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - unique_key
+      - descript
+      - date
+      - time
+      - timestamp
       
       

@@ -30,6 +30,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_id
@@ -46,6 +47,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_event_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_event_id
@@ -62,6 +64,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_type_concept_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_type_concept_id
@@ -78,6 +81,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: currency_concept_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: currency_concept_id
@@ -94,6 +98,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: total_paid
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NOT_NULL_SIMPLE1
       - NOT_NULL_SIMPLE2
@@ -109,6 +114,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: paid_by_payer
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - VALUE_ZERO_OR_POSITIVE1
       - VALUE_ZERO_OR_POSITIVE2
@@ -124,6 +130,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: paid_by_patient
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - VALUE_ZERO_OR_POSITIVE1
       - VALUE_ZERO_OR_POSITIVE2
@@ -139,6 +146,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: paid_by_primary
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - VALUE_ZERO_OR_POSITIVE1
       - VALUE_ZERO_OR_POSITIVE2
@@ -154,6 +162,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_event_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_event_id
@@ -170,6 +179,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_type_concept_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_type_concept_id
@@ -186,6 +196,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_type_concept_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_type_concept_id
@@ -202,6 +213,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_type_concept_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_type_concept_id
@@ -218,6 +230,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_type_concept_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_type_concept_id
@@ -234,6 +247,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_type_concept_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_type_concept_id
@@ -250,6 +264,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_type_concept_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_type_concept_id
@@ -266,6 +281,7 @@ rule_bindings:
     entity_uri: dataplex://entities/cost
     column_id: cost_type_concept_id
     row_filter_id: NONE
+    reference_columns_id: COST_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: cost_type_concept_id
@@ -428,3 +444,16 @@ rules:
    params:
      custom_sql_expr: |-
        $column >= 0
+
+reference_columns:
+
+  COST_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - cost_id
+      - cost_event_id
+      - cost_type_concept_id
+      - currency_concept_id
+      - total_paid
+      - paid_by_payer
+      - paid_by_patient
+      - paid_by_primary
