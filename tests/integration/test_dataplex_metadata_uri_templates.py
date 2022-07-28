@@ -170,7 +170,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
@@ -283,7 +284,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
@@ -305,6 +307,7 @@ class TestDataplexMetadataUriTemplates:
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             output = output.replace("CAST(NULL AS STRING) AS dataplex_asset_id,", ASSET_ID_REP)
+            print(output)
             assert output == expected
 
     def test_rule_bindings_class_resolve_gcs_configs(
@@ -396,7 +399,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_zone_id.replace('-', '_'), "<your_dataplex_zone_name>")\
                 .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_name>")\
@@ -481,7 +485,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_zone_id.replace('-', '_'), "<your_dataplex_zone_name>")\
                 .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_name>")\
@@ -562,7 +567,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
@@ -650,7 +656,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")

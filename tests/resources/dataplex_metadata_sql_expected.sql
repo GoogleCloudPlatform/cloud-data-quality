@@ -55,6 +55,75 @@ SELECT
       WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
       ELSE FALSE
     END AS complex_rule_validation_success_flag,
+    """
+    WITH
+    zero_record AS (
+    SELECT
+    '<rule_binding_id>' AS rule_binding_id,
+    ),
+    data AS (
+    SELECT
+    *,
+    '<rule_binding_id>' AS rule_binding_id,
+    FROM
+    `<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details` d
+    WHERE
+    contact_type = 'email'
+    ),
+    last_mod AS (
+    SELECT
+    project_id || '.' || dataset_id || '.' || table_id AS table_id,
+    TIMESTAMP_MILLIS(last_modified_time) AS last_modified
+    FROM `<your-gcp-project-id>.<your_bigquery_dataset_id>.__TABLES__`
+    ),
+    validation_results AS (SELECT
+    CURRENT_TIMESTAMP() AS execution_ts,
+    '<rule_binding_id>' AS rule_binding_id,
+    'NOT_NULL_SIMPLE' AS rule_id,
+    '<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
+    'value' AS column_id,
+    data.value AS value,
+    CAST(NULL AS STRING) AS dimension,
+    CASE
+    WHEN value IS NOT NULL THEN TRUE
+    ELSE
+    FALSE
+    END AS simple_rule_row_is_valid,
+    TRUE AS skip_null_count,
+    CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
+    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
+    FROM
+    zero_record
+    LEFT JOIN
+    data
+    ON
+    zero_record.rule_binding_id = data.rule_binding_id
+    ),
+    all_validation_results AS (
+    SELECT
+    r.rule_binding_id AS rule_binding_id,
+    r.rule_id AS rule_id,
+    r.column_id AS column_id,
+    CAST(r.dimension AS STRING) AS dimension,
+    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
+    r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+    r.column_value AS column_value,
+    r.row_id AS row_id,
+    r.contact_type AS contact_type,
+    r.value AS value,FROM
+    validation_results r
+    )
+    SELECT
+    *
+    FROM
+    all_validation_results
+    WHERE
+    simple_rule_row_is_valid is False
+    OR
+    complex_rule_validation_success_flag is False
+    ORDER BY rule_id"""
+    AS failed_records_query,
   FROM
     zero_record
   LEFT JOIN
@@ -64,7 +133,7 @@ SELECT
 
   LEFT JOIN
     (
-      SELECT 
+      SELECT
         '<rule_binding_id>' AS _rule_binding_id,
         COUNT(*) AS complex_rule_validation_errors_count,
       FROM (
@@ -90,7 +159,7 @@ using (contact_type,value)
     'NOT_NULL_SIMPLE' AS rule_id,
     '<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     'value' AS column_id,
-    data.value AS column_value,
+    data.value AS value,
     data.row_id AS row_id,
     data.contact_type AS contact_type,
     data.value AS value,
@@ -109,6 +178,75 @@ using (contact_type,value)
 
     CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
     CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
+    """
+    WITH
+    zero_record AS (
+    SELECT
+    '<rule_binding_id>' AS rule_binding_id,
+    ),
+    data AS (
+    SELECT
+    *,
+    '<rule_binding_id>' AS rule_binding_id,
+    FROM
+    `<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details` d
+    WHERE
+    contact_type = 'email'
+    ),
+    last_mod AS (
+    SELECT
+    project_id || '.' || dataset_id || '.' || table_id AS table_id,
+    TIMESTAMP_MILLIS(last_modified_time) AS last_modified
+    FROM `<your_gcp_project_id>.<your_bigquery_dataset_id>.__TABLES__`
+    ),
+    validation_results AS (SELECT
+    CURRENT_TIMESTAMP() AS execution_ts,
+    '<rule_binding_id>' AS rule_binding_id,
+    'NOT_NULL_SIMPLE' AS rule_id,
+    '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
+    'value' AS column_id,
+    data.value AS column_value,
+    CAST(NULL AS STRING) AS dimension,
+    CASE
+    WHEN value IS NOT NULL THEN TRUE
+    ELSE
+    FALSE
+    END AS simple_rule_row_is_valid,
+    TRUE AS skip_null_count,
+    CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
+    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
+    FROM
+    zero_record
+    LEFT JOIN
+    data
+    ON
+    zero_record.rule_binding_id = data.rule_binding_id
+    ),
+    all_validation_results AS (
+    SELECT
+    r.rule_binding_id AS rule_binding_id,
+    r.rule_id AS rule_id,
+    r.column_id AS column_id,
+    CAST(r.dimension AS STRING) AS dimension,
+    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
+    r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+    r.column_value AS column_value,
+    r.row_id AS row_id,
+    r.contact_type AS contact_type,
+    r.value AS value,FROM
+    validation_results r
+    )
+    SELECT
+    *
+    FROM
+    all_validation_results
+    WHERE
+    simple_rule_row_is_valid is False
+    OR
+    complex_rule_validation_success_flag is False
+    ORDER BY rule_id"""
+    AS failed_records_query,
   FROM
     zero_record
   LEFT JOIN
@@ -141,6 +279,7 @@ all_validation_results AS (
     '<your_dataplex_asset_id>' AS dataplex_asset_id,
     CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', True) AS dq_run_id,
     TRUE AS progress_watermark,
+    failed_records_query AS failed_records_query,
   FROM
     validation_results r
   JOIN last_mod USING(table_id)

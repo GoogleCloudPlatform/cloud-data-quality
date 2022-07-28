@@ -109,11 +109,7 @@ class DqRuleBinding:
             error_msg=f"Rule Binding ID: '{rule_binding_id}' must have defined value "
             f"'rule_ids' of type 'list'.",
         )
-        reference_columns_id: str = get_from_dict_and_assert(
-            config_id=rule_binding_id,
-            kwargs=kwargs,
-            key="reference_columns_id",
-        )
+        reference_columns_id: str = kwargs.get("reference_columns_id", None)
         if reference_columns_id:
             reference_columns_id.upper()
         incremental_time_filter_column_id: str | None = kwargs.get(
@@ -337,9 +333,12 @@ class DqRuleBinding:
             # Resolve filter configs
             row_filter_config = self.resolve_row_filter_config(configs_cache)
             # resolve reference columns config
-            include_reference_columns = self.resolve_reference_columns_config(
-                configs_cache
-            ).include_reference_columns
+            if self.reference_columns_id:
+                include_reference_columns = self.resolve_reference_columns_config(
+                    configs_cache
+                ).include_reference_columns
+            else:
+                include_reference_columns = []
 
             return dict(
                 {
