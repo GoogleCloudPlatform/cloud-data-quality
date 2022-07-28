@@ -542,22 +542,6 @@ class TestClasses:
 
         assert dq_reference_columns.to_dict() == expected_dq_refereence_columns_dict
 
-    def test_dq_rule_binding_invalid_reference_column_id_parse_failure(self):
-        """ """
-        dq_rule_binding_dict_not_valid = {
-            "entity_id": "TEST_TABLE",
-            "column_id": "data",
-            "row_filter_id": "NONE",
-            "rule_ids": ["REGEX_VALID_EMAIL"],
-            "reference_columns_id": "",
-            "metadata": {"key": "value"}
-        }
-        with pytest.raises(ValueError):
-            DqRuleBinding.from_dict(
-                rule_binding_id="valid",
-                kwargs=dq_rule_binding_dict_not_valid,
-            )
-
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))
