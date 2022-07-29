@@ -248,7 +248,7 @@ class TestDataplexMetadataUriTemplates:
             configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
             configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
 
-            with open(test_resources / "dataplex_metadata_expected_configs.json") as f:
+            with open(test_resources / "dataplex_metadata_configs_file_expected_configs.json") as f:
                 expected_configs = json.loads(f.read())
                 assert configs["configs"] == dict(expected_configs)
             metadata.update(rule_binding_configs["metadata"])
@@ -271,7 +271,7 @@ class TestDataplexMetadataUriTemplates:
         """ """
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
 
-            with open(test_resources / "dataplex_metadata_sql_expected.sql") as f:
+            with open(test_resources / "dataplex_metadata_configs_file_sql_expected.sql") as f:
                 expected = f.read()
             configs = lib.create_rule_binding_view_model(
                 rule_binding_id=rule_binding_id,
@@ -301,7 +301,6 @@ class TestDataplexMetadataUriTemplates:
 
             output = output.replace(rule_binding_id, "<rule_binding_id>")
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
-            print(output)
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             output = output.replace("CAST(NULL AS STRING) AS dataplex_asset_id,", ASSET_ID_REP)
@@ -519,7 +518,6 @@ class TestDataplexMetadataUriTemplates:
                 bigquery_client=test_bigquery_client,
             )
             logger.info(pformat(json.dumps(configs["configs"])))
-            print(configs)
             configs["configs"]["rule_binding_id"] = "<rule_binding_id>"
             configs["configs"]["entity_id"] = "<entity_id>"
             configs["configs"]["entity_configs"]["database_name"] = "<your_bigquery_dataset_id>"
@@ -602,7 +600,6 @@ class TestDataplexMetadataUriTemplates:
                 bigquery_client=test_bigquery_client,
             )
             logger.info(pformat(json.dumps(configs["configs"])))
-            print(configs)
             configs["configs"]["rule_binding_id"] = "<rule_binding_id>"
             configs["configs"]["entity_id"] = "<entity_id>"
             configs["configs"]["entity_configs"]["database_name"] = "<your_bigquery_dataset_id>"
