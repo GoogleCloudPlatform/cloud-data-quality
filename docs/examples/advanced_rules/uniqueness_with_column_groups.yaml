@@ -100,7 +100,6 @@ rule_bindings:
     entity_id: UNIQUENESS_CHECK_NOT_OK
     column_id: DATA
     row_filter_id: NONE
-    reference_columns_id: UNIQUENESS_CHECK_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: data.data, id, type
@@ -111,24 +110,9 @@ rule_bindings:
     entity_id: UNIQUENESS_CHECK_OK
     column_id: DATA
     row_filter_id: NONE
-    reference_columns_id: UNIQUENESS_CHECK_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: data.data, id, type
           group_by_statement: data, id, type
     metadata:
       brand: one
-
-reference_columns:
-
-  UNIQUENESS_CHECK_OK_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - data
-      - id
-      - type
-
-  UNIQUENESS_CHECK_NOT_OK_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - data
-      - id
-      - type

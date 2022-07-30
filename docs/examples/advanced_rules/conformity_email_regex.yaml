@@ -68,7 +68,6 @@ rule_bindings:
     entity_id: CONFORMITY_CHECK_NOT_OK
     column_id: DATA
     row_filter_id: NONE
-    reference_columns_id: CONFORMITY_CHECK_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_INVALID_EMAIL
     metadata:
@@ -77,19 +76,7 @@ rule_bindings:
     entity_id: CONFORMITY_CHECK_OK
     column_id: DATA
     row_filter_id: NONE
-    reference_columns_id: CONFORMITY_CHECK_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_INVALID_EMAIL
     metadata:
       brand: one
-
-
-reference_columns:
-
-  CONFORMITY_CHECK_OK_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - data
-
-  CONFORMITY_CHECK_NOT_OK_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - data

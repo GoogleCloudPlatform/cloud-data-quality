@@ -157,9 +157,10 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: ROW_ID
     row_filter_id: NONE
-    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
-      - UNIQUE
+      - UNIQUE:
+          column: "row_id"
+
   CUSTOM_SQL_EXPR_PARAMETRIZED_TEST:
     entity_id: TEST_TABLE
     column_id: VALUE
@@ -206,10 +207,9 @@ rules:
   UNIQUE:
     rule_type: CUSTOM_SQL_STATEMENT
     params:
-      custom_sql_statement: |-
-        select $column from data
+      custom_sql_statement: "select $column from data
         group by $column
-        having count(*) > 1
+        having count(*) > 1"
         
 
 reference_columns:

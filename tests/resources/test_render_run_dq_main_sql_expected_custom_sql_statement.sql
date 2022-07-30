@@ -41,9 +41,9 @@ SELECT
     '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
-    data.row_id AS row_id,
-    data.contact_type AS contact_type,
-    data.value AS value,
+    custom_sql_statement_validation_errors.row_id AS row_id,
+    custom_sql_statement_validation_errors.contact_type AS contact_type,
+    custom_sql_statement_validation_errors.value AS value,
     CAST(NULL AS STRING) AS dimension,
 
     CAST(NULL AS BOOLEAN) AS simple_rule_row_is_valid,
@@ -57,14 +57,13 @@ SELECT
   FROM
     zero_record
   LEFT JOIN
-  data
-  ON
-  zero_record.rule_binding_id = data.rule_binding_id
-  LEFT JOIN
     (
-      SELECT 
+      SELECT
         'T3_DQ_1_EMAIL_DUPLICATE' AS _rule_binding_id,
-        COUNT(*) AS complex_rule_validation_errors_count,
+        row_id AS row_id,
+        contact_type AS contact_type,
+        value AS value,
+        COUNT(*) OVER() AS complex_rule_validation_errors_count,
       FROM (
       select a.*
 from data a

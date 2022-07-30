@@ -510,6 +510,7 @@ def main(  # noqa: C901
                     f"Validating generated SQL code for rule binding "
                     f"{rule_binding_id} using BigQuery dry-run client.",
                 )
+                # print(f"configs generated sql string \n {configs.get('generated_sql_string')}")
                 bigquery_client.check_query_dry_run(
                     query_string=configs.get("generated_sql_string")
                 )
