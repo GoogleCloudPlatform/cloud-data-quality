@@ -62,14 +62,5 @@ rule_bindings:
     entity_id: TAXI_TRIPS
     column_id: TRIP_TOTAL
     row_filter_id: NONE
-    reference_columns_id: TAXI_TRIPS_REFERENCE_COLUMNS
     rule_ids:
       - TRIP_AMOUNT_NO_CHARGE
-
-reference_columns:
-
-  TAXI_TRIPS_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - unique_key
-      - taxi_id
-      - payment_type

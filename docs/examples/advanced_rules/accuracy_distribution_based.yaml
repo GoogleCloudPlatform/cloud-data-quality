@@ -148,7 +148,6 @@ rule_bindings:
     entity_id: ACCURACY_CHECK_SIMPLE
     column_id: FULL_NAME
     row_filter_id: NONE
-    reference_columns_id: ACCURACY_CHECK_SIMPLE_REFERENCE_COLUMNS
     rule_ids:
       - NO_ACCURACY_ISSUES_SIMPLE:
           deviation_threshold_pct: 2
@@ -158,7 +157,6 @@ rule_bindings:
     entity_id: ACCURACY_CHECK_SIMPLE
     column_id: FULL_NAME
     row_filter_id: NONE
-    reference_columns_id: ACCURACY_CHECK_SIMPLE_REFERENCE_COLUMNS
     rule_ids:
       - NO_ACCURACY_ISSUES_SIMPLE:
           deviation_threshold_pct: 25
@@ -168,7 +166,6 @@ rule_bindings:
     entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
     column_id: FULL_NAME
     row_filter_id: NONE
-    reference_columns_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_ACCURACY_ISSUES_DISTRIBUTION:
           standard_deviation_threshold: 2
@@ -179,7 +176,6 @@ rule_bindings:
     entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
     column_id: FULL_NAME
     row_filter_id: NONE
-    reference_columns_id: ACCURACY_CHECK_DISTRIBUTION_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_ACCURACY_ISSUES_DISTRIBUTION:
           standard_deviation_threshold: 0.1
@@ -190,7 +186,6 @@ rule_bindings:
     entity_id: ACCURACY_CHECK_DISTRIBUTION_OK
     column_id: FULL_NAME
     row_filter_id: NONE
-    reference_columns_id: ACCURACY_CHECK_DISTRIBUTION_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_ACCURACY_ISSUES_DISTRIBUTION:
           standard_deviation_threshold: 2
@@ -201,30 +196,9 @@ rule_bindings:
     entity_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK
     column_id: FULL_NAME
     row_filter_id: NONE
-    reference_columns_id: ACCURACY_CHECK_DISTRIBUTION_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_ACCURACY_ISSUES_DISTRIBUTION:
           standard_deviation_threshold: 2
           bucket_ratio: 100
     metadata:
       brand: one
-
-reference_columns:
-
-  ACCURACY_CHECK_SIMPLE_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - fullName
-      - gender
-      - dateOfBirth
-
-  ACCURACY_CHECK_DISTRIBUTION_NOT_OK_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - fullName
-      - gender
-      - dateOfBirth
-
-  ACCURACY_CHECK_DISTRIBUTION_OK_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - fullName
-      - gender
-      - dateOfBirth
