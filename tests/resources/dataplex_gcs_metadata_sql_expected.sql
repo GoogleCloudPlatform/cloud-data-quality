@@ -41,9 +41,9 @@ SELECT
     '<your-gcp-project-id>.<your_dataplex_zone_name>.asset_bucket' AS table_id,
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
-    custom_sql_statement_validation_errors.row_id AS row_id,
-    custom_sql_statement_validation_errors.contact_type AS contact_type,
-    custom_sql_statement_validation_errors.value AS value,
+    data.row_id AS row_id,
+    data.contact_type AS contact_type,
+    data.value AS value,
 
     CAST(NULL AS STRING) AS dimension,
 
@@ -58,12 +58,15 @@ SELECT
   FROM
     zero_record
   LEFT JOIN
+    data
+  ON
+    zero_record.rule_binding_id = data.rule_binding_id
+
+  LEFT JOIN
     (
       SELECT
+        *,
         '<rule_binding_id>' AS _rule_binding_id,
-        row_id AS row_id,
-        contact_type AS contact_type,
-        value AS value,
         COUNT(*) OVER() AS complex_rule_validation_errors_count,
       FROM (
       select a.*
