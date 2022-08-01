@@ -62,7 +62,7 @@
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
     {% for ref_column_name in include_reference_columns %}
-        data.{{ ref_column_name }} AS {{ ref_column_name }},
+        custom_sql_statement_validation_errors.{{ ref_column_name }} AS {{ ref_column_name }},
     {%- endfor -%}
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
@@ -79,10 +79,6 @@
     END AS complex_rule_validation_success_flag,
   FROM
     zero_record
-  LEFT JOIN
-    data
-  ON
-    zero_record.rule_binding_id = data.rule_binding_id
   LEFT JOIN
     (
       SELECT
