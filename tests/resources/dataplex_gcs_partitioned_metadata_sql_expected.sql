@@ -41,9 +41,9 @@ SELECT
     '<your-gcp-project-id>.<your_dataplex_zone_name>.partitioned_gcs_asset' AS table_id,
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
-    data.row_id AS row_id,
-    data.contact_type AS contact_type,
-    data.value AS value,
+    custom_sql_statement_validation_errors.row_id AS row_id,
+    custom_sql_statement_validation_errors.contact_type AS contact_type,
+    custom_sql_statement_validation_errors.value AS value,
 
     CAST(NULL AS STRING) AS dimension,
 
@@ -57,10 +57,6 @@ SELECT
     END AS complex_rule_validation_success_flag,
   FROM
     zero_record
-  LEFT JOIN
-    data
-  ON
-    zero_record.rule_binding_id = data.rule_binding_id
 
   LEFT JOIN
     (

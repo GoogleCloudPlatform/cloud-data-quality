@@ -43,9 +43,9 @@ SELECT
     '<your-gcp-project-id>.austin_311.contact_details_ingestion_time_partitioned' AS table_id,
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
-    data.row_id AS row_id,
-    data.contact_type AS contact_type,
-    data.value AS value,
+    custom_sql_statement_validation_errors.row_id AS row_id,
+    custom_sql_statement_validation_errors.contact_type AS contact_type,
+    custom_sql_statement_validation_errors.value AS value,
 
     CAST(NULL AS STRING) AS dimension,
 
