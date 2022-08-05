@@ -83,6 +83,7 @@ validation_results AS (
 ),
 all_validation_results AS (
   SELECT
+    {{invocation_id}} AS invocation_id,
     r.rule_binding_id AS rule_binding_id,
     r.rule_id AS rule_id,
     r.column_id AS column_id,
