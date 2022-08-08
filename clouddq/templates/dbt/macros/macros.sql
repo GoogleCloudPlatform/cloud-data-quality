@@ -64,7 +64,7 @@
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
     {% for ref_column_name in include_reference_columns %}
-        data.{{ ref_column_name }} AS {{ ref_column_name }},
+        custom_sql_statement_validation_errors.{{ ref_column_name }} AS {{ ref_column_name }},
     {%- endfor -%}
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
@@ -84,14 +84,11 @@
   FROM
     zero_record
   LEFT JOIN
-    data
-  ON
-    zero_record.rule_binding_id = data.rule_binding_id
-  LEFT JOIN
     (
       SELECT
+         *,
         '{{ rule_binding_id }}' AS _rule_binding_id,
-        COUNT(*) AS complex_rule_validation_errors_count,
+        COUNT(*) OVER() AS complex_rule_validation_errors_count,
       FROM (
       {{ rule_configs.get("rule_sql_expr") }}
       ) custom_sql
@@ -109,6 +106,9 @@
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
     data.{{ column_name }} AS column_value,
+    {% for ref_column_name in include_reference_columns %}
+        data.{{ ref_column_name }} AS {{ ref_column_name }},
+    {%- endfor -%}
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
@@ -168,13 +168,8 @@
   LEFT JOIN
     (
       SELECT
+        *,
         '{{ rule_binding_id }}' AS _rule_binding_id,
-        {% for ref_column_name in include_reference_columns %}
-            {{ ref_column_name }} AS {{ ref_column_name }},
-            {% if loop.last %}
-                {{ '\n' }}
-            {% endif %}
-        {%- endfor -%}
         COUNT(*) OVER() AS complex_rule_validation_errors_count,
       FROM (
       {{ rule_configs.get("rule_sql_expr") }}
