@@ -113,7 +113,6 @@ rule_bindings:
     entity_id: TEST_DATA
     column_id: UNIQUE_KEY
     row_filter_id: NONE
-    reference_columns_id: TEST_DATA_REFERENCE_COLUMNS
     rule_ids:
       - DISTINCT_VALUES:
           n_max: 1000
@@ -122,23 +121,6 @@ rule_bindings:
     entity_id: TAXI_TRIPS
     column_id: TIPS
     row_filter_id: NONE
-    reference_columns_id: TAXI_TRIPS_REFERENCE_COLUMNS
     rule_ids:
       - Z_SCORE_OUTLIER:
           z_limit: 3
-
-reference_columns:
-
-  TEST_DATA_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - unique_key
-      - descript
-      - date
-      - time
-      - timestamp
-
-  TAXI_TRIPS_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - unique_key
-      - taxi_id
-      - payment_type

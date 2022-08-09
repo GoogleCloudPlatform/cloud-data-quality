@@ -74,7 +74,6 @@ rule_bindings:
     entity_id: COMPLEX_RULES_TABLE_OK
     column_id: INVOICE_GROSS_TOTAL_AMOUNT
     row_filter_id: NONE
-    reference_columns_id: COMPLEX_RULES_TABLE_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_COMPLEX_RULES_MISMATCH:
           error_margin: 0.03
@@ -84,20 +83,8 @@ rule_bindings:
     entity_id: COMPLEX_RULES_TABLE_NOT_OK
     column_id: INVOICE_GROSS_TOTAL_AMOUNT
     row_filter_id: NONE
-    reference_columns_id: COMPLEX_RULES_TABLE_NOT_OK_REFERENCE_COLUMNS
     rule_ids:
       - NO_COMPLEX_RULES_MISMATCH:
           error_margin: 0.03
     metadata:
       brand: one
-
-
-reference_columns:
-
-  COMPLEX_RULES_TABLE_OK_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - dInvoiceGrossTotalAmount
-
-  COMPLEX_RULES_TABLE_NOT_OK_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - dInvoiceGrossTotalAmount

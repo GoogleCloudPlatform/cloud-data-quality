@@ -159,7 +159,6 @@ rule_bindings:
     entity_id: TEST_DATA
     column_id: UNIQUE_KEY
     row_filter_id: NONE
-    reference_columns_id: TEST_DATA_REFERENCE_COLUMNS
     rule_ids:
       - EQUAL_COLUMNS:
           ref_table_id: <reference_table_id>
@@ -169,7 +168,6 @@ rule_bindings:
     entity_id: TEST_DATA
     column_id: UNIQUE_KEY
     row_filter_id: NONE
-    reference_columns_id: TEST_DATA_REFERENCE_COLUMNS
     rule_ids:
       - EQUAL_COLUMNS_UNIQUE_VALUES:
           ref_table_id: <reference_table_id>
@@ -179,7 +177,6 @@ rule_bindings:
     entity_id: TAXI_TRIPS
     column_id: TAXI_ID
     row_filter_id: NONE
-    reference_columns_id: TAXI_TRIPS_REFERENCE_COLUMNS
     rule_ids:
       - EQUAL_AGGREGATE:
           key_column_id: <key_column_id>
@@ -187,20 +184,3 @@ rule_bindings:
           ref_table_id: <reference_table_id>
           ref_key_column_id: <reference_key_column_id>
           ref_value_column_id: <reference_value_column_id>
-
-
-reference_columns:
-
-  TEST_DATA_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - unique_key
-      - descript
-      - date
-      - time
-      - timestamp
-
-  TAXI_TRIPS_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - unique_key
-      - taxi_id
-      - payment_type

@@ -135,7 +135,6 @@ rule_bindings:
     entity_id: INGESTION_TABLE_DAY_LEVEL
     column_id: INVOICE_ID
     row_filter_id: NONE
-    reference_columns_id: INGESTION_TABLE_DAY_LEVEL_REFERENCE_COLUMNS
     rule_ids:
       - NO_DELAYED_INGESTION_DAY_LEVEL:
           ingestion_date_day: date_of_day
@@ -147,7 +146,6 @@ rule_bindings:
     entity_id: INGESTION_TABLE_DAY_LEVEL
     column_id: INVOICE_ID
     row_filter_id: NONE
-    reference_columns_id: INGESTION_TABLE_DAY_LEVEL_REFERENCE_COLUMNS
     rule_ids:
       - NO_DELAYED_INGESTION_DAY_LEVEL:
           ingestion_date_day: date_of_day
@@ -159,7 +157,6 @@ rule_bindings:
     entity_id: INGESTION_TABLE_MONTH_LEVEL
     column_id: CLIENT_CD
     row_filter_id: NONE
-    reference_columns_id: INGESTION_TABLE_MONTH_LEVEL_REFERENCE_COLUMNS
     rule_ids:
       - NO_DELAYED_INGESTION_MONTH_LEVEL:
           ingestion_date_month: month_id
@@ -171,7 +168,6 @@ rule_bindings:
     entity_id: INGESTION_TABLE_MONTH_LEVEL
     column_id: CLIENT_CD
     row_filter_id: NONE
-    reference_columns_id: INGESTION_TABLE_MONTH_LEVEL_REFERENCE_COLUMNS
     rule_ids:
       - NO_DELAYED_INGESTION_MONTH_LEVEL:
           ingestion_date_month: month_id
@@ -183,7 +179,6 @@ rule_bindings:
     entity_id: INGESTION_TABLE_TIMESTAMP_LEVEL
     column_id: SALES_MANAGER_ID
     row_filter_id: NONE
-    reference_columns_id: INGESTION_TABLE_TIMESTAMP_LEVEL_REFERENCE_COLUMNS
     rule_ids:
       - NO_DELAYED_INGESTION_TIMESTAMP_LEVEL:
           ingestion_timestamp: dana_ingestion_timestamp
@@ -195,27 +190,9 @@ rule_bindings:
     entity_id: INGESTION_TABLE_TIMESTAMP_LEVEL
     column_id: SALES_MANAGER_ID
     row_filter_id: NONE
-    reference_columns_id: INGESTION_TABLE_TIMESTAMP_LEVEL_REFERENCE_COLUMNS
     rule_ids:
       - NO_DELAYED_INGESTION_TIMESTAMP_LEVEL:
           ingestion_timestamp: dana_ingestion_timestamp
           elapsed_time_hours: 10
     metadata:
       brand: one
-
-reference_columns:
-
-  INGESTION_TABLE_DAY_LEVEL_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - invoice_id
-      - date_of_day
-
-  INGESTION_TABLE_MONTH_LEVEL_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - client_cd
-      - month_id
-
-  INGESTION_TABLE_TIMESTAMP_LEVEL_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - dana_ingestion_timestamp
-      - salesManagerId

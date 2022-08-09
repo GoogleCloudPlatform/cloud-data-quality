@@ -55,15 +55,11 @@ SELECT
   FROM
     zero_record
   LEFT JOIN
-    data
-  ON
-    zero_record.rule_binding_id = data.rule_binding_id
-
-  LEFT JOIN
     (
-      SELECT 
+      SELECT
+        *,
         '<rule_binding_id>' AS _rule_binding_id,
-        COUNT(*) AS complex_rule_validation_errors_count,
+        COUNT(*) OVER() AS complex_rule_validation_errors_count,
       FROM (
       select a.*
 from data a
