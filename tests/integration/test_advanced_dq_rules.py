@@ -264,8 +264,6 @@ class TestDqAdvancedRules:
                         if record['rule_id'] not in failed_rows_rule_ids:
                             continue
                         expected_json.append(record)
-                print("***")
-                print(expected_json)
                 assert failed_rows == expected_json
         finally:
             shutil.rmtree(temp_dir)

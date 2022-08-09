@@ -306,7 +306,6 @@ class TestDataplexMetadataUriTemplates:
             output = re.sub(RE_NEWLINES, '\n', output).strip()
             output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             output = output.replace("CAST(NULL AS STRING) AS dataplex_asset_id,", ASSET_ID_REP)
-            print(output)
             assert output == expected
 
     def test_rule_bindings_class_resolve_gcs_configs(
