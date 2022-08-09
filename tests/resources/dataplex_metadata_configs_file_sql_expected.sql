@@ -115,11 +115,11 @@ SELECT
 r.rule_binding_id AS rule_binding_id,
 r.rule_id AS rule_id,
 r.column_id AS column_id,
+r.column_value AS column_value,
 CAST(r.dimension AS STRING) AS dimension,
 r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
 r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-r.column_value AS column_value,
 FROM
 validation_results r
 )
@@ -222,11 +222,11 @@ SELECT
 r.rule_binding_id AS rule_binding_id,
 r.rule_id AS rule_id,
 r.column_id AS column_id,
+r.column_value AS column_value,
 CAST(r.dimension AS STRING) AS dimension,
 r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
 r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-r.column_value AS column_value,
 FROM
 validation_results r
 )
@@ -254,12 +254,12 @@ r.rule_binding_id AS rule_binding_id,
 r.rule_id AS rule_id,
 r.table_id AS table_id,
 r.column_id AS column_id,
+r.column_value AS column_value,
 CAST(r.dimension AS STRING) AS dimension,
 r.skip_null_count AS skip_null_count,
 r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
 r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-r.column_value AS column_value,
 (SELECT COUNT(*) FROM data) AS rows_validated,
 last_mod.last_modified,
 '{"brand": "one"}' AS metadata_json_string,
