@@ -142,10 +142,10 @@ def create_rule_binding_view_model(
             f"{rule_binding_id}_{rule_id}_failed_records_sql_string"
         ] = failed_records_sql_string
         configs.update({"configs": existing_configs})
-        sql_string = template.render(configs)
-        generated_sql_string_dict[
-            f"{rule_binding_id}_generated_sql_string"
-        ] = sql_string
+    sql_string = template.render(configs)
+    generated_sql_string_dict[
+        f"{rule_binding_id}_generated_sql_string"
+    ] = sql_string
 
     configs.update({"generated_sql_string_dict": generated_sql_string_dict})
     if debug:
