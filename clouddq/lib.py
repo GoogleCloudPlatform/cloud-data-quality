@@ -131,13 +131,25 @@ def create_rule_binding_view_model(
         high_watermark_filter_exists=high_watermark_filter_exists,
         bigquery_client=bigquery_client,
     )
-
+    rule_configs_dict = configs.get("configs").get("rule_configs_dict")
+    generated_sql_string_dict = dict()
+    for rule_id, rule_configs in rule_configs_dict.items():
+        configs.update({"rule_type": rule_configs.get("rule_type")})
+        configs.update({"rule_id": rule_id})
+        failed_records_sql_string = failed_records_template.render(configs)
+        existing_configs = configs.get("configs")
+        existing_configs[
+            f"{rule_binding_id}_{rule_id}_failed_records_sql_string"
+        ] = failed_records_sql_string
+        configs.update({"configs": existing_configs})
     sql_string = template.render(configs)
-    failed_records_sql_string = failed_records_template.render(configs)
-    configs.update({"generated_sql_string": sql_string})
-    configs.update({"failed_records_sql_string": failed_records_sql_string})
+    generated_sql_string_dict[f"{rule_binding_id}_generated_sql_string"] = sql_string
+
+    configs.update({"generated_sql_string_dict": generated_sql_string_dict})
     if debug:
-        logger.info(pformat(configs))
+        logger.debug(
+            f"Prepared json configs for {rule_binding_id}:\n{pformat(configs)}"
+        )
     return configs
 
 
@@ -146,7 +158,6 @@ def create_entity_summary_model(
     entity_target_rule_binding_configs: dict,
     gcp_project_id: str,
     gcp_bq_dataset_id: str,
-    failed_queries_configs: dict,
     debug: bool = False,
 ) -> str:
     if debug:
@@ -162,7 +173,6 @@ def create_entity_summary_model(
         "entity_target_rule_binding_configs": entity_target_rule_binding_configs,
         "gcp_project_id": gcp_project_id,
         "gcp_bq_dataset_id": gcp_bq_dataset_id,
-        "failed_queries_configs": failed_queries_configs,
     }
     sql_string = template.render(configs)
     if debug:
@@ -233,7 +243,6 @@ def prepare_configs_from_rule_binding_id(
         )
         configs.update(high_watermark_dict)
     configs.update({"high_watermark_filter_exists": high_watermark_filter_exists})
-    logger.debug(f"Prepared json configs for {rule_binding_id}:\n{pformat(configs)}")
     return configs
 
 

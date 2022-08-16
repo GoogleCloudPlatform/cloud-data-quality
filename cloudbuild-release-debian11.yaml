@@ -25,7 +25,7 @@ steps:
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq
         tzdata sudo lsb-release apt-utils curl
 
-        source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
+        source scripts/cloud_build_test_debian.sh "3.9.7"
 
         make check
 
@@ -36,6 +36,8 @@ steps:
         make test test_dataplex_metadata_uri_templates
 
         make test test_dataplex_task
+        
+        make addlicense
 
         source scripts/install_gcloud.sh
 

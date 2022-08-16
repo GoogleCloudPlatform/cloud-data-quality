@@ -170,7 +170,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
@@ -283,7 +284,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
@@ -395,7 +397,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_zone_id.replace('-', '_'), "<your_dataplex_zone_name>")\
                 .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_name>")\
@@ -480,7 +483,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_zone_id.replace('-', '_'), "<your_dataplex_zone_name>")\
                 .replace(gcp_dataplex_zone_id, "<your_dataplex_zone_name>")\
@@ -560,7 +564,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")
@@ -647,7 +652,8 @@ class TestDataplexMetadataUriTemplates:
                 default_configs=test_dataplex_metadata_defaults_configs,
                 bigquery_client=test_bigquery_client,
             )
-            output = configs.get("generated_sql_string")
+            output = configs.get("generated_sql_string_dict") \
+                .get(f"{rule_binding_id}_generated_sql_string")
             output = output.replace(gcp_project_id, "<your-gcp-project-id>")\
                 .replace(gcp_dataplex_bigquery_dataset_id, "<your_bigquery_dataset_id>")\
                 .replace(gcp_bq_dataset, "<your_bigquery_dataset_id>")

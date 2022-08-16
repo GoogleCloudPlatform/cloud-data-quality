@@ -53,12 +53,12 @@ function main() {
     python -c 'import sys; print(sys.version_info)'
     echo "common --remote_cache=https://storage.googleapis.com/${GCS_BAZEL_CACHE}" >> .bazelrc
     echo "common --google_default_credentials" >> .bazelrc
-    make addlicense
     # make check
     make test-pip-install
     make build
     ls -la
     make test
+    make addlicense
 }
 
 main "$1"
