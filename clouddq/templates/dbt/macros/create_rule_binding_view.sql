@@ -13,7 +13,7 @@
 -- limitations under the License.
 {% from 'macros.sql' import validate_simple_rule -%}
 {% from 'macros.sql' import validate_complex_rule -%}
-{%- macro create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value, generated_sql_string) -%}
+{%- macro create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value) -%}
 {% set rule_binding_id = configs.get('rule_binding_id') -%}
 {% set rule_configs_dict = configs.get('rule_configs_dict') -%}
 {% set filter_sql_expr = configs.get('row_filter_configs').get('filter_sql_expr') -%}
@@ -85,9 +85,9 @@ validation_results AS (
 
 {% for rule_id, rule_configs in rule_configs_dict.items() %}
     {%- if rule_configs.get('rule_type') == "CUSTOM_SQL_STATEMENT" -%}
-      {{ validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) }}
+      {{ validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns, configs) }}
     {%- else -%}
-      {{ validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) }}
+      {{ validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns, configs) }}
     {%- endif -%}
     {% if loop.nextitem is defined %}
     UNION ALL
@@ -101,12 +101,12 @@ all_validation_results AS (
     r.rule_id AS rule_id,
     r.table_id AS table_id,
     r.column_id AS column_id,
+    r.column_value AS column_value,
     CAST(r.dimension AS STRING) AS dimension,
     r.skip_null_count AS skip_null_count,
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-    r.column_value AS column_value,
     {% for ref_column_name in include_reference_columns %}
         r.{{ ref_column_name }} AS {{ ref_column_name }},
         {% if loop.last %}
@@ -134,6 +134,7 @@ all_validation_results AS (
 {%- endif %}
     CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', {{ progress_watermark }}) AS dq_run_id,
     {{ progress_watermark|upper }} AS progress_watermark,
+    failed_records_query AS failed_records_query,
   FROM
     validation_results r
   JOIN last_mod USING(table_id)
@@ -145,4 +146,4 @@ FROM
 
 {%- endmacro -%}
 
-{{-  create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value, generated_sql_string) -}}
+{{-  create_rule_binding_view(configs, environment, dq_summary_table_name, metadata, configs_hashsum, progress_watermark, dq_summary_table_exists, high_watermark_value, current_timestamp_value) -}}

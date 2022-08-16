@@ -5,13 +5,14 @@ steps:
       - |
         set -x
         DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq tzdata sudo lsb-release apt-utils
-        source scripts/cloud_build_test_debian_ubuntu.sh "3.9.7"
+        source scripts/cloud_build_test_debian.sh "3.9.7"
         make check
         make test test_dataplex_metadata
         make test test_dataplex_metadata_uri_templates
         make test test_dataplex_dq_configs_cache
         make test test_dataplex_integration_performance
         make test test_dataplex_task
+        make addlicense
     entrypoint: /bin/bash
     env:
     - 'GOOGLE_CLOUD_PROJECT=${_GOOGLE_CLOUD_PROJECT}'
