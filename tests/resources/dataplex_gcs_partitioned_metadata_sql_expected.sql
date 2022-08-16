@@ -118,6 +118,7 @@ zero_record.rule_binding_id = custom_sql_statement_validation_errors._rule_bindi
 ),
 all_validation_results AS (
 SELECT
+'{{ invocation_id }}' as _dq_validation_invocation_id,
 r.rule_binding_id AS _dq_validation_rule_binding_id,
 r.rule_id AS _dq_validation_rule_id,
 r.column_id AS _dq_validation_column_id,
@@ -233,6 +234,7 @@ zero_record.rule_binding_id = data.rule_binding_id
 ),
 all_validation_results AS (
 SELECT
+'{{ invocation_id }}' as _dq_validation_invocation_id,
 r.rule_binding_id AS _dq_validation_rule_binding_id,
 r.rule_id AS _dq_validation_rule_id,
 r.column_id AS _dq_validation_column_id,
