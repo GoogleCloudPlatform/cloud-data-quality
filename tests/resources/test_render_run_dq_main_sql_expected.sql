@@ -101,14 +101,14 @@ zero_record.rule_binding_id = data.rule_binding_id
 ),
 all_validation_results AS (
 SELECT
-r.rule_binding_id AS rule_binding_id,
-r.rule_id AS rule_id,
-r.column_id AS column_id,
-r.column_value AS column_value,
-CAST(r.dimension AS STRING) AS dimension,
-r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
-r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
-r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+r.rule_binding_id AS _dq_validation_rule_binding_id,
+r.rule_id AS _dq_validation_rule_id,
+r.column_id AS _dq_validation_column_id,
+r.column_value AS _dq_validation_column_value,
+CAST(r.dimension AS STRING) AS _dq_validation_dimension,
+r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
+r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
+r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
 r.row_id AS row_id,
 r.contact_type AS contact_type,
 r.value AS value,FROM
@@ -119,10 +119,10 @@ SELECT
 FROM
 all_validation_results
 WHERE
-simple_rule_row_is_valid is False
+_dq_validation_simple_rule_row_is_valid is False
 OR
-complex_rule_validation_success_flag is False
-ORDER BY rule_id"""
+_dq_validation_complex_rule_validation_success_flag is False
+ORDER BY _dq_validation_rule_id"""
 AS failed_records_query,
 FROM
 zero_record
@@ -201,14 +201,14 @@ zero_record.rule_binding_id = data.rule_binding_id
 ),
 all_validation_results AS (
 SELECT
-r.rule_binding_id AS rule_binding_id,
-r.rule_id AS rule_id,
-r.column_id AS column_id,
-r.column_value AS column_value,
-CAST(r.dimension AS STRING) AS dimension,
-r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
-r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
-r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+r.rule_binding_id AS _dq_validation_rule_binding_id,
+r.rule_id AS _dq_validation_rule_id,
+r.column_id AS _dq_validation_column_id,
+r.column_value AS _dq_validation_column_value,
+CAST(r.dimension AS STRING) AS _dq_validation_dimension,
+r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
+r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
+r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
 r.row_id AS row_id,
 r.contact_type AS contact_type,
 r.value AS value,FROM
@@ -219,10 +219,10 @@ SELECT
 FROM
 all_validation_results
 WHERE
-simple_rule_row_is_valid is False
+_dq_validation_simple_rule_row_is_valid is False
 OR
-complex_rule_validation_success_flag is False
-ORDER BY rule_id"""
+_dq_validation_complex_rule_validation_success_flag is False
+ORDER BY _dq_validation_rule_id"""
 AS failed_records_query,
 FROM
 zero_record
@@ -301,14 +301,14 @@ zero_record.rule_binding_id = data.rule_binding_id
 ),
 all_validation_results AS (
 SELECT
-r.rule_binding_id AS rule_binding_id,
-r.rule_id AS rule_id,
-r.column_id AS column_id,
-r.column_value AS column_value,
-CAST(r.dimension AS STRING) AS dimension,
-r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
-r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
-r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+r.rule_binding_id AS _dq_validation_rule_binding_id,
+r.rule_id AS _dq_validation_rule_id,
+r.column_id AS _dq_validation_column_id,
+r.column_value AS _dq_validation_column_value,
+CAST(r.dimension AS STRING) AS _dq_validation_dimension,
+r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
+r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
+r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
 r.row_id AS row_id,
 r.contact_type AS contact_type,
 r.value AS value,FROM
@@ -319,10 +319,10 @@ SELECT
 FROM
 all_validation_results
 WHERE
-simple_rule_row_is_valid is False
+_dq_validation_simple_rule_row_is_valid is False
 OR
-complex_rule_validation_success_flag is False
-ORDER BY rule_id"""
+_dq_validation_complex_rule_validation_success_flag is False
+ORDER BY _dq_validation_rule_id"""
 AS failed_records_query,
 FROM
 zero_record
@@ -401,14 +401,14 @@ zero_record.rule_binding_id = data.rule_binding_id
 ),
 all_validation_results AS (
 SELECT
-r.rule_binding_id AS rule_binding_id,
-r.rule_id AS rule_id,
-r.column_id AS column_id,
-r.column_value AS column_value,
-CAST(r.dimension AS STRING) AS dimension,
-r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
-r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
-r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+r.rule_binding_id AS _dq_validation_rule_binding_id,
+r.rule_id AS _dq_validation_rule_id,
+r.column_id AS _dq_validation_column_id,
+r.column_value AS _dq_validation_column_value,
+CAST(r.dimension AS STRING) AS _dq_validation_dimension,
+r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
+r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
+r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
 r.row_id AS row_id,
 r.contact_type AS contact_type,
 r.value AS value,FROM
@@ -419,10 +419,10 @@ SELECT
 FROM
 all_validation_results
 WHERE
-simple_rule_row_is_valid is False
+_dq_validation_simple_rule_row_is_valid is False
 OR
-complex_rule_validation_success_flag is False
-ORDER BY rule_id"""
+_dq_validation_complex_rule_validation_success_flag is False
+ORDER BY _dq_validation_rule_id"""
 AS failed_records_query,
 FROM
 zero_record
@@ -501,14 +501,14 @@ zero_record.rule_binding_id = data.rule_binding_id
 ),
 all_validation_results AS (
 SELECT
-r.rule_binding_id AS rule_binding_id,
-r.rule_id AS rule_id,
-r.column_id AS column_id,
-r.column_value AS column_value,
-CAST(r.dimension AS STRING) AS dimension,
-r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
-r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
-r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+r.rule_binding_id AS _dq_validation_rule_binding_id,
+r.rule_id AS _dq_validation_rule_id,
+r.column_id AS _dq_validation_column_id,
+r.column_value AS _dq_validation_column_value,
+CAST(r.dimension AS STRING) AS _dq_validation_dimension,
+r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
+r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
+r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
 r.row_id AS row_id,
 r.contact_type AS contact_type,
 r.value AS value,FROM
@@ -519,10 +519,10 @@ SELECT
 FROM
 all_validation_results
 WHERE
-simple_rule_row_is_valid is False
+_dq_validation_simple_rule_row_is_valid is False
 OR
-complex_rule_validation_success_flag is False
-ORDER BY rule_id"""
+_dq_validation_complex_rule_validation_success_flag is False
+ORDER BY _dq_validation_rule_id"""
 AS failed_records_query,
 FROM
 zero_record
