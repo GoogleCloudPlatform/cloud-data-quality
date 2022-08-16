@@ -533,6 +533,38 @@ zero_record.rule_binding_id = data.rule_binding_id
 ),
 all_validation_results AS (
 SELECT
+r.rule_binding_id AS rule_binding_id,
+r.rule_id AS rule_id,
+r.column_id AS column_id,
+r.column_value AS column_value,
+CAST(r.dimension AS STRING) AS dimension,
+r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
+r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+r.row_id AS row_id,
+r.contact_type AS contact_type,
+r.value AS value,FROM
+validation_results r
+)
+SELECT
+*
+FROM
+all_validation_results
+WHERE
+simple_rule_row_is_valid is False
+OR
+complex_rule_validation_success_flag is False
+ORDER BY rule_id"""
+AS failed_records_query,
+FROM
+zero_record
+LEFT JOIN
+data
+ON
+zero_record.rule_binding_id = data.rule_binding_id
+),
+all_validation_results AS (
+SELECT
 r.execution_ts AS execution_ts,
 r.rule_binding_id AS rule_binding_id,
 r.rule_id AS rule_id,
