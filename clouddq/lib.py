@@ -207,6 +207,7 @@ def prepare_configs_from_rule_binding_id(
     )
     resolved_rule_binding_configs = rule_binding.resolve_all_configs_to_dict(
         configs_cache=configs_cache,
+        bigquery_client=bigquery_client,
     )
     configs: dict[typing.Any, typing.Any] = {
         "configs": dict(resolved_rule_binding_configs)

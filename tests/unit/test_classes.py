@@ -281,7 +281,7 @@ class TestClasses:
                 kwargs=dq_rule_binding_dict_not_valid,
             )
 
-    def test_dq_rule_binding_conflicted_column_id_is_escaped_for_sql_expr(self, temp_configs_dir, tmp_path):
+    def test_dq_rule_binding_conflicted_column_id_is_escaped_for_sql_expr(self, temp_configs_dir, tmp_path, test_bigquery_client):
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_configs_cache_2")
             temp_dir.mkdir(parents=True)
@@ -302,12 +302,12 @@ class TestClasses:
         output = DqRuleBinding.from_dict(
             rule_binding_id="valid",
             kwargs=dq_rule_binding_dict_with_conflicted_column_id
-        ).resolve_all_configs_to_dict(configs_cache=configs_cache)
+        ).resolve_all_configs_to_dict(configs_cache=configs_cache, bigquery_client=test_bigquery_client)
 
         assert output["rule_configs_dict"]["REGEX_VALID_EMAIL"]["rule_sql_expr"] == \
                "REGEXP_CONTAINS( CAST( data.data  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
 
-    def test_dq_rule_binding_conflicted_column_id_is_not_escaped_for_sql_statement(self, temp_configs_dir, tmp_path):
+    def test_dq_rule_binding_conflicted_column_id_is_not_escaped_for_sql_statement(self, temp_configs_dir, tmp_path, test_bigquery_client):
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_configs_cache_2")
             temp_dir.mkdir(parents=True)
@@ -328,7 +328,7 @@ class TestClasses:
         output = DqRuleBinding.from_dict(
             rule_binding_id="valid",
             kwargs=dq_rule_binding_dict_with_conflicted_column_id
-        ).resolve_all_configs_to_dict(configs_cache=configs_cache)
+        ).resolve_all_configs_to_dict(configs_cache=configs_cache, bigquery_client=test_bigquery_client)
         text = output["rule_configs_dict"]["NO_DUPLICATES_IN_COLUMN_GROUPS"]["rule_sql_expr"]
 
         expected = """

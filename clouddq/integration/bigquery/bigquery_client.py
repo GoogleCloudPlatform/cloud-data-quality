@@ -269,3 +269,16 @@ class BigQueryClient:
 
         logger.debug(f"Schema for table {table} is: {columns_dict}")
         return columns_dict
+
+    def get_table_columns(self, table: str, project_id: str = None) -> set:
+
+        client = self.get_connection(project_id=project_id)
+        try:
+            table_ref = client.get_table(table)
+        except KeyError as error:
+            raise KeyError(f"\n\nInput table `{table}` is not valid.\n{error}")
+
+        column_names = {column.name for column in table_ref.schema}
+        logger.debug(f"List of columns in table {table} is: {column_names}")
+
+        return column_names

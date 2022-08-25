@@ -26,3 +26,11 @@ reference_columns:
       - complaint_description
       - source
       - status
+
+  CONTACT_DETAILS_ALL_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - "*"
+
+  311_SERVICE_REQUESTS_ALL_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - "*"

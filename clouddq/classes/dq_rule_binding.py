@@ -27,6 +27,7 @@ from clouddq.classes.dq_entity_uri import EntityUri
 from clouddq.classes.dq_reference_columns import DqReferenceColumns
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_from_dict_and_assert
 from clouddq.utils import get_keys_from_dict_and_assert_oneof
@@ -277,6 +278,7 @@ class DqRuleBinding:
     def resolve_all_configs_to_dict(
         self: DqRuleBinding,
         configs_cache: dq_configs_cache.DqConfigsCache,
+        bigquery_client: BigQueryClient,
     ) -> dict:
         """
 
@@ -337,6 +339,12 @@ class DqRuleBinding:
                 include_reference_columns = self.resolve_reference_columns_config(
                     configs_cache
                 ).include_reference_columns
+                if include_reference_columns[0] == "*":
+                    column_names = bigquery_client.get_table_columns(
+                        table=table_entity.get_table_name(),
+                        project_id=table_entity.instance_name,
+                    )
+                    include_reference_columns = sorted(column_names)
             else:
                 include_reference_columns = []
 

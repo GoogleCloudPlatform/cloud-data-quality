@@ -1,0 +1,71 @@
+{
+  "rule_binding_id": "<rule_binding_id>",
+  "entity_id": "<entity_id>",
+  "entity_configs": {
+    "source_database": "DATAPLEX",
+    "table_name": "asset_bucket",
+    "database_name": "<your_dataplex_bigquery_dataset_id>",
+    "instance_name": "<your-gcp-project-id>",
+    "columns": {
+      "ROW_ID": {
+        "name": "row_id",
+        "data_type": "STRING"
+      },
+      "CONTACT_TYPE": {
+        "name": "contact_type",
+        "data_type": "STRING"
+      },
+      "VALUE": {
+        "name": "value",
+        "data_type": "STRING"
+      },
+      "TS": {
+        "name": "ts",
+        "data_type": "STRING"
+      }
+    },
+    "resource_type": "CLOUD_STORAGE",
+    "partition_fields": null,
+    "dataset_name": "<your_dataplex_bigquery_dataset_id>",
+    "project_name": "<your-gcp-project-id>",
+    "dataplex_name": "<your-gcp-dataplex-name>",
+    "dataplex_lake": "<your-gcp-dataplex-lake-id>",
+    "dataplex_zone": "<your-gcp-dataplex-zone-id>",
+    "dataplex_location": "<your-gcp-dataplex-region-id>",
+    "dataplex_asset_id": "<your-gcp-dataplex-asset-id>",
+    "dataplex_createTime": "<dataplex_entity_createTime>"
+  },
+  "column_id": "VALUE",
+  "reference_columns_id": "CONTACT_DETAILS_ALL_REFERENCE_COLUMNS",
+  "include_reference_columns": [
+    "contact_type",
+    "row_id",
+    "ts",
+    "value"
+  ],
+  "column_configs": {
+    "name": "value",
+    "data_type": "STRING"
+  },
+  "rule_ids": [
+    "NOT_NULL_SIMPLE"
+  ],
+  "rule_configs_dict": {
+    "NOT_NULL_SIMPLE": {
+      "rule_type": "NOT_NULL",
+      "dimension": null,
+      "params": {
+        "rule_binding_arguments": null
+      },
+      "rule_sql_expr": "value IS NOT NULL"
+    }
+  },
+  "row_filter_id": "DATA_TYPE_EMAIL",
+  "row_filter_configs": {
+    "filter_sql_expr": "contact_type = 'email'"
+  },
+  "incremental_time_filter_column": null,
+  "metadata": {
+    "brand": "one"
+  }
+}
