@@ -240,6 +240,7 @@ def prepare_configs_from_rule_binding_id(
             rule_binding_id=rule_binding_id,
             dq_summary_table_name=dq_summary_table_name,
             bigquery_client=bigquery_client,
+            dq_summary_table_exists=dq_summary_table_exists,
         )
         configs.update(high_watermark_dict)
     configs.update({"high_watermark_filter_exists": high_watermark_filter_exists})
@@ -273,14 +274,20 @@ def get_high_watermark_value(
     rule_binding_id: str,
     dq_summary_table_name: str,
     bigquery_client: BigQueryClient,
+    dq_summary_table_exists: bool = False,
 ) -> dict:
-    query = f"""SELECT
-        IFNULL(MAX(execution_ts), TIMESTAMP("1970-01-01 00:00:00")) as high_watermark,
-        CURRENT_TIMESTAMP() as current_timestamp_value,
-        FROM `{dq_summary_table_name}`
-        WHERE table_id = '{fully_qualified_table_name}'
-        AND rule_binding_id = '{rule_binding_id}'
-        AND progress_watermark IS TRUE ;"""
+    if dq_summary_table_exists:
+        query = f"""SELECT
+            IFNULL(MAX(execution_ts), TIMESTAMP("1970-01-01 00:00:00")) as high_watermark,
+            CURRENT_TIMESTAMP() as current_timestamp_value,
+            FROM `{dq_summary_table_name}`
+            WHERE table_id = '{fully_qualified_table_name}'
+            AND rule_binding_id = '{rule_binding_id}'
+            AND progress_watermark IS TRUE ;"""
+    else:
+        query = f"""SELECT 
+            TIMESTAMP("1970-01-01 00:00:00") as high_watermark,
+            CURRENT_TIMESTAMP() as current_timestamp_value ;"""
     logger.info(f"High watermark query is \n {query}")
     query_job = bigquery_client.execute_query(query_string=query).result()
     high_watermark_value = ""
