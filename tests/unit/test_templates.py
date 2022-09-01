@@ -278,7 +278,7 @@ class TestJinjaTemplates:
             configs_cache=test_configs_cache,
             environment="DEV",
             debug=True,
-            dq_summary_table_exists=True,
+            dq_summary_table_exists=False,
             high_watermark_filter_exists=False,
             bigquery_client=test_bigquery_client,
         )
