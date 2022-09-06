@@ -114,7 +114,8 @@ r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation
 r.contact_type AS contact_type,
 r.row_id AS row_id,
 r.ts AS ts,
-r.value AS value,FROM
+r.value AS value,
+FROM
 validation_results r
 )
 SELECT

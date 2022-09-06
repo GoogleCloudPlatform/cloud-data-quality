@@ -118,7 +118,8 @@ r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation
 r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
 r.row_id AS row_id,
 r.contact_type AS contact_type,
-r.value AS value,FROM
+r.value AS value,
+FROM
 validation_results r
 )
 SELECT

@@ -117,7 +117,8 @@ r.contact_type AS contact_type,
 r.dt AS dt,
 r.row_id AS row_id,
 r.ts AS ts,
-r.value AS value,FROM
+r.value AS value,
+FROM
 validation_results r
 )
 SELECT

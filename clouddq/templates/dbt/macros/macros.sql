@@ -139,7 +139,7 @@
     zero_record.rule_binding_id = data.rule_binding_id
 {% endmacro -%}
 
-{% macro validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) -%}
+{% macro validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns, include_all_reference_columns) -%}
   SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     '{{ rule_binding_id }}' AS rule_binding_id,
@@ -149,7 +149,11 @@
     NULL AS column_value,
     {% for ref_column_name in include_reference_columns %}
         custom_sql_statement_validation_errors.{{ ref_column_name }} AS {{ ref_column_name }},
+        {% if loop.last %}
+            {{ '\n' }}
+        {% endif %}
     {%- endfor -%}
+    custom_sql_statement_validation_errors,
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}

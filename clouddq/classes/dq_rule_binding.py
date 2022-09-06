@@ -336,6 +336,7 @@ class DqRuleBinding:
             row_filter_config = self.resolve_row_filter_config(configs_cache)
             # resolve reference columns config
             if self.reference_columns_id:
+                include_all_reference_columns = False
                 include_reference_columns = self.resolve_reference_columns_config(
                     configs_cache
                 ).include_reference_columns
@@ -345,8 +346,10 @@ class DqRuleBinding:
                         project_id=table_entity.instance_name,
                     )
                     include_reference_columns = sorted(column_names)
+                    include_all_reference_columns = True
             else:
                 include_reference_columns = []
+                include_all_reference_columns = False
 
             return dict(
                 {
@@ -356,6 +359,7 @@ class DqRuleBinding:
                     "column_id": self.column_id,
                     "reference_columns_id": self.reference_columns_id,
                     "include_reference_columns": include_reference_columns,
+                    "include_all_reference_columns": include_all_reference_columns,
                     "column_configs": dict(column_configs.dict_values()),
                     "rule_ids": list(self.rule_ids),
                     "rule_configs_dict": rule_configs_dict,
