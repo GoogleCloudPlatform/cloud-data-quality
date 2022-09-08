@@ -149,7 +149,9 @@ class TestCliIntegration:
                     logger.info("Query done")
                     if hasattr(results, "next"):
                         row = results.next()
-                    errors = row.errors
+                        errors = row.errors
+                    else:
+                        errors = None
                     logger.info(f"Got {errors} errors")
                     assert errors == 0
                 except Exception as exc:
