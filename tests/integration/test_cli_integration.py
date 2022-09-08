@@ -147,11 +147,8 @@ class TestCliIntegration:
                     query_job = client.execute_query(sql)
                     results = query_job.result()
                     logger.info("Query done")
-                    if hasattr(results, "next"):
-                        row = results.next()
+                    for row in results:
                         errors = row.errors
-                    else:
-                        errors = None
                     logger.info(f"Got {errors} errors")
                     assert errors == 0
                 except Exception as exc:
