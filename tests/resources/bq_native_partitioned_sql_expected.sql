@@ -74,7 +74,6 @@ TIMESTAMP_MILLIS(last_modified_time) AS last_modified
 FROM `<your-gcp-project-id>.austin_311.__TABLES__`
 ),
 validation_results AS (SELECT
-CURRENT_TIMESTAMP() AS execution_ts,
 '<rule_binding_id>' AS rule_binding_id,
 'NO_DUPLICATES_IN_COLUMN_GROUPS' AS rule_id,
 '<your-gcp-project-id>.austin_311.contact_details_partitioned' AS table_id,
@@ -207,7 +206,6 @@ TIMESTAMP_MILLIS(last_modified_time) AS last_modified
 FROM `<your-gcp-project-id>.austin_311.__TABLES__`
 ),
 validation_results AS (SELECT
-CURRENT_TIMESTAMP() AS execution_ts,
 '<rule_binding_id>' AS rule_binding_id,
 'NOT_NULL_SIMPLE' AS rule_id,
 '<your-gcp-project-id>.austin_311.contact_details_partitioned' AS table_id,
