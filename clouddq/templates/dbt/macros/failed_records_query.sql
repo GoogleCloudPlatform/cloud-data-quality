@@ -35,7 +35,7 @@
 {% set fully_qualified_table_name = "%s.%s.%s" % (instance_name, database_name, table_name) -%}
 {% set _dummy = metadata.update(configs.get('metadata', '')) -%}
 WITH
-{%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists -%}
+{%- if configs.get('incremental_time_filter_column') -%}
 {% set time_column_id = configs.get('incremental_time_filter_column') %}
 {% endif %}
 zero_record AS (
@@ -48,7 +48,7 @@ data AS (
       '{{ rule_binding_id }}' AS rule_binding_id,
     FROM
       `{{- fully_qualified_table_name -}}` d
-{%- if configs.get('incremental_time_filter_column') and dq_summary_table_exists %}
+{%- if configs.get('incremental_time_filter_column') %}
     WHERE
       CAST(d.{{ time_column_id }} AS TIMESTAMP)
           BETWEEN CAST('{{ high_watermark_value }}' AS TIMESTAMP) AND CAST('{{ current_timestamp_value }}' AS TIMESTAMP)

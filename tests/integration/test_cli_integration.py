@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -147,8 +147,8 @@ class TestCliIntegration:
                     query_job = client.execute_query(sql)
                     results = query_job.result()
                     logger.info("Query done")
-                    row = results.next()
-                    errors = row.errors
+                    for row in results:
+                        errors = row.errors
                     logger.info(f"Got {errors} errors")
                     assert errors == 0
                 except Exception as exc:

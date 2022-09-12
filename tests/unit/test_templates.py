@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -279,7 +279,7 @@ class TestJinjaTemplates:
             configs_cache=test_configs_cache,
             environment="DEV",
             debug=True,
-            dq_summary_table_exists=True,
+            dq_summary_table_exists=False,
             high_watermark_filter_exists=False,
             bigquery_client=test_bigquery_client,
         )

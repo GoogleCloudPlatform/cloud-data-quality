@@ -1,4 +1,4 @@
--- Copyright 2021 Google LLC
+-- Copyright 2022 Google LLC
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -75,7 +75,6 @@ CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
  FROM `<your-gcp-project-id>.austin_311.__TABLES__`
  ),
  validation_results AS (SELECT
- CURRENT_TIMESTAMP() AS execution_ts,
  '<rule_binding_id>' AS rule_binding_id,
  'NOT_NULL_SIMPLE' AS rule_id,
  '<your-gcp-project-id>.austin_311.311_service_requests' AS table_id,

@@ -1,4 +1,4 @@
--- Copyright 2021 Google LLC
+-- Copyright 2022 Google LLC
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -100,7 +100,6 @@
 
 {% macro validate_simple_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) -%}
   SELECT
-    CURRENT_TIMESTAMP() AS execution_ts,
     '{{ rule_binding_id }}' AS rule_binding_id,
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
@@ -141,7 +140,6 @@
 
 {% macro validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns, include_all_reference_columns) -%}
   SELECT
-    CURRENT_TIMESTAMP() AS execution_ts,
     '{{ rule_binding_id }}' AS rule_binding_id,
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,

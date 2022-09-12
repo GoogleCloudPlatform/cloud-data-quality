@@ -1,4 +1,4 @@
--- Copyright 2021 Google LLC
+-- Copyright 2022 Google LLC
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -71,7 +71,6 @@ TIMESTAMP_MILLIS(last_modified_time) AS last_modified
 FROM `<your-gcp-project-id>.<your_bigquery_dataset_id>.__TABLES__`
 ),
 validation_results AS (SELECT
-CURRENT_TIMESTAMP() AS execution_ts,
 '<rule_binding_id>' AS rule_binding_id,
 'NO_DUPLICATES_IN_COLUMN_GROUPS' AS rule_id,
 '<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
@@ -196,7 +195,6 @@ TIMESTAMP_MILLIS(last_modified_time) AS last_modified
 FROM `<your-gcp-project-id>.<your_bigquery_dataset_id>.__TABLES__`
 ),
 validation_results AS (SELECT
-CURRENT_TIMESTAMP() AS execution_ts,
 '<rule_binding_id>' AS rule_binding_id,
 'NOT_NULL_SIMPLE' AS rule_id,
 '<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
