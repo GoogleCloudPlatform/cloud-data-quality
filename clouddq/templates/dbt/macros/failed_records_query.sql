@@ -72,7 +72,7 @@ last_mod AS (
 validation_results AS (
 
 {%- if rule_type == "CUSTOM_SQL_STATEMENT" -%}
-  {{ validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) }}
+  {{ validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name) }}
 {%- else -%}
   {{ validate_simple_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) }}
 {%- endif -%}
@@ -88,9 +88,15 @@ all_validation_results AS (
     r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
-    {% for ref_column_name in include_reference_columns %}
-        r.{{ ref_column_name }} AS {{ ref_column_name }},
-    {%- endfor -%}
+    {{ '\n' }}
+    {%- if rule_type != "CUSTOM_SQL_STATEMENT" -%}
+        {% for ref_column_name in include_reference_columns %}
+            r.{{ ref_column_name }} AS {{ ref_column_name }},
+        {%- endfor -%}
+    {%- else -%}
+        r.custom_sql_statement_validation_errors,
+    {%- endif -%}
+    {{ '\n' }}
   FROM
     validation_results r
 )
