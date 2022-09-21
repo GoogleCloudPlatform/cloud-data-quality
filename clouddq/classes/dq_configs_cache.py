@@ -534,7 +534,7 @@ class DqConfigsCache:
             data_path=entity_uri.get_entity_id(),
         )
         logger.info(f"Retrieved Dataplex Entities:\n{pformat(dataplex_entities_match)}")
-        if len(dataplex_entities_match) != 1:
+        if len(dataplex_entities_match) == 0:
             logger.info(
                 "Failed to retrieve Dataplex Metadata entry for "
                 f"entity_uri '{entity_uri.complete_uri_string}' "
