@@ -15,7 +15,6 @@
 {% set database_name = entity_configs.get('database_name') -%}
 {% set table_name = entity_configs.get('table_name') -%}
 {% set include_reference_columns =  configs.get('include_reference_columns') -%}
-{% set include_all_reference_columns =  configs.get('include_all_reference_columns') -%}
 {% set incremental_time_filter_column_id = configs.get('incremental_time_filter_column_id') %}
 {% if environment and entity_configs.get('environment_override') -%}
   {% set env_override = entity_configs.get('environment_override') %}
@@ -73,7 +72,7 @@ last_mod AS (
 validation_results AS (
 
 {%- if rule_type == "CUSTOM_SQL_STATEMENT" -%}
-  {{ validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns, include_all_reference_columns) }}
+  {{ validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name) }}
 {%- else -%}
   {{ validate_simple_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) }}
 {%- endif -%}
@@ -89,13 +88,15 @@ all_validation_results AS (
     r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
-    {% for ref_column_name in include_reference_columns %}
-        r.{{ ref_column_name }} AS {{ ref_column_name }},
-    {%- endfor -%}
-    {% if rule_type == "CUSTOM_SQL_STATEMENT" %}
+    {{ '\n' }}
+    {%- if rule_type != "CUSTOM_SQL_STATEMENT" -%}
+        {% for ref_column_name in include_reference_columns %}
+            r.{{ ref_column_name }} AS {{ ref_column_name }},
+        {%- endfor -%}
+    {%- else -%}
         r.custom_sql_statement_validation_errors,
-        {{ '\n' }}
-    {% endif %}
+    {%- endif -%}
+    {{ '\n' }}
   FROM
     validation_results r
 )
