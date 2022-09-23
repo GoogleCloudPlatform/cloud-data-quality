@@ -544,6 +544,13 @@ class DqConfigsCache:
                 f"{pformat(entity_uri.to_dict())}\n\n"
             )
             return False
+        if len(dataplex_entities_match) > 1:
+            logger.warning(
+                "ValueError: Unexpected number of Dataplex entities found for entity_uri "
+                f"${entity_uri}:\n${pformat(dataplex_entities_match)}. "
+                f"Only one match is expected."
+            )
+            return False
         else:
             dataplex_entity = dataplex_entities_match[0]
             clouddq_entity = dq_entity.DqEntity.from_dataplex_entity(
