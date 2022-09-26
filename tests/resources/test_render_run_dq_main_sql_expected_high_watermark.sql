@@ -43,9 +43,6 @@ CURRENT_TIMESTAMP() AS execution_ts,
 '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
 'value' AS column_id,
 data.value AS column_value,
-data.row_id AS row_id,
-data.contact_type AS contact_type,
-data.value AS value,
 CAST(NULL AS STRING) AS dimension,
 CASE
 WHEN value IS NOT NULL THEN TRUE
@@ -117,7 +114,8 @@ r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation
 r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
 r.row_id AS row_id,
 r.contact_type AS contact_type,
-r.value AS value,FROM
+r.value AS value,
+FROM
 validation_results r
 )
 SELECT
@@ -150,9 +148,6 @@ r.skip_null_count AS skip_null_count,
 r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
 r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-r.row_id AS row_id,
-r.contact_type AS contact_type,
-r.value AS value,
 (SELECT COUNT(*) FROM data) AS rows_validated,
 last_mod.last_modified,
 '{}' AS metadata_json_string,
