@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,79 +45,79 @@ class TestReferenceColumns:
             Path(temp_configs_dir / "rule_bindings/team-9-rule-bindings.yml")
         )
 
-    # def test_rule_bindings_class_resolve_configs(
-    #     self,
-    #     test_rule_bindings_collection_team_9,
-    #     test_default_dataplex_configs_cache,
-    #     test_dataplex_metadata_defaults_configs,
-    #     test_bigquery_client,
-    # ):
-    #     for key, value in test_rule_bindings_collection_team_9.items():
-    #         rule_binding = DqRuleBinding.from_dict(
-    #             rule_binding_id=key,
-    #             kwargs=value,
-    #             default_configs=test_dataplex_metadata_defaults_configs)
-    #         rule_binding.resolve_table_entity_config(configs_cache=test_default_dataplex_configs_cache)
-    #         rule_binding.resolve_rule_config_list(configs_cache=test_default_dataplex_configs_cache)
-    #         rule_binding.resolve_row_filter_config(configs_cache=test_default_dataplex_configs_cache)
-    #         rule_binding.resolve_all_configs_to_dict(configs_cache=test_default_dataplex_configs_cache,
-    #                                                  bigquery_client=test_bigquery_client)
-    #
-    # def test_prepare_reference_configs_from_rule_binding(
-    #     self,
-    #     test_rule_bindings_collection_team_9,
-    #     test_default_dataplex_configs_cache,
-    #     test_resources,
-    #     test_dataplex_metadata_defaults_configs,
-    #     test_bigquery_client,
-    # ):
-    #     """ """
-    #     for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_9.items():
-    #
-    #         env = "DEV"
-    #         metadata = {"channel": "two"}
-    #         configs = lib.prepare_configs_from_rule_binding_id(
-    #             rule_binding_id=rule_binding_id,
-    #             rule_binding_configs=rule_binding_configs,
-    #             dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
-    #             environment=env,
-    #             metadata=metadata,
-    #             configs_cache=test_default_dataplex_configs_cache,
-    #             default_configs=test_dataplex_metadata_defaults_configs,
-    #             dq_summary_table_exists=False,
-    #             high_watermark_filter_exists=False,
-    #             bigquery_client=test_bigquery_client,
-    #         )
-    #         logger.info(pformat(json.dumps(configs["configs"])))
-    #
-    #         configs["configs"]["rule_binding_id"] = "<rule_binding_id>"
-    #         configs["configs"]["entity_id"] = "<entity_id>"
-    #         configs["configs"]["entity_configs"]["database_name"] = "<your_dataplex_bigquery_dataset_id>"
-    #         configs["configs"]["entity_configs"]["instance_name"] = "<your-gcp-project-id>"
-    #         configs["configs"]["entity_configs"]["dataset_name"] = "<your_dataplex_bigquery_dataset_id>"
-    #         configs["configs"]["entity_configs"]["project_name"] = "<your-gcp-project-id>"
-    #         configs["configs"]["entity_configs"]["dataplex_name"] = "<your-gcp-dataplex-name>"
-    #         configs["configs"]["entity_configs"]["dataplex_lake"] = "<your-gcp-dataplex-lake-id>"
-    #         configs["configs"]["entity_configs"]["dataplex_zone"] = "<your-gcp-dataplex-zone-id>"
-    #         configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
-    #         configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
-    #         configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
-    #
-    #         if rule_binding_id == "T9_URI_GCS_EMAIL_NOT_NULL_ALL_REFERENCE_COLUMNS":
-    #             with open(test_resources / "test_reference_columns_expected_gcs_configs.json") as f:
-    #                 expected_configs = json.loads(f.read())
-    #                 assert configs["configs"] == dict(expected_configs)
-    #         elif rule_binding_id == "T9_URI_GCS_PARTITIONED_EMAIL_NOT_NULL_ALL_REFERENCE_COLUMNS":
-    #             with open(test_resources / "test_reference_columns_expected_partitioned_gcs_configs.json") as f:
-    #                 expected_configs = json.loads(f.read())
-    #                 assert configs["configs"] == dict(expected_configs)
-    #         else:
-    #             with open(test_resources / "test_reference_columns_expected_configs.json") as f:
-    #                 expected_configs = json.loads(f.read())
-    #                 assert configs["configs"] == dict(expected_configs)
-    #         metadata.update(rule_binding_configs["metadata"])
-    #         assert configs["metadata"] == dict(metadata)
-    #         assert configs["environment"] == env
+    def test_rule_bindings_class_resolve_configs(
+        self,
+        test_rule_bindings_collection_team_9,
+        test_default_dataplex_configs_cache,
+        test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,
+    ):
+        for key, value in test_rule_bindings_collection_team_9.items():
+            rule_binding = DqRuleBinding.from_dict(
+                rule_binding_id=key,
+                kwargs=value,
+                default_configs=test_dataplex_metadata_defaults_configs)
+            rule_binding.resolve_table_entity_config(configs_cache=test_default_dataplex_configs_cache)
+            rule_binding.resolve_rule_config_list(configs_cache=test_default_dataplex_configs_cache)
+            rule_binding.resolve_row_filter_config(configs_cache=test_default_dataplex_configs_cache)
+            rule_binding.resolve_all_configs_to_dict(configs_cache=test_default_dataplex_configs_cache,
+                                                     bigquery_client=test_bigquery_client)
+
+    def test_prepare_reference_configs_from_rule_binding(
+        self,
+        test_rule_bindings_collection_team_9,
+        test_default_dataplex_configs_cache,
+        test_resources,
+        test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,
+    ):
+        """ """
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_9.items():
+
+            env = "DEV"
+            metadata = {"channel": "two"}
+            configs = lib.prepare_configs_from_rule_binding_id(
+                rule_binding_id=rule_binding_id,
+                rule_binding_configs=rule_binding_configs,
+                dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
+                environment=env,
+                metadata=metadata,
+                configs_cache=test_default_dataplex_configs_cache,
+                default_configs=test_dataplex_metadata_defaults_configs,
+                dq_summary_table_exists=False,
+                high_watermark_filter_exists=False,
+                bigquery_client=test_bigquery_client,
+            )
+            logger.info(pformat(json.dumps(configs["configs"])))
+
+            configs["configs"]["rule_binding_id"] = "<rule_binding_id>"
+            configs["configs"]["entity_id"] = "<entity_id>"
+            configs["configs"]["entity_configs"]["database_name"] = "<your_dataplex_bigquery_dataset_id>"
+            configs["configs"]["entity_configs"]["instance_name"] = "<your-gcp-project-id>"
+            configs["configs"]["entity_configs"]["dataset_name"] = "<your_dataplex_bigquery_dataset_id>"
+            configs["configs"]["entity_configs"]["project_name"] = "<your-gcp-project-id>"
+            configs["configs"]["entity_configs"]["dataplex_name"] = "<your-gcp-dataplex-name>"
+            configs["configs"]["entity_configs"]["dataplex_lake"] = "<your-gcp-dataplex-lake-id>"
+            configs["configs"]["entity_configs"]["dataplex_zone"] = "<your-gcp-dataplex-zone-id>"
+            configs["configs"]["entity_configs"]["dataplex_location"] = "<your-gcp-dataplex-region-id>"
+            configs["configs"]["entity_configs"]["dataplex_asset_id"] = "<your-gcp-dataplex-asset-id>"
+            configs["configs"]["entity_configs"]["dataplex_createTime"] = "<dataplex_entity_createTime>"
+
+            if rule_binding_id == "T9_URI_GCS_EMAIL_NOT_NULL_ALL_REFERENCE_COLUMNS":
+                with open(test_resources / "test_reference_columns_expected_gcs_configs.json") as f:
+                    expected_configs = json.loads(f.read())
+                    assert configs["configs"] == dict(expected_configs)
+            elif rule_binding_id == "T9_URI_GCS_PARTITIONED_EMAIL_NOT_NULL_ALL_REFERENCE_COLUMNS":
+                with open(test_resources / "test_reference_columns_expected_partitioned_gcs_configs.json") as f:
+                    expected_configs = json.loads(f.read())
+                    assert configs["configs"] == dict(expected_configs)
+            else:
+                with open(test_resources / "test_reference_columns_expected_configs.json") as f:
+                    expected_configs = json.loads(f.read())
+                    assert configs["configs"] == dict(expected_configs)
+            metadata.update(rule_binding_configs["metadata"])
+            assert configs["metadata"] == dict(metadata)
+            assert configs["environment"] == env
 
     def test_render_run_dq_main_reference_sql(
         self,
@@ -182,4 +182,3 @@ class TestReferenceColumns:
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', '2'] + sys.argv[1:]))
-

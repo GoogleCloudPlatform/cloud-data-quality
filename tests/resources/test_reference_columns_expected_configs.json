@@ -43,7 +43,7 @@
     "ts",
     "value"
   ],
-  "include_all_reference_columns": "False",
+  "include_all_reference_columns": true,
   "column_configs": {
     "name": "value",
     "data_type": "STRING"

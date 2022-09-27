@@ -1,4 +1,4 @@
--- Copyright 2021 Google LLC
+-- Copyright 2022 Google LLC
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -39,10 +39,6 @@ CURRENT_TIMESTAMP() AS execution_ts,
 '<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
 'value' AS column_id,
 data.value AS column_value,
-data.contact_type AS contact_type,
-data.row_id AS row_id,
-data.ts AS ts,
-data.value AS value,
 CAST(NULL AS STRING) AS dimension,
 CASE
 WHEN value IS NOT NULL THEN TRUE
@@ -74,7 +70,6 @@ TIMESTAMP_MILLIS(last_modified_time) AS last_modified
 FROM `<your-gcp-project-id>.<your_bigquery_dataset_id>.__TABLES__`
 ),
 validation_results AS (SELECT
-CURRENT_TIMESTAMP() AS execution_ts,
 '<rule_binding_id>' AS rule_binding_id,
 'NOT_NULL_SIMPLE' AS rule_id,
 '<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
@@ -148,10 +143,6 @@ r.skip_null_count AS skip_null_count,
 r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
 r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-r.contact_type AS contact_type,
-r.row_id AS row_id,
-r.ts AS ts,
-r.value AS value,
 (SELECT COUNT(*) FROM data) AS rows_validated,
 last_mod.last_modified,
 '{"brand": "one"}' AS metadata_json_string,

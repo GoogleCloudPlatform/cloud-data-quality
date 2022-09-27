@@ -281,7 +281,10 @@ class TestClasses:
                 kwargs=dq_rule_binding_dict_not_valid,
             )
 
-    def test_dq_rule_binding_conflicted_column_id_is_escaped_for_sql_expr(self, temp_configs_dir, tmp_path, test_bigquery_client):
+    def test_dq_rule_binding_conflicted_column_id_is_escaped_for_sql_expr(self,
+                                                                          temp_configs_dir,
+                                                                          tmp_path,
+                                                                          test_bigquery_client):
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_configs_cache_2")
             temp_dir.mkdir(parents=True)
@@ -307,7 +310,10 @@ class TestClasses:
         assert output["rule_configs_dict"]["REGEX_VALID_EMAIL"]["rule_sql_expr"] == \
                "REGEXP_CONTAINS( CAST( data.data  AS STRING), '^[^@]+[@]{1}[^@]+$' )"
 
-    def test_dq_rule_binding_conflicted_column_id_is_not_escaped_for_sql_statement(self, temp_configs_dir, tmp_path, test_bigquery_client):
+    def test_dq_rule_binding_conflicted_column_id_is_not_escaped_for_sql_statement(self,
+                                                                                   temp_configs_dir,
+                                                                                   tmp_path,
+                                                                                   test_bigquery_client):
         try:
             temp_dir = Path(tmp_path).joinpath("clouddq_test_configs_cache_2")
             temp_dir.mkdir(parents=True)
