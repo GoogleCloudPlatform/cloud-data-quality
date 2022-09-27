@@ -126,6 +126,7 @@
   },
   "reference_columns_id": "311_SERVICE_REQUESTS_REFERENCE_COLUMNS",
   "include_reference_columns": ["unique_key", "complaint_description", "source", "status"],
+  "include_all_reference_columns": false,
   "rule_ids": [
     "NOT_NULL_SIMPLE"
   ]
