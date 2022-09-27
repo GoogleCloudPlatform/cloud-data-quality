@@ -175,7 +175,6 @@ class TestReferenceColumns:
             output = re.sub(RE_CONFIGS_HASHSUM, CONFIGS_HASHSUM_REP, output)
             output = re.sub(RE_ASSET_ID, ASSET_ID_REP, output)
             output = output.replace("CAST(NULL AS STRING) AS dataplex_asset_id,", ASSET_ID_REP)
-            print(output)
             expected = utils.strip_margin(re.sub(RE_NEWLINES, '\n', expected)).strip()
             assert output == expected
 
