@@ -539,15 +539,16 @@ class DqConfigsCache:
                 "Failed to retrieve Dataplex Metadata entry for "
                 f"entity_uri '{entity_uri.complete_uri_string}' "
                 f"with error:\n"
-                f"{pformat(json.dumps(dataplex_entities_match))}\n\n"
+                f"{pformat(json.dumps([entity.to_dict() for entity in dataplex_entities_match]))}\n\n"
                 f"Parsed entity_uri configs:\n"
                 f"{pformat(entity_uri.to_dict())}\n\n"
             )
             return False
         if len(dataplex_entities_match) > 1:
             logger.warning(
-                "Unexpected number of Dataplex entities found for entity_uri "
-                f"${entity_uri.complete_uri_string}:\n${pformat(dataplex_entities_match)}. "
+                "Unexpected number of Dataplex entities found for entity_uri \n"
+                f"${entity_uri.complete_uri_string}:\n"
+                f"${pformat([entity.to_dict() for entity in dataplex_entities_match])}. \n"
                 f"Only one match is expected."
             )
             return False
