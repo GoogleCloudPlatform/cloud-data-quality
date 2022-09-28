@@ -546,8 +546,8 @@ class DqConfigsCache:
             return False
         if len(dataplex_entities_match) > 1:
             logger.warning(
-                "ValueError: Unexpected number of Dataplex entities found for entity_uri "
-                f"${entity_uri}:\n${pformat(dataplex_entities_match)}. "
+                "Unexpected number of Dataplex entities found for entity_uri "
+                f"${entity_uri.complete_uri_string}:\n${pformat(dataplex_entities_match)}. "
                 f"Only one match is expected."
             )
             return False
