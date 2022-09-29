@@ -307,7 +307,7 @@ class CloudDqDataplexClient:
         if prefix:
             params.update({"filter": f"id=starts_with({prefix})"})
         if data_path:
-            params.update({"filter": f"data_path=starts_with({data_path})"})
+            params.update({"filter": f"data_path={data_path}"})
 
         response_dict = {}
         response = self._client.list_entities(
