@@ -286,7 +286,7 @@ def get_high_watermark_value(
             AND rule_binding_id = '{rule_binding_id}'
             AND progress_watermark IS TRUE ;"""
     else:
-        query = f"""SELECT
+        query = """SELECT
             TIMESTAMP("1970-01-01 00:00:00") as high_watermark,
             CURRENT_TIMESTAMP() as current_timestamp_value ;"""
     logger.info(f"High watermark query is \n {query}")

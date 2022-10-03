@@ -27,10 +27,6 @@ reference_columns:
       - source
       - status
 
-  CONTACT_DETAILS_ALL_REFERENCE_COLUMNS:
-    include_reference_columns:
-      - "*"
-
-  311_SERVICE_REQUESTS_ALL_REFERENCE_COLUMNS:
+  INCLUDE_ALL_REFERENCE_COLUMNS:
     include_reference_columns:
       - "*"

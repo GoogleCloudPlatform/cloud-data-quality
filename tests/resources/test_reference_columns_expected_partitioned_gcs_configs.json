@@ -40,7 +40,7 @@
     "dataplex_createTime": "<dataplex_entity_createTime>"
   },
   "column_id": "VALUE",
-  "reference_columns_id": "CONTACT_DETAILS_ALL_REFERENCE_COLUMNS",
+  "reference_columns_id": "INCLUDE_ALL_REFERENCE_COLUMNS",
   "include_reference_columns": [
     "contact_type",
     "dt",
