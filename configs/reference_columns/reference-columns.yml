@@ -20,6 +20,6 @@ reference_columns:
       - contact_type
       - value
 
-  CONTACT_DETAILS_REFERENCE_ALL_COLUMNS:
+  INCLUDE_ALL_REFERENCE_COLUMNS:
     include_reference_columns:
       - *
