@@ -39,20 +39,18 @@ logger = logging.getLogger(__name__)
 class TestReferenceColumns:
     """ """
     @pytest.fixture(scope="function")
-    def test_rule_bindings_collection_team_9(self, temp_configs_dir):
+    def test_rule_bindings_collection_reference_columns(self, temp_configs_from_dq_reference_configs_file):
         """ """
-        return lib.load_rule_bindings_config(
-            Path(temp_configs_dir / "rule_bindings/team-9-rule-bindings.yml")
-        )
+        return lib.load_rule_bindings_config(temp_configs_from_dq_reference_configs_file)
 
     def test_rule_bindings_class_resolve_configs(
         self,
-        test_rule_bindings_collection_team_9,
+        test_rule_bindings_collection_reference_columns,
         test_default_dataplex_configs_cache,
         test_dataplex_metadata_defaults_configs,
         test_bigquery_client,
     ):
-        for key, value in test_rule_bindings_collection_team_9.items():
+        for key, value in test_rule_bindings_collection_reference_columns.items():
             if key != "T9_URI_DP_EMAIL_NOT_NULL_ERROR_REF_COLUMNS":
                 rule_binding = DqRuleBinding.from_dict(
                     rule_binding_id=key,
@@ -66,14 +64,14 @@ class TestReferenceColumns:
 
     def test_prepare_reference_configs_from_rule_binding(
         self,
-        test_rule_bindings_collection_team_9,
+        test_rule_bindings_collection_reference_columns,
         test_default_dataplex_configs_cache,
         test_resources,
         test_dataplex_metadata_defaults_configs,
         test_bigquery_client,
     ):
         """ """
-        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_9.items():
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_reference_columns.items():
             if rule_binding_id != "T9_URI_DP_EMAIL_NOT_NULL_ERROR_REF_COLUMNS":
                 env = "DEV"
                 metadata = {"channel": "two"}
@@ -121,7 +119,7 @@ class TestReferenceColumns:
 
     def test_render_run_dq_main_reference_sql(
         self,
-        test_rule_bindings_collection_team_9,
+        test_rule_bindings_collection_reference_columns,
         test_default_dataplex_configs_cache,
         test_resources,
         gcp_project_id,
@@ -133,7 +131,7 @@ class TestReferenceColumns:
         test_bigquery_client,
     ):
         """ """
-        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_9.items():
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_reference_columns.items():
             if rule_binding_id != "T9_URI_DP_EMAIL_NOT_NULL_ERROR_REF_COLUMNS":
                 if rule_binding_id == "T9_URI_GCS_EMAIL_NOT_NULL_ALL_REFERENCE_COLUMNS":
                     with open(test_resources / "test_reference_columns_gcs_sql_expected.sql") as f:
@@ -181,7 +179,7 @@ class TestReferenceColumns:
 
     def test_invalid_reference_columns(
             self,
-            test_rule_bindings_collection_team_9,
+            test_rule_bindings_collection_reference_columns,
             test_default_dataplex_configs_cache,
             test_resources,
             gcp_project_id,
@@ -192,7 +190,7 @@ class TestReferenceColumns:
             gcp_dataplex_lake_name,
             test_bigquery_client,):
 
-        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_team_9.items():
+        for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_reference_columns.items():
             if rule_binding_id == "T9_URI_DP_EMAIL_NOT_NULL_ERROR_REF_COLUMNS":
                 with pytest.raises(ValueError):
                     configs = lib.create_rule_binding_view_model(
