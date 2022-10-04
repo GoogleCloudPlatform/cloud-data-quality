@@ -340,25 +340,20 @@ class DqRuleBinding:
                 include_reference_columns = self.resolve_reference_columns_config(
                     configs_cache
                 ).include_reference_columns
-                if (
-                    "*" in include_reference_columns
-                    and len(include_reference_columns) == 1
-                ):
-                    column_names = bigquery_client.get_table_columns(
-                        table=table_entity.get_table_name(),
-                        project_id=table_entity.instance_name,
-                    )
-                    include_reference_columns = sorted(column_names)
-                    include_all_reference_columns = True
-                elif (
-                    "*" in include_reference_columns
-                    and len(include_reference_columns) > 1
-                ):
-                    raise ValueError(
-                        f"The specified reference columns id {self.reference_columns_id} \n"
-                        f"must contain only '*' or column names but not both.\n "
-                        f"Current reference columns configs contains \n {include_reference_columns} columns"
-                    )
+                if "*" in include_reference_columns:
+                    if len(include_reference_columns) == 1:
+                        column_names = bigquery_client.get_table_columns(
+                            table=table_entity.get_table_name(),
+                            project_id=table_entity.instance_name,
+                        )
+                        include_reference_columns = sorted(column_names)
+                        include_all_reference_columns = True
+                    elif len(include_reference_columns) > 1:
+                        raise ValueError(
+                            f"The specified reference columns id {self.reference_columns_id} \n"
+                            f"must contain only '*' or column names but not both.\n "
+                            f"Current reference columns configs contains \n {include_reference_columns} columns"
+                        )
             else:
                 include_reference_columns = []
                 include_all_reference_columns = False

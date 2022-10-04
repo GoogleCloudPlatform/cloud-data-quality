@@ -53,3 +53,13 @@ rule_bindings:
       - NOT_NULL_SIMPLE
     metadata:
       brand: one
+
+  T9_URI_DP_EMAIL_NOT_NULL_ERROR_REF_COLUMNS:
+    entity_uri: dataplex://projects/<my-gcp-project-id>/locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/entities/contact_details
+    column_id: VALUE
+    row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: INCORRECT_INCLUDE_ALL_REFERENCE_COLUMNS
+    rule_ids:
+      - NOT_NULL_SIMPLE
+    metadata:
+      brand: one
