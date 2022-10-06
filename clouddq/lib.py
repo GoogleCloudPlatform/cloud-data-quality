@@ -207,6 +207,7 @@ def prepare_configs_from_rule_binding_id(
     )
     resolved_rule_binding_configs = rule_binding.resolve_all_configs_to_dict(
         configs_cache=configs_cache,
+        bigquery_client=bigquery_client,
     )
     configs: dict[typing.Any, typing.Any] = {
         "configs": dict(resolved_rule_binding_configs)
@@ -285,7 +286,7 @@ def get_high_watermark_value(
             AND rule_binding_id = '{rule_binding_id}'
             AND progress_watermark IS TRUE ;"""
     else:
-        query = f"""SELECT 
+        query = """SELECT
             TIMESTAMP("1970-01-01 00:00:00") as high_watermark,
             CURRENT_TIMESTAMP() as current_timestamp_value ;"""
     logger.info(f"High watermark query is \n {query}")

@@ -78,6 +78,7 @@
     },
     "reference_columns_id": null,
     "include_reference_columns": [],
+    "include_all_reference_columns": false,
     "incremental_time_filter_column":null,
     "metadata":{
         "brand":"one"

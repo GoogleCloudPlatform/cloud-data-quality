@@ -27,6 +27,7 @@ from clouddq.classes.dq_entity_uri import EntityUri
 from clouddq.classes.dq_reference_columns import DqReferenceColumns
 from clouddq.classes.dq_row_filter import DqRowFilter
 from clouddq.classes.dq_rule import DqRule
+from clouddq.integration.bigquery.bigquery_client import BigQueryClient
 from clouddq.utils import assert_not_none_or_empty
 from clouddq.utils import get_from_dict_and_assert
 from clouddq.utils import get_keys_from_dict_and_assert_oneof
@@ -277,6 +278,7 @@ class DqRuleBinding:
     def resolve_all_configs_to_dict(
         self: DqRuleBinding,
         configs_cache: dq_configs_cache.DqConfigsCache,
+        bigquery_client: BigQueryClient,
     ) -> dict:
         """
 
@@ -334,11 +336,27 @@ class DqRuleBinding:
             row_filter_config = self.resolve_row_filter_config(configs_cache)
             # resolve reference columns config
             if self.reference_columns_id:
+                include_all_reference_columns = False
                 include_reference_columns = self.resolve_reference_columns_config(
                     configs_cache
                 ).include_reference_columns
+                if "*" in include_reference_columns:
+                    if len(include_reference_columns) == 1:
+                        column_names = bigquery_client.get_table_columns(
+                            table=table_entity.get_table_name(),
+                            project_id=table_entity.instance_name,
+                        )
+                        include_reference_columns = sorted(column_names)
+                        include_all_reference_columns = True
+                    elif len(include_reference_columns) > 1:
+                        raise ValueError(
+                            f"The specified reference columns id {self.reference_columns_id} \n"
+                            f"must contain only '*' or column names but not both.\n "
+                            f"Current reference columns configs contains \n {include_reference_columns} columns"
+                        )
             else:
                 include_reference_columns = []
+                include_all_reference_columns = False
 
             return dict(
                 {
@@ -348,6 +366,7 @@ class DqRuleBinding:
                     "column_id": self.column_id,
                     "reference_columns_id": self.reference_columns_id,
                     "include_reference_columns": include_reference_columns,
+                    "include_all_reference_columns": include_all_reference_columns,
                     "column_configs": dict(column_configs.dict_values()),
                     "rule_ids": list(self.rule_ids),
                     "rule_configs_dict": rule_configs_dict,
