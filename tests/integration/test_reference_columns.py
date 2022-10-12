@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
 from pprint import pformat
 
 import json
@@ -193,7 +192,7 @@ class TestReferenceColumns:
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_reference_columns.items():
             if rule_binding_id == "T9_URI_DP_EMAIL_NOT_NULL_ERROR_REF_COLUMNS":
                 with pytest.raises(ValueError):
-                    configs = lib.create_rule_binding_view_model(
+                    lib.create_rule_binding_view_model(
                         rule_binding_id=rule_binding_id,
                         rule_binding_configs=rule_binding_configs,
                         dq_summary_table_name="<your_gcp_project_id>.<your_bigquery_dataset_id>.dq_summary",
@@ -203,7 +202,6 @@ class TestReferenceColumns:
                         default_configs=test_dataplex_metadata_defaults_configs,
                         bigquery_client=test_bigquery_client,
                     )
-
 
 
 if __name__ == "__main__":
