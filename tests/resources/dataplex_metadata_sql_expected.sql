@@ -49,7 +49,7 @@ WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count
 WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
 ELSE FALSE
 END AS complex_rule_validation_success_flag,
- """
+ r"""
  WITH
  zero_record AS (
  SELECT
@@ -175,7 +175,7 @@ END AS simple_rule_row_is_valid,
 TRUE AS skip_null_count,
 CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
 CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
- """
+ r"""
  WITH
  zero_record AS (
  SELECT
