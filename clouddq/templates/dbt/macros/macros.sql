@@ -42,7 +42,7 @@
 {% endif %}
     CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
     CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
-    """{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
+    r"""{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
     AS failed_records_query,
   FROM
     zero_record
@@ -73,7 +73,7 @@
       WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
       ELSE FALSE
     END AS complex_rule_validation_success_flag,
-    """{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
+    r"""{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
     AS failed_records_query,
   FROM
     zero_record
