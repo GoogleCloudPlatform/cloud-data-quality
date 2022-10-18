@@ -85,6 +85,7 @@ class TestDataplexMetadataUriTemplates:
         test_rule_bindings_collection_team_4,
         test_default_dataplex_configs_cache,
         test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,
     ):
         for key, value in test_rule_bindings_collection_team_4.items():
             rule_binding = DqRuleBinding.from_dict(
@@ -94,7 +95,8 @@ class TestDataplexMetadataUriTemplates:
             rule_binding.resolve_table_entity_config(configs_cache=test_default_dataplex_configs_cache)
             rule_binding.resolve_rule_config_list(configs_cache=test_default_dataplex_configs_cache)
             rule_binding.resolve_row_filter_config(configs_cache=test_default_dataplex_configs_cache)
-            rule_binding.resolve_all_configs_to_dict(configs_cache=test_default_dataplex_configs_cache)
+            rule_binding.resolve_all_configs_to_dict(configs_cache=test_default_dataplex_configs_cache,
+                                                     bigquery_client=test_bigquery_client)
 
     def test_prepare_configs_from_rule_binding(
         self,
@@ -199,6 +201,7 @@ class TestDataplexMetadataUriTemplates:
             test_default_dataplex_configs_cache_from_file,
             test_dataplex_metadata_defaults_configs,
             test_rule_bindings_collection_from_configs_file,
+            test_bigquery_client,
     ):
         for rule_binding_id, rule_binding_configs in test_rule_bindings_collection_from_configs_file.items():
             rule_binding = DqRuleBinding.from_dict(
@@ -208,7 +211,8 @@ class TestDataplexMetadataUriTemplates:
             rule_binding.resolve_table_entity_config(configs_cache=test_default_dataplex_configs_cache_from_file)
             rule_binding.resolve_rule_config_list(configs_cache=test_default_dataplex_configs_cache_from_file)
             rule_binding.resolve_row_filter_config(configs_cache=test_default_dataplex_configs_cache_from_file)
-            rule_binding.resolve_all_configs_to_dict(configs_cache=test_default_dataplex_configs_cache_from_file)
+            rule_binding.resolve_all_configs_to_dict(configs_cache=test_default_dataplex_configs_cache_from_file,
+                                                     bigquery_client=test_bigquery_client)
 
     def test_prepare_configs_from_configs_file(
             self,
@@ -313,6 +317,7 @@ class TestDataplexMetadataUriTemplates:
         test_rule_bindings_collection_team_5,
         test_default_dataplex_configs_cache,
         test_dataplex_metadata_defaults_configs,
+        test_bigquery_client,
     ):
         for key, value in test_rule_bindings_collection_team_5.items():
             rule_binding = DqRuleBinding.from_dict(
@@ -322,7 +327,8 @@ class TestDataplexMetadataUriTemplates:
             rule_binding.resolve_table_entity_config(configs_cache=test_default_dataplex_configs_cache)
             rule_binding.resolve_rule_config_list(configs_cache=test_default_dataplex_configs_cache)
             rule_binding.resolve_row_filter_config(configs_cache=test_default_dataplex_configs_cache)
-            rule_binding.resolve_all_configs_to_dict(configs_cache=test_default_dataplex_configs_cache)
+            rule_binding.resolve_all_configs_to_dict(configs_cache=test_default_dataplex_configs_cache,
+                                                     bigquery_client=test_bigquery_client)
 
     def test_prepare_configs_from_gcs_rule_binding(
         self,

@@ -20,9 +20,6 @@
     '{{ fully_qualified_table_name }}' AS table_id,
     '{{ column_name }}' AS column_id,
     data.{{ column_name }} AS column_value,
-    {% for ref_column_name in include_reference_columns %}
-        data.{{ ref_column_name }} AS {{ ref_column_name }},
-    {%- endfor -%}
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
@@ -45,7 +42,7 @@
 {% endif %}
     CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
     CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
-    """{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
+    r"""{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
     AS failed_records_query,
   FROM
     zero_record
@@ -55,7 +52,7 @@
     zero_record.rule_binding_id = data.rule_binding_id
 {% endmacro -%}
 
-{% macro validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns, configs) -%}
+{% macro validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, configs) -%}
   SELECT
     CURRENT_TIMESTAMP() AS execution_ts,
     '{{ rule_binding_id }}' AS rule_binding_id,
@@ -63,9 +60,6 @@
     '{{ fully_qualified_table_name }}' AS table_id,
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
-    {% for ref_column_name in include_reference_columns %}
-        custom_sql_statement_validation_errors.{{ ref_column_name }} AS {{ ref_column_name }},
-    {%- endfor -%}
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}
@@ -79,7 +73,7 @@
       WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
       ELSE FALSE
     END AS complex_rule_validation_success_flag,
-    """{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
+    r"""{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
     AS failed_records_query,
   FROM
     zero_record
@@ -138,16 +132,14 @@
     zero_record.rule_binding_id = data.rule_binding_id
 {% endmacro -%}
 
-{% macro validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) -%}
+{% macro validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name) -%}
   SELECT
     '{{ rule_binding_id }}' AS rule_binding_id,
     '{{ rule_id }}' AS rule_id,
     '{{ fully_qualified_table_name }}' AS table_id,
     CAST(NULL AS STRING) AS column_id,
     NULL AS column_value,
-    {% for ref_column_name in include_reference_columns %}
-        custom_sql_statement_validation_errors.{{ ref_column_name }} AS {{ ref_column_name }},
-    {%- endfor -%}
+    custom_sql_statement_validation_errors,
 {% if rule_configs.get("dimension") %}
     '{{ rule_configs.get("dimension") }}' AS dimension,
 {% else %}

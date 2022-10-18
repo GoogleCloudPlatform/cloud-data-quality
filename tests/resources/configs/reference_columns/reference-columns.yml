@@ -26,3 +26,12 @@ reference_columns:
       - complaint_description
       - source
       - status
+
+  INCLUDE_ALL_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - "*"
+
+  INCORRECT_INCLUDE_ALL_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - "*"
+      - "column1"

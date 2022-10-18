@@ -90,7 +90,10 @@ class TestDataplexEntity:
         schema = {"fields": [{"name": "column1", "type": "STRING", "mode": "REQUIRED"},
                               {"name": "column2", "type": "STRING", "mode": "REQUIRED"},  # noqa: E127
                               {"name": "column3", "type": "STRING", "mode": "REQUIRED"},  # noqa: E127
-                              {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}]}  # noqa: E127
+                              {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}],
+                  "partitionFields": None,
+                  "partitionStyle": None
+                  }  # noqa: E127
 
         dataplex_entity_expected = {
             "name": name,
@@ -103,7 +106,7 @@ class TestDataplexEntity:
             "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
             "system": "BIGQUERY",
             "format": {"format": "OTHER"},
-            "schema": DataplexEntitySchema.from_dict(entity_id=name, kwargs=schema),
+            "schema": schema,
             "project_id": "project-id",
             "location": "location-id",
             "lake": "lake_name",
@@ -122,7 +125,10 @@ class TestDataplexEntity:
         schema = {"fields": [{"name": "column1", "type": "STRING", "mode": "REQUIRED"},
                               {"name": "column2", "type": "STRING", "mode": "REQUIRED"},  # noqa: E127
                               {"name": "column3", "type": "STRING", "mode": "REQUIRED"},  # noqa: E127
-                              {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}]}  # noqa: E127
+                              {"name": "column4", "type": "TIMESTAMP", "mode": "REQUIRED"}],
+                  "partitionFields": None,
+                  "partitionStyle": None
+                  }  # noqa: E127
 
         dataplex_entity_expected = {
             "name": name,
@@ -135,7 +141,7 @@ class TestDataplexEntity:
             "dataPath": "projects/project-id/datasets/bigquery_dataset_id/tables/table_name",
             "system": "BIGQUERY",
             "format": None,
-            "schema": DataplexEntitySchema.from_dict(entity_id=name, kwargs=schema),
+            "schema": schema,
             "project_id": "project-id",
             "location": "location-id",
             "lake": "lake_name",

@@ -49,7 +49,7 @@ WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count
 WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
 ELSE FALSE
 END AS complex_rule_validation_success_flag,
-"""
+r"""
 WITH
 zero_record AS (
 SELECT
@@ -76,6 +76,7 @@ validation_results AS (SELECT
 '<your-gcp-project-id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
 CAST(NULL AS STRING) AS column_id,
 NULL AS column_value,
+custom_sql_statement_validation_errors,
 CAST(NULL AS STRING) AS dimension,
 CAST(NULL AS BOOLEAN) AS simple_rule_row_is_valid,
 TRUE AS skip_null_count,
@@ -120,6 +121,7 @@ CAST(r.dimension AS STRING) AS _dq_validation_dimension,
 r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
 r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
+r.custom_sql_statement_validation_errors,
 FROM
 validation_results r
 )
@@ -173,7 +175,7 @@ END AS simple_rule_row_is_valid,
 TRUE AS skip_null_count,
 CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
 CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
-"""
+r"""
 WITH
 zero_record AS (
 SELECT

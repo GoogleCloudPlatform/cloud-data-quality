@@ -144,13 +144,15 @@ class TestJinjaTemplates:
         self,
         test_rule_bindings_collection_team_2,
         test_configs_cache,
+        test_bigquery_client,
     ):
         for key, value in test_rule_bindings_collection_team_2.items():
             rule_binding = DqRuleBinding.from_dict(rule_binding_id=key, kwargs=value)
             rule_binding.resolve_table_entity_config(configs_cache=test_configs_cache)
             rule_binding.resolve_rule_config_list(configs_cache=test_configs_cache)
             rule_binding.resolve_row_filter_config(configs_cache=test_configs_cache)
-            rule_binding.resolve_all_configs_to_dict(configs_cache=test_configs_cache)
+            rule_binding.resolve_all_configs_to_dict(configs_cache=test_configs_cache,
+                                                     bigquery_client=test_bigquery_client)
 
     def test_render_run_dq_main_sql(
         self,

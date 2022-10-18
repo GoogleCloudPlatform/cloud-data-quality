@@ -89,7 +89,7 @@ validation_results AS (
 
 {% for rule_id, rule_configs in rule_configs_dict.items() %}
     {%- if rule_configs.get('rule_type') == "CUSTOM_SQL_STATEMENT" -%}
-      {{ validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns, configs) }}
+      {{ validate_complex_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, configs) }}
     {%- else -%}
       {{ validate_simple_rule(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns, configs) }}
     {%- endif -%}
@@ -111,12 +111,6 @@ all_validation_results AS (
     r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-    {% for ref_column_name in include_reference_columns %}
-        r.{{ ref_column_name }} AS {{ ref_column_name }},
-        {% if loop.last %}
-            {{ '\n' }}
-        {% endif %}
-    {%- endfor -%}
     (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{{ metadata|tojson }}' AS metadata_json_string,

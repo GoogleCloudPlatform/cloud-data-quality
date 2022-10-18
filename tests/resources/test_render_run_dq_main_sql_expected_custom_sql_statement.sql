@@ -40,9 +40,6 @@ CURRENT_TIMESTAMP() AS execution_ts,
 '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
 CAST(NULL AS STRING) AS column_id,
 NULL AS column_value,
-custom_sql_statement_validation_errors.row_id AS row_id,
-custom_sql_statement_validation_errors.contact_type AS contact_type,
-custom_sql_statement_validation_errors.value AS value,
 CAST(NULL AS STRING) AS dimension,
 CAST(NULL AS BOOLEAN) AS simple_rule_row_is_valid,
 TRUE AS skip_null_count,
@@ -52,7 +49,7 @@ WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count
 WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
 ELSE FALSE
 END AS complex_rule_validation_success_flag,
-"""
+r"""
 WITH
 zero_record AS (
 SELECT
@@ -79,9 +76,7 @@ validation_results AS (SELECT
 '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
 CAST(NULL AS STRING) AS column_id,
 NULL AS column_value,
-custom_sql_statement_validation_errors.row_id AS row_id,
-custom_sql_statement_validation_errors.contact_type AS contact_type,
-custom_sql_statement_validation_errors.value AS value,
+custom_sql_statement_validation_errors,
 CAST(NULL AS STRING) AS dimension,
 CAST(NULL AS BOOLEAN) AS simple_rule_row_is_valid,
 TRUE AS skip_null_count,
@@ -126,9 +121,8 @@ CAST(r.dimension AS STRING) AS _dq_validation_dimension,
 r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
 r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
-r.row_id AS row_id,
-r.contact_type AS contact_type,
-r.value AS value,FROM
+r.custom_sql_statement_validation_errors,
+FROM
 validation_results r
 )
 SELECT
@@ -172,9 +166,6 @@ CURRENT_TIMESTAMP() AS execution_ts,
 '<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
 'value' AS column_id,
 data.value AS column_value,
-data.row_id AS row_id,
-data.contact_type AS contact_type,
-data.value AS value,
 CAST(NULL AS STRING) AS dimension,
 CASE
 WHEN value IS NOT NULL THEN TRUE
@@ -184,7 +175,7 @@ END AS simple_rule_row_is_valid,
 TRUE AS skip_null_count,
 CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
 CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
-"""
+r"""
 WITH
 zero_record AS (
 SELECT
@@ -243,7 +234,8 @@ r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation
 r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
 r.row_id AS row_id,
 r.contact_type AS contact_type,
-r.value AS value,FROM
+r.value AS value,
+FROM
 validation_results r
 )
 SELECT
@@ -276,9 +268,6 @@ r.skip_null_count AS skip_null_count,
 r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
 r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
-r.row_id AS row_id,
-r.contact_type AS contact_type,
-r.value AS value,
 (SELECT COUNT(*) FROM data) AS rows_validated,
 last_mod.last_modified,
 '{"brand": "one"}' AS metadata_json_string,

@@ -174,7 +174,7 @@ class DataplexEntity:
             "dataPath": self.dataPath,
             "system": self.system,
             "format": self.format,
-            "schema": self.schema,
+            "schema": self.schema.to_dict(),
             "project_id": self.project_id,
             "location": self.location,
             "lake": self.lake,

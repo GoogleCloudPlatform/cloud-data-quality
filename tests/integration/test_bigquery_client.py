@@ -194,6 +194,31 @@ class TestBigQueryClient:
         else:
             print(f'`{table_name}` does not exists in the project `{project_id}`')
 
+    def test_get_table_columns(self,
+        gcp_project_id,
+        test_bigquery_client):
+        table_name = "bigquery-public-data.github_repos.commits"
+        table_ref = test_bigquery_client.table_from_string(
+            table_name
+        )
+        project_id = table_ref.project
+        is_table_exists = test_bigquery_client.is_table_exists(
+            table=table_name,
+            project_id=project_id
+        )
+        if is_table_exists:
+            table_columns = test_bigquery_client.get_table_columns(
+                table=table_name,
+                project_id=project_id
+            )
+            expected_table_columns = {
+                    'commit', 'tree', 'parent', 'author', 'committer', 'subject', 'message',
+                    'trailer', 'difference', 'difference_truncated', 'repo_name', 'encoding'
+            }
+            assert table_columns == expected_table_columns
+        else:
+            print(f'`{table_name}` does not exists in the project `{project_id}`')
+
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, '-vv', '-rP', '-n', 'auto']))

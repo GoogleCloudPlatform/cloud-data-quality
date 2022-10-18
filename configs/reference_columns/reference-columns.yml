@@ -19,3 +19,7 @@ reference_columns:
       - row_id
       - contact_type
       - value
+
+  INCLUDE_ALL_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - *

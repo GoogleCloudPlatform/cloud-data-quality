@@ -11,36 +11,32 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
-
 WITH
 zero_record AS (
 SELECT
-'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
+'<rule_binding_id>' AS rule_binding_id,
 ),
 data AS (
 SELECT
 *,
-'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
+'<rule_binding_id>' AS rule_binding_id,
 FROM
-`<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details` d
+`<your-gcp-project-id>.<your_dataplex_zone_id>.partitioned_gcs_asset` d
 WHERE
-CAST(d.ts AS TIMESTAMP)
-BETWEEN CAST(HIGH_WATERMARK_VALUE AS TIMESTAMP) AND CAST(CURRENT_TIMESTAMP_VALUE AS TIMESTAMP)
-AND
-True
-),
+contact_type = 'email'
+AND dt IS NOT NULL),
 last_mod AS (
 SELECT
 project_id || '.' || dataset_id || '.' || table_id AS table_id,
 TIMESTAMP_MILLIS(last_modified_time) AS last_modified
-FROM `<your_gcp_project_id>.<your_bigquery_dataset_id>.__TABLES__`
+FROM `<your-gcp-project-id>.<your_dataplex_zone_id>.__TABLES__`
 ),
 validation_results AS (
 SELECT
 CURRENT_TIMESTAMP() AS execution_ts,
-'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
+'<rule_binding_id>' AS rule_binding_id,
 'NOT_NULL_SIMPLE' AS rule_id,
-'<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
+'<your-gcp-project-id>.<your_dataplex_zone_id>.partitioned_gcs_asset' AS table_id,
 'value' AS column_id,
 data.value AS column_value,
 CAST(NULL AS STRING) AS dimension,
@@ -56,34 +52,33 @@ r"""
 WITH
 zero_record AS (
 SELECT
-'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
+'<rule_binding_id>' AS rule_binding_id,
 ),
 data AS (
 SELECT
 *,
-'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
+'<rule_binding_id>' AS rule_binding_id,
 FROM
-`<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details` d
+`<your-gcp-project-id>.<your_dataplex_zone_id>.partitioned_gcs_asset` d
 WHERE
-CAST(d.ts AS TIMESTAMP)
-BETWEEN CAST(HIGH_WATERMARK_VALUE AS TIMESTAMP) AND CAST(CURRENT_TIMESTAMP_VALUE AS TIMESTAMP)
-AND
-True
-),
+contact_type = 'email'
+AND dt IS NOT NULL),
 last_mod AS (
 SELECT
 project_id || '.' || dataset_id || '.' || table_id AS table_id,
 TIMESTAMP_MILLIS(last_modified_time) AS last_modified
-FROM `<your_gcp_project_id>.<your_bigquery_dataset_id>.__TABLES__`
+FROM `<your-gcp-project-id>.<your_dataplex_zone_id>.__TABLES__`
 ),
 validation_results AS (SELECT
-'T1_DQ_1_VALUE_NOT_NULL' AS rule_binding_id,
+'<rule_binding_id>' AS rule_binding_id,
 'NOT_NULL_SIMPLE' AS rule_id,
-'<your_gcp_project_id>.<your_bigquery_dataset_id>.contact_details' AS table_id,
+'<your-gcp-project-id>.<your_dataplex_zone_id>.partitioned_gcs_asset' AS table_id,
 'value' AS column_id,
 data.value AS column_value,
-data.row_id AS row_id,
 data.contact_type AS contact_type,
+data.dt AS dt,
+data.row_id AS row_id,
+data.ts AS ts,
 data.value AS value,
 CAST(NULL AS STRING) AS dimension,
 CASE
@@ -112,8 +107,10 @@ CAST(r.dimension AS STRING) AS _dq_validation_dimension,
 r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
 r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
-r.row_id AS row_id,
 r.contact_type AS contact_type,
+r.dt AS dt,
+r.row_id AS row_id,
+r.ts AS ts,
 r.value AS value,
 FROM
 validation_results r
@@ -150,11 +147,11 @@ r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
 r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
 (SELECT COUNT(*) FROM data) AS rows_validated,
 last_mod.last_modified,
-'{}' AS metadata_json_string,
+'{"brand": "one"}' AS metadata_json_string,
 '' AS configs_hashsum,
-CAST(NULL AS STRING) AS dataplex_lake,
-CAST(NULL AS STRING) AS dataplex_zone,
-CAST(NULL AS STRING) AS dataplex_asset_id,
+'<your_dataplex_lake_id>' AS dataplex_lake,
+'<your_dataplex_zone_id>' AS dataplex_zone,
+'<your_dataplex_asset_id>' AS dataplex_asset_id,
 CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', True) AS dq_run_id,
 TRUE AS progress_watermark,
 failed_records_query AS failed_records_query,

@@ -54,6 +54,7 @@
     },
     "entity_id": "TEST_TABLE",
     "include_reference_columns": ["row_id","contact_type","value"],
+    "include_all_reference_columns": false,
     "incremental_time_filter_column": null,
     "metadata": {"brand": "one"},
     "reference_columns_id": "CONTACT_DETAILS_REFERENCE_COLUMNS",
