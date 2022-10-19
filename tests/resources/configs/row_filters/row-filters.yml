@@ -18,5 +18,7 @@ row_filters:
       True
 
   DATA_TYPE_EMAIL:
+    params: |-
+      column
     filter_sql_expr: |-
       contact_type = 'email'

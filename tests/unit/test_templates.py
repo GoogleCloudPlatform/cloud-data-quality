@@ -104,6 +104,9 @@ class TestJinjaTemplates:
         for key, value in test_row_filters_collection.items():
             dq_filter = DqRowFilter.from_dict(row_filter_id=key, kwargs=value)
             assert key in dq_filter.to_dict()
+            # for None row filters
+            if 'params' not in value:
+                value['params'] = ""
             assert dict(dq_filter.dict_values()) == dict(value)
 
     def test_resolve_time_filter_column(self, test_rule_bindings_collection_team_1, test_configs_cache):
@@ -138,6 +141,8 @@ class TestJinjaTemplates:
             if "incremental_time_filter_column_id" not in value:
                 value.update({"incremental_time_filter_column_id": None})
             value.update({'entity_uri': None})
+            row_filter_ids = list(set().union(*(d.keys() for d in value.get("row_filter_ids"))))
+            value.update({"row_filter_ids": row_filter_ids})
             assert dict(rule_binding.dict_values()) == dict(value)
 
     def test_rule_bindings_class_resolve_configs(

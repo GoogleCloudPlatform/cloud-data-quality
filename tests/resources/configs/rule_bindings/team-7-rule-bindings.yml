@@ -16,7 +16,8 @@ rule_bindings:
   T12_URI_NATIVE_BQ_NOT_NULL:
     entity_uri: bigquery://locations/<my-gcp-dataplex-region-id>/lakes/<my-gcp-dataplex-lake-id>/zones/<my-gcp-dataplex-zone-id>/projects/<my-gcp-project-id>/datasets/austin_311/tables/311_service_requests
     column_id: UNIQUE_KEY
-    row_filter_id: NONE
+    row_filter_ids:
+      - NONE
     reference_columns_id: 311_SERVICE_REQUESTS_REFERENCE_COLUMNS
     rule_ids:
       - NOT_NULL_SIMPLE
@@ -26,7 +27,8 @@ rule_bindings:
   T13_URI_NATIVE_BQ_NOT_NULL:
     entity_uri: bigquery://projects/<my-gcp-project-id>/datasets/austin_311/tables/311_service_requests
     column_id: UNIQUE_KEY
-    row_filter_id: NONE
+    row_filter_ids:
+      - NONE
     reference_columns_id: 311_SERVICE_REQUESTS_REFERENCE_COLUMNS
     rule_ids:
       - NOT_NULL_SIMPLE

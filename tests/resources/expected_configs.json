@@ -58,10 +58,13 @@
     "incremental_time_filter_column": null,
     "metadata": {"brand": "one"},
     "reference_columns_id": "CONTACT_DETAILS_REFERENCE_COLUMNS",
+    "row_filter_ids": ["DATA_TYPE_EMAIL"],
     "row_filter_configs": {
-      "filter_sql_expr": "contact_type = 'email'"
+      "DATA_TYPE_EMAIL": {
+        "filter_sql_expr": "contact_type = 'email'",
+        "params": "column"
+      }
     },
-    "row_filter_id": "DATA_TYPE_EMAIL",
     "metadata": {
       "brand": "one"
     },

@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from string import Template
 
 from clouddq.utils import assert_not_none_or_empty
 
@@ -26,6 +27,7 @@ class DqRowFilter:
 
     row_filter_id: str
     filter_sql_expr: str
+    params: str
 
     @classmethod
     def from_dict(
@@ -45,6 +47,7 @@ class DqRowFilter:
         """
 
         filter_sql_expr: str = kwargs.get("filter_sql_expr", "")
+        params: str = kwargs.get("params", "")
         assert_not_none_or_empty(
             filter_sql_expr,
             f"Row Filter ID: {row_filter_id} must define attribute "
@@ -53,6 +56,7 @@ class DqRowFilter:
         return DqRowFilter(
             row_filter_id=str(row_filter_id),
             filter_sql_expr=filter_sql_expr,
+            params=params,
         )
 
     def to_dict(self: DqRowFilter) -> dict:
@@ -69,6 +73,7 @@ class DqRowFilter:
             {
                 f"{self.row_filter_id}": {
                     "filter_sql_expr": self.filter_sql_expr,
+                    "params": self.params,
                 }
             }
         )
@@ -84,3 +89,14 @@ class DqRowFilter:
         """
 
         return dict(self.to_dict().get(self.row_filter_id))
+
+    def resolve_sql_expr(self: DqRowFilter, arguments: dict) -> None:
+        try:
+            self.filter_sql_expr = Template(self.filter_sql_expr).safe_substitute(
+                arguments
+            )
+        except Exception as e:
+            raise ValueError(
+                f"Failed to resolve row_filter_id '{self.row_filter_id}' "
+                f"with error:\n{e}"
+            )

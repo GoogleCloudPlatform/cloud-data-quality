@@ -16,7 +16,8 @@ rule_bindings:
   T1_DQ_1_VALUE_NOT_NULL:
     entity_id: TEST_TABLE
     column_id: VALUE
-    row_filter_id: NONE
+    row_filter_ids:
+      - NONE
     reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     incremental_time_filter_column_id: TS
     rule_ids:

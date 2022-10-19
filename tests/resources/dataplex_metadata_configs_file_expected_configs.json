@@ -72,10 +72,13 @@
             "rule_sql_expr":"value IS NOT NULL"
         }
     },
-    "row_filter_id":"DATA_TYPE_EMAIL",
-    "row_filter_configs":{
-        "filter_sql_expr":"contact_type = 'email'"
-    },
+  "row_filter_ids": ["DATA_TYPE_EMAIL"],
+  "row_filter_configs": {
+    "DATA_TYPE_EMAIL": {
+      "filter_sql_expr": "contact_type = 'email'",
+      "params": "column"
+    }
+  },
     "reference_columns_id": null,
     "include_reference_columns": [],
     "include_all_reference_columns": false,

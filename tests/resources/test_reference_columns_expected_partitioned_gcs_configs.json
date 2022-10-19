@@ -66,9 +66,12 @@
       "rule_sql_expr": "value IS NOT NULL"
     }
   },
-  "row_filter_id": "DATA_TYPE_EMAIL",
+  "row_filter_ids": ["DATA_TYPE_EMAIL"],
   "row_filter_configs": {
-    "filter_sql_expr": "contact_type = 'email'"
+    "DATA_TYPE_EMAIL": {
+      "filter_sql_expr": "contact_type = 'email'",
+      "params": "column"
+    }
   },
   "incremental_time_filter_column": null,
   "metadata": {
