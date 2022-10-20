@@ -29,7 +29,6 @@ snapshot-paths: ["snapshot"]
 docs-paths: ["docs"]
 asset-paths: ["asset"]
 log-path: "log"
-modules-path: "modules"
 
 target-path: "target" # directory which will store compiled SQL files
 clean-targets: # directories to be removed by `dbt clean`
