@@ -45,9 +45,11 @@ Each `rule_binding` must define one of the fields:
 
 `column_id` refers to the column in the table to be validated, `row_filter_id` refers to a filter condition to select rows in-scope for validation, and `rule_ids` refers to the list of data quality validation rules to apply on the selected column and rows.
 
-If `incremental_time_filter_column_id` is set to a monotonically-increasing timestamp column in an append-only table, `CloudDQ` on each run will only validate rows where the timestamp specified in `incremental_time_filter_column_id` is higher than the timestamp of the last run. This allows CloudDQ to perform incremental validation without scanning the entire table everytime. If `incremental_time_filter_column_id` is not set, `CloudDQ` will validate all rows matching the `row_filter_id` on each run.
+`reference_columns_id` is an optional parameter and refers to the columns names (not `column_id`) in the entity that should be included in the failed records query. The failed records query is a SQL query that is included in the [DQ output summary table](OVERVIEW.md#consuming-clouddq-outputs) containing the validation summary results. The SQL query can be executed to retrieve the records that failed the given `rule_id` validation in a `rule_binding`. `reference_columns_id` can be set to a unique identifier of a `reference_columns` node type documented [here](REFERENCE.md#reference-columns). The field `include_reference_columns` columns will have no effect for CUSTOM_SQL_STATEMENT rule types. This is because `include_reference_columns` may only refers to column names that exists in the referenced entity in the `rule_binding`, while the content of the CUSTOM_SQL_STATEMENT rule may include transformed columns such as `median(<column_name>)` or columns that do not exist in the referenced entity. 
 
-Under the `metadata` node, you can add any custom key-value pairs. These are propagated to the [DQ output summary table](OVERVIEW.md#consuming-clouddq-outputs) in JSON format, which allows filtering, or drill-down, in dashboards that show the validation output. This can be useful, for example, to capture the team that is responsible for a given rule binding.
+`incremental_time_filter_column_id` is an optional parameter for incremental validation of an append-only table with a monotonically increasing timestamp column. If `incremental_time_filter_column_id` is set to a monotonically-increasing timestamp column in an append-only table, `CloudDQ` on each run will only validate rows where the timestamp specified in `incremental_time_filter_column_id` is higher than the timestamp of the last run. This allows CloudDQ to perform incremental validation without scanning the entire table everytime. If `incremental_time_filter_column_id` is not set, `CloudDQ` will validate all rows matching the `row_filter_id` on each run.
+
+`metadata` is an optional parameter for including relevant information for each `rule_binding` as key-value pairs in the resulting output table. Under the `metadata` node, you can add any custom key-value pairs. These are propagated to the [DQ output summary table](OVERVIEW.md#consuming-clouddq-outputs) in JSON format, which allows filtering, or drill-down, in dashboards that show the validation output. This can be useful, for example, to capture the team that is responsible for a given rule binding.
 
 
 #### Rule Dimensions
@@ -170,10 +172,12 @@ LAST_WEEK:
 
 #### Reference Columns
 
-**Reference Columns**: Defines the entity columns to be included into the failed records query for the records that failed the validation.
-The content of the `include_reference_columns` field will be inserted into a SQL `SELECT` clause for selecting your data to the rows in 
-failed records query after validation. If you specify `*` in `include_reference_columns` field then all the columns from entity will be inserted into a SQL `SELECT` clause.
-The reference columns will have no effect for CUSTOM_SQL_STATEMENT, if provided will be ignored.
+**Reference Columns**: Defines the columns to be included in the failed records SQL query included in the output BigQuery summary table.
+For the given `entity_id` in the `rule_binding`, the column names (not `column_id`) referenced in the `include_reference_columns` field will be included in the resulting output of the failed records SQL query. This allows you to include relevant unique identifier columns or context for the failed records for diagnostic puposes. 
+
+The `include_reference_columns` field can specify `"*"` to include all columns from the entity referenced in the `rule_binding` in the resulting failed records query. If `include_reference_columns` contains `"*"`, it cannot include any other column names.
+
+The field `include_reference_columns` columns will have no effect for CUSTOM_SQL_STATEMENT rule types. This is because `include_reference_columns` may only refers to column names that exists in the referenced entity in the `rule_binding`, while the content of the CUSTOM_SQL_STATEMENT rule may include transformed columns such as `median(<column_name>)` or columns that do not exist in the referenced entity.
 
 ```yaml
 reference_columns:
@@ -186,7 +190,7 @@ reference_columns:
 
   INCLUDE_ALL_REFERENCE_COLUMNS:
     include_reference_columns:
-      - *
+      - "*"
 ```
 
 #### Entities
@@ -224,7 +228,7 @@ entities:
 ```
 Entities configurations contain details of the table to be validated, including its source database, connnection settings, and column configurations.
 
-`entities` can be referenced in a `rule_binding` by specifying its unique identifier in the `rule_binding` field `entity_id`. If you do not use `entity_id` in any of your `rule_binding`, there is no need to define the `entities` configuration node separately.
+`entities` can be referenced in a `rule_binding` by specifying its unique identifier in the `rule_binding` field `entity_id`. *If you do not use `entity_id` in any of your `rule_binding`, there is no need to define the `entities` configuration node separately.*
 
 An example entity configurations is provided at `configs/entities/test-data.yml`. The data for the BigQuery table `contact_details` referred in this config can can be found in `tests/data/contact_details.csv`.
 
