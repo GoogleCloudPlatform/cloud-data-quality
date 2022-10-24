@@ -352,5 +352,17 @@ The table below lists the columns in their `dq_summary` table, that is the outpu
         set to <code>NULL</code> for <code>NOT_NULL</code> and
         <code>CUSTOM_SQL_STATEMENT</code> rules.</td>
     </tr>
+    <tr>
+      <td><code>failed_records_query</code></td>
+      <td>(string)  For every rule that fails - this column stores a 
+        query that can be utilized to get failed records. To aid 
+        debugging further - you  can also specify “reference columns”  
+        in YAML that will be made part of this query.  Use of reference 
+        columns will enable you to join the output of 
+        “failed_records_query” with the original data to get the entire 
+        record.  E.g. you can specify a primary_key column or 
+        a compound primary_key column(s) as a reference column(s).
+      </td>
+    </tr>
   </tbody>
 </table>

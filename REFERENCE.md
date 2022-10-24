@@ -15,6 +15,7 @@ rule_bindings:
     entity_id: TEST_TABLE
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     incremental_time_filter_column_id: TS
     rule_ids:
       - NOT_NULL_SIMPLE
@@ -27,6 +28,7 @@ rule_bindings:
     entity_uri: dataplex://projects/<project-id>/locations/<region-id>/lakes/<lake-id>/zones/<zone-id>/entities/<entity-id> # replace variables in <angle brackets> with your own configs
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
+    reference_columns_id: INCLUDE_ALL_REFERENCE_COLUMNS
     rule_ids:
       - NO_DUPLICATES_IN_COLUMN_GROUPS:
           column_names: "value"
@@ -164,6 +166,27 @@ LAST_WEEK:
    filter_sql_expr: |-
       date(last_modified_timestamp) >= DATE_SUB(current_date(), INTERVAL 1 WEEK)
 
+```
+
+#### Reference Columns
+
+**Reference Columns**: Defines the entity columns to be included into the failed records query for the records that failed the validation.
+The content of the `include_reference_columns` field will be inserted into a SQL `SELECT` clause for selecting your data to the rows in 
+failed records query after validation. If you specify `*` in `include_reference_columns` field then all the columns from entity will be inserted into a SQL `SELECT` clause.
+The reference columns will have no effect for CUSTOM_SQL_STATEMENT, if provided will be ignored.
+
+```yaml
+reference_columns:
+
+  CONTACT_DETAILS_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - row_id
+      - contact_type
+      - value
+
+  INCLUDE_ALL_REFERENCE_COLUMNS:
+    include_reference_columns:
+      - *
 ```
 
 #### Entities
