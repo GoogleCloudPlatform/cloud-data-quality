@@ -20,9 +20,9 @@ config-version: 2
 # This setting configures which "profile" dbt uses for this project.
 profile: "default"
 
-source-paths: ["models"]
+model-paths: ["models"]
 macro-paths: ["macros"]
-data-paths: ["data"]
+seed-paths: ["data"]
 test-paths: ["test"]
 analysis-paths: ["analysis"]
 snapshot-paths: ["snapshot"]
