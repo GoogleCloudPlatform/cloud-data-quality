@@ -330,7 +330,7 @@ class DataplexClient:
             params=default_params,
         )
         if "entities" not in response.json():
-            logger.warning(
+            logger.info(
                 f"\nFailed to retrieve entities matching filter:\n"
                 f" '{params['filter']}'\n"
                 f"in Dataplex zone:\n"
@@ -341,6 +341,7 @@ class DataplexClient:
                 f"API response:\n"
                 f"Response status code: {pformat(response.status_code)}\n"
                 f"Response body: {pformat(response.json())}\n\n"
+                f"This is expected if the entity is not registered as a Dataplex asset. Otherwise, in order to find corresponding dataplex asset for the entity\n"
                 f"Ensure:\n1) you have sufficient IAM permission to query the Dataplex zone.\n"
                 f"2) the table is registered in the correct Dataplex zone.\n"
                 f"3) you have not exceeded your Dataplex API quotas.\n"
