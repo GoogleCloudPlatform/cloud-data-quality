@@ -16,8 +16,8 @@ entities:
   TEST_TABLE:
     source_database: BIGQUERY
     table_name: contact_details
-    dataset_name: <your_bigquery_dataset_id>
-    project_name: <your_gcp_project_id>
+    dataset_name: clouddq_dev_us_central1
+    project_name: kthxbayes-sandbox
     columns:
       ROW_ID:
         name: row_id
