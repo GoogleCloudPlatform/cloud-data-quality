@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data Quality Engine for BigQuery."""
+"""Testing CLA"""
 from datetime import datetime
 from datetime import timezone
 from pathlib import Path
