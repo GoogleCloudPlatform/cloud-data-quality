@@ -217,7 +217,7 @@ def main(  # noqa: C901
     enable_experimental_bigquery_entity_uris: bool = True,
     enable_experimental_dataplex_gcs_validation: bool = True,
 ) -> None:
-    """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH.
+    """Run RULE_BINDING_IDS from a RULE_BINDING_CONFIG_PATH..
 
     RULE_BINDING_IDS:
     comma-separated Rule Binding ID(s) containing the
