@@ -256,7 +256,7 @@ If you are testing CloudDQ with the provided configs, ensure you update the `<yo
 
 ```yaml
 rule_bindings:
- TRANSACTIONS_UNIQUE:
+ TRANSACTIONS_UNIQUE_1:
    entity_uri: bigquery://projects/<project-id>/datasets/<dataset_id>/tables/<table_id> # replace variables in <angle brackets> with your own configs
    column_id: id
    row_filter_id: NONE
@@ -264,7 +264,7 @@ rule_bindings:
      - NO_DUPLICATES_IN_COLUMN_GROUPS:
          column_names: "id"
          
- TRANSACTIONS_UNIQUE:
+ TRANSACTIONS_UNIQUE_2:
    entity_uri: dataplex://projects/<project-id>/locations/<region-id>/lakes/<lake-id>/zones/<zone-id>/entities/<entity-id> # replace variables in <angle brackets> with your own configs
    column_id: id
    row_filter_id: NONE
