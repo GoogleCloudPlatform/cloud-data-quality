@@ -12,7 +12,7 @@ is a lookup key for the more detailed configurations that must be defined in the
 ```yaml
 rule_bindings:
   T2_DQ_1_EMAIL:
-    entity_id: TEST_TABLE
+    entity_uri: bigquery://projects/<project-id>/datasets/<dataset_id>/tables/<table_id> # replace variables in <angle brackets> with your own configs
     column_id: VALUE
     row_filter_id: DATA_TYPE_EMAIL
     reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
@@ -41,7 +41,7 @@ Each `rule_binding` must define one of the fields:
 - `entity_id` or `entity_uri` and 
 - all of the fields `column_id`, `row_filter_id`, and `rule_ids`.
 
-`entity_id` refers to the table being validated as defined in a separate `entities` configuration node. `entity_uri` is the URI path in a remote metadata registry that references the table being validated. You can only define one of `entity_id` or `entity_uri` in a single `rule_binding`. If you only use `entity_uri` in your `rule_binding` configs, there is no need to define the `entities` configuration node separately.  This is because CloudDQ will fetch metadata about the `entity_uri` directly from the remote metadata registry instead of relying on manually defined `entities` configurations.
+`entity_id` refers to the table being validated as defined in a separate `entities` configuration node. `entity_uri` is the URI path in a remote metadata registry that references the table being validated. You can only define one of `entity_id` or `entity_uri` in a single `rule_binding`. If you only use `entity_uri` in your `rule_binding` configs, there is no need to define the `entities` configuration node separately.  This is because CloudDQ will fetch metadata about the `entity_uri` directly from the remote metadata registry instead of relying on manually defined `entities` configurations.  **Where possible, we recommend using the newer `entity_uri` instead of manually specifying column schemas in the `entity` configs.**
 
 `column_id` refers to the column in the table to be validated, `row_filter_id` refers to a filter condition to select rows in-scope for validation, and `rule_ids` refers to the list of data quality validation rules to apply on the selected column and rows.
 
@@ -226,7 +226,7 @@ entities:
         description: |-
           updated timestamp
 ```
-Entities configurations contain details of the table to be validated, including its source database, connnection settings, and column configurations.
+Entities configurations contain information of the table to be validated, including its source database, connnection settings, and column configurations.
 
 `entities` can be referenced in a `rule_binding` by specifying its unique identifier in the `rule_binding` field `entity_id`. *If you do not use `entity_id` in any of your `rule_binding`, there is no need to define the `entities` configuration node separately.*
 
@@ -257,6 +257,14 @@ If you are testing CloudDQ with the provided configs, ensure you update the `<yo
 ```yaml
 rule_bindings:
  TRANSACTIONS_UNIQUE:
+   entity_uri: bigquery://projects/<project-id>/datasets/<dataset_id>/tables/<table_id> # replace variables in <angle brackets> with your own configs
+   column_id: id
+   row_filter_id: NONE
+   rule_ids:
+     - NO_DUPLICATES_IN_COLUMN_GROUPS:
+         column_names: "id"
+         
+ TRANSACTIONS_UNIQUE:
    entity_uri: dataplex://projects/<project-id>/locations/<region-id>/lakes/<lake-id>/zones/<zone-id>/entities/<entity-id> # replace variables in <angle brackets> with your own configs
    column_id: id
    row_filter_id: NONE
@@ -264,9 +272,9 @@ rule_bindings:
      - NO_DUPLICATES_IN_COLUMN_GROUPS:
          column_names: "id"
 ```
-Instead of manually specifying the `entities` configuration to be referenced in the `entity_id` field of each `Rule Binding`, you can specify an `entity_uri` containing the lookup path to a remote metadata registry referencing the table entity to be validated. This omit the need to define the `entities` configurations directly.
+Instead of manually specifying the `entities` configuration to be referenced in the `entity_id` field of each `Rule Binding`, you can specify an `entity_uri` containing the lookup path to a remote metadata registry referencing the table entity to be validated. This omit the need to define the `entities` configurations and the associated schemas directly.
 
-`entity_uri` currently supports looking up BigQuery tables using Dataplex Metadata API. The BigQuery dataset containing this table must be registered as a Dataplex Asset and Dataplex Discovery Jobs must have already discovered the table and created a corresponding Dataplex `entity_id`. The Dataplex `entity_id` path can then be referenced with the URI scheme `dataplex://` in the field `entity_uri` inside a `Rule Binding` for `CloudDQ` to automatically look-up the `entity_id` using Dataplex Metadata API to resolve to the table name to be validated.
+The remote metadata registry can be specified using the URI scheme `dataplex://` to use the Dataplex Metadata API or `bigquery://` to use the BigQuery Tables API. The arguments following the URI scheme are key value pairs for looking up the table entity in the respective metadata registry. For example, `bigquery://projects/<project-id>/datasets/<dataset_id>/tables/<table_id>` for referencing BigQuery tables, or `dataplex://projects/<project-id>/locations/<region-id>/lakes/<lake-id>/zones/<zone-id>/entities/<entity-id>` for referencing a Dataplex entity, which may refers to a BigQuery table or a GCS bucket.
 
 #### Metadata Registry Defaults
 
