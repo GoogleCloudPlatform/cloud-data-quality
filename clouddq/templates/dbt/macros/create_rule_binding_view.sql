@@ -129,6 +129,13 @@ all_validation_results AS (
     CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', {{ progress_watermark }}) AS dq_run_id,
     {{ progress_watermark|upper }} AS progress_watermark,
     failed_records_query AS failed_records_query,
+    {%- if rule_type != "CUSTOM_SQL_STATEMENT" -%}
+        {% for ref_column_name in include_reference_columns %}
+            r.{{ ref_column_name }} AS {{ ref_column_name }},
+        {%- endfor -%}
+    {%- else -%}
+        r.custom_sql_statement_validation_errors,
+    {%- endif -%}
   FROM
     validation_results r
   JOIN last_mod USING(table_id)
