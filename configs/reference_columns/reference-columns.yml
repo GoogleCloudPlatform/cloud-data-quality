@@ -22,4 +22,4 @@ reference_columns:
 
   INCLUDE_ALL_REFERENCE_COLUMNS:
     include_reference_columns:
-      - "*"
+      - *
