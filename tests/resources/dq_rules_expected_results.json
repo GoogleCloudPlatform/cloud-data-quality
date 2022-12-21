@@ -78,7 +78,7 @@
     "progress_watermark": true,
     "rows_validated": "7",
     "complex_rule_validation_errors_count": null,
-    "complex_rule_validation_success_flag": null,
+    "complex_rule_validation_success_flag": true,
     "success_count": "0",
     "failed_count": "0",
     "null_count": null
@@ -120,7 +120,7 @@
     "progress_watermark": true,
     "rows_validated": "9",
     "complex_rule_validation_errors_count": null,
-    "complex_rule_validation_success_flag": null,
+    "complex_rule_validation_success_flag": true,
     "success_count": "0",
     "failed_count": "0",
     "null_count": null
@@ -148,7 +148,7 @@
     "progress_watermark": true,
     "rows_validated": "0",
     "complex_rule_validation_errors_count": null,
-    "complex_rule_validation_success_flag": null,
+    "complex_rule_validation_success_flag": true,
     "success_count": null,
     "failed_count": null,
     "null_count": null
@@ -162,7 +162,7 @@
     "progress_watermark": true,
     "rows_validated": "0",
     "complex_rule_validation_errors_count": null,
-    "complex_rule_validation_success_flag": null,
+    "complex_rule_validation_success_flag": true,
     "success_count": null,
     "failed_count": null,
     "null_count": null
