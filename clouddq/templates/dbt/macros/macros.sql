@@ -69,7 +69,7 @@
     TRUE AS skip_null_count,
     custom_sql_statement_validation_errors.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     CASE
-      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count IS NULL THEN CAST(NULL AS BOOLEAN)
+      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count IS NULL THEN TRUE
       WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
       ELSE FALSE
     END AS complex_rule_validation_success_flag,
@@ -149,7 +149,7 @@
     TRUE AS skip_null_count,
     custom_sql_statement_validation_errors.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     CASE
-      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count IS NULL THEN CAST(NULL AS BOOLEAN)
+      WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count IS NULL THEN TRUE
       WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
       ELSE FALSE
     END AS complex_rule_validation_success_flag,
