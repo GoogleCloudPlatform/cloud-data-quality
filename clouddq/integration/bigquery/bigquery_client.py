@@ -19,11 +19,13 @@ from string import Template
 
 import logging
 import re
+from typing import List, Iterator
 
 from google.api_core.client_info import ClientInfo
 from google.api_core.exceptions import Forbidden
 from google.api_core.exceptions import NotFound
 from google.cloud import bigquery
+from google.cloud.bigquery import SchemaField
 
 from clouddq.integration import USER_AGENT_TAG
 
@@ -212,21 +214,24 @@ class BigQueryClient:
         return query_job
 
     def get_table_schema(self, table: str, project_id: str = None) -> dict:
+        def get_fields(schema: List[SchemaField], prefix: str = '') -> Iterator[dict]:
+            for column in schema:
+                name = f'{prefix}{column.name}'
+                yield {
+                    "name": name,
+                    "type": column.field_type,
+                    "mode": column.mode,
+                    "data_type": column.field_type,
+                }
+                for field in get_fields(column.fields, f'{name}.'):
+                    yield field
 
         client = self.get_connection(project_id=project_id)
         try:
             table_ref = client.get_table(table)
         except KeyError as error:
             raise KeyError(f"\n\nInput table `{table}` is not valid.\n{error}")
-        columns = {}
-        for column in table_ref.schema:
-            column_configs = {
-                "name": column.name,
-                "type": column.field_type,
-                "mode": column.mode,
-                "data_type": column.field_type,
-            }
-            columns[column.name.upper()] = column_configs
+        columns = {column['name'].upper(): column for column in get_fields(table_ref.schema)}
         table_type = table_ref.table_type
         logger.debug(f"Table Type is : {table_type}")
         table_partitioning_type = table_ref.partitioning_type
