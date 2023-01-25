@@ -135,6 +135,7 @@ OR
 _dq_validation_complex_rule_validation_success_flag is False
 ORDER BY _dq_validation_rule_id"""
 AS failed_records_query,
+CAST(NULL AS JSON) AS include_reference_columns_json_string,
 FROM
 zero_record
 LEFT JOIN
@@ -248,6 +249,7 @@ OR
 _dq_validation_complex_rule_validation_success_flag is False
 ORDER BY _dq_validation_rule_id"""
 AS failed_records_query,
+to_json(struct(data.row_id,data.contact_type,data.value)) AS include_reference_columns_json_string,
 FROM
 zero_record
 LEFT JOIN
@@ -278,6 +280,7 @@ CAST(NULL AS STRING) AS dataplex_asset_id,
 CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', True) AS dq_run_id,
 TRUE AS progress_watermark,
 failed_records_query AS failed_records_query,
+r.include_reference_columns_json_string as include_reference_columns_json_string,
 FROM
 validation_results r
 JOIN last_mod USING(table_id)
