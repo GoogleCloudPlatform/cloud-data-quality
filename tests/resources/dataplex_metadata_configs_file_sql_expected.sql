@@ -135,7 +135,7 @@ OR
 _dq_validation_complex_rule_validation_success_flag is False
 ORDER BY _dq_validation_rule_id"""
 AS failed_records_query,
-CAST(NULL AS JSON) AS include_reference_columns_json_string,
+CAST(NULL AS JSON) AS include_reference_columns_json,
 FROM
 zero_record
 LEFT JOIN
@@ -243,7 +243,7 @@ OR
 _dq_validation_complex_rule_validation_success_flag is False
 ORDER BY _dq_validation_rule_id"""
 AS failed_records_query,
- CAST(NULL AS JSON) AS include_reference_columns_json_string,
+ CAST(NULL AS JSON) AS include_reference_columns_json,
 FROM
 zero_record
 LEFT JOIN
@@ -274,7 +274,7 @@ last_mod.last_modified,
 CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', True) AS dq_run_id,
 TRUE AS progress_watermark,
 failed_records_query AS failed_records_query,
-r.include_reference_columns_json_string as include_reference_columns_json_string,
+r.include_reference_columns_json as include_reference_columns_json,
 FROM
 validation_results r
 JOIN last_mod USING(table_id)
