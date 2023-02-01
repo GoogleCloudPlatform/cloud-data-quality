@@ -95,17 +95,17 @@
 {% macro validate_simple_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name, include_reference_columns) -%}
   SELECT
     '{{ rule_binding_id }}' AS rule_binding_id,
-    '{{ rule_id }}' AS rule_id,
-    '{{ fully_qualified_table_name }}' AS table_id,
-    '{{ column_name }}' AS column_id,
-    data.{{ column_name }} AS column_value,
+    '{{ rule_id }}' AS _internal_rule_id,
+    '{{ fully_qualified_table_name }}' AS _internal_table_id,
+    '{{ column_name }}' AS _internal_column_id,
+    data.{{ column_name }} AS _internal_column_value,
     {% for ref_column_name in include_reference_columns %}
-        data.{{ ref_column_name }} AS {{ ref_column_name }},
+        data.{{ ref_column_name }} AS _internal_{{ ref_column_name }},
     {%- endfor -%}
 {% if rule_configs.get("dimension") %}
-    '{{ rule_configs.get("dimension") }}' AS dimension,
+    '{{ rule_configs.get("dimension") }}' AS _internal_dimension,
 {% else %}
-    CAST(NULL AS STRING) AS dimension,
+    CAST(NULL AS STRING) AS _internal_dimension,
 {% endif %}
     CASE
 {% if rule_configs.get("rule_type") == "NOT_NULL" %}
@@ -116,14 +116,14 @@
 {% endif %}
     ELSE
       FALSE
-    END AS simple_rule_row_is_valid,
+    END AS _internal_simple_rule_row_is_valid,
 {% if rule_configs.get("rule_type") == "NOT_NULL" %}
-    TRUE AS skip_null_count,
+    TRUE AS _internal_skip_null_count,
 {% else %}
-    FALSE AS skip_null_count,
+    FALSE AS _internal_skip_null_count,
 {% endif %}
     CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
-    CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
+    CAST(NULL AS BOOLEAN) AS _internal_complex_rule_validation_success_flag,
   FROM
     zero_record
   LEFT JOIN
@@ -135,24 +135,24 @@
 {% macro validate_complex_rule_failed_records_query(rule_id, rule_configs, rule_binding_id, column_name, fully_qualified_table_name) -%}
   SELECT
     '{{ rule_binding_id }}' AS rule_binding_id,
-    '{{ rule_id }}' AS rule_id,
-    '{{ fully_qualified_table_name }}' AS table_id,
-    CAST(NULL AS STRING) AS column_id,
-    NULL AS column_value,
+    '{{ rule_id }}' AS _internal_rule_id,
+    '{{ fully_qualified_table_name }}' AS _internal_table_id,
+    CAST(NULL AS STRING) AS _internal_column_id,
+    NULL AS _internal_column_value,
     custom_sql_statement_validation_errors,
 {% if rule_configs.get("dimension") %}
-    '{{ rule_configs.get("dimension") }}' AS dimension,
+    '{{ rule_configs.get("dimension") }}' AS _internal_dimension,
 {% else %}
-    CAST(NULL AS STRING) AS dimension,
+    CAST(NULL AS STRING) AS _internal_dimension,
 {% endif %}
-    CAST(NULL AS BOOLEAN) AS simple_rule_row_is_valid,
-    TRUE AS skip_null_count,
+    CAST(NULL AS BOOLEAN) AS _internal_simple_rule_row_is_valid,
+    TRUE AS _internal_skip_null_count,
     custom_sql_statement_validation_errors.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
     CASE
       WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count IS NULL THEN TRUE
       WHEN custom_sql_statement_validation_errors.complex_rule_validation_errors_count = 0 THEN TRUE
       ELSE FALSE
-    END AS complex_rule_validation_success_flag,
+    END AS _internal_complex_rule_validation_success_flag,
   FROM
     zero_record
   LEFT JOIN

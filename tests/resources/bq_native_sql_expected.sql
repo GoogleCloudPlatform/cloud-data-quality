@@ -66,29 +66,29 @@ CAST(NULL AS BOOLEAN) AS _internal_complex_rule_validation_success_flag,
  ),
  last_mod AS (
  SELECT
- project_id || '.' || dataset_id || '.' || table_id AS table_id,
+ project_id || '.' || dataset_id || '.' || table_id AS _internal_table_id,
  TIMESTAMP_MILLIS(last_modified_time) AS last_modified
  FROM `<your-gcp-project-id>.austin_311.__TABLES__`
  ),
  validation_results AS (SELECT
  '<rule_binding_id>' AS rule_binding_id,
- 'NOT_NULL_SIMPLE' AS rule_id,
- '<your-gcp-project-id>.austin_311.311_service_requests' AS table_id,
- 'unique_key' AS column_id,
- data.unique_key AS column_value,
- data.unique_key AS unique_key,
- data.complaint_description AS complaint_description,
- data.source AS source,
- data.status AS status,
- CAST(NULL AS STRING) AS dimension,
+ 'NOT_NULL_SIMPLE' AS _internal_rule_id,
+ '<your-gcp-project-id>.austin_311.311_service_requests' AS _internal_table_id,
+ 'unique_key' AS _internal_column_id,
+ data.unique_key AS _internal_column_value,
+ data.unique_key AS _internal_unique_key,
+ data.complaint_description AS _internal_complaint_description,
+ data.source AS _internal_source,
+ data.status AS _internal_status,
+ CAST(NULL AS STRING) AS _internal_dimension,
  CASE
  WHEN unique_key IS NOT NULL THEN TRUE
  ELSE
  FALSE
- END AS simple_rule_row_is_valid,
- TRUE AS skip_null_count,
+ END AS _internal_simple_rule_row_is_valid,
+ TRUE AS _internal_skip_null_count,
  CAST(NULL AS INT64) AS complex_rule_validation_errors_count,
- CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
+ CAST(NULL AS BOOLEAN) AS _internal_complex_rule_validation_success_flag,
  FROM
  zero_record
  LEFT JOIN
@@ -100,17 +100,17 @@ CAST(NULL AS BOOLEAN) AS _internal_complex_rule_validation_success_flag,
  SELECT
  '{{ invocation_id }}' as _dq_validation_invocation_id,
  r.rule_binding_id AS _dq_validation_rule_binding_id,
- r.rule_id AS _dq_validation_rule_id,
- r.column_id AS _dq_validation_column_id,
- r.column_value AS _dq_validation_column_value,
- CAST(r.dimension AS STRING) AS _dq_validation_dimension,
- r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
+ r._internal_rule_id AS _dq_validation_rule_id,
+ r._internal_column_id AS _dq_validation_column_id,
+ r._internal_column_value AS _dq_validation_column_value,
+ CAST(r._internal_dimension AS STRING) AS _dq_validation_dimension,
+ r._internal_simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
  r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
- r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
- r.unique_key AS unique_key,
- r.complaint_description AS complaint_description,
- r.source AS source,
- r.status AS status,
+ r._internal_complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
+ r._internal_unique_key AS unique_key,
+ r._internal_complaint_description AS complaint_description,
+ r._internal_source AS source,
+ r._internal_status AS status,
  FROM
  validation_results r
  )
