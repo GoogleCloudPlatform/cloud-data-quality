@@ -322,10 +322,10 @@ def main(  # noqa: C901
             f"Using dq_summary_dataset: {dq_summary_project_id}.{dq_summary_dataset}"
         )
         dq_summary_table_exists = bigquery_client.is_table_exists(
-            table=dq_summary_table_name, project_id=dq_summary_project_id
+            table=dq_summary_table_name
         )
         if not bigquery_client.is_dataset_exists(
-            dataset=dq_summary_dataset, project_id=dq_summary_project_id
+            dataset=dq_summary_dataset
         ):
             raise AssertionError(
                 "Invalid argument to --gcp_bq_dataset_id: "
@@ -333,7 +333,6 @@ def main(  # noqa: C901
             )
         dq_summary_dataset_region = bigquery_client.get_dataset_region(
             dataset=dq_summary_dataset,
-            project_id=dq_summary_project_id,
         )
         if gcp_region_id and dq_summary_dataset_region != gcp_region_id:
             raise AssertionError(
@@ -344,7 +343,7 @@ def main(  # noqa: C901
             )
         dq_summary_missing_required_fields = (
             bigquery_client.assert_required_columns_exist_in_table(
-                table=dq_summary_table_name, project_id=dq_summary_project_id
+                table=dq_summary_table_name
             )
         )
         if dq_summary_missing_required_fields:
@@ -366,7 +365,7 @@ def main(  # noqa: C901
                 f"{target_project_id}.{target_dataset_id}"
             )
             if not bigquery_client.is_dataset_exists(
-                dataset=target_dataset_id, project_id=target_project_id
+                dataset=target_dataset_id
             ):
                 raise AssertionError(
                     "Invalid argument to --target_bigquery_summary_table: "
@@ -374,8 +373,7 @@ def main(  # noqa: C901
                     f"Dataset {target_project_id}.{target_dataset_id} does not exist. "
                 )
             target_dataset_region = bigquery_client.get_dataset_region(
-                dataset=target_dataset_id,
-                project_id=target_project_id,
+                dataset=target_dataset_id
             )
             if gcp_region_id and target_dataset_region != gcp_region_id:
                 raise AssertionError(
@@ -395,7 +393,7 @@ def main(  # noqa: C901
                 )
             target_table_missing_required_fields = (
                 bigquery_client.assert_required_columns_exist_in_table(
-                    table=target_bigquery_summary_table, project_id=target_project_id
+                    table=target_bigquery_summary_table
                 )
             )
             if target_table_missing_required_fields:

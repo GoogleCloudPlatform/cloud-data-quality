@@ -373,7 +373,7 @@ class DqEntity:
         configs = entity_uri.configs_dict
         entity_id = entity_uri.get_entity_id()
         columns_dict = bigquery_client.get_table_schema(
-            table=table_name, project_id=project_id
+            table=table_name
         )
         entity_configs = {
             "source_database": "BIGQUERY",

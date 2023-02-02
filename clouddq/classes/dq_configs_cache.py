@@ -490,7 +490,6 @@ class DqConfigsCache:
         )
         bq_table_exists = bigquery_client.is_table_exists(
             table=gcs_entity_external_table_name,
-            project_id=clouddq_entity.instance_name,
         )
         if bq_table_exists:
             logger.debug(
@@ -580,7 +579,7 @@ class DqConfigsCache:
         project_id = entity_uri.get_configs("projects")
         table_name = entity_uri.get_table_name()
         bq_table_exists = bigquery_client.is_table_exists(
-            table=table_name, project_id=project_id
+            table=table_name,
         )
         if bq_table_exists:
             logger.debug(
