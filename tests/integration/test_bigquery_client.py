@@ -72,7 +72,7 @@ class TestBigQueryClient:
             target_bq_result_dataset_name,
             target_bq_result_table_name):
         table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
-        test_bigquery_client.assert_required_columns_exist_in_table(table=table, project_id=gcp_project_id)
+        test_bigquery_client.assert_required_columns_exist_in_table(table=table)
 
     def test_assert_required_columns_exist_in_table_implicit_project_id(self,
             test_bigquery_client,
