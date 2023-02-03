@@ -576,7 +576,6 @@ class DqConfigsCache:
                     "using Bigquery API.\n"
                 )
 
-        project_id = entity_uri.get_configs("projects")
         table_name = entity_uri.get_table_name()
         bq_table_exists = bigquery_client.is_table_exists(
             table=table_name,

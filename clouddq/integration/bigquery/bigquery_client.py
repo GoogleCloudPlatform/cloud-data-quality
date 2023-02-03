@@ -58,7 +58,6 @@ RE_EXTRACT_TABLE_NAME = ".*Not found: Table (.+?) was not found in.*"
 
 class BigQueryClient:
     _gcp_credentials: GcpCredentials
-    _gcp_project_id: str
     _client: bigquery.client.Client = None
     target_audience = "https://bigquery.googleapis.com"
 
@@ -69,7 +68,6 @@ class BigQueryClient:
         gcp_service_account_key_path: Path = None,
         gcp_impersonation_credentials: str = None,
     ) -> None:
-        self._gcp_project_id = gcp_project_id
         if gcp_credentials:
             self._gcp_credentials = gcp_credentials
         else:
@@ -79,17 +77,14 @@ class BigQueryClient:
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
 
-    def get_connection(
-        self, new: bool = False
-    ) -> bigquery.client.Client:
+    def get_connection(self, new: bool = False) -> bigquery.client.Client:
         """Creates return new Singleton database connection"""
-        logger.warning(f"BigQueryClient.get_connection() arguments:\nself._gcp_project_id: {self._gcp_project_id}\nnew: {new}\nself: {self.__dict__}.")
         if self._client is None or new:
             job_config = bigquery.QueryJobConfig(use_legacy_sql=False)
             self._client = bigquery.Client(
                 default_query_job_config=job_config,
                 credentials=self._gcp_credentials.credentials,
-                project=self._gcp_project_id,
+                project=self._gcp_credentials.project_id,
                 client_info=ClientInfo(user_agent=USER_AGENT_TAG),
             )
             return self._client
@@ -143,9 +138,7 @@ class BigQueryClient:
         except (NotFound, KeyError):
             return False
 
-    def assert_required_columns_exist_in_table(
-        self, table: str
-    ) -> dict:
+    def assert_required_columns_exist_in_table(self, table: str) -> dict:
         try:
             client = self.get_connection()
             table_ref = client.get_table(table)
@@ -194,7 +187,6 @@ class BigQueryClient:
         Returns:
             result of the sql execution is returned
         """
-        logger.warning(f"BigQueryClient.execute_query() arguments:\query_string: {query_string}\nself: {self.__dict__}.")
         client = self.get_connection()
         logger.debug(f"Query string is:\n```\n{query_string}\n```")
         job_id_prefix = "clouddq-"
