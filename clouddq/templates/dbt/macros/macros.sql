@@ -44,6 +44,12 @@
     CAST(NULL AS BOOLEAN) AS complex_rule_validation_success_flag,
     r"""{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
     AS failed_records_query,
+  {% if include_reference_columns|length %}
+    {% set include_reference_columns_string = "data."~include_reference_columns|join(",data.") %}
+    to_json(struct({{include_reference_columns_string}})) AS include_reference_columns_json,
+  {% else %}
+    CAST(NULL AS JSON) AS include_reference_columns_json,
+  {% endif %}
   FROM
     zero_record
   LEFT JOIN
@@ -75,6 +81,7 @@
     END AS complex_rule_validation_success_flag,
     r"""{{ configs.get(rule_binding_id ~ '_' ~ rule_id ~ '_failed_records_sql_string') }}"""
     AS failed_records_query,
+    CAST(NULL AS JSON) AS include_reference_columns_json,
   FROM
     zero_record
   LEFT JOIN
