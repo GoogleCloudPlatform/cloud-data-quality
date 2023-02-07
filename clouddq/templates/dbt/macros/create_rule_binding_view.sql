@@ -51,12 +51,12 @@ WITH
 {% endif %}
 zero_record AS (
     SELECT
-        '{{ rule_binding_id }}' AS rule_binding_id,
+        '{{ rule_binding_id }}' AS _internal_rule_binding_id,
 ),
 data AS (
     SELECT
       *,
-      '{{ rule_binding_id }}' AS rule_binding_id,
+      '{{ rule_binding_id }}' AS _internal_rule_binding_id,
     FROM
       `{{- fully_qualified_table_name -}}` d
 {%- if configs.get('incremental_time_filter_column') %}
@@ -77,7 +77,7 @@ data AS (
 ),
 last_mod AS (
     SELECT
-        project_id || '.' || dataset_id || '.' || table_id AS table_id,
+        project_id || '.' || dataset_id || '.' || table_id AS _internal_table_id,
         TIMESTAMP_MILLIS(last_modified_time) AS last_modified
     FROM `{{ instance_name }}.{{ database_name }}.__TABLES__`
 ),
@@ -96,17 +96,17 @@ validation_results AS (
 ),
 all_validation_results AS (
   SELECT
-    r.execution_ts AS execution_ts,
-    r.rule_binding_id AS rule_binding_id,
-    r.rule_id AS rule_id,
-    r.table_id AS table_id,
-    r.column_id AS column_id,
-    r.column_value AS column_value,
-    CAST(r.dimension AS STRING) AS dimension,
-    r.skip_null_count AS skip_null_count,
-    r.simple_rule_row_is_valid AS simple_rule_row_is_valid,
-    r.complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
-    r.complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
+    r._internal_execution_ts AS execution_ts,
+    r._internal_rule_binding_id AS rule_binding_id,
+    r._internal_rule_id AS rule_id,
+    r._internal_table_id AS table_id,
+    r._internal_column_id AS column_id,
+    r._internal_column_value AS column_value,
+    CAST(r._internal_dimension AS STRING) AS dimension,
+    r._internal_skip_null_count AS skip_null_count,
+    r._internal_simple_rule_row_is_valid AS simple_rule_row_is_valid,
+    r._internal_complex_rule_validation_errors_count AS complex_rule_validation_errors_count,
+    r._internal_complex_rule_validation_success_flag AS complex_rule_validation_success_flag,
     (SELECT COUNT(*) FROM data) AS rows_validated,
     last_mod.last_modified,
     '{{ metadata|tojson }}' AS metadata_json_string,
@@ -126,13 +126,13 @@ all_validation_results AS (
 {%- else %}
     CAST(NULL AS STRING) AS dataplex_asset_id,
 {%- endif %}
-    CONCAT(r.rule_binding_id, '_', r.rule_id, '_', r.execution_ts, '_', {{ progress_watermark }}) AS dq_run_id,
+    CONCAT(r._internal_rule_binding_id, '_', r._internal_rule_id, '_', r._internal_execution_ts, '_', {{ progress_watermark }}) AS dq_run_id,
     {{ progress_watermark|upper }} AS progress_watermark,
-    failed_records_query AS failed_records_query,
+    _internal_failed_records_query AS failed_records_query,
   r.include_reference_columns_json as include_reference_columns_json,
   FROM
     validation_results r
-  JOIN last_mod USING(table_id)
+  JOIN last_mod USING(_internal_table_id)
 )
 SELECT
   *

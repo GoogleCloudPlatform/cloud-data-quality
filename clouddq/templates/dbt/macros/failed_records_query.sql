@@ -65,7 +65,7 @@ data AS (
 ),
 last_mod AS (
     SELECT
-        project_id || '.' || dataset_id || '.' || table_id AS table_id,
+        project_id || '.' || dataset_id || '.' || table_id AS _internal_table_id,
         TIMESTAMP_MILLIS(last_modified_time) AS last_modified
     FROM `{{ instance_name }}.{{ database_name }}.__TABLES__`
 ),
@@ -81,17 +81,17 @@ all_validation_results AS (
   SELECT
     '{{ invocation_id }}' as _dq_validation_invocation_id,
     r.rule_binding_id AS _dq_validation_rule_binding_id,
-    r.rule_id AS _dq_validation_rule_id,
-    r.column_id AS _dq_validation_column_id,
-    r.column_value AS _dq_validation_column_value,
-    CAST(r.dimension AS STRING) AS _dq_validation_dimension,
-    r.simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
+    r._internal_rule_id AS _dq_validation_rule_id,
+    r._internal_column_id AS _dq_validation_column_id,
+    r._internal_column_value AS _dq_validation_column_value,
+    CAST(r._internal_dimension AS STRING) AS _dq_validation_dimension,
+    r._internal_simple_rule_row_is_valid AS _dq_validation_simple_rule_row_is_valid,
     r.complex_rule_validation_errors_count AS _dq_validation_complex_rule_validation_errors_count,
-    r.complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
+    r._internal_complex_rule_validation_success_flag AS _dq_validation_complex_rule_validation_success_flag,
     {{ '\n' }}
     {%- if rule_type != "CUSTOM_SQL_STATEMENT" -%}
         {% for ref_column_name in include_reference_columns %}
-            r.{{ ref_column_name }} AS {{ ref_column_name }},
+            r._internal_{{ ref_column_name }} AS {{ ref_column_name }},
         {%- endfor -%}
     {%- else -%}
         r.custom_sql_statement_validation_errors,
