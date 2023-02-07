@@ -34,40 +34,29 @@ class TestBigQueryClient:
         table_ref = test_bigquery_client.table_from_string(
             table_name
         )
-        project_id = table_ref.project
-        dataset_id = table_ref.dataset_id
-        assert test_bigquery_client.is_dataset_exists(dataset=dataset_id, project_id=project_id) is True
+        dataset_path = f"{table_ref.project}.{table_ref.dataset_id}"
+        assert test_bigquery_client.is_dataset_exists(dataset=dataset_path) is True
 
     def test_assert_is_dataset_exists_implicit_project_id(self, test_bigquery_client, gcp_dataplex_bigquery_dataset_id):
         assert test_bigquery_client.is_dataset_exists(dataset=gcp_dataplex_bigquery_dataset_id) is True
 
     def test_assert_dataset_is_in_region(self, test_bigquery_client):
         dataset = "bigquery-public-data.google_analytics_sample"
-        project_id = dataset.split(".")[0]
         region = "US"
-        assert region == test_bigquery_client.get_dataset_region(dataset=dataset, project_id=project_id)
+        assert region == test_bigquery_client.get_dataset_region(dataset=dataset)
 
     def test_assert_dataset_is_in_region_failure(self, test_bigquery_client):
         dataset = "bigquery-public-data.google_analytics_sample"
-        project_id = dataset.split(".")[0]
         region = "EU"
-        assert region != test_bigquery_client.get_dataset_region(dataset=dataset, project_id=project_id)
+        assert region != test_bigquery_client.get_dataset_region(dataset=dataset)
 
     def test_assert_is_table_exists(self, test_bigquery_client):
         table_name = "bigquery-public-data.github_repos.commits"
-        table_ref = test_bigquery_client.table_from_string(
-            table_name
-        )
-        project_id = table_ref.project
-        assert test_bigquery_client.is_table_exists(table=table_name, project_id=project_id) is True
+        assert test_bigquery_client.is_table_exists(table=table_name) is True
 
     def test_assert_is_table_exists_fail(self, test_bigquery_client):
         table_name = "bigquery-public-data.github_repos.commits_fail"
-        table_ref = test_bigquery_client.table_from_string(
-            table_name
-        )
-        project_id = table_ref.project
-        assert test_bigquery_client.is_table_exists(table=table_name, project_id=project_id) is False
+        assert test_bigquery_client.is_table_exists(table=table_name) is False
 
     def test_assert_is_table_exists_implicit_project_id(self,
             test_bigquery_client,
@@ -83,7 +72,7 @@ class TestBigQueryClient:
             target_bq_result_dataset_name,
             target_bq_result_table_name):
         table = f"{gcp_project_id}.{target_bq_result_dataset_name}.{target_bq_result_table_name}"
-        test_bigquery_client.assert_required_columns_exist_in_table(table=table, project_id=gcp_project_id)
+        test_bigquery_client.assert_required_columns_exist_in_table(table=table)
 
     def test_assert_required_columns_exist_in_table_implicit_project_id(self,
             test_bigquery_client,
@@ -103,12 +92,10 @@ class TestBigQueryClient:
         project_id = table_ref.project
         is_table_exists = test_bigquery_client.is_table_exists(
             table=table_name,
-            project_id=project_id
         )
         if is_table_exists:
             table_schema = test_bigquery_client.get_table_schema(
                 table=table_name,
-                project_id=project_id
             )
             expected_table_schema = {
                 'columns': {
@@ -142,12 +129,10 @@ class TestBigQueryClient:
         project_id = table_ref.project
         is_table_exists = test_bigquery_client.is_table_exists(
             table=table_name,
-            project_id=project_id
         )
         if is_table_exists:
             table_schema = test_bigquery_client.get_table_schema(
                 table=table_name,
-                project_id=project_id
             )
             expected_table_schema = {
                 'columns': {
@@ -173,12 +158,10 @@ class TestBigQueryClient:
         project_id = table_ref.project
         is_table_exists = test_bigquery_client.is_table_exists(
             table=table_name,
-            project_id=project_id
         )
         if is_table_exists:
             table_schema = test_bigquery_client.get_table_schema(
                 table=table_name,
-                project_id=project_id
             )
             expected_table_schema = {
                 'columns': {
@@ -204,12 +187,10 @@ class TestBigQueryClient:
         project_id = table_ref.project
         is_table_exists = test_bigquery_client.is_table_exists(
             table=table_name,
-            project_id=project_id
         )
         if is_table_exists:
             table_columns = test_bigquery_client.get_table_columns(
                 table=table_name,
-                project_id=project_id
             )
             expected_table_columns = {
                     'commit', 'tree', 'parent', 'author', 'committer', 'subject', 'message',

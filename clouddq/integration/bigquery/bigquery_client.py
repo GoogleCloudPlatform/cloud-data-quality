@@ -77,19 +77,14 @@ class BigQueryClient:
                 gcp_impersonation_credentials=gcp_impersonation_credentials,
             )
 
-    def get_connection(
-        self, new: bool = False, project_id: str = None
-    ) -> bigquery.client.Client:
+    def get_connection(self, new: bool = False) -> bigquery.client.Client:
         """Creates return new Singleton database connection"""
-        if project_id or self._client is None or new:
+        if self._client is None or new:
             job_config = bigquery.QueryJobConfig(use_legacy_sql=False)
-            client_project_id = (
-                project_id if project_id else self._gcp_credentials.project_id
-            )
             self._client = bigquery.Client(
                 default_query_job_config=job_config,
                 credentials=self._gcp_credentials.credentials,
-                project=client_project_id,
+                project=self._gcp_credentials.project_id,
                 client_info=ClientInfo(user_agent=USER_AGENT_TAG),
             )
             return self._client
@@ -100,21 +95,21 @@ class BigQueryClient:
         if self._client:
             self._client.close()
 
-    def get_dataset_region(self, dataset: str, project_id: str) -> str:
-        client = self.get_connection(project_id=project_id)
+    def get_dataset_region(self, dataset: str) -> str:
+        client = self.get_connection()
         try:
             dataset_info = client.get_dataset(dataset)
         except KeyError as error:
             raise KeyError(f"\n\nInput dataset `{dataset}` is not valid.\n{error}")
         return dataset_info.location
 
-    def check_query_dry_run(self, query_string: str, project_id: str = None) -> None:
+    def check_query_dry_run(self, query_string: str) -> None:
         """check whether query is valid."""
         dry_run_job_config = bigquery.QueryJobConfig(
             dry_run=True, use_query_cache=False, use_legacy_sql=False
         )
         try:
-            client = self.get_connection(project_id=project_id)
+            client = self.get_connection()
             query = CHECK_QUERY.safe_substitute(query_string=query_string.strip())
             # Start the query, passing in the extra configuration.
             query_job = client.query(
@@ -135,19 +130,17 @@ class BigQueryClient:
             logger.error("User has insufficient permissions.")
             raise e
 
-    def is_table_exists(self, table: str, project_id: str = None) -> bool:
+    def is_table_exists(self, table: str) -> bool:
         try:
-            client = self.get_connection(project_id=project_id)
+            client = self.get_connection()
             client.get_table(table)
             return True
         except (NotFound, KeyError):
             return False
 
-    def assert_required_columns_exist_in_table(
-        self, table: str, project_id: str = None
-    ) -> dict:
+    def assert_required_columns_exist_in_table(self, table: str) -> dict:
         try:
-            client = self.get_connection(project_id=project_id)
+            client = self.get_connection()
             table_ref = client.get_table(table)
             column_names = {column.name for column in table_ref.schema}
             failures = {}
@@ -174,9 +167,9 @@ class BigQueryClient:
     def table_from_string(self, full_table_id: str) -> bigquery.table.Table:
         return bigquery.table.Table.from_string(full_table_id)
 
-    def is_dataset_exists(self, dataset: str, project_id: str = None) -> bool:
+    def is_dataset_exists(self, dataset: str) -> bool:
         try:
-            client = self.get_connection(project_id=project_id)
+            client = self.get_connection()
             client.get_dataset(dataset)
             return True
         except (NotFound, KeyError):
@@ -186,7 +179,6 @@ class BigQueryClient:
         self,
         query_string: str,
         job_config: bigquery.job.QueryJobConfig = None,
-        project_id: str = None,
     ) -> bigquery.job.QueryJob:
         """
         The method is used to execute the sql query
@@ -195,8 +187,7 @@ class BigQueryClient:
         Returns:
             result of the sql execution is returned
         """
-
-        client = self.get_connection(project_id=project_id)
+        client = self.get_connection()
         logger.debug(f"Query string is:\n```\n{query_string}\n```")
         job_id_prefix = "clouddq-"
 
@@ -211,9 +202,9 @@ class BigQueryClient:
 
         return query_job
 
-    def get_table_schema(self, table: str, project_id: str = None) -> dict:
+    def get_table_schema(self, table: str) -> dict:
 
-        client = self.get_connection(project_id=project_id)
+        client = self.get_connection()
         try:
             table_ref = client.get_table(table)
         except KeyError as error:
@@ -270,9 +261,9 @@ class BigQueryClient:
         logger.debug(f"Schema for table {table} is: {columns_dict}")
         return columns_dict
 
-    def get_table_columns(self, table: str, project_id: str = None) -> set:
+    def get_table_columns(self, table: str) -> set:
 
-        client = self.get_connection(project_id=project_id)
+        client = self.get_connection()
         try:
             table_ref = client.get_table(table)
         except KeyError as error:

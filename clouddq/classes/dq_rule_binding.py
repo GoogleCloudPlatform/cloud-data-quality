@@ -344,7 +344,6 @@ class DqRuleBinding:
                     if len(include_reference_columns) == 1:
                         column_names = bigquery_client.get_table_columns(
                             table=table_entity.get_table_name(),
-                            project_id=table_entity.instance_name,
                         )
                         include_reference_columns = sorted(column_names)
                         include_all_reference_columns = True

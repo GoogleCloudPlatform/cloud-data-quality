@@ -368,13 +368,10 @@ class DqEntity:
     def from_bq_entity_uri(
         self, entity_uri: EntityUri, bigquery_client: BigQueryClient
     ) -> DqEntity:
-        project_id = entity_uri.get_configs("projects")
         table_name = entity_uri.get_table_name()
         configs = entity_uri.configs_dict
         entity_id = entity_uri.get_entity_id()
-        columns_dict = bigquery_client.get_table_schema(
-            table=table_name, project_id=project_id
-        )
+        columns_dict = bigquery_client.get_table_schema(table=table_name)
         entity_configs = {
             "source_database": "BIGQUERY",
             "resource_type": "BIGQUERY",
