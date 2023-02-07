@@ -34,8 +34,8 @@ class TestBigQueryClient:
         table_ref = test_bigquery_client.table_from_string(
             table_name
         )
-        dataset_id = table_ref.dataset_id
-        assert test_bigquery_client.is_dataset_exists(dataset=dataset_id) is True
+        dataset_path = f"{table_ref.project}.{table_ref.dataset_id}"
+        assert test_bigquery_client.is_dataset_exists(dataset=dataset_path) is True
 
     def test_assert_is_dataset_exists_implicit_project_id(self, test_bigquery_client, gcp_dataplex_bigquery_dataset_id):
         assert test_bigquery_client.is_dataset_exists(dataset=gcp_dataplex_bigquery_dataset_id) is True
