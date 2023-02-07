@@ -129,6 +129,7 @@ all_validation_results AS (
     CONCAT(r._internal_rule_binding_id, '_', r._internal_rule_id, '_', r._internal_execution_ts, '_', {{ progress_watermark }}) AS dq_run_id,
     {{ progress_watermark|upper }} AS progress_watermark,
     _internal_failed_records_query AS failed_records_query,
+  r.include_reference_columns_json as include_reference_columns_json,
   FROM
     validation_results r
   JOIN last_mod USING(_internal_table_id)
