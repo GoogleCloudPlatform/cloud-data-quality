@@ -301,6 +301,7 @@ def main(  # noqa: C901
             gcp_project_id=gcp_project_id,
             gcp_bq_dataset_id=gcp_bq_dataset_id,
             gcp_region_id=gcp_region_id,
+            gcp_impersonation_credentials=gcp_impersonation_credentials,
             bigquery_client=bigquery_client,
         )
 
@@ -324,7 +325,7 @@ def main(  # noqa: C901
         dq_summary_table_exists = bigquery_client.is_table_exists(
             table=dq_summary_table_name
         )
-        if not bigquery_client.is_dataset_exists(dataset=dq_summary_dataset):
+        if not bigquery_client.is_dataset_exists(dataset=f"{dq_summary_project_id}.{dq_summary_dataset}"):
             raise AssertionError(
                 "Invalid argument to --gcp_bq_dataset_id: "
                 f"Dataset {dq_summary_project_id}.{dq_summary_dataset} does not exist. "
@@ -362,7 +363,7 @@ def main(  # noqa: C901
                 f"BigQuery dataset used in --target_bigquery_summary_table: "
                 f"{target_project_id}.{target_dataset_id}"
             )
-            if not bigquery_client.is_dataset_exists(dataset=target_dataset_id):
+            if not bigquery_client.is_dataset_exists(dataset=f"{target_project_id}.{target_dataset_id}"):
                 raise AssertionError(
                     "Invalid argument to --target_bigquery_summary_table: "
                     f"{target_bigquery_summary_table}. "
