@@ -127,6 +127,7 @@ class DbtRunner:
                                                     gcp_bq_dataset_id: str,
                                                     gcp_region_id: Optional[str] = None,
                                                     bigquery_client: Optional[BigQueryClient] = None,
+                                                    gcp_impersonation_credentials: Optional[str] = None,
                                                     ) -> typing.Tuple:
         self._resolve_connection_configs(
             gcp_project_id=gcp_project_id,
@@ -135,6 +136,7 @@ class DbtRunner:
             bigquery_client=bigquery_client,
             environment_target=self.environment_target,
             num_threads=self.num_threads,
+            gcp_impersonation_credentials=gcp_impersonation_credentials,
         )
 
         return (
