@@ -24,7 +24,7 @@ from airflow.providers.google.cloud.operators.dataplex import (
 )
 
 import google.auth
-from requests_oauth2 import OAuth2BearerToken
+
 import json
 import requests
 import time
@@ -91,7 +91,7 @@ default_args = {
 }
 
 
-def get_session_headers() -> tuple:
+def get_session_headers() -> dict:
     """
     This method is to get the session and headers object for authenticating the api requests using credentials.
     Args:
@@ -112,10 +112,7 @@ def get_session_headers() -> tuple:
         'Authorization': 'Bearer ' + auth_token
     }
 
-    with requests.Session() as session:
-        session.auth = OAuth2BearerToken(auth_token)
-
-    return (session, headers)
+    return headers
 
 
 def get_clouddq_task_status() -> str:
@@ -124,8 +121,8 @@ def get_clouddq_task_status() -> str:
     Args:
     Returns: str
     """
-    session, headers = get_session_headers()
-    res = session.get(
+    headers = get_session_headers()
+    res = requests.get(
         f"{DATAPLEX_ENDPOINT}/v1/projects/{DATAPLEX_PROJECT_ID}/locations/{DATAPLEX_REGION}/lakes/{DATAPLEX_LAKE_ID}/tasks/{DATAPLEX_TASK_ID}/jobs",
         headers=headers)
     print(res.status_code)
