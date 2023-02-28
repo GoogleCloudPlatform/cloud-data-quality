@@ -117,7 +117,6 @@ class GcpDbtConnectionConfig(DbtConnectionConfig):
                 )
             dq_summary_dataset_region = bigquery_client.get_dataset_region(
                 dataset=gcp_bq_dataset_id,
-                project_id=gcp_project_id,
             )
             self.gcp_region_id = dq_summary_dataset_region
         self.gcp_project_id = gcp_project_id
