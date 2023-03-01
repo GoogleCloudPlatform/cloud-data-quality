@@ -50,7 +50,6 @@ fix_bazel_zip() {
   cd "${TMP_PATH}"/ && zip -qq -r "${BASE_NAME}".zip *
   cd -
   cp "${TMP_PATH}"/"${BASE_NAME}".zip "${BASE_NAME}"_patched.zip
-  pip install pytz==2022.7.1
 }
 
 create_hashsum() {

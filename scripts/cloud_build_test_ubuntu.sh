@@ -48,6 +48,7 @@ function main() {
     python3 --version
     python --version
     pip3 --version
+    pip3 install pytz
     python3 -m pip --version
     python3 -c 'import sys; print(sys.version_info)'
     python -c 'import sys; print(sys.version_info)'
