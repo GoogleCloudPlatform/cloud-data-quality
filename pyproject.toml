@@ -31,6 +31,7 @@ google-cloud-storage = "^1.42.3"
 google-cloud-logging = "^2.7.0"
 pyrate-limiter = "^2.6.0"
 markupsafe = "2.0.1"
+pytz >= "2015.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
@@ -43,6 +44,7 @@ flake8 = "^3.9.2"
 pytest-xdist = "^2.4.0"
 filelock = "^3.3.2"
 markupsafe = "2.0.1"
+pytz >= "2015.7"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]

@@ -24,3 +24,4 @@ google-cloud-core==2.3.2
 google-api-core==2.10.2
 google-cloud-bigquery==2.34.4
 mashumaro[msgpack]==2.9.0
+pytz>=2015.7
