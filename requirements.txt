@@ -2,7 +2,7 @@ click==7.1.2
 coloredlogs==15.0.1
 jinja2==2.11.3
 pyyaml==6.0.0
-dbt-bigquery==1.0.0
+dbt-bigquery==1.1.1
 pytest==6.2.2
 black==21.5b0
 pyupgrade==2.10.1
@@ -24,3 +24,4 @@ google-cloud-core==2.3.2
 google-api-core==2.10.2
 google-cloud-bigquery==2.34.4
 mashumaro[msgpack]==2.9.0
+pytz>=2015.7
