@@ -166,10 +166,12 @@ def _get_dataplex_task() -> str:
     res = requests.get(
         f"{DATAPLEX_ENDPOINT}/v1/projects/{DATAPLEX_PROJECT_ID}/locations/{DATAPLEX_REGION}/lakes/{DATAPLEX_LAKE_ID}/tasks/{DATAPLEX_TASK_ID}",
         headers=headers)
-    if res.status_code == 200:
+    if res.status_code == 404:
+        return "task_not_exist"
+    elif res.status_code == 200:
         return "task_exist"
     else:
-        return "task_not_exist"
+        return "ERROR"
 
 with models.DAG(
         'clouddq_airflow_example',
@@ -200,6 +202,11 @@ with models.DAG(
     dataplex_task_not_exists = BashOperator(
         task_id="task_not_exist",
         bash_command="echo 'Task not Present'",
+        dag=dag,
+    )
+    dataplex_task_error = BashOperator(
+        task_id="ERROR",
+        bash_command="echo 'Error in fetching dataplex task details'",
         dag=dag,
     )
 
@@ -243,7 +250,7 @@ with models.DAG(
     )
 
 start_op >> get_dataplex_task
-get_dataplex_task >> [dataplex_task_exists, dataplex_task_not_exists]
+get_dataplex_task >> [dataplex_task_exists, dataplex_task_not_exists, dataplex_task_error]
 dataplex_task_exists >> delete_dataplex_task
 delete_dataplex_task >> create_dataplex_task
 dataplex_task_not_exists >> create_dataplex_task
