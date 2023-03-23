@@ -25,7 +25,7 @@
       },
       "DT": {
         "name": "dt",
-        "data_type": "TIMESTAMP"
+        "data_type": "STRING"
       }
     },
     "dataset_name": "<your_dataplex_bigquery_dataset_id>",
