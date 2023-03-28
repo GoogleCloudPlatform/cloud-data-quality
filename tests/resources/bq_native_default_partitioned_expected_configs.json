@@ -22,6 +22,10 @@
       "TS": {
         "name": "ts",
         "data_type": "TIMESTAMP"
+      },
+      "_PARTITIONTIME": {
+        "name": "_PARTITIONTIME",
+        "data_type": "TIMESTAMP"
       }
     },
     "dataset_name": "<your_bigquery_dataset_id>",

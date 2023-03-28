@@ -192,6 +192,21 @@ class DqEntity:
                 entity_source_database=source_database,
             )
             columns[column_id.upper()] = column
+        if partition_fields:
+            partition_field_str = str(partition_fields)[1:-1].replace("'", '"')
+            partition_field_dict = json.loads(partition_field_str)
+            partition_field_name = partition_field_dict.get("name")
+            partition_field_data_type = partition_field_dict.get("type")
+            partition_config = {
+                "name": partition_field_name,
+                "data_type": partition_field_data_type,
+            }
+            partition_column = DqEntityColumn.from_dict(
+                entity_column_id=partition_field_name,
+                kwargs=partition_config,
+                entity_source_database=source_database,
+            )
+            columns[partition_field_name.upper()] = partition_column
         # validate environment override
         environment_override = dict()
         input_environment_override = kwargs.get("environment_override", None)

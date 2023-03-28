@@ -25,7 +25,7 @@
       },
       "DT": {
         "name": "dt",
-        "data_type": "TIMESTAMP"
+        "data_type": "STRING"
       }
     },
     "resource_type": "CLOUD_STORAGE",
