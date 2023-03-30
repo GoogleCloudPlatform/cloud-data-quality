@@ -117,6 +117,23 @@ class DataplexClient:
             session.auth = OAuth2BearerToken(self._auth_token)
         return session
 
+    def get_project_id(self, project_number) -> str:
+        """
+        Get the projectId
+        :param project_number: project number
+        :return: projectId
+        """
+        response = self._session.get(
+            f"https://cloudresourcemanager.googleapis.com/v3/projects/{project_number}"
+        )
+        if response.status_code == 200:
+            project_config = response.json()
+            return project_config.get("projectId")
+        else:
+            raise RuntimeError(
+                f"Failed to get Project ID for project number: {project_number}: \n {response.text}"
+            )
+
     @limiter.ratelimit("get_dataplex_lake", delay=True, max_delay=60)
     def get_dataplex_lake(
         self,
