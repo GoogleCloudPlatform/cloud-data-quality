@@ -113,7 +113,7 @@ class BigQueryClient:
             query = CHECK_QUERY.safe_substitute(query_string=query_string.strip())
             # Start the query, passing in the extra configuration.
             query_job = client.query(
-                query=query, timeout=10, job_config=dry_run_job_config
+                query=query, timeout=240, job_config=dry_run_job_config
             )
             # A dry run query completes immediately.
             logger.debug(
