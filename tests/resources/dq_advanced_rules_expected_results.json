@@ -21,10 +21,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 100,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -35,10 +35,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 100,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -63,10 +63,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 86,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -133,10 +133,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -147,10 +147,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -175,10 +175,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -189,10 +189,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -203,10 +203,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 4002,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -441,10 +441,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 99,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -455,10 +455,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 99,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -483,10 +483,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 99,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -511,10 +511,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 99,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -553,10 +553,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 99,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   },
   {
@@ -567,10 +567,10 @@
     "metadata_json_string": "{\"brand\": \"one\"}",
     "progress_watermark": true,
     "rows_validated": 99,
-    "complex_rule_validation_errors_count": null,
+    "complex_rule_validation_errors_count": 0,
     "complex_rule_validation_success_flag": true,
-    "success_count": 0,
-    "failed_count": 0,
+    "success_count": null,
+    "failed_count": null,
     "null_count": null
   }
 ]
