@@ -164,7 +164,7 @@ gcloud dataproc workflow-templates import ${DATAPROC_WORKFLOW_NAME} \
     --region=${REGION}
 ```
 
-You can see your Dataproc Workflow Templates in the [GCP Web Console](https://pantheon.corp.google.com/dataproc/workflows/templates)
+You can see your Dataproc Workflow Templates in the [GCP Web Console](https://console.cloud.google.com/dataproc/workflows/templates)
 
 ### 7.4. Update variables in the DAG with your project configuration
 
@@ -194,7 +194,7 @@ gcloud composer environments describe --format="value(config.airflowUri)" \
     --project ${PROJECT_ID} --location ${REGION} ${COMPOSER_ENVIRONMENT_NAME}
 ```
 
-You can also check the status of the Dataproc Workflow in the [GCP Web Console](https://pantheon.corp.google.com/dataproc/workflows/instances).
+You can also check the status of the Dataproc Workflow in the [GCP Web Console](https://console.cloud.google.com/dataproc/workflows/instances).
 
 ## 9. Check the CloudDQ results
 
