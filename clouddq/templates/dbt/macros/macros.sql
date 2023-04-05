@@ -73,7 +73,10 @@
 {% endif %}
     CAST(NULL AS BOOLEAN) AS _internal_simple_rule_row_is_valid,
     TRUE AS _internal_skip_null_count,
-    custom_sql_statement_validation_errors._internal_complex_rule_validation_errors_count AS _internal_complex_rule_validation_errors_count,
+    CASE
+      WHEN custom_sql_statement_validation_errors._internal_complex_rule_validation_errors_count IS NULL THEN 0
+      ELSE custom_sql_statement_validation_errors._internal_complex_rule_validation_errors_count
+    END AS _internal_complex_rule_validation_errors_count,
     CASE
       WHEN custom_sql_statement_validation_errors._internal_complex_rule_validation_errors_count IS NULL THEN TRUE
       WHEN custom_sql_statement_validation_errors._internal_complex_rule_validation_errors_count = 0 THEN TRUE
