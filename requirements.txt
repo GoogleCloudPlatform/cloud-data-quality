@@ -25,3 +25,4 @@ google-api-core==2.10.2
 google-cloud-bigquery==3.9.0
 mashumaro[msgpack]==3.3.1
 pytz>=2015.7
+protobuf==3.20.3
