@@ -39,7 +39,7 @@ class DqReferenceColumns:
     """
     A class to represent a DqReferenceColumns.
 
-    ...
+    ... 
 
     Attributes
     ----------
