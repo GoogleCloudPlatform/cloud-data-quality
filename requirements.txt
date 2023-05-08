@@ -11,7 +11,7 @@ flakehell==0.9.0
 flake8==3.9.2
 google-api-python-client==2.65.0
 google-cloud-storage==2.5.0
-google-cloud-logging==2.7.0
+google-cloud-logging==3.5.0
 requests-oauth2==0.3.0
 pytest-xdist==2.4.0
 filelock==3.3.2
