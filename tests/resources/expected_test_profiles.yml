@@ -21,7 +21,7 @@ default:
       project: '<my-gcp-project-id>'
       retries: 1
       threads: 10
-      timeout_seconds: 3600
+      timeout_seconds: 21600
       type: bigquery
     dev: {}
   target: Dev
