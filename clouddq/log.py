@@ -64,7 +64,7 @@ class JSONFormatter(logging.Formatter):
         return super().format(record)
 
 
-def add_cloud_logging_handler(logger: Logger):
+def add_cloud_logging_handler(metadata, logger: Logger):
     client = google.cloud.logging.Client()
     handler = CloudLoggingHandler(
         client=client,
@@ -72,6 +72,7 @@ def add_cloud_logging_handler(logger: Logger):
         labels={
             "name": APP_NAME,
             "releaseId": APP_VERSION,
+            "metadata" : str(metadata),
         },
     )
     handler.setFormatter(JSONFormatter())
