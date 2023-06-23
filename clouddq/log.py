@@ -72,7 +72,7 @@ def add_cloud_logging_handler(metadata, logger: Logger):
         labels={
             "name": APP_NAME,
             "releaseId": APP_VERSION,
-            "metadata" : str(metadata),
+            "metadata": str(metadata),
         },
     )
     handler.setFormatter(JSONFormatter())
