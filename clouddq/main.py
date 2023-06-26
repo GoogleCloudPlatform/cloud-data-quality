@@ -280,23 +280,22 @@ def main(  # noqa: C901
         )
         # Load metadata
         metadata = json.loads(metadata)
+        dataplex_batch_name = os.environ.get("DATAPLEX_BATCH_NAME")
+        dataplex_task_name = os.environ.get("DATAPLEX_TASK_NAME")
         # Set-up cloud logging
         if add_metadata_to_logs:
-            dataplex_batch_name = os.environ.get("DATAPLEX_BATCH_NAME")
-            dataplex_task_name = os.environ.get("DATAPLEX_TASK_NAME")
             if dataplex_batch_name:
                 metadata["dataplex_batch_name"] = dataplex_batch_name
             if dataplex_task_name:
                 metadata["dataplex_task_name"] = dataplex_task_name
             add_cloud_logging_handler(logger=json_logger, metadata=metadata)
         else:
-            dataplex_batch_name = os.environ.get("DATAPLEX_BATCH_NAME")
-            dataplex_task_name = os.environ.get("DATAPLEX_TASK_NAME")
+            metadata_dict = {}
             if dataplex_batch_name:
-                metadata["dataplex_batch_name"] = dataplex_batch_name
+                metadata_dict["dataplex_batch_name"] = dataplex_batch_name
             if dataplex_task_name:
-                metadata["dataplex_task_name"] = dataplex_task_name
-            add_cloud_logging_handler(logger=json_logger, metadata=metadata)
+                metadata_dict["dataplex_task_name"] = dataplex_task_name
+            add_cloud_logging_handler(logger=json_logger, metadata=metadata_dict)
         logger.info(f"metadata: {metadata}")
         logger.info("Starting CloudDQ run with configs:")
         json_logger.warning(
