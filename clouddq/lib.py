@@ -214,12 +214,13 @@ def prepare_configs_from_rule_binding_id(
     }
     if environment:
         configs.update({"environment": environment})
-    if not metadata:
-        metadata = dict()
+    rule_binding_metadata = dict()
+    if metadata:
+        rule_binding_metadata.update(metadata)
     if "metadata" in rule_binding_configs:
-        metadata.update(rule_binding_configs["metadata"])
+        rule_binding_metadata.update(rule_binding_configs["metadata"])
     configs.update({"dq_summary_table_name": dq_summary_table_name})
-    configs.update({"metadata": metadata})
+    configs.update({"metadata": rule_binding_metadata})
     configs.update({"dq_summary_table_exists": dq_summary_table_exists})
     configs.update(
         {"configs_hashsum": sha256_digest(json.dumps(resolved_rule_binding_configs))}
