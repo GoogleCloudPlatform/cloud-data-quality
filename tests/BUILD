@@ -246,3 +246,11 @@ py_test(
     legacy_create_init = 0,
     deps = DEPS,
 )
+
+py_test(
+    name = "test_dq_row_filter_params",
+    srcs = SRCS,
+    data = DATA,
+    legacy_create_init = 0,
+    deps = DEPS,
+)
