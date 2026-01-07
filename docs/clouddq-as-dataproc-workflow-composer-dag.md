@@ -80,7 +80,7 @@ sed -i s/\<your_bigquery_dataset_id\>/${CLOUDDQ_BIGQUERY_DATASET}/g ./configs/en
 This is the bucket where the Python executables and the configuration files will be pulled from for the Dataproc PySpark job.
 
 ```bash
-gsutil mb -p ${PROJECT_ID} -l ${REGION} -b on gs://${GCS_BUCKET_NAME}
+gcloud storage buckets create gs://${GCS_BUCKET_NAME} --project=${PROJECT_ID} --location=${REGION} --uniform-bucket-level-access
 ```
 
 Ensure you have sufficient IAM privileges to create Cloud Storage Buckets in your project.
@@ -182,7 +182,7 @@ sed -i s/\<template_id\>/${DATAPROC_WORKFLOW_NAME}/g ${DAG_PY_FILE}
 export DAG_BUCKET=$(gcloud composer environments describe --format="value(config.dagGcsPrefix)" \
     --project ${PROJECT_ID} --location ${REGION} ${COMPOSER_ENVIRONMENT_NAME})
 
-gsutil cp ${DAG_PY_FILE} ${DAG_BUCKET}
+gcloud storage cp ${DAG_PY_FILE} ${DAG_BUCKET}
 ```
 
 ## 8. Check Airflow job status

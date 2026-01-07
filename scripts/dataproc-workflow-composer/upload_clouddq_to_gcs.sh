@@ -26,20 +26,20 @@ TARGET_PYTHON_INTERPRETER="${TARGET_PYTHON_INTERPRETER}" || err "Environment var
 
 function zip_configs_directory_and_upload_to_gcs() {
   zip -r clouddq-configs.zip ./configs
-  gsutil mv clouddq-configs.zip gs://"${GCS_BUCKET_NAME}"/clouddq-configs.zip
-  gsutil ls gs://"${GCS_BUCKET_NAME}"/clouddq_pyspark_driver.py || gsutil cp ./clouddq/integration/clouddq_pyspark_driver.py gs://"${GCS_BUCKET_NAME}"
+  gcloud storage mv clouddq-configs.zip gs://"${GCS_BUCKET_NAME}"/clouddq-configs.zip
+  gcloud storage ls gs://"${GCS_BUCKET_NAME}"/clouddq_pyspark_driver.py || gcloud storage cp ./clouddq/integration/clouddq_pyspark_driver.py gs://"${GCS_BUCKET_NAME}"
 }
 
 function upload_clouddq_zip_executable_to_gcs() {
   wget -O clouddq_executable.zip https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip
   wget -O clouddq_executable.zip.hashsum https://github.com/GoogleCloudPlatform/cloud-data-quality/releases/download/v"${CLOUDDQ_RELEASE_VERSION}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}"_"${TARGET_OS}"_python"${TARGET_PYTHON_INTERPRETER}".zip.sha256sum
-  gsutil cp clouddq_executable.zip gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip
-  gsutil cp clouddq_executable.zip.hashsum gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum
+  gcloud storage cp clouddq_executable.zip gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip
+  gcloud storage cp clouddq_executable.zip.hashsum gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum
 }
 
 function main() {
   zip_configs_directory_and_upload_to_gcs
-    gsutil ls gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum || upload_clouddq_zip_executable_to_gcs
+    gcloud storage ls gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip gs://"${GCS_BUCKET_NAME}"/clouddq_executable_v"${CLOUDDQ_RELEASE_VERSION}".zip.hashsum || upload_clouddq_zip_executable_to_gcs
 }
 
 main "$@"

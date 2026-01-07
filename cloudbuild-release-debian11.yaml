@@ -41,29 +41,29 @@ steps:
 
         source scripts/install_gcloud.sh
 
-        gsutil ls gs://$_GCS_RELEASE_BUCKET
+        gcloud storage ls gs://$_GCS_RELEASE_BUCKET
 
-        gsutil cp clouddq_patched.zip
+        gcloud storage cp clouddq_patched.zip
         gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
         -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
-        gsutil cp clouddq_patched.zip.hashsum
+        gcloud storage cp clouddq_patched.zip.hashsum
         gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
         -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
 
-        gsutil cp clouddq/integration/clouddq_pyspark_driver.py
+        gcloud storage cp clouddq/integration/clouddq_pyspark_driver.py
         gs://${_GCS_RELEASE_BUCKET}/build-artifacts/debian11/python3.9/main/`date
         -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq_pyspark_driver.py
         
-        gsutil cp clouddq_patched.zip
+        gcloud storage cp clouddq_patched.zip
         gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/main/`date
         -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip
 
-        gsutil cp clouddq_patched.zip.hashsum
+        gcloud storage cp clouddq_patched.zip.hashsum
         gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/main/`date
         -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq-executable.zip.hashsum
 
-        gsutil cp clouddq/integration/clouddq_pyspark_driver.py
+        gcloud storage cp clouddq/integration/clouddq_pyspark_driver.py
         gs://${_GCS_BUCKET_NAME}/build-artifacts/debian11/python3.9/main/`date
         -I'minutes'`_${TAG_NAME}_${SHORT_SHA}/clouddq_pyspark_driver.py
     entrypoint: /bin/bash
