@@ -1,4 +1,4 @@
-teps:
+steps:
   - name: 'debian:11-slim'
     args: ['echo', 'This build is deprecated on this trigger. Continuing in GitHub Actions.']
     entrypoint: /bin/bash
