@@ -329,7 +329,7 @@ class TestDataplexIntegration:
             clouddq_pyspark_driver_filename: str = "test_clouddq_pyspark_driver.py"
             clouddq_executable_path = None
             clouddq_executable_checksum_path = None
-            clouddq_yaml_spec_file_path = "gs://dataplex-clouddq-api-integration/test-artifacts/clouddq-configs.zip"
+            clouddq_yaml_spec_file_path = "gs://pbalm-test-api-integration/test-artifacts/clouddq-configs.zip"
         else:
             # Get executable path
             print(f"Using executable paths: {test_clouddq_zip_executable_paths}")

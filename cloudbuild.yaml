@@ -32,4 +32,4 @@ steps:
 timeout: 3600s
 options:
   machineType: 'E2_HIGHCPU_8'
-logsBucket: 'gs://dataplex-clouddq-github-cloud-build'
+logsBucket: 'gs://pbalm-test-github-cloud-build'

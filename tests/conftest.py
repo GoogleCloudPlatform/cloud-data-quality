@@ -36,7 +36,7 @@ def gcp_project_id():
         logger.warning("Required test environment variable GOOGLE_CLOUD_PROJECT "
         "cannot be found. Set this to the project_id used for integration testing.")
         # Todo: remove this once test fixture for creating dataplex entities is complete
-        test_project_id = "dataplex-clouddq"
+        test_project_id = "pbalm-test"
         logging.warning(f"Defaulting to using test: {test_project_id}")
         gcp_project_id = test_project_id
     return gcp_project_id

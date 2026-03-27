@@ -612,3 +612,58 @@ CloudDQ supports the follow methods for authenticating to GCP:
 ### Number of Concurrent Bigquery Threads
 1. `--num_threads` CLI argument specifies the number of concurrent bigquery operations that can be increased to reduce run-time.
 2. `--num_threads` is currently an optional argument and has a default value of `8 threads`. We advice setting this to number of cores of your run-environment machines. One worker thread per core seemed a good number for how many threads to run at once. This number is chosen much more carefully based on other factors, such as other applications and services running on the same machine.
+
+
+### Setting up Workflow Identity Federation to run the Github Actions
+
+If your organization blocks the export of Service Account JSON keys, you can set up Workload Identity Federation (WIF) to allow GitHub Actions to authenticate securely with Google Cloud.
+
+#### Step 1: Configure WIF in Google Cloud
+
+Run the following `gcloud` commands in your terminal (ensure you are authenticated and have the necessary IAM permissions). Replace placeholders with your actual values:
+
+```bash
+# Set your variables
+export PROJECT_ID="your-project-id"
+export PROJECT_NUMBER="your-project-number" # Numeric ID, find it in GCP Homepage console
+export SERVICE_ACCOUNT_EMAIL="your-service-account@your-project-id.iam.gserviceaccount.com"
+export REPO_OWNER="your-github-username-or-org"
+export REPO_NAME="cloud-data-quality"
+
+# 1. Enable IAM Credentials API
+gcloud services enable iamcredentials.googleapis.com --project="${PROJECT_ID}"
+
+# 2. Create the Workload Identity Pool
+gcloud iam workload-identity-pools create "github-pool" \
+    --project="${PROJECT_ID}" \
+    --location="global" \
+    --display-name="GitHub Actions Pool"
+
+# 3. Create the Workload Identity Provider
+gcloud iam workload-identity-pools providers create-oidc "github-provider" \
+    --project="${PROJECT_ID}" \
+    --location="global" \
+    --workload-identity-pool="github-pool" \
+    --display-name="GitHub Provider" \
+    --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
+    --issuer-uri="https://token.actions.githubusercontent.com" \
+    --attribute-condition="attribute.repository == '${REPO_OWNER}/${REPO_NAME}'"
+
+# 4. Allow the GitHub repository to impersonate the Service Account
+gcloud iam service-accounts add-iam-policy-binding "${SERVICE_ACCOUNT_EMAIL}" \
+    --project="${PROJECT_ID}" \
+    --role="roles/iam.workloadIdentityUser" \
+    --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${REPO_OWNER}/${REPO_NAME}" \
+    --condition=None
+```
+
+#### Step 2: Configure GitHub Repository Secrets
+
+After setting up WIF in GCP, navigate to your GitHub Repository Settings > Secrets and variables > Actions, and add the following **Repository Secrets**:
+
+-   **`GCP_WIF_PROVIDER`**: Set value to `projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/providers/github-provider` (replace `${PROJECT_NUMBER}` with your actual number).
+-   **`GCP_WIF_SA`**: Set value to your Service Account email (e.g. `your-service-account@your-project-id.iam.gserviceaccount.com`).
+-   **`GCP_PROJECT_ID`**: (If not already set) Set value to your GCP Project ID.
+
+The GitHub Actions workflow is pre-configured to automatically pick up these secrets and switch to WIF authentication.
+

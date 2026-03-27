@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 TARGET_SCOPES = [
     "https://www.googleapis.com/auth/cloud-platform",
 ]
-DEFAULT_GCS_BUCKET_NAME = "dataplex-clouddq-artifacts-{gcp_dataplex_region}"
+DEFAULT_GCS_BUCKET_NAME = "pbalm-test-artifacts-{gcp_dataplex_region}"
 
 
 class DATAPLEX_TASK_TRIGGER_TYPE(str, Enum):

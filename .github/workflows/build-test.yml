@@ -65,12 +65,15 @@ jobs:
           version: 10
           platform: x64
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SA }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Get gcloud CLI info
         run: gcloud info
@@ -82,7 +85,6 @@ jobs:
           export CLOUDDQ_BIGQUERY_DATASET="clouddq_test_usc1"
           export CLOUDDQ_BIGQUERY_REGION="us-central1"
           export GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
-          export GOOGLE_SDK_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
           export IMPERSONATION_SERVICE_ACCOUNT=${{ secrets.IMPERSONATION_SERVICE_ACCOUNT }}
           export GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}
           export GCS_BAZEL_CACHE=${{ secrets.BAZEL_CACHE_BUCKET }}
