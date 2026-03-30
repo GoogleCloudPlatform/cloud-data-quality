@@ -16,7 +16,9 @@ rule_bindings:
   T3_DQ_1_EMAIL_DUPLICATE:
     entity_id: TEST_TABLE
     column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
+    row_filter_ids:
+      - DATA_TYPE_EMAIL:
+          column: "contact_type"
     reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
 #    incremental_time_filter_column_id: TS
     rule_ids:

@@ -16,7 +16,9 @@ rule_bindings:
   T2_DQ_1_EMAIL:
     entity_id: TEST_TABLE
     column_id: VALUE
-    row_filter_id: DATA_TYPE_EMAIL
+    row_filter_ids:
+      - DATA_TYPE_EMAIL:
+          column: "contact_type"
     reference_columns_id: CONTACT_DETAILS_REFERENCE_COLUMNS
     rule_ids:
       - NOT_NULL_SIMPLE

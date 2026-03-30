@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from string import Template
 
 from clouddq.utils import assert_not_none_or_empty
 
@@ -84,3 +85,16 @@ class DqRowFilter:
         """
 
         return dict(self.to_dict().get(self.row_filter_id))
+
+
+    def resolve_sql_expr(self: DqRule, arguments: dict) -> None:
+        try:
+            self.filter_sql_expr = Template(self.filter_sql_expr).safe_substitute(
+                arguments
+            )
+        except Exception as e:
+            raise ValueError(
+                f"Failed to resolve row_filter_id '{self.row_filter_id}' in "
+                f"rule_binding_id '{self.rule_binding_id}' "
+                f"with error:\n{e}"
+            )
