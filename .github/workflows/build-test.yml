@@ -52,7 +52,7 @@ jobs:
         shell: bash
         run: |
           echo "##[set-output name=branch;]$(TMP=${GITHUB_REF#refs/heads/}; echo ${TMP//\//-})"
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Set up Go
         uses: actions/setup-go@v2
