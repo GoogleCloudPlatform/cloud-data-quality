@@ -20,3 +20,10 @@ row_filters:
   DATA_TYPE_EMAIL:
     filter_sql_expr: |-
       contact_type = 'email'
+
+  COLUMN_IN_VALUES_SET:
+    params:
+      - column
+      - values
+    filter_sql_expr: |-
+      $column IN ($values)
